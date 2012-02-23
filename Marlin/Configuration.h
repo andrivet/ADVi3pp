@@ -43,10 +43,10 @@
 // 100 is 100k GE Sensing AL03006-58.2K-97-G1
 // 101 is 100k 0603 SMD Vishay NTCS0603E3104FXT
 
-#define TEMP_SENSOR_0 100
+#define TEMP_SENSOR_0 102
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
-#define TEMP_SENSOR_BED 101
+#define TEMP_SENSOR_BED 103
 
 // Actual temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
@@ -157,7 +157,8 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 // default settings 
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {91.4286, 91.4286,4000,875}                    // default steps per unit for ultimaker 
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   {91.4286, 91.4286,4000,875}                    // default steps per unit for ultimaker 
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,4571.429,875}
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 45}    // (mm/sec)    
 #define DEFAULT_MAX_ACCELERATION      {1500,1500,50,250}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
 
