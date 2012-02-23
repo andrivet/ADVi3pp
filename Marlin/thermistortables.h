@@ -381,7 +381,7 @@ const short temptable_101[][2] PROGMEM = {
 };
 #endif
 #if (THERMISTORHEATER_0 == 102) || (THERMISTORHEATER_1 == 102) || (THERMISTORHEATER_2 == 102) || (THERMISTORBED == 102) // EPCOS G57540
-const short temptable_100[][2] PROGMEM = {
+const short temptable_102[][2] PROGMEM = {
 {15*OVERSAMPLENR,286},
 {16*OVERSAMPLENR,282},
 {17*OVERSAMPLENR,278},
