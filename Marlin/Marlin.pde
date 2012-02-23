@@ -121,6 +121,7 @@
 CardReader card;
 #endif
 float homing_feedrate[] = HOMING_FEEDRATE;
+float fast_home_feedrate[] = FAST_HOME_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 volatile int feedmultiply=100; //100->1 200->2
 int saved_feedmultiply;
@@ -495,8 +496,8 @@ bool code_seen(char code)
     { \
     current_position[LETTER##_AXIS] = 0; \
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); \
-    destination[LETTER##_AXIS] = 1.5 * LETTER##_MAX_LENGTH * LETTER##_HOME_DIR; \
-    feedrate = homing_feedrate[LETTER##_AXIS]; \
+    destination[LETTER##_AXIS] = 1.1 * LETTER##_MAX_LENGTH * LETTER##_HOME_DIR; \
+    feedrate = fast_home_feedrate[LETTER##_AXIS]; \
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); \
     \
     current_position[LETTER##_AXIS] = 0;\
@@ -572,7 +573,7 @@ void process_commands()
         current_position[X_AXIS] = 0;current_position[Y_AXIS] = 0;  
 
         plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
-        destination[X_AXIS] = 1.5 * X_MAX_LENGTH * X_HOME_DIR;destination[Y_AXIS] = 1.5 * Y_MAX_LENGTH * Y_HOME_DIR;  
+        destination[X_AXIS] = 1.1 * X_MAX_LENGTH * X_HOME_DIR;destination[Y_AXIS] = 1.1 * Y_MAX_LENGTH * Y_HOME_DIR;  
         feedrate = homing_feedrate[X_AXIS]; 
         if(homing_feedrate[Y_AXIS]<feedrate)
           feedrate =homing_feedrate[Y_AXIS]; 
@@ -1110,6 +1111,7 @@ void process_commands()
         if(code_seen('P')) Kp = code_value();
         if(code_seen('I')) Ki = code_value()*PID_dT;
         if(code_seen('D')) Kd = code_value()/PID_dT;
+        if(code_seen('W')) Ki_Max = constrain(code_value(),0,255);
         #ifdef PID_ADD_EXTRUSION_RATE
         if(code_seen('C')) Kc = code_value();
         #endif
@@ -1120,6 +1122,8 @@ void process_commands()
         SERIAL_PROTOCOL(Ki/PID_dT);
         SERIAL_PROTOCOL(" d:");
         SERIAL_PROTOCOL(Kd*PID_dT);
+        SERIAL_PROTOCOL(" w:");
+        SERIAL_PROTOCOL(Ki_Max);
         #ifdef PID_ADD_EXTRUSION_RATE
         SERIAL_PROTOCOL(" c:");
         SERIAL_PROTOCOL(Kc*PID_dT);

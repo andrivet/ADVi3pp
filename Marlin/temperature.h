@@ -47,6 +47,7 @@ extern int current_raw_bed;
   extern int target_bed_high_temp ;
 #endif
 extern float Kp,Ki,Kd,Kc;
+extern int Ki_Max;
 
 #ifdef PIDTEMP
   extern float pid_setpoint[EXTRUDERS];

@@ -52,6 +52,7 @@ int current_raw_bed = 0;
   
   float Kp=DEFAULT_Kp;
   float Ki=DEFAULT_Ki;
+  int Ki_Max=PID_INTEGRAL_DRIVE_MAX;
   float Kd=DEFAULT_Kd;
   #ifdef PID_ADD_EXTRUSION_RATE
     float Kc=DEFAULT_Kc;
@@ -137,7 +138,7 @@ void updatePID()
 {
 #ifdef PIDTEMP
   for(int e = 0; e < EXTRUDERS; e++) { 
-     temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki;  
+     temp_iState_max[e] = Ki_Max / Ki;  
   }
 #endif
 }
@@ -439,7 +440,7 @@ void tp_init()
     maxttemp[e] = maxttemp[0];
 #ifdef PIDTEMP
     temp_iState_min[e] = 0.0;
-    temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki;
+    temp_iState_max[e] = Ki_Max / Ki;
 #endif //PIDTEMP
   }
 

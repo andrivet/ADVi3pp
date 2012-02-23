@@ -60,6 +60,7 @@ inline void EEPROM_StoreSettings()
     EEPROM_writeAnything(i,Kp);
     EEPROM_writeAnything(i,Ki);
     EEPROM_writeAnything(i,Kd);
+    EEPROM_writeAnything(i,Ki_Max);
   #else
     EEPROM_writeAnything(i,3000);
     EEPROM_writeAnything(i,0);
@@ -124,6 +125,7 @@ inline void EEPROM_printSettings()
       SERIAL_ECHOPAIR("   M301 P",Kp); 
       SERIAL_ECHOPAIR(" I" ,Ki/PID_dT); 
       SERIAL_ECHOPAIR(" D" ,Kd*PID_dT);
+      SERIAL_ECHOPAIR(" W" ,Ki_Max);
       SERIAL_ECHOLN(""); 
     #endif
   #endif
@@ -152,10 +154,12 @@ inline void EEPROM_RetrieveSettings(bool def=false)
       EEPROM_readAnything(i,max_z_jerk);
       #ifndef PIDTEMP
         float Kp,Ki,Kd;
+        int Ki_Max;
       #endif
       EEPROM_readAnything(i,Kp);
       EEPROM_readAnything(i,Ki);
       EEPROM_readAnything(i,Kd);
+      EEPROM_readAnything(i,Ki_Max);
 
       SERIAL_ECHO_START;
       SERIAL_ECHOLNPGM("Stored settings retreived:");
