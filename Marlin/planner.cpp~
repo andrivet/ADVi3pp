@@ -534,8 +534,6 @@ void plan_buffer_line(float &x, float &y, float &z, float &e, float feed_rate, u
 //  } else {
 //    block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS]));
 //  }
-
-  // TODO - JMG - SORT OUT RETRACTS WHEN e IS NOT ALONE
   block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) +
                             square(delta_mm[Z_AXIS]) + square(delta_mm[E_AXIS]));
   float inverse_millimeters = 1.0/block->millimeters;  // Inverse millimeters to remove multiple divides 

@@ -59,6 +59,11 @@
 #define EXTRUDER_RUNOUT_SPEED 1500.  //extrusion speed
 #define EXTRUDER_RUNOUT_EXTRUDE 100
 
+//These defines help to calibrate the AD595 sensor in case you get wrong temperature measurements.
+//The measured temperature is defined as "actualTemp = (measuredTemp * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET"
+#define TEMP_SENSOR_AD595_OFFSET 0.0
+#define TEMP_SENSOR_AD595_GAIN   1.0
+
 //===========================================================================
 //=============================Mechanical Settings===========================
 //===========================================================================
@@ -147,6 +152,12 @@
 #define N_ARC_CORRECTION 25
 
 const int dropsegments=5; //everything with less than this number of steps will be ignored as move and joined with the next movement
+
+// If you are using a RAMPS board or cheap E-bay purchased boards that do not detect when an SD card is inserted
+// You can get round this by connecting a push button or single throw switch to the pin defined as SDCARDCARDDETECT 
+// in the pins.h file.  When using a push button pulling the pin to ground this will need inverted.  This setting should
+// be commented out otherwise
+//#define SDCARDDETECTINVERTED 
 
 //===========================================================================
 //=============================Buffers           ============================
