@@ -398,7 +398,7 @@ float analog2temp(int raw, uint8_t e) {
 // For bed temperature measurement.
 float analog2tempBed(int raw) {
   #ifdef BED_USES_THERMISTOR
-    int celsius = 0;
+    float celsius = 0;
     byte i;
 
     raw = (1023 * OVERSAMPLENR) - raw;
@@ -409,9 +409,8 @@ float analog2tempBed(int raw) {
       {
         celsius  = PGM_RD_W(bedtemptable[i-1][1]) + 
           (raw - PGM_RD_W(bedtemptable[i-1][0])) * 
-          (PGM_RD_W(bedtemptable[i][1]) - PGM_RD_W(bedtemptable[i-1][1])) /
-          (PGM_RD_W(bedtemptable[i][0]) - PGM_RD_W(bedtemptable[i-1][0]));
-
+          (float)(PGM_RD_W(bedtemptable[i][1]) - PGM_RD_W(bedtemptable[i-1][1])) /
+          (float)(PGM_RD_W(bedtemptable[i][0]) - PGM_RD_W(bedtemptable[i-1][0]));
         break;
       }
     }
@@ -420,13 +419,12 @@ float analog2tempBed(int raw) {
     if (i == bedtemptable_len) celsius = PGM_RD_W(bedtemptable[i-1][1]);
 
     return celsius;
-    
   #elif defined BED_USES_AD595
     return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
   #else
     #warning No heater-type defined for the bed.
+    return 0;
   #endif
-  return 0;
 }
 
 void tp_init()
@@ -852,18 +850,18 @@ ISR(TIMER0_COMPB_vect)
     for(unsigned char e = 0; e < EXTRUDERS; e++) {
        if(current_raw[e] >= maxttemp[e]) {
           target_raw[e] = 0;
-          #if (PS_ON != -1)
+          max_temp_error(e);
+          #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
           {
-            max_temp_error(e);
             kill();;
           }
           #endif
        }
        if(current_raw[e] <= minttemp[e]) {
           target_raw[e] = 0;
-          #if (PS_ON != -1)
+          min_temp_error(e);
+          #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
           {
-            min_temp_error(e);
             kill();
           }
           #endif

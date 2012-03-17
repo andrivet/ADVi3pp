@@ -17,6 +17,7 @@ public:
 
   void checkautostart(bool x); 
   void openFile(char* name,bool read);
+  void removeFile(char* name);
   void closefile();
   void release();
   void startFileprint();
@@ -32,6 +33,8 @@ public:
   void chdir(const char * relpath);
   void updir();
   void setroot();
+  
+  void fast_xfer(char* strchr_pointer);
 
 
   FORCE_INLINE bool eof() { return sdpos>=filesize ;};
@@ -47,6 +50,7 @@ public:
   char filename[11];
   bool filenameIsDir;
   int lastnr; //last number of the autostart;
+  char fastxferbuffer[SD_FAST_XFER_CHUNK_SIZE + 1];
 private:
   SdFile root,*curDir,workDir,workDirParent,workDirParentParent;
   Sd2Card card;
@@ -63,40 +67,14 @@ private:
   int16_t nrFiles; //counter for the files in the current directory and recycled as position counter for getting the nrFiles'th name in the directory.
   char* diveDirName;
   void lsDive(const char *prepend,SdFile parent);
+  int lastxferchar;
+  long xferbytes;
 };
-  
+#define IS_SD_PRINTING (card.sdprinting)
 
 #else
 
-#define dir_t bool 
-class CardReader
-{
-public:
-  FORCE_INLINE CardReader(){};
-  
-  FORCE_INLINE static void initsd(){};
-  FORCE_INLINE static void write_command(char *buf){};
-  
-  FORCE_INLINE static void checkautostart(bool x) {}; 
-  
-  FORCE_INLINE static void openFile(char* name,bool read){};
-  FORCE_INLINE static void closefile() {};
-  FORCE_INLINE static void release(){};
-  FORCE_INLINE static void startFileprint(){};
-  FORCE_INLINE static void startFilewrite(char *name){};
-  FORCE_INLINE static void pauseSDPrint(){};
-  FORCE_INLINE static void getStatus(){};
-  
-  FORCE_INLINE static void selectFile(char* name){};
-  FORCE_INLINE static void getfilename(const uint8_t nr){};
-  FORCE_INLINE static uint8_t getnrfilenames(){return 0;};
-  
+#define IS_SD_PRINTING (false)
 
-  FORCE_INLINE static void ls() {};
-  FORCE_INLINE static bool eof() {return true;};
-  FORCE_INLINE static char get() {return 0;};
-  FORCE_INLINE static void setIndex(){};
-  FORCE_INLINE uint8_t percentDone(){return 0;};
-};
 #endif //SDSUPPORT
 #endif

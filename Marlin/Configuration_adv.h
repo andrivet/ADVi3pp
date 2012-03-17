@@ -25,9 +25,6 @@
 // if CooldownNoWait is defined M109 will not wait for the cooldown to finish
 #define CooldownNoWait true
 
-//Do not wait for M109 to finish when printing from SD card
-//#define STOP_HEATING_WAIT_WHEN_SD_PRINTING
-
 #ifdef PIDTEMP
   // this adds an experimental additional term to the heatingpower, proportional to the extrusion speed.
   // if Kc is choosen well, the additional required power due to increased melting should be compensated.
@@ -79,7 +76,7 @@
 #define X_HOME_RETRACT_MM 4 
 #define Y_HOME_RETRACT_MM 4 
 #define Z_HOME_RETRACT_MM 1 
-#define QUICK_HOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
+//#define QUICK_HOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
 
 #define AXIS_RELATIVE_MODES {false, false, false, false}
 
@@ -167,6 +164,8 @@ const int dropsegments=5; //everything with less than this number of steps will 
 // THE BLOCK_BUFFER_SIZE NEEDS TO BE A POWER OF 2, i.g. 8,16,32 because shifts and ors are used to do the ringbuffering.
 #if defined SDSUPPORT
   #define BLOCK_BUFFER_SIZE 16   // SD,LCD,Buttons take more memory, block buffer needs to be smaller
+// Chuck size for fast sd transfer
+    #define SD_FAST_XFER_CHUNK_SIZE 1024
 #else
   #define BLOCK_BUFFER_SIZE 16 // maximize block buffer
 #endif

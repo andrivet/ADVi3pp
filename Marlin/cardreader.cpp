@@ -3,6 +3,8 @@
 #include "ultralcd.h"
 #include "stepper.h"
 #include "temperature.h"
+#include "language.h"
+
 #ifdef SDSUPPORT
 
 
@@ -75,7 +77,7 @@ void  CardReader::lsDive(const char *prepend,SdFile parent)
         if(lsAction==LS_SerialPrint)
         {
           SERIAL_ECHO_START;
-          SERIAL_ECHOLN("Cannot open subdir");
+          SERIAL_ECHOLN(MSG_SD_CANT_OPEN_SUBDIR);
           SERIAL_ECHOLN(lfilename);
         }
       }
@@ -143,28 +145,28 @@ void CardReader::initsd()
   {
     //if (!card.init(SPI_HALF_SPEED,SDSS))
     SERIAL_ECHO_START;
-    SERIAL_ECHOLNPGM("SD init fail");
+    SERIAL_ECHOLNPGM(MSG_SD_INIT_FAIL);
   }
   else if (!volume.init(&card))
   {
     SERIAL_ERROR_START;
-    SERIAL_ERRORLNPGM("volume.init failed");
+    SERIAL_ERRORLNPGM(MSG_SD_VOL_INIT_FAIL);
   }
   else if (!root.openRoot(&volume)) 
   {
     SERIAL_ERROR_START;
-    SERIAL_ERRORLNPGM("openRoot failed");
+    SERIAL_ERRORLNPGM(MSG_SD_OPENROOT_FAIL);
   }
   else 
   {
     cardOK = true;
     SERIAL_ECHO_START;
-    SERIAL_ECHOLNPGM("SD card ok");
+    SERIAL_ECHOLNPGM(MSG_SD_CARD_OK);
   }
   curDir=&root;
   if(!workDir.openRoot(&volume))
   {
-    SERIAL_ECHOLNPGM("workDir open failed");
+    SERIAL_ECHOLNPGM(MSG_SD_WORKDIR_FAIL);
   }
 }
 
@@ -173,7 +175,7 @@ void CardReader::setroot()
  curDir=&root;
   if(!workDir.openRoot(&volume))
   {
-    SERIAL_ECHOLNPGM("workDir open failed");
+    SERIAL_ECHOLNPGM(MSG_SD_WORKDIR_FAIL);
   } 
 }
 void CardReader::release()
@@ -230,7 +232,7 @@ void CardReader::openFile(char* name,bool read)
         SERIAL_ECHOLN(subdirname);
         if(!myDir.open(curDir,subdirname,O_READ))
         {
-          SERIAL_PROTOCOLPGM("open failed, File: ");
+          SERIAL_PROTOCOLPGM(MSG_SD_OPEN_FILE_FAIL);
           SERIAL_PROTOCOL(subdirname);
           SERIAL_PROTOCOLLNPGM(".");
           return;
@@ -260,18 +262,18 @@ void CardReader::openFile(char* name,bool read)
     if (file.open(curDir, fname, O_READ)) 
     {
       filesize = file.fileSize();
-      SERIAL_PROTOCOLPGM("File opened:");
+      SERIAL_PROTOCOLPGM(MSG_SD_FILE_OPENED);
       SERIAL_PROTOCOL(fname);
-      SERIAL_PROTOCOLPGM(" Size:");
+      SERIAL_PROTOCOLPGM(MSG_SD_SIZE);
       SERIAL_PROTOCOLLN(filesize);
       sdpos = 0;
       
-      SERIAL_PROTOCOLLNPGM("File selected");
+      SERIAL_PROTOCOLLNPGM(MSG_SD_FILE_SELECTED);
       LCD_MESSAGE(fname);
     }
     else
     {
-      SERIAL_PROTOCOLPGM("open failed, File: ");
+      SERIAL_PROTOCOLPGM(MSG_SD_OPEN_FILE_FAIL);
       SERIAL_PROTOCOL(fname);
       SERIAL_PROTOCOLLNPGM(".");
     }
@@ -280,14 +282,14 @@ void CardReader::openFile(char* name,bool read)
   { //write
     if (!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC))
     {
-      SERIAL_PROTOCOLPGM("open failed, File: ");
+      SERIAL_PROTOCOLPGM(MSG_SD_OPEN_FILE_FAIL);
       SERIAL_PROTOCOL(fname);
       SERIAL_PROTOCOLLNPGM(".");
     }
     else
     {
       saving = true;
-      SERIAL_PROTOCOLPGM("Writing to file: ");
+      SERIAL_PROTOCOLPGM(MSG_SD_WRITE_TO_FILE);
       SERIAL_PROTOCOLLN(name);
       LCD_MESSAGE(fname);
     }
@@ -295,16 +297,85 @@ void CardReader::openFile(char* name,bool read)
   
 }
 
+void CardReader::removeFile(char* name)
+{
+  if(!cardOK)
+    return;
+  file.close();
+  sdprinting = false;
+  
+  
+  SdFile myDir;
+  curDir=&root;
+  char *fname=name;
+  
+  char *dirname_start,*dirname_end;
+  if(name[0]=='/')
+  {
+    dirname_start=strchr(name,'/')+1;
+    while(dirname_start>0)
+    {
+      dirname_end=strchr(dirname_start,'/');
+      //SERIAL_ECHO("start:");SERIAL_ECHOLN((int)(dirname_start-name));
+      //SERIAL_ECHO("end  :");SERIAL_ECHOLN((int)(dirname_end-name));
+      if(dirname_end>0 && dirname_end>dirname_start)
+      {
+        char subdirname[13];
+        strncpy(subdirname, dirname_start, dirname_end-dirname_start);
+        subdirname[dirname_end-dirname_start]=0;
+        SERIAL_ECHOLN(subdirname);
+        if(!myDir.open(curDir,subdirname,O_READ))
+        {
+          SERIAL_PROTOCOLPGM("open failed, File: ");
+          SERIAL_PROTOCOL(subdirname);
+          SERIAL_PROTOCOLLNPGM(".");
+          return;
+        }
+        else
+          ;//SERIAL_ECHOLN("dive ok");
+          
+        curDir=&myDir; 
+        dirname_start=dirname_end+1;
+      }
+      else // the reminder after all /fsa/fdsa/ is the filename
+      {
+        fname=dirname_start;
+        //SERIAL_ECHOLN("remaider");
+        //SERIAL_ECHOLN(fname);
+        break;
+      }
+      
+    }
+  }
+  else //relative path
+  {
+    curDir=&workDir;
+  }
+    if (file.remove(curDir, fname)) 
+    {
+      SERIAL_PROTOCOLPGM("File deleted:");
+      SERIAL_PROTOCOL(fname);
+      sdpos = 0;
+    }
+    else
+    {
+      SERIAL_PROTOCOLPGM("Deletion failed, File: ");
+      SERIAL_PROTOCOL(fname);
+      SERIAL_PROTOCOLLNPGM(".");
+    }
+  
+}
+
 void CardReader::getStatus()
 {
   if(cardOK){
-    SERIAL_PROTOCOLPGM("SD printing byte ");
+    SERIAL_PROTOCOLPGM(MSG_SD_PRINTING_BYTE);
     SERIAL_PROTOCOL(sdpos);
     SERIAL_PROTOCOLPGM("/");
     SERIAL_PROTOCOLLN(filesize);
   }
   else{
-    SERIAL_PROTOCOLLNPGM("Not SD printing");
+    SERIAL_PROTOCOLLNPGM(MSG_SD_NOT_PRINTING);
   }
 }
 void CardReader::write_command(char *buf)
@@ -326,7 +397,7 @@ void CardReader::write_command(char *buf)
   if (file.writeError)
   {
     SERIAL_ERROR_START;
-    SERIAL_ERRORLNPGM("error writing to file");
+    SERIAL_ERRORLNPGM(MSG_SD_ERR_WRITE_TO_FILE);
   }
 }
 
@@ -420,7 +491,7 @@ void CardReader::chdir(const char * relpath)
   if(!newfile.open(*parent,relpath, O_READ))
   {
    SERIAL_ECHO_START;
-   SERIAL_ECHOPGM("Cannot enter subdir:");
+   SERIAL_ECHOPGM(MSG_SD_CANT_ENTER_SUBDIR);
    SERIAL_ECHOLN(relpath);
   }
   else
@@ -447,9 +518,6 @@ void CardReader::printingHasFinished()
  st_synchronize();
  quickStop();
  sdprinting = false;
- #ifdef STOP_HEATING_WAIT_FOR_SD_PRINTING
- stop_heating_wait=true;
- #endif
  if(SD_FINISHED_STEPPERRELEASE)
  {
    //finishAndDisableSteppers();
@@ -457,4 +525,102 @@ void CardReader::printingHasFinished()
  }
  autotempShutdown();
 }
+void CardReader::fast_xfer(char* strchr_pointer)
+  {
+    char *pstr;
+    boolean done = false;
+    
+    //force heater pins low
+    if(HEATER_0_PIN > -1) WRITE(HEATER_0_PIN,LOW);
+    if(HEATER_BED_PIN > -1) WRITE(HEATER_BED_PIN,LOW);
+    
+    lastxferchar = 1;
+    xferbytes = 0;
+    
+    pstr = strstr(strchr_pointer, " ");
+    //pstr = strchr_pointer;
+
+    if(pstr == NULL)
+    {
+      SERIAL_ECHOLN("invalid command");
+      return;
+    }
+    
+    *pstr = '\0';
+    
+    //check mode (currently only RAW is supported
+    if(strcmp(strchr_pointer, "RAW") != 0)
+    {
+      SERIAL_ECHOLN("Invalid transfer codec");
+      return;
+    }else{
+      SERIAL_ECHOPGM("Selected codec: ");
+      SERIAL_ECHOLN(strchr_pointer+4);
+    }
+    
+    if (!file.open(&root, pstr+1, O_CREAT | O_APPEND | O_WRITE | O_TRUNC))
+    {
+      SERIAL_ECHOPGM("open failed, File: ");
+      SERIAL_ECHOLN(pstr+1);
+      SERIAL_ECHOPGM(".");
+    }else{
+      SERIAL_ECHOPGM("Writing to file: ");
+      SERIAL_ECHOLN(pstr+1);
+    }
+        
+    SERIAL_ECHOLN("ok");
+    
+    //RAW transfer codec
+    //Host sends \0 then up to SD_FAST_XFER_CHUNK_SIZE then \0
+    //when host is done, it sends \0\0.
+    //if a non \0 character is recieved at the beginning, host has failed somehow, kill the transfer.
+    
+    //read SD_FAST_XFER_CHUNK_SIZE bytes (or until \0 is recieved)
+    while(!done)
+    {
+      while(!MYSERIAL.available())
+      {
+      }
+      if(MYSERIAL.peek() != 0)
+      {
+        //host has failed, this isn't a RAW chunk, it's an actual command
+        file.sync();
+        file.close();
+        SERIAL_ECHOLN("Not RAW data");
+        return;
+      }
+      //clear the initial 0
+      MYSERIAL.read();
+      for(int i=0;i<SD_FAST_XFER_CHUNK_SIZE+1;i++)
+      {
+        while(!MYSERIAL.available())
+        {
+        }
+        lastxferchar = MYSERIAL.read();
+        //buffer the data...
+        fastxferbuffer[i] = lastxferchar;
+        
+        xferbytes++;
+        
+        if(lastxferchar == 0)
+          break;
+      }
+      
+      if(fastxferbuffer[0] != 0)
+      {
+        fastxferbuffer[SD_FAST_XFER_CHUNK_SIZE] = 0;
+        file.write(fastxferbuffer);
+        SERIAL_ECHOLN("ok");
+      }else{
+        SERIAL_ECHOPGM("Wrote ");
+        SERIAL_ECHO(xferbytes);
+        SERIAL_ECHOLN(" bytes.");
+        done = true;
+      }
+    }
+
+    file.sync();
+    file.close();
+  }
+
 #endif //SDSUPPORT
