@@ -59,6 +59,7 @@
 #include "stepper.h"
 #include "temperature.h"
 #include "ultralcd.h"
+#include "language.h"
 
 //===========================================================================
 //=============================public variables ============================
@@ -73,6 +74,7 @@ float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT A
 float retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
 float max_xy_jerk; //speed than can be stopped at once, if i understand correctly.
 float max_z_jerk;
+float max_e_jerk;
 float mintravelfeedrate;
 unsigned long axis_steps_per_sqr_second[NUM_AXIS];
 
@@ -417,23 +419,34 @@ void check_axes_activity() {
   unsigned char y_active = 0;  
   unsigned char z_active = 0;
   unsigned char e_active = 0;
+  unsigned char fan_speed = 0;
+  unsigned char tail_fan_speed = 0;
   block_t *block;
 
   if(block_buffer_tail != block_buffer_head) {
     uint8_t block_index = block_buffer_tail;
+    tail_fan_speed = block_buffer[block_index].fan_speed;
     while(block_index != block_buffer_head) {
       block = &block_buffer[block_index];
       if(block->steps_x != 0) x_active++;
       if(block->steps_y != 0) y_active++;
       if(block->steps_z != 0) z_active++;
       if(block->steps_e != 0) e_active++;
+      if(block->fan_speed != 0) fan_speed++;
       block_index = (block_index+1) & (BLOCK_BUFFER_SIZE - 1);
     }
+  }
+  else {
+    if (FanSpeed != 0) analogWrite(FAN_PIN,FanSpeed); // If buffer is empty use current fan speed
   }
   if((DISABLE_X) && (x_active == 0)) disable_x();
   if((DISABLE_Y) && (y_active == 0)) disable_y();
   if((DISABLE_Z) && (z_active == 0)) disable_z();
   if((DISABLE_E) && (e_active == 0)) { disable_e0();disable_e1();disable_e2(); }
+  if((FanSpeed == 0) && (fan_speed ==0)) analogWrite(FAN_PIN, 0);
+  if (FanSpeed != 0 && tail_fan_speed !=0) { 
+    analogWrite(FAN_PIN,tail_fan_speed);
+  }
 }
 
 
@@ -441,12 +454,11 @@ float junction_deviation = 0.1;
 // Add a new linear movement to the buffer. steps_x, _y and _z is the absolute position in 
 // mm. Microseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
-void plan_buffer_line(float &x, float &y, float &z, float &e, float feed_rate, uint8_t &extruder)
+void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, float feed_rate, const uint8_t &extruder)
 {
   // Calculate the buffer head after we push this byte
   int next_buffer_head = next_block_index(block_buffer_head);
 
-  
   // If the buffer is full: good! That means we are well ahead of the robot. 
   // Rest here until there is room in the buffer.
   while(block_buffer_tail == next_buffer_head) { 
@@ -470,13 +482,13 @@ void plan_buffer_line(float &x, float &y, float &z, float &e, float feed_rate, u
     {
       position[E_AXIS]=target[E_AXIS]; //behave as if the move really took place, but ignore E part
       SERIAL_ECHO_START;
-      SERIAL_ECHOLNPGM(" cold extrusion prevented");
+      SERIAL_ECHOLNPGM(MSG_ERR_COLD_EXTRUDE_STOP);
     }
     if(labs(target[E_AXIS]-position[E_AXIS])>axis_steps_per_unit[E_AXIS]*EXTRUDE_MAXLENGTH)
     {
       position[E_AXIS]=target[E_AXIS]; //behave as if the move really took place, but ignore E part
       SERIAL_ECHO_START;
-      SERIAL_ECHOLNPGM(" too long extrusion prevented");
+      SERIAL_ECHOLNPGM(MSG_ERR_LONG_EXTRUDE_STOP);
     }
   #endif
   
@@ -498,6 +510,8 @@ void plan_buffer_line(float &x, float &y, float &z, float &e, float feed_rate, u
   // Bail if this is a zero-length block
   if (block->step_event_count <=dropsegments) { return; };
 
+  block->fan_speed = FanSpeed;
+  
   // Compute direction bits for this block 
   block->direction_bits = 0;
   if (target[X_AXIS] < position[X_AXIS]) { block->direction_bits |= (1<<X_AXIS); }
@@ -518,6 +532,13 @@ void plan_buffer_line(float &x, float &y, float &z, float &e, float feed_rate, u
   if(block->steps_e != 0) { enable_e0();enable_e1();enable_e2(); }
 
 
+  if (block->steps_e == 0) {
+        if(feed_rate<mintravelfeedrate) feed_rate=mintravelfeedrate;
+  }
+  else {
+    	if(feed_rate<minimumfeedrate) feed_rate=minimumfeedrate;
+  } 
+  
   // slow down when de buffer starts to empty, rather than wait at the corner for a buffer refill
   int moves_queued=(block_buffer_head-block_buffer_tail + BLOCK_BUFFER_SIZE) & (BLOCK_BUFFER_SIZE - 1);
   #ifdef SLOWDOWN
@@ -546,12 +567,6 @@ void plan_buffer_line(float &x, float &y, float &z, float &e, float feed_rate, u
   block->nominal_speed = block->millimeters * inverse_second; // (mm/sec) Always > 0
   block->nominal_rate = ceil(block->step_event_count * inverse_second); // (step/sec) Always > 0
 
-  if (block->steps_e == 0) {
-        if(feed_rate<mintravelfeedrate) feed_rate=mintravelfeedrate;
-  }
-  else {
-    	if(feed_rate<minimumfeedrate) feed_rate=minimumfeedrate;
-  } 
 
 /*
   //  segment time im micro seconds
@@ -696,7 +711,9 @@ void plan_buffer_line(float &x, float &y, float &z, float &e, float feed_rate, u
   if(abs(current_speed[Z_AXIS]) > max_z_jerk/2) 
     vmax_junction = max_z_jerk/2;
   vmax_junction = min(vmax_junction, block->nominal_speed);
-
+  if(abs(current_speed[E_AXIS]) > max_e_jerk/2) 
+    vmax_junction = min(vmax_junction, max_e_jerk/2);
+    
   if ((moves_queued > 1) && (previous_nominal_speed > 0.0)) {
     float jerk = sqrt(pow((current_speed[X_AXIS]-previous_speed[X_AXIS]), 2)+pow((current_speed[Y_AXIS]-previous_speed[Y_AXIS]), 2));
     if((previous_speed[X_AXIS] != 0.0) || (previous_speed[Y_AXIS] != 0.0)) {
@@ -707,6 +724,9 @@ void plan_buffer_line(float &x, float &y, float &z, float &e, float feed_rate, u
     } 
     if(abs(current_speed[Z_AXIS] - previous_speed[Z_AXIS]) > max_z_jerk) {
       vmax_junction *= (max_z_jerk/abs(current_speed[Z_AXIS] - previous_speed[Z_AXIS]));
+    } 
+    if(abs(current_speed[E_AXIS] - previous_speed[E_AXIS]) > max_e_jerk) {
+      vmax_junction *= (max_e_jerk/abs(current_speed[E_AXIS] - previous_speed[E_AXIS]));
     } 
   }
   block->max_entry_speed = vmax_junction;

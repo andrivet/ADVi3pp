@@ -511,7 +511,7 @@ bool code_seen(char code)
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); \
     \
     destination[LETTER##_AXIS] = 2*LETTER##_HOME_RETRACT_MM * LETTER##_HOME_DIR;\
-    feedrate = homing_feedrate[LETTER##_AXIS]/2 ;  \
+    feedrate = homing_feedrate[LETTER##_AXIS] ;  \
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); \
     \
     current_position[LETTER##_AXIS] = (LETTER##_HOME_DIR == -1) ? LETTER##_HOME_POS : LETTER##_MAX_LENGTH;\
@@ -712,29 +712,21 @@ void process_commands()
         strchr_pointer = strchr(npos,' ') + 1;
         *(starpos-1) = '\0';
       }
-      card.openFile(strchr_pointer+4,false);
+      card.openFile(strchr_pointer,false);
       break;
     case 29: //M29 - Stop SD write
       //processed in write to file routine above
       //card,saving = false;
       break;
+    case 30: //M30 - fast SD transfer
+        card.fast_xfer(strchr_pointer);
+        break;
+    case 31: //M31 - high speed xfer capabilities
+        SERIAL_ECHOPGM("RAW:");
+        SERIAL_ECHOLN(SD_FAST_XFER_CHUNK_SIZE);
+        break;
 #endif //SDSUPPORT
 
-    case 30: //M30 take time since the start of the SD print or an M109 command
-      {
-      stoptime=millis();
-      char time[30];
-      unsigned long t=(stoptime-starttime)/1000;
-      int sec,min;
-      min=t/60;
-      sec=t%60;
-      sprintf(time,"%i min, %i sec",min,sec);
-      SERIAL_ECHO_START;
-      SERIAL_ECHOLN(time);
-      LCD_MESSAGE(time);
-      autotempShutdown();
-      }
-      break;
     case 42: //M42 -Change pin status via gcode
       if (code_seen('S'))
       {
@@ -1267,6 +1259,18 @@ void get_arc_coordinates()
 
 void prepare_move()
 {
+  if (min_software_endstops) {
+    if (destination[X_AXIS] < 0) destination[X_AXIS] = 0.0;
+    if (destination[Y_AXIS] < 0) destination[Y_AXIS] = 0.0;
+    if (destination[Z_AXIS] < 0) destination[Z_AXIS] = 0.0;
+  }
+
+  if (max_software_endstops) {
+    if (destination[X_AXIS] > X_MAX_LENGTH) destination[X_AXIS] = X_MAX_LENGTH;
+    if (destination[Y_AXIS] > Y_MAX_LENGTH) destination[Y_AXIS] = Y_MAX_LENGTH;
+    if (destination[Z_AXIS] > Z_MAX_LENGTH) destination[Z_AXIS] = Z_MAX_LENGTH;
+  }
+  
   plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate*feedmultiply/60/100.0, active_extruder);
   for(int8_t i=0; i < NUM_AXIS; i++) {
     current_position[i] = destination[i];

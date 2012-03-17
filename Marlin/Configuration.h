@@ -8,7 +8,7 @@
 //User specified version info of THIS file to display in [Pronterface, etc] terminal window during startup.
 //Implementation of an idea by Prof Braino to inform user that any changes made
 //to THIS file by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H "2012-02-24-2" //Personal revision number for changes to THIS file.
+#define STRING_VERSION_CONFIG_H "2012-03-01-1" //Personal revision number for changes to THIS file.
 #define STRING_CONFIG_H_AUTHOR "eMAKER" //Who made the changes.
 
 // This determines the communication speed of the printer
@@ -19,6 +19,7 @@
 // Gen7 custom (Alfons3 Version) = 10 "https://github.com/Alfons3/Generation_7_Electronics"
 // Gen7 v1.1, v1.2 = 11
 // Gen7 v1.3 = 12
+// Gen7 v1.4 = 13
 // MEGA/RAMPS up to 1.2 = 3
 // RAMPS 1.3 = 33 (Power outputs: Extruder, Bed, Fan)
 // RAMPS 1.3 = 34 (Power outputs: Extruder0, Extruder1, Bed)
@@ -177,8 +178,9 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 #define DEFAULT_RETRACT_ACCELERATION  1500   // X, Y, Z and E max acceleration in mm/s^2 for r retracts
 
 // 
-#define DEFAULT_XYJERK                20.0    // (mm/sec)
+#define DEFAULT_XYJERK                15.0    // (mm/sec)
 #define DEFAULT_ZJERK                 0.4     // (mm/sec)
+#define DEFAULT_EJERK                 5.0    // (mm/sec)
 
 //===========================================================================
 //=============================Additional Features===========================
