@@ -154,10 +154,13 @@ FORCE_INLINE void autotempShutdown(){
  if(autotemp_enabled)
  {
   autotemp_enabled=false;
-  if(degTargetHotend(ACTIVE_EXTRUDER)>autotemp_min)
-    setTargetHotend(0,ACTIVE_EXTRUDER);
+  if(degTargetHotend(active_extruder)>autotemp_min)
+    setTargetHotend(0,active_extruder);
  }
  #endif
 }
+
+void PID_autotune(float temp);
+
 #endif
 

@@ -315,19 +315,18 @@ void MainMenu::showStatus()
   static int olddegHotEnd0=-1;
   static int oldtargetHotEnd0=-1;
   //force_lcd_update=true;
-  if(force_lcd_update||feedmultiplychanged)  //initial display of content
+  if(force_lcd_update)  //initial display of content
   {
-    feedmultiplychanged=false;
     encoderpos=feedmultiply;
     clear();
-    lcd.setCursor(0,0);lcdprintPGM("\002123/567\001 ");
+    lcd.setCursor(0,0);lcdprintPGM("\002---/---\001 ");
     #if defined BED_USES_THERMISTOR || defined BED_USES_AD595 
-      lcd.setCursor(10,0);lcdprintPGM("B123/567\001 ");
+      lcd.setCursor(10,0);lcdprintPGM("B---/---\001 ");
     #endif
   }
     
   int tHotEnd0=intround(degHotend0());
-  if((abs(tHotEnd0-olddegHotEnd0)>1)||force_lcd_update) //>1 because otherwise the lcd is refreshed to often.
+  if((tHotEnd0!=olddegHotEnd0)||force_lcd_update)
   {
     lcd.setCursor(1,0);
     lcd.print(ftostr3(tHotEnd0));
@@ -379,8 +378,15 @@ void MainMenu::showStatus()
     lcdprintPGM("Z:");lcd.print(ftostr52(current_position[2]));
     oldzpos=currentz;
   }
+  
   static int oldfeedmultiply=0;
   int curfeedmultiply=feedmultiply;
+  
+  if(feedmultiplychanged == true) {
+    feedmultiplychanged = false;
+    encoderpos = curfeedmultiply;
+  }
+  
   if(encoderpos!=curfeedmultiply||force_lcd_update)
   {
    curfeedmultiply=encoderpos;
@@ -391,12 +397,14 @@ void MainMenu::showStatus()
    feedmultiply=curfeedmultiply;
    encoderpos=curfeedmultiply;
   }
+  
   if((curfeedmultiply!=oldfeedmultiply)||force_lcd_update)
   {
    oldfeedmultiply=curfeedmultiply;
    lcd.setCursor(0,2);
    lcd.print(itostr3(curfeedmultiply));lcdprintPGM("% ");
   }
+  
   if(messagetext[0]!='\0')
   {
     lcd.setCursor(0,LCD_HEIGHT-1);
@@ -404,10 +412,9 @@ void MainMenu::showStatus()
     uint8_t n=strlen(messagetext);
     for(int8_t i=0;i<LCD_WIDTH-n;i++)
       lcd.print(" ");
-    
     messagetext[0]='\0';
   }
-  
+#ifdef SDSUPPORT
   static uint8_t oldpercent=101;
   uint8_t percent=card.percentDone();
   if(oldpercent!=percent ||force_lcd_update)
@@ -416,7 +423,7 @@ void MainMenu::showStatus()
     lcd.print(itostr3((int)percent));
     lcdprintPGM("%SD");
   }
-  
+#endif
 #else //smaller LCDS----------------------------------
   static int olddegHotEnd0=-1;
   static int oldtargetHotEnd0=-1;
@@ -471,6 +478,7 @@ enum {ItemP_exit, ItemP_autostart,ItemP_disstep,ItemP_home, ItemP_origin, ItemP_
   
 void MainMenu::showPrepare()
 {
+#ifdef ULTIPANEL
  uint8_t line=0;
  clearIfNecessary();
  for(int8_t i=lineoffset;i<lineoffset+LCD_HEIGHT;i++)
@@ -498,10 +506,18 @@ void MainMenu::showPrepare()
       MENUITEM(  lcdprintPGM(MSG_SET_ORIGIN)  ,  BLOCK;enquecommand("G92 X0 Y0 Z0");beepshort(); ) ;
       break;
     case ItemP_preheat_pla:
-      MENUITEM(  lcdprintPGM(MSG_PREHEAT_PLA)  ,  BLOCK;setTargetHotend0(PLA_PREHEAT_HOTEND_TEMP);setTargetBed(PLA_PREHEAT_HPB_TEMP);analogWrite(FAN_PIN, PLA_PREHEAT_FAN_SPEED); beepshort(); ) ;
+      MENUITEM(  lcdprintPGM(MSG_PREHEAT_PLA)  ,  BLOCK;setTargetHotend0(PLA_PREHEAT_HOTEND_TEMP);setTargetBed(PLA_PREHEAT_HPB_TEMP);
+      #if FAN_PIN > -1
+        analogWrite(FAN_PIN, PLA_PREHEAT_FAN_SPEED);
+      #endif
+      beepshort(); );
       break;
     case ItemP_preheat_abs:
-      MENUITEM(  lcdprintPGM(MSG_PREHEAT_ABS)  ,  BLOCK;setTargetHotend0(ABS_PREHEAT_HOTEND_TEMP);setTargetBed(ABS_PREHEAT_HPB_TEMP); analogWrite(FAN_PIN, ABS_PREHEAT_FAN_SPEED); beepshort(); ) ;
+      MENUITEM(  lcdprintPGM(MSG_PREHEAT_ABS)  ,  BLOCK;setTargetHotend0(ABS_PREHEAT_HOTEND_TEMP);setTargetBed(ABS_PREHEAT_HPB_TEMP); 
+      #if FAN_PIN > -1
+        analogWrite(FAN_PIN, ABS_PREHEAT_FAN_SPEED);
+      #endif
+      beepshort(); );
       break;
     case ItemP_cooldown:
       MENUITEM(  lcdprintPGM(MSG_COOLDOWN)  ,  BLOCK;setTargetHotend0(0);setTargetBed(0);beepshort(); ) ;
@@ -518,6 +534,7 @@ void MainMenu::showPrepare()
   line++;
  }
  updateActiveLines(ItemP_move,encoderpos);
+#endif
 }
 
 enum {
@@ -1965,6 +1982,7 @@ void MainMenu::showSD()
  }
 #endif
 }
+
 
 enum {ItemM_watch, ItemM_prepare, ItemM_control, ItemM_file };
 void MainMenu::showMainMenu()

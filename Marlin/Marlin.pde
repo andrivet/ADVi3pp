@@ -109,6 +109,7 @@
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).  
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 // M503 - print the current settings (from memory not from eeprom)
+// M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
 
 //Stepper Movement Variables
 
@@ -289,6 +290,7 @@ void setup()
   {
     axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
   }
+
 
   tp_init();    // Initialize temperature loop 
   plan_init();  // Initialize planner;
@@ -570,12 +572,14 @@ void process_commands()
       previous_millis_cmd = millis();
       while(millis()  < codenum ){
         manage_heater();
+        manage_inactivity(1);
       }
       break;
     case 28: //G28 Home all Axis one at a time
       saved_feedrate = feedrate;
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;
+      previous_millis_cmd = millis();
       
       enable_endstops(true);
       
@@ -914,6 +918,7 @@ void process_commands()
             codenum = millis();
           }
           manage_heater();
+          manage_inactivity(1);
           LCD_STATUS;
         #ifdef TEMP_RESIDENCY_TIME
             /* start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
@@ -950,6 +955,7 @@ void process_commands()
             codenum = millis(); 
           }
           manage_heater();
+          manage_inactivity(1);
           LCD_STATUS;
         }
         LCD_MESSAGEPGM(MSG_BED_DONE);
@@ -1209,6 +1215,13 @@ void process_commands()
       allow_cold_extrudes(true);
     }
     break;
+    case 303: // M303 PID autotune
+    {
+      float temp = 150.0;
+      if (code_seen('S')) temp=code_value();
+      PID_autotune(temp);
+    }
+    break;
     case 400: // finish all moves
     {
       st_synchronize();
@@ -1317,12 +1330,11 @@ void prepare_move()
     if (destination[Y_AXIS] > Y_MAX_LENGTH) destination[Y_AXIS] = Y_MAX_LENGTH;
     if (destination[Z_AXIS] > Z_MAX_LENGTH) destination[Z_AXIS] = Z_MAX_LENGTH;
   }
-  
+  previous_millis_cmd = millis();  
   plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate*feedmultiply/60/100.0, active_extruder);
   for(int8_t i=0; i < NUM_AXIS; i++) {
     current_position[i] = destination[i];
   }
-  previous_millis_cmd = millis();
 }
 
 void prepare_arc_move(char isclockwise) {
@@ -1340,6 +1352,40 @@ void prepare_arc_move(char isclockwise) {
   previous_millis_cmd = millis();
 }
 
+#ifdef CONTROLLERFAN_PIN
+unsigned long lastMotor = 0; //Save the time for when a motor was turned on last
+unsigned long lastMotorCheck = 0;
+
+void controllerFan()
+{
+  if ((millis() - lastMotorCheck) >= 2500) //Not a time critical function, so we only check every 2500ms
+  {
+    lastMotorCheck = millis();
+    
+    if(!READ(X_ENABLE_PIN) || !READ(Y_ENABLE_PIN) || !READ(Z_ENABLE_PIN)
+    #if EXTRUDERS > 2
+       || !READ(E2_ENABLE_PIN)
+    #endif
+    #if EXTRUDER > 1
+       || !READ(E2_ENABLE_PIN)
+    #endif
+       || !READ(E0_ENABLE_PIN)) //If any of the drivers are enabled...    
+    {
+      lastMotor = millis(); //... set time to NOW so the fan will turn on
+    }
+    
+    if ((millis() - lastMotor) >= (CONTROLLERFAN_SEC*1000UL) || lastMotor == 0) //If the last time any driver was enabled, is longer since than CONTROLLERSEC...   
+    {
+      WRITE(CONTROLLERFAN_PIN, LOW); //... turn the fan off
+    }
+    else
+    {
+      WRITE(CONTROLLERFAN_PIN, HIGH); //... turn the fan on
+    }
+  }
+}
+#endif
+
 void manage_inactivity(byte debug) 
 { 
   if( (millis() - previous_millis_cmd) >  max_inactive_time ) 
@@ -1348,14 +1394,19 @@ void manage_inactivity(byte debug)
   if(stepper_inactive_time)  {
     if( (millis() - previous_millis_cmd) >  stepper_inactive_time ) 
     {
-      disable_x();
-      disable_y();
-      disable_z();
-      disable_e0();
-      disable_e1();
-      disable_e2();
+      if(blocks_queued() == false) {
+        disable_x();
+        disable_y();
+        disable_z();
+        disable_e0();
+        disable_e1();
+        disable_e2();
+      }
     }
   }
+  #ifdef CONTROLLERFAN_PIN
+    controllerFan(); //Check if fan should be turned on to cool stepper drivers down
+  #endif
   #ifdef EXTRUDER_RUNOUT_PREVENT
     if( (millis() - previous_millis_cmd) >  EXTRUDER_RUNOUT_SECONDS*1000 ) 
     if(degHotend(active_extruder)>EXTRUDER_RUNOUT_MINTEMP)
