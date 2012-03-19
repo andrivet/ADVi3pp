@@ -225,6 +225,9 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
   #endif
 #endif
 
+// Enable uM-FPU support:
+#define UMFPUSUPPORT 1
+
 // M240  Triggers a camera by emulating a Canon RC-1 Remote
 // Data from: http://www.doc-diy.net/photo/rc-1_hacked/
 // #define PHOTOGRAPH_PIN     23

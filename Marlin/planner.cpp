@@ -60,6 +60,7 @@
 #include "temperature.h"
 #include "ultralcd.h"
 #include "language.h"
+#include "led.h"
 
 //===========================================================================
 //=============================public variables ============================
@@ -469,6 +470,7 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
     manage_heater(); 
     manage_inactivity(1); 
     LCD_STATUS;
+    LED_STATUS;
   }
   
   // The target position of the tool in absolute steps

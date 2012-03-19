@@ -4,6 +4,7 @@
 #include "Marlin.h"
 #include "planner.h"
 #include "temperature.h"
+#include "FPUTransform.h"
 //#include <EEPROM.h>
 
 
@@ -66,6 +67,9 @@ inline void EEPROM_StoreSettings()
     EEPROM_writeAnything(i,3000);
     EEPROM_writeAnything(i,0);
     EEPROM_writeAnything(i,0);
+  #endif
+  #if defined(UMFPUSUPPORT) && (UMFPUSUPPORT > -1) 
+  EEPROM_writeAnything(i,FPUEnabled);
   #endif
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
@@ -130,6 +134,10 @@ inline void EEPROM_printSettings()
       SERIAL_ECHOPAIR(" W" ,Ki_Max);
       SERIAL_ECHOLN(""); 
     #endif
+      #if defined(UMFPUSUPPORT) && (UMFPUSUPPORT > -1) 
+      SERIAL_ECHOPAIR(" FPU Enabled" , FPUEnabled?" yes":" no");
+      SERIAL_ECHOLN(""); 
+    #endif
   #endif
 } 
 
@@ -163,6 +171,9 @@ inline void EEPROM_RetrieveSettings(bool def=false)
       EEPROM_readAnything(i,Ki);
       EEPROM_readAnything(i,Kd);
       EEPROM_readAnything(i,Ki_Max);
+	  #if defined(UMFPUSUPPORT) && (UMFPUSUPPORT > -1) 
+	  EEPROM_readAnything(i,FPUEnabled);
+	  #endif
 
       SERIAL_ECHO_START;
       SERIAL_ECHOLNPGM("Stored settings retreived:");

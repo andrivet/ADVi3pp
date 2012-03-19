@@ -585,9 +585,10 @@
 #define E0_STEP_PIN         1
 #define E0_DIR_PIN          0
 
-#define LED_PIN            -1
+#define PROBE_PIN          29    //A2
 
-#define FAN_PIN            27
+#define LED_PIN            27
+#define FAN_PIN            4
 
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
@@ -598,7 +599,7 @@
 
 #ifdef SANGUINOLOLU_V_1_2
 
-#define HEATER_BED_PIN     10 // (bed) - 10 for spare DIO pin and bed MOSFET, 12 for SL MOSFET
+#define HEATER_BED_PIN     12 // (bed) - 10 for spare DIO pin and bed MOSFET, 12 for SL MOSFET
 #define X_ENABLE_PIN       14
 #define Y_ENABLE_PIN       14
 #define Z_ENABLE_PIN       26

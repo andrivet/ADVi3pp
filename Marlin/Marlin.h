@@ -26,7 +26,7 @@
 #include "pins.h"
 
 #if ARDUINO >= 100 
-  #if defined(__AVR_ATmega644P__)
+  #if defined(__AVR_ATmega644P__) || defined (__AVR_ATmega1284P__)
     #include "WProgram.h"
   #else
     #include "Arduino.h"
@@ -98,6 +98,13 @@ FORCE_INLINE void serialprintPGM(const char *str)
   }
 }
 
+// printing floats to 3DP
+FORCE_INLINE void serialPrintFloat( float f){
+  SERIAL_ECHO((int)f);
+  SERIAL_ECHOPGM(".");
+  int mantissa = (f - (int)f) * 1000;
+  SERIAL_ECHO( abs(mantissa) );
+}
 
 void get_command();
 void process_commands();
@@ -176,6 +183,12 @@ extern bool axis_relative_modes[];
 extern float current_position[NUM_AXIS] ;
 extern float add_homeing[3];
 extern unsigned char FanSpeed;
+
+extern float destination[NUM_AXIS];
+extern float modified_destination[NUM_AXIS];
+extern float offset[3];
+extern float feedrate, next_feedrate, saved_feedrate;
+
 
 // Handling multiple extruders pins
 extern uint8_t active_extruder;

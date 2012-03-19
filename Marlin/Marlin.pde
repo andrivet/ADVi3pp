@@ -28,6 +28,9 @@
 #include "Marlin.h"
 
 #include "ultralcd.h"
+#include "led.h"
+#include "z_probe.h"
+#include "FPUTransform.h"
 #include "planner.h"
 #include "stepper.h"
 #include "temperature.h"
@@ -50,6 +53,10 @@
 // G3  - CCW ARC
 // G4  - Dwell S<seconds> or P<milliseconds>
 // G28 - Home all Axis
+// G29 - Detailed Z-Probe (3 location test)
+// G30 - Single Z Probe (probe current location)
+// G31 - Report Curent Probe status
+// G32 - Probe Z and calibrate with FPU
 // G90 - Use Absolute Coordinates
 // G91 - Use Relative Coordinates
 // G92 - Set current position to cordinates given
@@ -75,8 +82,10 @@
 // M27  - Report SD print status
 // M28  - Start SD write (M28 filename.g)
 // M29  - Stop SD write
-// M30  - Delete file from SD (M30 filename.g)
-// M31  - Output time since last M109 or SD card start to serial
+// M30  - Fast SD transfer
+// M31  - high speed xfer capabilities 
+// M35  - Output time since last M109 or SD card start to serial
+
 // M42  - Change pin status via gcode
 // M80  - Turn on Power Supply
 // M81  - Turn off Power Supply
@@ -110,6 +119,9 @@
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 // M503 - print the current settings (from memory not from eeprom)
 // M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
+// M510 - FPU Enable
+// M511 - FPU Reset
+// M512 - FPU Disable
 
 //Stepper Movement Variables
 
@@ -136,14 +148,18 @@ float add_homeing[3]={0,0,0};
 uint8_t active_extruder = 0;
 unsigned char FanSpeed=0;
 
+float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
+float offset[3] = {0.0, 0.0, 0.0};
+float feedrate = 1500.0, next_feedrate, saved_feedrate;
+
+// used by FPU transform code
+float modified_destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
+
 //===========================================================================
 //=============================private variables=============================
 //===========================================================================
 const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
-static float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
-static float offset[3] = {0.0, 0.0, 0.0};
 static bool home_all_axis = true;
-static float feedrate = 1500.0, next_feedrate, saved_feedrate;
 static long gcode_N, gcode_LastN;
 
 static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
@@ -296,6 +312,11 @@ void setup()
   plan_init();  // Initialize planner;
   st_init();    // Initialize stepper;
   wd_init();
+  #if (LED_PIN > -1)
+    led_init();
+  #endif
+  probe_init(); //Initializes probe if PROBE_PIN is defined
+  FPUTransform_init(); //Initializes FPU when UMFPUSUPPORT defined
   setup_photpin();
 }
 
@@ -338,6 +359,7 @@ void loop()
   manage_inactivity(1);
   checkHitEndstops();
   LCD_STATUS;
+  LED_STATUS;
 }
 
 void get_command() 
@@ -655,6 +677,18 @@ void process_commands()
       previous_millis_cmd = millis();
       endstops_hit_on_purpose();
       break;
+    case 29:
+        probe_3points();
+        break;
+    case 30:
+        probe_1point();
+        break;
+    case 31:
+        probe_status();
+        break;
+    case 32:
+    	FPUTransform_determineBedOrientation();
+    	break;
     case 90: // G90
       relative_mode = false;
       break;
@@ -766,7 +800,7 @@ void process_commands()
         break;
 #endif //SDSUPPORT
 
-    case 31: //M31 take time since the start of the SD print or an M109 command
+    case 35: //M35 take time since the start of the SD print or an M109 command
       {
       stoptime=millis();
       char time[30];
@@ -920,6 +954,7 @@ void process_commands()
           manage_heater();
           manage_inactivity(1);
           LCD_STATUS;
+          LED_STATUS;
         #ifdef TEMP_RESIDENCY_TIME
             /* start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
               or when current temp falls outside the hysteresis after target temp was reached */
@@ -1247,6 +1282,28 @@ void process_commands()
       EEPROM_printSettings();
     }
     break;
+    case 504: // print free memory
+    {
+      SERIAL_ECHO_START;
+      SERIAL_ECHOPGM("Free Memory:");
+      SERIAL_ECHO(freeMemory());
+    }
+    break;
+    case 510: // FPU Enable
+    {
+      FPUEnable();
+    }
+    break;
+    case 511: // FPU Reset
+    {
+      FPUReset();
+    }
+    break;
+    case 512: // FPU Disable
+    {
+      FPUDisable();
+    }
+    break;
 
     }
   }
@@ -1319,19 +1376,24 @@ void get_arc_coordinates()
 
 void prepare_move()
 {
+
+// transform destination *********************************************
+
+  FPUTransform_transformDestination();
+  
   if (min_software_endstops) {
-    if (destination[X_AXIS] < X_HOME_POS) destination[X_AXIS] = X_HOME_POS;
-    if (destination[Y_AXIS] < Y_HOME_POS) destination[Y_AXIS] = Y_HOME_POS;
-    if (destination[Z_AXIS] < Z_HOME_POS) destination[Z_AXIS] = Z_HOME_POS;
+    if (modified_destination[X_AXIS] < X_HOME_POS) modified_destination[X_AXIS] = X_HOME_POS;
+    if (modified_destination[Y_AXIS] < Y_HOME_POS) modified_destination[Y_AXIS] = Y_HOME_POS;
+    if (modified_destination[Z_AXIS] < Z_HOME_POS) modified_destination[Z_AXIS] = Z_HOME_POS;
   }
 
   if (max_software_endstops) {
-    if (destination[X_AXIS] > X_MAX_LENGTH) destination[X_AXIS] = X_MAX_LENGTH;
-    if (destination[Y_AXIS] > Y_MAX_LENGTH) destination[Y_AXIS] = Y_MAX_LENGTH;
-    if (destination[Z_AXIS] > Z_MAX_LENGTH) destination[Z_AXIS] = Z_MAX_LENGTH;
+    if (modified_destination[X_AXIS] > X_MAX_LENGTH) modified_destination[X_AXIS] = X_MAX_LENGTH;
+    if (modified_destination[Y_AXIS] > Y_MAX_LENGTH) modified_destination[Y_AXIS] = Y_MAX_LENGTH;
+    if (modified_destination[Z_AXIS] > Z_MAX_LENGTH) modified_destination[Z_AXIS] = Z_MAX_LENGTH;
   }
   previous_millis_cmd = millis();  
-  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate*feedmultiply/60/100.0, active_extruder);
+  plan_buffer_line(modified_destination[X_AXIS], modified_destination[Y_AXIS], modified_destination[Z_AXIS], destination[E_AXIS], feedrate*feedmultiply/60/100.0, active_extruder);
   for(int8_t i=0; i < NUM_AXIS; i++) {
     current_position[i] = destination[i];
   }
@@ -1340,8 +1402,11 @@ void prepare_move()
 void prepare_arc_move(char isclockwise) {
   float r = hypot(offset[X_AXIS], offset[Y_AXIS]); // Compute arc radius for mc_arc
 
+// transform destination *********************************************
+  FPUTransform_transformDestination();
+  
   // Trace the arc
-  mc_arc(current_position, destination, offset, X_AXIS, Y_AXIS, Z_AXIS, feedrate*feedmultiply/60/100.0, r, isclockwise, active_extruder);
+  mc_arc(current_position, modified_destination, offset, X_AXIS, Y_AXIS, Z_AXIS, feedrate*feedmultiply/60/100.0, r, isclockwise, active_extruder);
   
   // As far as the parser is concerned, the position is now == target. In reality the
   // motion control system might still be processing the action and the real tool position
