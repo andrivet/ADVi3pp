@@ -648,23 +648,26 @@ void process_commands()
         HOMEAXIS(Z);
       }
       
-      if(code_seen(axis_codes[X_AXIS])) 
+      if((home_all_axis) || code_seen(axis_codes[X_AXIS])) 
       {
         if(code_value_long() != 0) {
-          current_position[X_AXIS]=code_value()+add_homeing[0];
+          current_position[X_AXIS]=code_value();
         }
+        current_position[X_AXIS]+=add_homeing[0];
       }
 
-      if(code_seen(axis_codes[Y_AXIS])) {
+      if((home_all_axis) || code_seen(axis_codes[Y_AXIS])) {
         if(code_value_long() != 0) {
-          current_position[Y_AXIS]=code_value()+add_homeing[1];
+          current_position[Y_AXIS]=code_value();
         }
+        current_position[Y_AXIS]+=add_homeing[1];
       }
 
-      if(code_seen(axis_codes[Z_AXIS])) {
+      if((home_all_axis) || code_seen(axis_codes[Z_AXIS])) {
         if(code_value_long() != 0) {
-          current_position[Z_AXIS]=code_value()+add_homeing[2];
+          current_position[Z_AXIS]=code_value();
         }
+        current_position[Z_AXIS]+=add_homeing[2];
       }
       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
       
