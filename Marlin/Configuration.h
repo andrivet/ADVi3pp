@@ -8,7 +8,7 @@
 //User specified version info of THIS file to display in [Pronterface, etc] terminal window during startup.
 //Implementation of an idea by Prof Braino to inform user that any changes made
 //to THIS file by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H "2012-03-01-1" //Personal revision number for changes to THIS file.
+#define STRING_VERSION_CONFIG_H "2012-03-22-1" //Personal revision number for changes to THIS file.
 #define STRING_CONFIG_H_AUTHOR "eMAKER" //Who made the changes.
 
 // This determines the communication speed of the printer
@@ -49,10 +49,10 @@
 // 100 is 100k GE Sensing AL03006-58.2K-97-G1
 // 101 is 100k 0603 SMD Vishay NTCS0603E3104FXT
 
-#define TEMP_SENSOR_0 100
+#define TEMP_SENSOR_0 102
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
-#define TEMP_SENSOR_BED 101
+#define TEMP_SENSOR_BED 103
 
 // Actual temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
