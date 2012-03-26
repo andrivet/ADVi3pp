@@ -8,14 +8,15 @@ float MasterTransform[4][4]; // this is the transform that describes how to move
 							 // ideal coordinates to real world coords
 
 // private functions
-void loadMatrix(float X1, float Y1, float Z1, float Y2, float Z2, float X3, float Z3);
+void loadMatrix(float X1, float Y1, float Z1, float Y2, float Z2, float X3, float Z3, float Z4);
 void transformDestination(float &X, float &Y, float &Z);
 
 bool FPUEnabled; // this is a bypass switch so that with one command the FPU can be
 				 // turned off
 
-void loadMatrix(float X1, float Y1, float Z1, float Y2, float Z2, float X3, float Z3)
+void loadMatrix(float X1, float Y1, float Z1, float Y2, float Z2, float X3, float Z3, float Z4)
 {
+//add calculated 4th point
 float Xdiff = X3 - X1;
 	serialPrintFloat(Xdiff);
 	SERIAL_ECHOLN("");
@@ -23,7 +24,7 @@ float Ydiff = Y2 - Y1;
 	serialPrintFloat(Ydiff);
 	SERIAL_ECHOLN("");
 //clockwise
-float ZdiffX = Z3 - Z1;
+float ZdiffX = Z4 - Z3;
 	serialPrintFloat(ZdiffX);
 	SERIAL_ECHOLN("");
 //anti clockwise
@@ -168,19 +169,23 @@ void FPUDisable()
 
 void FPUTransform_determineBedOrientation()
 {
+int X1 = 10;
+int Y1 = 10;
 float Z1;  
-float Y2 = Y_MAX_LENGTH - 15;  
+float Y2 = Y_MAX_LENGTH - 5;  
 float Z2; 
-float X3 = X_MAX_LENGTH - 15; 
+float X3 = X_MAX_LENGTH - 20; 
 float Z3;
+float Z4;
 
 //get Z for X15 Y15, X15 Y(Y_MAX_LENGTH - 15) and X(X_MAX_LENGTH - 15) Y15
-Z1 = Probe_Bed(15,15);
-Z2 = Probe_Bed(15,Y2);
-Z3 = Probe_Bed(X3,15);
+Z3 = Probe_Bed(10,10,PROBE_N);
+Z4 = Probe_Bed(X3,10,PROBE_N);
+Z1 = (Z3 + Z4) / 2;
+Z2 = Probe_Bed(X3/2,Y2,PROBE_N);
 if(FPUEnabled)
 	{
-	loadMatrix(15, 15, Z1, Y2, Z2, X3, Z3);
+	loadMatrix(X1, Y1, Z1, Y2, Z2, X3, Z3, Z4);
 	}
 }
 

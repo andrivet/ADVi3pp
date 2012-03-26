@@ -179,7 +179,10 @@ void prepare_arc_move(char isclockwise);
 #endif //CRITICAL_SECTION_START
 
 extern float homing_feedrate[];
+extern float fast_home_feedrate[];
 extern bool axis_relative_modes[];
+extern volatile int feedmultiply;
+extern int saved_feedmultiply;
 extern float current_position[NUM_AXIS] ;
 extern float add_homeing[3];
 extern unsigned char FanSpeed;

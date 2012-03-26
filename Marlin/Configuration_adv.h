@@ -75,6 +75,7 @@
 #define EXTRUDERS 1
 
 #define Z_INCREMENT .0040   //Probe Movement Increment - 1 Full step on Huxley = 1/250
+#define PROBE_N 3
 
 #define ENDSTOPS_ONLY_FOR_HOMING // If defined the endstops will only be used for homing
 

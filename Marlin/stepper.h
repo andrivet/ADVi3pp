@@ -66,6 +66,9 @@ void checkStepperErrors(); //Print errors detected by the stepper
 void finishAndDisableSteppers();
 
 extern block_t *current_block;  // A pointer to the block currently being traced
+extern volatile long endstops_trigsteps[];
+extern volatile bool endstop_z_hit;
+extern bool old_z_min_endstop;
 
 void quickStop();
 #endif

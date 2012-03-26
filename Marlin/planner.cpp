@@ -552,10 +552,10 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
   #endif
 
   float delta_mm[4];
-  delta_mm[X_AXIS] = block->steps_x/axis_steps_per_unit[X_AXIS];
-  delta_mm[Y_AXIS] = block->steps_y/axis_steps_per_unit[Y_AXIS];
-  delta_mm[Z_AXIS] = block->steps_z/axis_steps_per_unit[Z_AXIS];
-  delta_mm[E_AXIS] = block->steps_e/axis_steps_per_unit[E_AXIS];
+  delta_mm[X_AXIS] = (target[X_AXIS]-position[X_AXIS])/axis_steps_per_unit[X_AXIS];
+  delta_mm[Y_AXIS] = (target[Y_AXIS]-position[Y_AXIS])/axis_steps_per_unit[Y_AXIS];
+  delta_mm[Z_AXIS] = (target[Z_AXIS]-position[Z_AXIS])/axis_steps_per_unit[Z_AXIS];
+  delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS])*extrudemultiply/100.0;
 //  if ( block->steps_x == 0 && block->steps_y == 0 && block->steps_z == 0 ) {
 //    block->millimeters = abs(delta_mm[E_AXIS]);
 //  } else {
