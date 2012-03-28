@@ -9,7 +9,9 @@
 float Probe_Bed(float x_pos, float y_pos, int n)
 {
     //returns Probed Z average height
-    float ProbeDepth[n], ProbeDepthAvg;
+    float ProbeDepth[n];
+    float ProbeDepthAvg=0;
+    
     if (Z_HOME_DIR==-1)
     {
       //int probe_flag =1;
@@ -18,29 +20,25 @@ float Probe_Bed(float x_pos, float y_pos, int n)
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;
       //previous_millis_cmd = millis();
-      
-      enable_endstops(true);
-        
-         //Move to Probe Coordinates, Use current Position if none given - ie. for G30
-        if (x_pos < 0)
-            destination[X_AXIS] = current_position[X_AXIS];
-        else
-            destination[X_AXIS] = x_pos;
-        if (y_pos < 0)
-            destination[Y_AXIS] = current_position[Y_AXIS];
-        else
-            destination[Y_AXIS] = y_pos;
+      if (x_pos >= 0) destination[X_AXIS]=x_pos;
+      if (y_pos >= 0) destination[Y_AXIS]=y_pos;
+      destination[Z_AXIS]=current_position[Z_AXIS];
+      feedrate = 9000;
+      prepare_move();
+
+	  enable_endstops(true);
+      SERIAL_ECHO("PRE-PROBE current_position[Z_AXIS]=");SERIAL_ECHOLN(current_position[Z_AXIS]);
+
+	  SERIAL_ECHOLN("Ready to probe...");
 
         //Probe bed n times
         //*******************************************************************************************Bed Loop*************************************
         for(int8_t i=0; i < n ; i++)
         {
             //int z = 0;
-            
-		  if ((Z_MIN_PIN > -1 && Z_HOME_DIR==-1) || (Z_MAX_PIN > -1 && Z_HOME_DIR==1))
-			{ 
+
 			//current_position[Z_AXIS] = 0; 
-			//plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
+			plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
 			destination[Z_AXIS] = 1.1 * Z_MAX_LENGTH * Z_HOME_DIR; 
 			feedrate = fast_home_feedrate[Z_AXIS]; 
 			plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
@@ -52,6 +50,7 @@ float Probe_Bed(float x_pos, float y_pos, int n)
 			plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
 			st_synchronize();
 		
+			plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 			destination[Z_AXIS] = current_position[Z_AXIS] + 2*Z_HOME_RETRACT_MM * Z_HOME_DIR;
 			feedrate = homing_feedrate[Z_AXIS];  
 			plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
@@ -60,34 +59,38 @@ float Probe_Bed(float x_pos, float y_pos, int n)
 			//current_position[Z_AXIS] = (Z_HOME_DIR == -1) ? Z_HOME_POS : Z_MAX_LENGTH;
 			//destination[Z_AXIS] = current_position[Z_AXIS];
 			feedrate = 0.0;
-			endstops_hit_on_purpose();
-		  }
+			//endstops_hit_on_purpose();
             
+            SERIAL_ECHO("current_position[Z_AXIS]=");SERIAL_ECHOLN(current_position[Z_AXIS]);
             if(endstop_z_hit == true)
             {
 	            ProbeDepth[i]= endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS];
 	            SERIAL_ECHO("ProbeDepth[");SERIAL_ECHO(i);SERIAL_ECHO("]=");SERIAL_ECHOLN(ProbeDepth[i]);
+            	//*************************************************************************************************************
+		        if (i > 0 ) //Second probe has happened so compare results
+		        {
+		            if (abs(ProbeDepth[i] - ProbeDepth[i - 1]) > .05)
+		            { //keep going until readings match to avoid sticky bed
+		              SERIAL_ECHO("Probing again: ");
+		              SERIAL_ECHO(ProbeDepth[i]); SERIAL_ECHO(" - "); SERIAL_ECHO(ProbeDepth[i - 1]);SERIAL_ECHO(" = "); SERIAL_ECHOLN(abs(ProbeDepth[i] - ProbeDepth[i - 1]));
+		              i--; i--; //Throw out both that don't match because we don't know which one is accurate
+		              if(fails++ > 4) break;
+		            }
+		        }
+	        }else{
+	        	SERIAL_ECHOLN("Probe not triggered.");
+	        	i=n-1;
 	        }
-            //*************************************************************************************************************
-            if (i > 0 ) //Second probe has happened so compare results
-            {
-                if (abs(ProbeDepth[i] - ProbeDepth[i - 1]) > .05)
-                { //keep going until readings match to avoid sticky bed
-                  SERIAL_ECHO("Probing again: ");
-                  SERIAL_ECHO(ProbeDepth[i]); SERIAL_ECHO(" - "); SERIAL_ECHO(ProbeDepth[i - 1]);SERIAL_ECHO(" = "); SERIAL_ECHOLN(abs(ProbeDepth[i] - ProbeDepth[i - 1]));
-                  i--; i--; //Throw out both that don't match because we don't know which one is accurate
-                  if(fails++ > 9) break;
-                }
-            }
             //**************************************************************************************************************************************************
             //fast move clear
             //z = 0;
 		    //current_position[Z_AXIS] = 0;
 		    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-		    destination[Z_AXIS] = -Z_HOME_RETRACT_MM * Z_HOME_DIR;
+		    destination[Z_AXIS] = current_position[Z_AXIS]-Z_HOME_RETRACT_MM * Z_HOME_DIR;
 		    feedrate = fast_home_feedrate[Z_AXIS];
 		    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
 		    st_synchronize();
+		    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
             //check z stop isn't still triggered
             if ( READ(X_MIN_PIN) != X_ENDSTOPS_INVERTING )
@@ -96,7 +99,7 @@ float Probe_Bed(float x_pos, float y_pos, int n)
                 destination[Z_AXIS] = -1; prepare_move();
                 destination[Z_AXIS] = Z_HOME_RETRACT_MM; prepare_move();
 			    st_synchronize();
-                i--; //Throw out this meaningless probe
+                i--; //Throw out this meaningless measurement
             }
             feedrate = 0;
         } //end probe loop
@@ -114,7 +117,11 @@ float Probe_Bed(float x_pos, float y_pos, int n)
     	ProbeDepthAvg += ProbeDepth[i];
     }
     ProbeDepthAvg /= n;
-    SERIAL_ECHO("Z="); SERIAL_ECHOLN(ProbeDepthAvg);
+    SERIAL_ECHO("Probed Z="); SERIAL_ECHOLN(ProbeDepthAvg);
+    SERIAL_ECHO("RAW current_position[Z_AXIS]=");SERIAL_ECHOLN(current_position[Z_AXIS]);
+//    current_position[Z_AXIS]+=ProbeDepthAvg;
+//    SERIAL_ECHO("ADJUSTED current_position[Z_AXIS]=");SERIAL_ECHOLN(current_position[Z_AXIS]);
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
     return ProbeDepthAvg;
  }
@@ -220,13 +227,13 @@ G1 Z5 F200	;Lift Z out of way
 void probe_3points()
 {
     float Probe_Avg, Point1, Point2, Point3;
-    Point1 = Probe_Bed(10, 10,PROBE_N);
-    Point2 = Probe_Bed(X_MAX_LENGTH - 20, 10,PROBE_N) ;
-    Point3 = Probe_Bed(X_MAX_LENGTH/2, Y_MAX_LENGTH - 5,PROBE_N);
+    Point1 = Probe_Bed(15,15,PROBE_N);
+    Point2 = Probe_Bed(X_MAX_LENGTH - 20,15,PROBE_N) ;
+    Point3 = Probe_Bed(X_MAX_LENGTH/2,Y_MAX_LENGTH - 5,PROBE_N);
     Probe_Avg = (Point1 + Point2 + Point3) / 3;
-    destination[2] = Probe_Avg;
-    feedrate = homing_feedrate[Z_AXIS];
-    prepare_move();
+    //destination[2] = Probe_Avg;
+    //feedrate = homing_feedrate[Z_AXIS];
+    //prepare_move();
     SERIAL_ECHOLN("**************************************");       
     SERIAL_ECHO("Point1 ="); SERIAL_ECHOLN(Point1);
     SERIAL_ECHO("Point2 ="); SERIAL_ECHOLN(Point2);
@@ -239,9 +246,9 @@ void probe_1point()
 {
     float  Point;
     Point = Probe_Bed(-1,-1,PROBE_N);
-    destination[2] = Point +1;
-    feedrate = homing_feedrate[Z_AXIS];
-    prepare_move();
+    //destination[2] = Point +1;
+    //feedrate = homing_feedrate[Z_AXIS];
+    //prepare_move();
     SERIAL_ECHOLN("**************************************");       
     SERIAL_ECHO("Probed Z="); SERIAL_ECHOLN(Point);
 }
