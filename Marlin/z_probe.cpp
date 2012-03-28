@@ -15,14 +15,18 @@ float Probe_Bed(float x_pos, float y_pos, int n)
     if (Z_HOME_DIR==-1)
     {
       //int probe_flag =1;
+      float start_z = current_position[Z_AXIS];
       int fails = 0;
       saved_feedrate = feedrate;
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;
       //previous_millis_cmd = millis();
+      
+      //Move to probe position
       if (x_pos >= 0) destination[X_AXIS]=x_pos;
       if (y_pos >= 0) destination[Y_AXIS]=y_pos;
-      destination[Z_AXIS]=current_position[Z_AXIS];
+      //destination[Z_AXIS]=current_position[Z_AXIS];
+      destination[Z_AXIS]=Z_HOME_RETRACT_MM;
       feedrate = 9000;
       prepare_move();
 
@@ -37,24 +41,25 @@ float Probe_Bed(float x_pos, float y_pos, int n)
         {
             //int z = 0;
 
-			//current_position[Z_AXIS] = 0; 
-			plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
+			//fast probe 
+			//plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
 			destination[Z_AXIS] = 1.1 * Z_MAX_LENGTH * Z_HOME_DIR; 
-			feedrate = fast_home_feedrate[Z_AXIS]; 
+			feedrate = homing_feedrate[Z_AXIS]; 
 			plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
 			st_synchronize();
 		
-			//current_position[Z_AXIS] = 0;
-			plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-			destination[Z_AXIS] = current_position[Z_AXIS] - Z_HOME_RETRACT_MM * Z_HOME_DIR;
-			plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
-			st_synchronize();
+			//back off
+			//plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+			//destination[Z_AXIS] = Z_HOME_RETRACT_MM * Z_HOME_DIR;
+			//plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
+			//st_synchronize();
 		
-			plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-			destination[Z_AXIS] = current_position[Z_AXIS] + 2*Z_HOME_RETRACT_MM * Z_HOME_DIR;
-			feedrate = homing_feedrate[Z_AXIS];  
-			plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
-			st_synchronize();
+			//slow probe
+			//plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+			//destination[Z_AXIS] = 2*Z_HOME_RETRACT_MM * Z_HOME_DIR;
+			//feedrate = homing_feedrate[Z_AXIS];
+			//plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); 
+			//st_synchronize();
 		
 			//current_position[Z_AXIS] = (Z_HOME_DIR == -1) ? Z_HOME_POS : Z_MAX_LENGTH;
 			//destination[Z_AXIS] = current_position[Z_AXIS];
@@ -64,6 +69,7 @@ float Probe_Bed(float x_pos, float y_pos, int n)
             SERIAL_ECHO("current_position[Z_AXIS]=");SERIAL_ECHOLN(current_position[Z_AXIS]);
             if(endstop_z_hit == true)
             {
+	            SERIAL_ECHO("endstops_trigsteps[Z_AXIS]=");SERIAL_ECHOLN(endstops_trigsteps[Z_AXIS]);
 	            ProbeDepth[i]= endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS];
 	            SERIAL_ECHO("ProbeDepth[");SERIAL_ECHO(i);SERIAL_ECHO("]=");SERIAL_ECHOLN(ProbeDepth[i]);
             	//*************************************************************************************************************
@@ -85,12 +91,12 @@ float Probe_Bed(float x_pos, float y_pos, int n)
             //fast move clear
             //z = 0;
 		    //current_position[Z_AXIS] = 0;
-		    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-		    destination[Z_AXIS] = current_position[Z_AXIS]-Z_HOME_RETRACT_MM * Z_HOME_DIR;
+		    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], ProbeDepth[i], current_position[E_AXIS]);
+		    destination[Z_AXIS] = Z_HOME_RETRACT_MM;//start_z;
 		    feedrate = fast_home_feedrate[Z_AXIS];
 		    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
 		    st_synchronize();
-		    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+		    //plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
             //check z stop isn't still triggered
             if ( READ(X_MIN_PIN) != X_ENDSTOPS_INVERTING )
@@ -121,7 +127,7 @@ float Probe_Bed(float x_pos, float y_pos, int n)
     SERIAL_ECHO("RAW current_position[Z_AXIS]=");SERIAL_ECHOLN(current_position[Z_AXIS]);
 //    current_position[Z_AXIS]+=ProbeDepthAvg;
 //    SERIAL_ECHO("ADJUSTED current_position[Z_AXIS]=");SERIAL_ECHOLN(current_position[Z_AXIS]);
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], Z_HOME_RETRACT_MM, current_position[E_AXIS]);
 
     return ProbeDepthAvg;
  }
