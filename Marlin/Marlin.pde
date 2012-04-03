@@ -1429,7 +1429,7 @@ void controllerFan()
   if ((millis() - lastMotorCheck) >= 2500) //Not a time critical function, so we only check every 2500ms
   {
     lastMotorCheck = millis();
-    
+    #if (X_ENABLE_PIN > -1 && Y_ENABLE_PIN > -1 && Z_ENABLE_PIN > -1 && E0_ENABLE_PIN > -1)
     if(!READ(X_ENABLE_PIN) || !READ(Y_ENABLE_PIN) || !READ(Z_ENABLE_PIN)
     #if EXTRUDERS > 2
        || !READ(E2_ENABLE_PIN)
@@ -1441,6 +1441,9 @@ void controllerFan()
     {
       lastMotor = millis(); //... set time to NOW so the fan will turn on
     }
+    #else
+      lastMotor = millis();
+    #endif
     
     if ((millis() - lastMotor) >= (CONTROLLERFAN_SEC*1000UL) || lastMotor == 0) //If the last time any driver was enabled, is longer since than CONTROLLERSEC...   
     {
