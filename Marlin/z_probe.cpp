@@ -2,12 +2,18 @@
 #if defined(PROBE_PIN) && (PROBE_PIN > -1)
 #include "Marlin.h"
 #include "stepper.h"
+#include "temperature.h"
 
 float Probe_Bed(float x_pos, float y_pos, int n)
 {
     //returns Probed Z average height
     float ProbeDepth[n];
     float ProbeDepthAvg=0;
+    
+    //force bed heater off for probing
+    int save_bed_targ = target_raw_bed;
+    target_raw_bed = 0;
+    WRITE(HEATER_BED_PIN,LOW);
     
     if (Z_HOME_DIR==-1)
     {
@@ -106,7 +112,9 @@ float Probe_Bed(float x_pos, float y_pos, int n)
     SERIAL_ECHO("Probed Z="); SERIAL_ECHOLN(ProbeDepthAvg);
     SERIAL_ECHO("RAW current_position[Z_AXIS]=");SERIAL_ECHOLN(current_position[Z_AXIS]);
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], Z_HOME_RETRACT_MM, current_position[E_AXIS]);
+    current_position[Z_AXIS] = Z_HOME_RETRACT_MM;
 
+    target_raw_bed = save_bed_targ;
     return ProbeDepthAvg;
  }
 
