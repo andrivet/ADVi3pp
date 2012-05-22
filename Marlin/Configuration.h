@@ -46,15 +46,18 @@
 // 5 is ParCan supplied 104GT-2 100K
 // 6 is EPCOS 100k
 // 7 is 100k Honeywell thermistor 135-104LAG-J01
-// 100 is 100k GE Sensing AL03006-58.2K-97-G1
-// 101 is 100k 0603 SMD Vishay NTCS0603E3104FXT
-// 102 is 100k EPCOS G57540 Nozzle
-// 103 is 100k EPCOS G57540 Bed
+// 100 is 100k GE Sensing AL03006-58.2K-97-G1 with r2=4k7
+// 101 is 100k 0603 SMD Vishay NTCS0603E3104FXT with r2=4k7
+// 102 is 100k EPCOS G57540 Nozzle with r2=4k7
+// 103 is 100k EPCOS G57540 Bed with r2=4k7
+// 104 is 10k G57540 Bed with r2=4k7
+// 105 is 10k G57540 Bed with r2=10k
+// 110 is reprappro xmas huxley hot end with 10K resistor (RS thermistor 198-961)
 
-#define TEMP_SENSOR_0 100
+#define TEMP_SENSOR_0 110
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
-#define TEMP_SENSOR_BED 101
+#define TEMP_SENSOR_BED 105
 
 // Actual temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
@@ -155,9 +158,9 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 #define min_software_endstops true //If true, axis won't move to coordinates less than zero.
 #define max_software_endstops true  //If true, axis won't move to coordinates greater than the defined lengths below.
-#define X_MAX_LENGTH 145 //155 for v2
-#define Y_MAX_LENGTH 145 //150 for v2
-#define Z_MAX_LENGTH 100
+#define X_MAX_LENGTH 250 //155 for v2
+#define Y_MAX_LENGTH 200 //150 for v2
+#define Z_MAX_LENGTH 140
 
 // The position of the homing switches. Use MAX_LENGTH * -0.5 if the center should be 0, 0, 0
 #define X_HOME_POS 0

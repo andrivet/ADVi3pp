@@ -588,7 +588,7 @@
 #define PROBE_PIN          -1    //29 on Melzi1284p A2, 11 on SL1.3a
 
 #define LED_PIN            -1//27    //27 on Melzi1284p
-#define FAN_PIN            12    //4 on Melzi1284p
+#define FAN_PIN            -1    //4 on Melzi1284p
 
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
@@ -599,7 +599,7 @@
 
 #ifdef SANGUINOLOLU_V_1_2
 
-#define HEATER_BED_PIN     10 // (bed) - 10 for spare DIO pin and bed MOSFET, 12 for SL MOSFET
+#define HEATER_BED_PIN     12 // (bed) - 10 for spare DIO pin and bed MOSFET, 12 for SL MOSFET
 #define X_ENABLE_PIN       14
 #define Y_ENABLE_PIN       14
 #define Z_ENABLE_PIN       26
