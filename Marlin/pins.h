@@ -587,8 +587,8 @@
 
 #define PROBE_PIN          -1    //29 on Melzi1284p A2, 11 on SL1.3a
 
-#define LED_PIN            -1//27    //27 on Melzi1284p
-#define FAN_PIN            -1    //4 on Melzi1284p
+#define LED_PIN            27//27    //27 on Melzi1284p
+#define FAN_PIN            4    //4 on Melzi1284p
 
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1

@@ -8,7 +8,7 @@
 //User specified version info of THIS file to display in [Pronterface, etc] terminal window during startup.
 //Implementation of an idea by Prof Braino to inform user that any changes made
 //to THIS file by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H "2012-04-12-2" //Personal revision number for changes to THIS file.
+#define STRING_VERSION_CONFIG_H "2012-05-22-1" //Personal revision number for changes to THIS file.
 #define STRING_CONFIG_H_AUTHOR "eMAKER" //Who made the changes.
 
 // This determines the communication speed of the printer
@@ -84,10 +84,11 @@
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
 #define PID_MAX 255 // limits current to nozzle; 255=full current
+#define FULL_PID_BAND 150 // Full power is applied when pid_error[e] > FULL_PID_BAND
 #ifdef PIDTEMP
   //#define PID_DEBUG // Sends debug data to the serial port. 
   //#define PID_OPENLOOP 1 // Puts PID in open loop. M104 sets the output power in %
-  #define PID_INTEGRAL_DRIVE_MAX 130  //limit for the integral term
+  #define PID_INTEGRAL_DRIVE_MAX 100  //limit for the integral term
   #define K1 0.95 //smoothing factor withing the PID
   #define PID_dT 0.122 //sampling period of the PID
 

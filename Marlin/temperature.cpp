@@ -275,11 +275,11 @@ void manage_heater()
 
     #ifndef PID_OPENLOOP
         pid_error[e] = pid_setpoint[e] - pid_input;
-        if(pid_error[e] > 10) {
+        if(pid_error[e] > FULL_PID_BAND) {
           pid_output = PID_MAX;
           pid_reset[e] = true;
         }
-        else if(pid_error[e] < -10) {
+        else if(pid_error[e] < -FULL_PID_BAND) {
           pid_output = 0;
           pid_reset[e] = true;
         }
