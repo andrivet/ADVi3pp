@@ -548,15 +548,15 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
   delta_mm[Y_AXIS] = (target[Y_AXIS]-position[Y_AXIS])/axis_steps_per_unit[Y_AXIS];
   delta_mm[Z_AXIS] = (target[Z_AXIS]-position[Z_AXIS])/axis_steps_per_unit[Z_AXIS];
   delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS])*extrudemultiply/100.0;
-  if ( block->steps_x <=dropsegments && block->steps_y <=dropsegments && block->steps_z <=dropsegments ) {
-    block->millimeters = abs(delta_mm[E_AXIS]);
-  } else {
-    block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS]));
-  }
+//  if ( block->steps_x <=dropsegments && block->steps_y <=dropsegments && block->steps_z <=dropsegments ) {
+//    block->millimeters = abs(delta_mm[E_AXIS]);
+//  } else {
+//    block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS]));
+//  }
 
-  // TODO - JMG - SORT OUT RETRACTS WHEN e IS NOT ALONE
-//  block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) +
-//                            square(delta_mm[Z_AXIS]) + square(delta_mm[E_AXIS]));
+// TODO - JMG - SORT OUT RETRACTS WHEN e IS NOT ALONE
+  block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) +
+                            square(delta_mm[Z_AXIS]) + square(delta_mm[E_AXIS]));
   float inverse_millimeters = 1.0/block->millimeters;  // Inverse millimeters to remove multiple divides 
   
   // Calculate speed in mm/second for each axis. No divide by zero due to previous checks.
