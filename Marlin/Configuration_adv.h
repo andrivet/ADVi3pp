@@ -1,5 +1,5 @@
-#ifndef __CONFIGURATION_ADV_H
-#define __CONFIGURATION_ADV_H
+#ifndef CONFIGURATION_ADV_H
+#define CONFIGURATION_ADV_H
 
 //===========================================================================
 //=============================Thermal Settings  ============================
@@ -149,9 +149,6 @@
   #define STEPS_PER_CUBIC_MM_E (axis_steps_per_unit[E_AXIS]/ EXTRUTION_AREA)
 
 #endif // ADVANCE
-
-// A debugging feature to compare calculated vs performed steps, to see if steps are lost by the software.
-//#define DEBUG_STEPS
 
 // Arc interpretation settings:
 #define MM_PER_ARC_SEGMENT 1

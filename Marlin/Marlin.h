@@ -1,8 +1,8 @@
 // Tonokip RepRap firmware rewrite based off of Hydra-mmm firmware.
 // Licence: GPL
 
-#ifndef __MARLINH
-#define __MARLINH
+#ifndef MARLIN_H
+#define MARLIN_H
 
 #define  HardwareSerial_h // trick to disable the standard HWserial
 
@@ -64,6 +64,7 @@
 
 
 #define SERIAL_PROTOCOL(x) MYSERIAL.print(x);
+#define SERIAL_PROTOCOL_F(x,y) MYSERIAL.print(x,y);
 #define SERIAL_PROTOCOLPGM(x) serialprintPGM(MYPGM(x));
 #define SERIAL_PROTOCOLLN(x) {MYSERIAL.print(x);MYSERIAL.write('\n');}
 #define SERIAL_PROTOCOLLNPGM(x) {serialprintPGM(MYPGM(x));MYSERIAL.write('\n');}
@@ -169,6 +170,9 @@ void ClearToSend();
 void get_coordinates();
 void prepare_move();
 void kill();
+void Stop();
+
+bool IsStopped();
 
 void enquecommand(const char *cmd); //put an ascii command at the end of the current buffer.
 void prepare_arc_move(char isclockwise);

@@ -579,16 +579,16 @@
 
 #define Z_STEP_PIN         3
 #define Z_DIR_PIN          2
-#define Z_MIN_PIN          20 //for Melzi Z bed probe, 20 for standard Z endstop
+#define Z_MIN_PIN          20
 #define Z_MAX_PIN          -1
 
 #define E0_STEP_PIN         1
 #define E0_DIR_PIN          0
 
-#define PROBE_PIN          -1    //29 on Melzi1284p A2, 11 on SL1.3a
+#define PROBE_PIN          -1
 
-#define LED_PIN            27//27    //27 on Melzi1284p
-#define FAN_PIN            4    //4 on Melzi1284p
+#define LED_PIN            -1
+#define FAN_PIN            -1
 
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
@@ -653,6 +653,8 @@
 
 #define E0_STEP_PIN         1
 #define E0_DIR_PIN          0
+
+#define PROBE_PIN          -1    //29 on Melzi1284p A2
 
 #define LED_PIN            27
 
@@ -730,7 +732,7 @@
 
 #define E1_STEP_PIN         49
 #define E1_DIR_PIN          47
-#define E1_ENABLE_PIN       51
+#define E1_ENABLE_PIN       48
 
 #define SDPOWER            -1
 #define SDSS               53

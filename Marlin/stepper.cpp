@@ -57,7 +57,6 @@ volatile static unsigned long step_events_completed; // The number of step event
   static long old_advance = 0;
 #endif
 static long e_steps[3];
-static unsigned char busy = false; // TRUE when SIG_OUTPUT_COMPARE1A is being serviced. Used to avoid retriggering that handler.
 static long acceleration_time, deceleration_time;
 //static unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
 static unsigned short acc_step_rate; // needed for deccelaration start point
@@ -84,11 +83,7 @@ volatile char count_direction[NUM_AXIS] = { 1, 1, 1, 1};
 //=============================functions         ============================
 //===========================================================================
 
-#ifdef ENDSTOPS_ONLY_FOR_HOMING
-  #define CHECK_ENDSTOPS  if(check_endstops)
-#else
-  #define CHECK_ENDSTOPS
-#endif
+#define CHECK_ENDSTOPS  if(check_endstops)
 
 // intRes = intIn1 * intIn2 >> 16
 // uses:
@@ -217,7 +212,6 @@ void enable_endstops(bool check)
 
 void st_wake_up() {
   //  TCNT1 = 0;
-  if(busy == false) 
   ENABLE_STEPPER_DRIVER_INTERRUPT();  
 }
 
@@ -296,6 +290,7 @@ ISR(TIMER1_COMPA_vect)
     // Anything in the buffer?
     current_block = plan_get_current_block();
     if (current_block != NULL) {
+      current_block->busy = true;
       trapezoid_generator_reset();
       counter_x = -(current_block->step_event_count >> 1);
       counter_y = counter_x;

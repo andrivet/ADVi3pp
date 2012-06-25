@@ -39,6 +39,7 @@
 #include "watchdog.h"
 #include "EEPROMwrite.h"
 #include "language.h"
+#include "pins_arduino.h"
 
 #define VERSION_STRING  "1.0.0 RC2"
 
@@ -113,15 +114,16 @@
 // M240 - Trigger a camera to take a photograph
 // M301 - Set PID parameters P I and D
 // M302 - Allow cold extrudes
+// M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
 // M400 - Finish all moves
 // M500 - stores paramters in EEPROM
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).  
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 // M503 - print the current settings (from memory not from eeprom)
-// M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
 // M510 - FPU Enable
 // M511 - FPU Reset
 // M512 - FPU Disable
+// M999 - Restart after being stopped by error
 
 //Stepper Movement Variables
 
@@ -160,7 +162,7 @@ float modified_destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
 //===========================================================================
 const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 static bool home_all_axis = true;
-static long gcode_N, gcode_LastN;
+static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
 
 static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
 static bool relative_mode_e = false;  //Determines Absolute or Relative E Codes while in Absolute Coordinates mode. E is always relative in Relative Coordinates mode.
@@ -191,6 +193,8 @@ static unsigned long stoptime=0;
 
 static uint8_t tmp_extruder;
 
+
+bool Stopped=false;
 
 //===========================================================================
 //=============================ROUTINES=============================
@@ -366,7 +370,10 @@ void get_command()
 { 
   while( MYSERIAL.available() > 0  && buflen < BUFSIZE) {
     serial_char = MYSERIAL.read();
-    if(serial_char == '\n' || serial_char == '\r' || serial_char == ':' || serial_count >= (MAX_CMD_SIZE - 1) ) 
+    if(serial_char == '\n' || 
+       serial_char == '\r' || 
+       (serial_char == ':' && comment_mode == false) || 
+       serial_count >= (MAX_CMD_SIZE - 1) ) 
     {
       if(!serial_count) { //if empty line
         comment_mode = false; //for new command
@@ -438,11 +445,17 @@ void get_command()
           case 1:
           case 2:
           case 3:
-	    #ifdef SDSUPPORT
-            if(card.saving)
-              break;
-	    #endif //SDSUPPORT
-            SERIAL_PROTOCOLLNPGM(MSG_OK); 
+            if(Stopped == false) { // If printer is stopped by an error the G[0-3] codes are ignored.
+	      #ifdef SDSUPPORT
+              if(card.saving)
+                break;
+	      #endif //SDSUPPORT
+              SERIAL_PROTOCOLLNPGM(MSG_OK); 
+            }
+            else {
+              SERIAL_ERRORLNPGM(MSG_ERR_STOPPED);
+              LCD_MESSAGEPGM(MSG_STOPPED);
+            }
             break;
           default:
             break;
@@ -467,7 +480,10 @@ void get_command()
   while( !card.eof()  && buflen < BUFSIZE) {
     int16_t n=card.get();
     serial_char = (char)n;
-    if(serial_char == '\n' || serial_char == '\r' || serial_char == ':' || serial_count >= (MAX_CMD_SIZE - 1)||n==-1) 
+    if(serial_char == '\n' || 
+       serial_char == '\r' || 
+       (serial_char == ':' && comment_mode == false) || 
+       serial_count >= (MAX_CMD_SIZE - 1)||n==-1) 
     {
       if(card.eof()){
         SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
@@ -570,19 +586,25 @@ void process_commands()
     {
     case 0: // G0 -> G1
     case 1: // G1
-      get_coordinates(); // For X Y Z E F
-      prepare_move();
-      //ClearToSend();
-      return;
+      if(Stopped == false) {
+        get_coordinates(); // For X Y Z E F
+        prepare_move();
+        //ClearToSend();
+        return;
+      }
       //break;
     case 2: // G2  - CW ARC
-      get_arc_coordinates();
-      prepare_arc_move(true);
-      return;
+      if(Stopped == false) {
+        get_arc_coordinates();
+        prepare_arc_move(true);
+        return;
+      }
     case 3: // G3  - CCW ARC
-      get_arc_coordinates();
-      prepare_arc_move(false);
-      return;
+      if(Stopped == false) {
+        get_arc_coordinates();
+        prepare_arc_move(false);
+        return;
+      }
     case 4: // G4 dwell
       LCD_MESSAGEPGM(MSG_DWELL);
       codenum = 0;
@@ -873,10 +895,14 @@ void process_commands()
       }
       #if (TEMP_0_PIN > -1)
         SERIAL_PROTOCOLPGM("ok T:");
-        SERIAL_PROTOCOL(degHotend(tmp_extruder)); 
+        SERIAL_PROTOCOL_F(degHotend(tmp_extruder),1); 
+        SERIAL_PROTOCOLPGM(" /");
+        SERIAL_PROTOCOL_F(degTargetHotend(tmp_extruder),1); 
         #if TEMP_BED_PIN > -1
           SERIAL_PROTOCOLPGM(" B:");  
-          SERIAL_PROTOCOL(degBed());
+          SERIAL_PROTOCOL_F(degBed(),1);
+          SERIAL_PROTOCOLPGM(" /");
+          SERIAL_PROTOCOL_F(degTargetBed(),1);
         #endif //TEMP_BED_PIN
       #else
         SERIAL_ERROR_START;
@@ -908,7 +934,7 @@ void process_commands()
       if (code_seen('S')) setTargetHotend(code_value(), tmp_extruder);
       #ifdef AUTOTEMP
         if (code_seen('S')) autotemp_min=code_value();
-        if (code_seen('G')) autotemp_max=code_value();
+        if (code_seen('B')) autotemp_max=code_value();
         if (code_seen('F')) 
         {
           autotemp_factor=code_value();
@@ -935,9 +961,9 @@ void process_commands()
           if( (millis() - codenum) > 1000UL )
           { //Print Temp Reading and remaining time every 1 second while heating up/cooling down
             SERIAL_PROTOCOLPGM("T:");
-            SERIAL_PROTOCOL( degHotend(tmp_extruder) ); 
+            SERIAL_PROTOCOL_F(degHotend(tmp_extruder),1); 
             SERIAL_PROTOCOLPGM(" E:");
-            SERIAL_PROTOCOL( (int)tmp_extruder ); 
+            SERIAL_PROTOCOL((int)tmp_extruder); 
             #ifdef TEMP_RESIDENCY_TIME
               SERIAL_PROTOCOLPGM(" W:");
               if(residencyStart > -1)
@@ -961,8 +987,8 @@ void process_commands()
         #ifdef TEMP_RESIDENCY_TIME
             /* start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
               or when current temp falls outside the hysteresis after target temp was reached */
-          if ((residencyStart == -1 &&  target_direction && !isHeatingHotend(tmp_extruder)) ||
-              (residencyStart == -1 && !target_direction && !isCoolingHotend(tmp_extruder)) ||
+          if ((residencyStart == -1 &&  target_direction && (degHotend(tmp_extruder) >= (degTargetHotend(tmp_extruder)-TEMP_WINDOW))) ||
+              (residencyStart == -1 && !target_direction && (degHotend(tmp_extruder) <= (degTargetHotend(tmp_extruder)+TEMP_WINDOW))) ||
               (residencyStart > -1 && labs(degHotend(tmp_extruder) - degTargetHotend(tmp_extruder)) > TEMP_HYSTERESIS) ) 
           {
             residencyStart = millis();
@@ -987,9 +1013,10 @@ void process_commands()
             SERIAL_PROTOCOLPGM("T:");
             SERIAL_PROTOCOL(tt);
             SERIAL_PROTOCOLPGM(" E:");
-            SERIAL_PROTOCOL( (int)active_extruder ); 
+            SERIAL_PROTOCOL((int)active_extruder); 
             SERIAL_PROTOCOLPGM(" B:");
-            SERIAL_PROTOCOLLN(degBed()); 
+            SERIAL_PROTOCOL_F(degBed(),1); 
+            SERIAL_PROTOCOLLN(""); 
             codenum = millis(); 
           }
           manage_heater();
@@ -1018,6 +1045,7 @@ void process_commands()
     #if (PS_ON_PIN > -1)
       case 80: // M80 - ATX Power On
         SET_OUTPUT(PS_ON_PIN); //GND
+        WRITE(PS_ON_PIN, LOW);
         break;
       #endif
       
@@ -1105,6 +1133,12 @@ void process_commands()
       SERIAL_PROTOCOL(float(st_get_position(Z_AXIS))/axis_steps_per_unit[Z_AXIS]);
       
       SERIAL_PROTOCOLLN("");
+      break;
+    case 120: // M120
+      enable_endstops(false) ;
+      break;
+    case 121: // M121
+      enable_endstops(true) ;
       break;
     case 119: // M119
       #if (X_MIN_PIN > -1)
@@ -1248,7 +1282,7 @@ void process_commands()
      }
     break;
       
-    case 302: // finish all moves
+    case 302: // allow cold extrudes
     {
       allow_cold_extrudes(true);
     }
@@ -1260,7 +1294,7 @@ void process_commands()
       PID_autotune(temp);
     }
     break;
-    case 400: // finish all moves
+    case 400: // M400 finish all moves
     {
       st_synchronize();
     }
@@ -1291,6 +1325,11 @@ void process_commands()
       SERIAL_ECHOPGM("Free Memory:");
       SERIAL_ECHO(freeMemory());
     }
+    break;
+    case 999: // Restart after being stopped
+      Stopped = false;
+      gcode_LastN = Stopped_gcode_LastN;
+      FlushSerialRequestResend();
     break;
     case 510: // FPU Enable
     {
@@ -1373,8 +1412,18 @@ void get_coordinates()
 void get_arc_coordinates()
 {
    get_coordinates();
-   if(code_seen('I')) offset[0] = code_value();
-   if(code_seen('J')) offset[1] = code_value();
+   if(code_seen('I')) {
+     offset[0] = code_value();
+   } 
+   else {
+     offset[0] = 0.0;
+   }
+   if(code_seen('J')) {
+     offset[1] = code_value();
+   }
+   else {
+     offset[1] = 0.0;
+   }
 }
 
 void prepare_move()
@@ -1429,7 +1478,7 @@ void controllerFan()
   if ((millis() - lastMotorCheck) >= 2500) //Not a time critical function, so we only check every 2500ms
   {
     lastMotorCheck = millis();
-    #if (X_ENABLE_PIN > -1 && Y_ENABLE_PIN > -1 && Z_ENABLE_PIN > -1 && E0_ENABLE_PIN > -1)
+    
     if(!READ(X_ENABLE_PIN) || !READ(Y_ENABLE_PIN) || !READ(Z_ENABLE_PIN)
     #if EXTRUDERS > 2
        || !READ(E2_ENABLE_PIN)
@@ -1441,9 +1490,6 @@ void controllerFan()
     {
       lastMotor = millis(); //... set time to NOW so the fan will turn on
     }
-    #else
-      lastMotor = millis();
-    #endif
     
     if ((millis() - lastMotor) >= (CONTROLLERFAN_SEC*1000UL) || lastMotor == 0) //If the last time any driver was enabled, is longer since than CONTROLLERSEC...   
     {
@@ -1519,5 +1565,89 @@ void kill()
   suicide();
   while(1); // Wait for reset
 }
+
+void Stop()
+{
+  disable_heater();
+  if(Stopped == false) {
+    Stopped = true;
+    Stopped_gcode_LastN = gcode_LastN; // Save last g_code for restart
+    SERIAL_ERROR_START;
+    SERIAL_ERRORLNPGM(MSG_ERR_STOPPED);
+    LCD_MESSAGEPGM(MSG_STOPPED);
+  }
+}
+
+bool IsStopped() { return Stopped; };
+
+#ifdef FAST_PWM_FAN
+void setPwmFrequency(uint8_t pin, int val)
+{
+  val &= 0x07;
+  switch(digitalPinToTimer(pin))
+  {
+ 
+    #if defined(TCCR0A)
+    case TIMER0A:
+    case TIMER0B:
+//         TCCR0B &= ~(CS00 | CS01 | CS02);
+//         TCCR0B |= val;
+         break;
+    #endif
+
+    #if defined(TCCR1A)
+    case TIMER1A:
+    case TIMER1B:
+//         TCCR1B &= ~(CS10 | CS11 | CS12);
+//         TCCR1B |= val;
+         break;
+    #endif
+
+    #if defined(TCCR2)
+    case TIMER2:
+    case TIMER2:
+         TCCR2 &= ~(CS10 | CS11 | CS12);
+         TCCR2 |= val;
+         break;
+    #endif
+
+    #if defined(TCCR2A)
+    case TIMER2A:
+    case TIMER2B:
+         TCCR2B &= ~(CS20 | CS21 | CS22);
+         TCCR2B |= val;
+         break;
+    #endif
+
+    #if defined(TCCR3A)
+    case TIMER3A:
+    case TIMER3B:
+    case TIMER3C:
+         TCCR3B &= ~(CS30 | CS31 | CS32);
+         TCCR3B |= val;
+         break;
+    #endif
+
+    #if defined(TCCR4A) 
+    case TIMER4A:
+    case TIMER4B:
+    case TIMER4C:
+         TCCR4B &= ~(CS40 | CS41 | CS42);
+         TCCR4B |= val;
+         break;
+   #endif
+
+    #if defined(TCCR5A) 
+    case TIMER5A:
+    case TIMER5B:
+    case TIMER5C:
+         TCCR5B &= ~(CS50 | CS51 | CS52);
+         TCCR5B |= val;
+         break;
+   #endif
+
+  }
+}
+#endif
 
 

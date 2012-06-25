@@ -1,5 +1,5 @@
-#ifndef __ULTRALCDH
-#define __ULTRALCDH
+#ifndef ULTRALCD_H
+#define ULTRALCD_H
 #include "Marlin.h"
 #ifdef ULTRA_LCD
   #include <LiquidCrystal.h>
@@ -7,11 +7,13 @@
   void lcd_init();
   void lcd_status(const char* message);
   void beep();
+  void buttons_init();
   void buttons_check();
 
   #define LCD_UPDATE_INTERVAL 100
   #define STATUSTIMEOUT 15000
   extern LiquidCrystal lcd;
+  extern volatile char buttons;  //the last checked buttons in a bit array.
   
   #ifdef NEWPANEL
     #define EN_C (1<<BLEN_C)
@@ -49,7 +51,7 @@
   #define blocktime 500
   #define lcdslow 5
     
-  enum MainStatus{Main_Status, Main_Menu, Main_Prepare,Sub_PrepareMove, Main_Control, Main_SD,Sub_TempControl,Sub_MotionControl};
+  enum MainStatus{Main_Status, Main_Menu, Main_Prepare,Sub_PrepareMove, Main_Control, Main_SD,Sub_TempControl,Sub_MotionControl,Sub_RetractControl};
 
   class MainMenu{
   public:
@@ -66,10 +68,11 @@
     void showControl();
     void showControlMotion();
     void showControlTemp();
+    void showControlRetract();
     void showAxisMove();
     void showSD();
     bool force_lcd_update;
-    int lastencoderpos;
+    long lastencoderpos;
     int8_t lineoffset;
     int8_t lastlineoffset;
     
@@ -78,11 +81,11 @@
     bool tune;
     
   private:
-    FORCE_INLINE void updateActiveLines(const uint8_t &maxlines,volatile int &encoderpos)
+    FORCE_INLINE void updateActiveLines(const uint8_t &maxlines,volatile long &encoderpos)
     {
       if(linechanging) return; // an item is changint its value, do not switch lines hence
       lastlineoffset=lineoffset; 
-      int curencoderpos=encoderpos;  
+      long curencoderpos=encoderpos;  
       force_lcd_update=false;
       if(  (abs(curencoderpos-lastencoderpos)<lcdslow) ) 
       { 
@@ -134,11 +137,12 @@
   char *ftostr3(const float &x);
 
 
-
+  #define LCD_INIT lcd_init();
   #define LCD_MESSAGE(x) lcd_status(x);
   #define LCD_MESSAGEPGM(x) lcd_statuspgm(MYPGM(x));
   #define LCD_STATUS lcd_status()
 #else //no lcd
+  #define LCD_INIT
   #define LCD_STATUS
   #define LCD_MESSAGE(x)
   #define LCD_MESSAGEPGM(x)

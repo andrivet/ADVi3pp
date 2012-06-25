@@ -1,5 +1,5 @@
-#ifndef __CONFIGURATION_H
-#define __CONFIGURATION_H
+#ifndef CONFIGURATION_H
+#define CONFIGURATION_H
 
 // Uncomment ONE of the next three lines - the one for your RepRap machine
 //#define REPRAPPRO_HUXLEY
@@ -55,7 +55,7 @@
 
 // Set this if you want to define the constants in the thermistor circuit
 // and work out temperatures algebraically - added by AB.
-#define COMPUTE_THERMISTORS
+//#define COMPUTE_THERMISTORS
 
 #ifdef COMPUTE_THERMISTORS
 
@@ -100,9 +100,9 @@
 // -2 is thermocouple with MAX6675 (only for sensor 0)
 // -1 is thermocouple with AD595
 // 0 is not used
-// 1 is 100k thermistor
-// 2 is 200k thermistor
-// 3 is mendel-parts thermistor
+// 1 is 100k thermistor - best choice for EPCOS 100k (4.7k pullup)
+// 2 is 200k thermistor - ATC Semitec 204GT-2 (4.7k pullup)
+// 3 is mendel-parts thermistor (4.7k pullup)
 // 4 is 10k thermistor !! do not use it for a hotend. It gives bad resolution at high temp. !!
 // 5 is ParCan supplied 104GT-2 100K
 // 6 is EPCOS 100k
@@ -113,7 +113,7 @@
 // 103 is 100k EPCOS G57540 Bed with r2=4k7
 // 104 is 10k G57540 Bed with r2=4k7
 // 105 is 10k G57540 Bed with r2=10k
-// 110 is reprappro xmas huxley hot end with 10K resistor (RS thermistor 198-961)
+// 110 is 100k RS thermistor 198-961 hot end with 10K resistor
 
 #define TEMP_SENSOR_0 110
 #define TEMP_SENSOR_1 0
@@ -123,6 +123,7 @@
 // Actual temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
 #define TEMP_HYSTERESIS 5       // (C°) range of +/- temperatures considered "close" to the target one
+#define TEMP_WINDOW     2       // (degC) Window around target to start the recidency timer x degC early.
 
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
 // to check that the wiring to the thermistor is not broken. 
