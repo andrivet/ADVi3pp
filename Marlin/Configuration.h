@@ -25,7 +25,7 @@
 //User specified version info of THIS file to display in [Pronterface, etc] terminal window during startup.
 //Implementation of an idea by Prof Braino to inform user that any changes made
 //to THIS file by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H "2012-06-03-1" //Personal revision number for changes to THIS file.
+#define STRING_VERSION_CONFIG_H "2012-06-25-1" //Personal revision number for changes to THIS file.
 #define STRING_CONFIG_H_AUTHOR "RepRapPro" //Who made the changes.
 
 // This determines the communication speed of the printer
@@ -236,7 +236,7 @@ const bool Z_ENDSTOPS_INVERTING = false; // set to true to invert the logic of t
 
 #define X_MAX_LENGTH 210
 #define Y_MAX_LENGTH 210
-#define Z_MAX_LENGTH 100
+#define Z_MAX_LENGTH 140
 #define HOMING_FEEDRATE {10*60, 10*60, 1*60, 0}  // set the homing speeds (mm/min)
 #define FAST_HOME_FEEDRATE {50*60, 50*60, 1*60, 0}  // set the homing speeds (mm/min)
 #define DEFAULT_MAX_FEEDRATE  {500, 500, 3, 45}
