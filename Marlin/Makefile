@@ -1,4 +1,4 @@
-# Marlin Arduino Project Makefile
+# Sprinter Arduino Project Makefile
 # 
 # Makefile Based on:
 # Arduino 0011 Makefile
@@ -23,7 +23,9 @@
 #  3. Set the line containing "MCU" to match your board's processor. 
 #     Older one's are atmega8 based, newer ones like Arduino Mini, Bluetooth
 #     or Diecimila have the atmega168.  If you're using a LilyPad Arduino,
-#     change F_CPU to 8000000.
+#     change F_CPU to 8000000. If you are using Gen7 electronics, you
+#     probably need to use 20000000. Either way, you must regenerate
+#     the speed lookup table with create_speed_lookuptable.py.
 #
 #  4. Type "make" and press enter to compile/verify your program.
 #
@@ -32,30 +34,38 @@
 #
 # $Id$
 
-TARGET = Marlin
-INSTALL_DIR = ../../Desktop/arduino-0018/
-UPLOAD_RATE = 38400
-AVRDUDE_PROGRAMMER = stk500v1
-PORT = /dev/ttyUSB0
-#MCU = atmega2560
 #For "old" Arduino Mega
-#MCU = atmega1280
+MCU = atmega1280
+#For Arduino Mega2560
+#MCU = atmega2560
 #For Sanguinololu
-MCU = atmega644p 
+#MCU = atmega644p 
+
+#Arduino install directory
+INSTALL_DIR = ../../arduino-0022/
+
+# Be sure to regenerate speed_lookuptable.h with create_speed_lookuptable.py
+# if you are setting this to something other than 16MHz
 F_CPU = 16000000
+
+UPLOAD_RATE = 115200
+AVRDUDE_PROGRAMMER = arduino
+PORT = /dev/arduino
+
+TARGET = $(notdir $(CURDIR))
 
 
 ############################################################################
 # Below here nothing should be changed...
 
-ARDUINO = $(INSTALL_DIR)/hardware/Sanguino/cores/arduino
-AVR_TOOLS_PATH = $(INSTALL_DIR)/hardware/tools/avr/bin
-SRC =  $(ARDUINO)/pins_arduino.c wiring.c wiring_serial.c \
-$(ARDUINO)/wiring_analog.c $(ARDUINO)/wiring_digital.c \
-$(ARDUINO)/wiring_pulse.c \
-$(ARDUINO)/wiring_shift.c $(ARDUINO)/WInterrupts.c
-CXXSRC = $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WMath.cpp \
-$(ARDUINO)/Print.cpp ./SdFile.cpp ./SdVolume.cpp ./Sd2Card.cpp
+ARDUINO = $(INSTALL_DIR)/hardware/arduino/cores/arduino
+AVR_TOOLS_PATH = 
+SRC =  $(ARDUINO)/pins_arduino.c $(ARDUINO)/wiring.c \
+	$(ARDUINO)/wiring_analog.c $(ARDUINO)/wiring_digital.c \
+	$(ARDUINO)/wiring_pulse.c \
+	$(ARDUINO)/wiring_shift.c $(ARDUINO)/WInterrupts.c
+CXXSRC = $(ARDUINO)/WMath.cpp $(ARDUINO)/WString.cpp\
+	$(ARDUINO)/Print.cpp applet/Marlin.cpp MarlinSerial.cpp Sd2Card.cpp SdBaseFile.cpp SdFatUtil.cpp SdFile.cpp SdVolume.cpp motion_control.cpp planner.cpp stepper.cpp temperature.cpp cardreader.cpp
 FORMAT = ihex
 
 
@@ -84,12 +94,12 @@ CXXINCS = -I$(ARDUINO)
 # gnu99 - c99 plus GCC extensions
 #CSTANDARD = -std=gnu99
 CDEBUG = -g$(DEBUG)
-CWARN = -Wall -Wunused-variable
+CWARN = -Wall -Wstrict-prototypes
 CTUNING = -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -w -ffunction-sections -fdata-sections -DARDUINO=22
 #CEXTRA = -Wa,-adhlns=$(<:.c=.lst)
 
 CFLAGS = $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CEXTRA) $(CTUNING)
-CXXFLAGS = $(CDEFS) $(CINCS) -O$(OPT) -Wall $(CEXTRA) $(CTUNING)
+CXXFLAGS =         $(CDEFS) $(CINCS) -O$(OPT) -Wall    $(CEXTRA) $(CTUNING)
 #ASFLAGS = -Wa,-adhlns=$(<:.S=.lst),-gstabs 
 LDFLAGS = -lm
 
@@ -98,18 +108,18 @@ LDFLAGS = -lm
 AVRDUDE_PORT = $(PORT)
 AVRDUDE_WRITE_FLASH = -U flash:w:applet/$(TARGET).hex:i
 AVRDUDE_FLAGS = -D -C $(INSTALL_DIR)/hardware/tools/avrdude.conf \
--p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) \
--b $(UPLOAD_RATE)
+	-p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) \
+	-b $(UPLOAD_RATE)
 
 # Program settings
-CC = $(AVR_TOOLS_PATH)/avr-gcc
-CXX = $(AVR_TOOLS_PATH)/avr-g++
-OBJCOPY = $(AVR_TOOLS_PATH)/avr-objcopy
-OBJDUMP = $(AVR_TOOLS_PATH)/avr-objdump
-AR  = $(AVR_TOOLS_PATH)/avr-ar
-SIZE = $(AVR_TOOLS_PATH)/avr-size
-NM = $(AVR_TOOLS_PATH)/avr-nm
-AVRDUDE = $(INSTALL_DIR)/hardware/tools/avrdude
+CC = $(AVR_TOOLS_PATH)avr-gcc
+CXX = $(AVR_TOOLS_PATH)avr-g++
+OBJCOPY = $(AVR_TOOLS_PATH)avr-objcopy
+OBJDUMP = $(AVR_TOOLS_PATH)avr-objdump
+AR  = $(AVR_TOOLS_PATH)avr-ar
+SIZE = $(AVR_TOOLS_PATH)avr-size
+NM = $(AVR_TOOLS_PATH)avr-nm
+AVRDUDE = avrdude
 REMOVE = rm -f
 MV = mv -f
 
@@ -127,22 +137,25 @@ ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 
 # Default target.
-all: applet_files_ez build sizeafter
+all: build sizeafter
 
 build: elf hex 
 
-applet_files_ez: $(TARGET).pde
-	# Here is the "preprocessing".
-	# It creates a .cpp file based with the same name as the .pde file.
-	# On top of the new .cpp file comes the WProgram.h header.
-	# At the end there is a generic main() function attached.
-	# Then the .cpp file will be compiled. Errors during compile will
-	# refer to this new, automatically generated, file. 
-	# Not the original .pde file you actually edit...
-	test -d applet || mkdir applet
-	echo '#include "WProgram.h"' > applet/$(TARGET).cpp
-	cat $(TARGET).pde >> applet/$(TARGET).cpp
-	cat $(ARDUINO)/main.cpp >> applet/$(TARGET).cpp
+applet/$(TARGET).cpp: $(TARGET).pde $(MAKEFILE)
+
+applet/%.cpp: %.pde
+# Here is the "preprocessing".
+# It creates a .cpp file based with the same name as the .pde file.
+# On top of the new .cpp file comes the WProgram.h header.
+# At the end there is a generic main() function attached.
+# Then the .cpp file will be compiled. Errors during compile will
+# refer to this new, automatically generated, file. 
+# Not the original .pde file you actually edit...
+	@echo "  WR    $@"
+	@test -d $(dir $@) || mkdir $(dir $@)
+	@echo '#include "WProgram.h"' > $@
+	@cat $< >> $@
+	@cat $(ARDUINO)/main.cpp >> $@
 
 elf: applet/$(TARGET).elf
 hex: applet/$(TARGET).hex
@@ -152,7 +165,9 @@ sym: applet/$(TARGET).sym
 
 # Program the device.  
 upload: applet/$(TARGET).hex
+	stty hup < $(PORT); true
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
+	stty -hup < $(PORT); true
 
 
 	# Display size of file.
@@ -162,15 +177,15 @@ sizebefore:
 	@if [ -f applet/$(TARGET).elf ]; then echo; echo $(MSG_SIZE_BEFORE); $(HEXSIZE); echo; fi
 
 sizeafter:
-	@if [ -f applet/$(TARGET).elf ]; then echo; echo $(MSG_SIZE_AFTER); $(HEXSIZE); echo; fi
+	@if [ -f applet/$(TARGET).elf ]; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE); echo; fi
 
 
 # Convert ELF to COFF for use in debugging / simulating in AVR Studio or VMLAB.
 COFFCONVERT=$(OBJCOPY) --debugging \
---change-section-address .data-0x800000 \
---change-section-address .bss-0x800000 \
---change-section-address .noinit-0x800000 \
---change-section-address .eeprom-0x810000 
+	--change-section-address .data-0x800000 \
+	--change-section-address .bss-0x800000 \
+	--change-section-address .noinit-0x800000 \
+	--change-section-address .eeprom-0x810000 
 
 
 coff: applet/$(TARGET).elf
@@ -182,13 +197,15 @@ extcoff: $(TARGET).elf
 
 
 .SUFFIXES: .elf .hex .eep .lss .sym
+.PRECIOUS: .o
 
 .elf.hex:
-	$(OBJCOPY) -O $(FORMAT) -R .eeprom $< $@
+	@echo "  COPY  $@"
+	@$(OBJCOPY) -O $(FORMAT) -R .eeprom $< $@
 
 .elf.eep:
 	-$(OBJCOPY) -j .eeprom --set-section-flags=.eeprom="alloc,load" \
-	--change-section-lma .eeprom=0 -O $(FORMAT) $< $@
+		--change-section-lma .eeprom=0 -O $(FORMAT) $< $@
 
 # Create extended listing file from ELF output file.
 .elf.lss:
@@ -199,39 +216,29 @@ extcoff: $(TARGET).elf
 	$(NM) -n $< > $@
 
 	# Link: create ELF output file from library.
-applet/$(TARGET).elf: $(TARGET).pde applet/core.a 
-	$(CC) $(ALL_CFLAGS) -Wl,--gc-sections -o $@ applet/$(TARGET).cpp -L. applet/core.a $(LDFLAGS)
+applet/$(TARGET).elf: applet/$(TARGET).cpp applet/core.a Configuration.h
+	@echo "  CXX   $@"
+	@$(CC) $(ALL_CXXFLAGS) -Wl,--gc-sections -o $@ applet/$(TARGET).cpp -L. applet/core.a $(LDFLAGS)
 
-applet/core.a: $(OBJ)
-	@for i in $(OBJ); do echo $(AR) rcs applet/core.a $$i; $(AR) rcs applet/core.a $$i; done
+applet/core.a: $(OBJ) Configuration.h
+	@for i in $(OBJ); do echo "  AR    $$i"; $(AR) rcs applet/core.a $$i; done
 
+%.o: %.c Configuration.h $(MAKEFILE)
+	@echo "  CC    $@"
+	@$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-
-# Compile: create object files from C++ source files.
-.cpp.o:
-	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@ 
-
-# Compile: create object files from C source files.
-.c.o:
-	$(CC) -c $(ALL_CFLAGS) $< -o $@ 
-
-
-# Compile: create assembler files from C source files.
-.c.s:
-	$(CC) -S $(ALL_CFLAGS) $< -o $@
-
-
-# Assemble: create object files from assembler source files.
-.S.o:
-	$(CC) -c $(ALL_ASFLAGS) $< -o $@
-
-
+%.o: %.cpp Configuration.h $(MAKEFILE)
+	@echo "  CXX   $@"
+	@$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
 
 # Target: clean project.
 clean:
-	$(REMOVE) applet/$(TARGET).hex applet/$(TARGET).eep applet/$(TARGET).cof applet/$(TARGET).elf \
-	applet/$(TARGET).map applet/$(TARGET).sym applet/$(TARGET).lss applet/core.a \
-	$(OBJ) $(LST) $(SRC:.c=.s) $(SRC:.c=.d) $(CXXSRC:.cpp=.s) $(CXXSRC:.cpp=.d)
+	@echo "  RM    applet/*"
+	@$(REMOVE) applet/$(TARGET).hex applet/$(TARGET).eep applet/$(TARGET).cof applet/$(TARGET).elf \
+		applet/$(TARGET).map applet/$(TARGET).sym applet/$(TARGET).lss applet/$(TARGET).cpp applet/core.a \
+		$(OBJ) $(LST) $(SRC:.c=.s) $(SRC:.c=.d) $(CXXSRC:.cpp=.s) $(CXXSRC:.cpp=.d)
+	@echo "  RMDIR applet/"
+	@rmdir applet
 
 depend:
 	if grep '^# DO NOT DELETE' $(MAKEFILE) >/dev/null; \

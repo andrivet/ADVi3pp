@@ -17,11 +17,14 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#ifndef FatStructs_h
-#define FatStructs_h
+#include "Marlin.h"
+#ifdef SDSUPPORT
+
+#ifndef SdFatStructs_h
+#define SdFatStructs_h
 /**
  * \file
- * FAT file structures
+ * \brief FAT file structures
  */
 /*
  * mostly from Microsoft document fatgen103.doc
@@ -32,6 +35,8 @@
 uint8_t const BOOTSIG0 = 0X55;
 /** Value for byte 511 of boot block or MBR */
 uint8_t const BOOTSIG1 = 0XAA;
+/** Value for bootSignature field int FAT/FAT32 boot sector */
+uint8_t const EXTENDED_BOOT_SIG = 0X29;
 //------------------------------------------------------------------------------
 /**
  * \struct partitionTable
@@ -104,7 +109,7 @@ typedef struct partitionTable part_t;
 struct masterBootRecord {
            /** Code Area for master boot program. */
   uint8_t  codeArea[440];
-           /** Optional WindowsNT disk signature. May contain more boot code. */
+           /** Optional Windows NT disk signature. May contain boot code. */
   uint32_t diskSignature;
            /** Usually zero but may be more boot code. */
   uint16_t usuallyZero;
@@ -118,48 +123,60 @@ struct masterBootRecord {
 /** Type name for masterBootRecord */
 typedef struct masterBootRecord mbr_t;
 //------------------------------------------------------------------------------
-/** 
- * \struct biosParmBlock
+/**
+ * \struct fat_boot
  *
- * \brief BIOS parameter block
- * 
- *  The BIOS parameter block describes the physical layout of a FAT volume.
+ * \brief Boot sector for a FAT12/FAT16 volume.
+ *
  */
-struct biosParmBlock {
+struct fat_boot {
+         /**
+          * The first three bytes of the boot sector must be valid,
+          * executable x 86-based CPU instructions. This includes a
+          * jump instruction that skips the next nonexecutable bytes.
+          */
+  uint8_t jump[3];
+         /**
+          * This is typically a string of characters that identifies
+          * the operating system that formatted the volume.
+          */
+  char    oemId[8];
           /**
-           * Count of bytes per sector. This value may take on only the
-           * following values: 512, 1024, 2048 or 4096
+           * The size of a hardware sector. Valid decimal values for this
+           * field are 512, 1024, 2048, and 4096. For most disks used in
+           * the United States, the value of this field is 512.
            */
   uint16_t bytesPerSector;
           /**
            * Number of sectors per allocation unit. This value must be a
            * power of 2 that is greater than 0. The legal values are
-           * 1, 2, 4, 8, 16, 32, 64, and 128.
+           * 1, 2, 4, 8, 16, 32, 64, and 128.  128 should be avoided.
            */
   uint8_t  sectorsPerCluster;
           /**
-           * Number of sectors before the first FAT.
-           * This value must not be zero.
+           * The number of sectors preceding the start of the first FAT,
+           * including the boot sector. The value of this field is always 1.
            */
   uint16_t reservedSectorCount;
-          /** The count of FAT data structures on the volume. This field should
-           *  always contain the value 2 for any FAT volume of any type.
+          /**
+           * The number of copies of the FAT on the volume.
+           * The value of this field is always 2.
            */
   uint8_t  fatCount;
           /**
-          * For FAT12 and FAT16 volumes, this field contains the count of
-          * 32-byte directory entries in the root directory. For FAT32 volumes,
-          * this field must be set to 0. For FAT12 and FAT16 volumes, this
-          * value should always specify a count that when multiplied by 32
-          * results in a multiple of bytesPerSector.  FAT16 volumes should
-          * use the value 512.
-          */
+           * For FAT12 and FAT16 volumes, this field contains the count of
+           * 32-byte directory entries in the root directory. For FAT32 volumes,
+           * this field must be set to 0. For FAT12 and FAT16 volumes, this
+           * value should always specify a count that when multiplied by 32
+           * results in a multiple of bytesPerSector.  FAT16 volumes should
+           * use the value 512.
+           */
   uint16_t rootDirEntryCount;
           /**
            * This field is the old 16-bit total count of sectors on the volume.
            * This count includes the count of all sectors in all four regions
            * of the volume. This field can be 0; if it is 0, then totalSectors32
-           * must be non-zero.  For FAT32 volumes, this field must be 0. For
+           * must be nonzero.  For FAT32 volumes, this field must be 0. For
            * FAT12 and FAT16 volumes, this field contains the sector count, and
            * totalSectors32 is 0 if the total sector count fits
            * (is less than 0x10000).
@@ -168,7 +185,7 @@ struct biosParmBlock {
           /**
            * This dates back to the old MS-DOS 1.x media determination and is
            * no longer usually used for anything.  0xF8 is the standard value
-           * for fixed (non-removable) media. For removable media, 0xF0 is
+           * for fixed (nonremovable) media. For removable media, 0xF0 is
            * frequently used. Legal values are 0xF0 or 0xF8-0xFF.
            */
   uint8_t  mediaType;
@@ -179,23 +196,136 @@ struct biosParmBlock {
            */
   uint16_t sectorsPerFat16;
            /** Sectors per track for interrupt 0x13. Not used otherwise. */
-  uint16_t sectorsPerTrtack;
+  uint16_t sectorsPerTrack;
            /** Number of heads for interrupt 0x13.  Not used otherwise. */
   uint16_t headCount;
           /**
            * Count of hidden sectors preceding the partition that contains this
            * FAT volume. This field is generally only relevant for media
-           *  visible on interrupt 0x13.
+           * visible on interrupt 0x13.
            */
   uint32_t hidddenSectors;
           /**
            * This field is the new 32-bit total count of sectors on the volume.
            * This count includes the count of all sectors in all four regions
            * of the volume.  This field can be 0; if it is 0, then
-           * totalSectors16 must be non-zero.
+           * totalSectors16 must be nonzero.
            */
   uint32_t totalSectors32;
+           /**
+            * Related to the BIOS physical drive number. Floppy drives are
+            * identified as 0x00 and physical hard disks are identified as
+            * 0x80, regardless of the number of physical disk drives.
+            * Typically, this value is set prior to issuing an INT 13h BIOS
+            * call to specify the device to access. The value is only
+            * relevant if the device is a boot device.
+            */
+  uint8_t  driveNumber;
+           /** used by Windows NT - should be zero for FAT */
+  uint8_t  reserved1;
+           /** 0X29 if next three fields are valid */
+  uint8_t  bootSignature;
+           /**
+            * A random serial number created when formatting a disk,
+            * which helps to distinguish between disks.
+            * Usually generated by combining date and time.
+            */
+  uint32_t volumeSerialNumber;
+           /**
+            * A field once used to store the volume label. The volume label
+            * is now stored as a special file in the root directory.
+            */
+  char     volumeLabel[11];
+           /**
+            * A field with a value of either FAT, FAT12 or FAT16,
+            * depending on the disk format.
+            */
+  char     fileSystemType[8];
+           /** X86 boot code */
+  uint8_t  bootCode[448];
+           /** must be 0X55 */
+  uint8_t  bootSectorSig0;
+           /** must be 0XAA */
+  uint8_t  bootSectorSig1;
+};
+/** Type name for FAT Boot Sector */
+typedef struct fat_boot fat_boot_t;
+//------------------------------------------------------------------------------
+/**
+ * \struct fat32_boot
+ *
+ * \brief Boot sector for a FAT32 volume.
+ *
+ */
+struct fat32_boot {
+         /**
+          * The first three bytes of the boot sector must be valid,
+          * executable x 86-based CPU instructions. This includes a
+          * jump instruction that skips the next nonexecutable bytes.
+          */
+  uint8_t jump[3];
+         /**
+          * This is typically a string of characters that identifies
+          * the operating system that formatted the volume.
+          */
+  char    oemId[8];
           /**
+           * The size of a hardware sector. Valid decimal values for this
+           * field are 512, 1024, 2048, and 4096. For most disks used in
+           * the United States, the value of this field is 512.
+           */
+  uint16_t bytesPerSector;
+          /**
+           * Number of sectors per allocation unit. This value must be a
+           * power of 2 that is greater than 0. The legal values are
+           * 1, 2, 4, 8, 16, 32, 64, and 128.  128 should be avoided.
+           */
+  uint8_t  sectorsPerCluster;
+          /**
+           * The number of sectors preceding the start of the first FAT,
+           * including the boot sector. Must not be zero
+           */
+  uint16_t reservedSectorCount;
+          /**
+           * The number of copies of the FAT on the volume.
+           * The value of this field is always 2.
+           */
+  uint8_t  fatCount;
+          /**
+           * FAT12/FAT16 only. For FAT32 volumes, this field must be set to 0.
+           */
+  uint16_t rootDirEntryCount;
+          /**
+           * For FAT32 volumes, this field must be 0.
+           */
+  uint16_t totalSectors16;
+          /**
+           * This dates back to the old MS-DOS 1.x media determination and is
+           * no longer usually used for anything.  0xF8 is the standard value
+           * for fixed (nonremovable) media. For removable media, 0xF0 is
+           * frequently used. Legal values are 0xF0 or 0xF8-0xFF.
+           */
+  uint8_t  mediaType;
+          /**
+           * On FAT32 volumes this field must be 0, and sectorsPerFat32
+           * contains the FAT size count.
+           */
+  uint16_t sectorsPerFat16;
+           /** Sectors per track for interrupt 0x13. Not used otherwise. */
+  uint16_t sectorsPerTrack;
+           /** Number of heads for interrupt 0x13.  Not used otherwise. */
+  uint16_t headCount;
+          /**
+           * Count of hidden sectors preceding the partition that contains this
+           * FAT volume. This field is generally only relevant for media
+           * visible on interrupt 0x13.
+           */
+  uint32_t hidddenSectors;
+          /**
+           * Contains the total number of sectors in the FAT32 volume.
+           */
+  uint32_t totalSectors32;
+         /**
            * Count of sectors occupied by one FAT on FAT32 volumes.
            */
   uint32_t sectorsPerFat32;
@@ -206,7 +336,8 @@ struct biosParmBlock {
            *             Only valid if mirroring is disabled.
            * Bits 4-6 -- Reserved.
            * Bit 7	-- 0 means the FAT is mirrored at runtime into all FATs.
-	         *        -- 1 means only one FAT is active; it is the one referenced in bits 0-3.
+	         *        -- 1 means only one FAT is active; it is the one referenced
+	         *             in bits 0-3.
            * Bits 8-15 	-- Reserved.
            */
   uint16_t fat32Flags;
@@ -226,7 +357,7 @@ struct biosParmBlock {
            */
   uint16_t fat32FSInfo;
           /**
-           * If non-zero, indicates the sector number in the reserved area
+           * If nonzero, indicates the sector number in the reserved area
            * of the volume of a copy of the boot record. Usually 6.
            * No value other than 6 is recommended.
            */
@@ -236,34 +367,33 @@ struct biosParmBlock {
            * should always set all of the bytes of this field to 0.
            */
   uint8_t  fat32Reserved[12];
-};
-/** Type name for biosParmBlock */
-typedef struct biosParmBlock bpb_t;
-//------------------------------------------------------------------------------
-/**
- * \struct fat32BootSector
- *
- * \brief Boot sector for a FAT16 or FAT32 volume.
- * 
- */  
-struct fat32BootSector {
-           /** X86 jmp to boot program */
-  uint8_t  jmpToBootCode[3];
-           /** informational only - don't depend on it */
-  char     oemName[8];
-           /** BIOS Parameter Block */
-  bpb_t    bpb;
-           /** for int0x13 use value 0X80 for hard drive */
+           /**
+            * Related to the BIOS physical drive number. Floppy drives are
+            * identified as 0x00 and physical hard disks are identified as
+            * 0x80, regardless of the number of physical disk drives.
+            * Typically, this value is set prior to issuing an INT 13h BIOS
+            * call to specify the device to access. The value is only
+            * relevant if the device is a boot device.
+            */
   uint8_t  driveNumber;
            /** used by Windows NT - should be zero for FAT */
   uint8_t  reserved1;
            /** 0X29 if next three fields are valid */
   uint8_t  bootSignature;
-           /** usually generated by combining date and time */
+           /**
+            * A random serial number created when formatting a disk,
+            * which helps to distinguish between disks.
+            * Usually generated by combining date and time.
+            */
   uint32_t volumeSerialNumber;
-           /** should match volume label in root dir */
+           /**
+            * A field once used to store the volume label. The volume label
+            * is now stored as a special file in the root directory.
+            */
   char     volumeLabel[11];
-           /** informational only - don't depend on it */
+           /**
+            * A text field with a value of FAT32.
+            */
   char     fileSystemType[8];
            /** X86 boot code */
   uint8_t  bootCode[420];
@@ -272,8 +402,54 @@ struct fat32BootSector {
            /** must be 0XAA */
   uint8_t  bootSectorSig1;
 };
+/** Type name for FAT32 Boot Sector */
+typedef struct fat32_boot fat32_boot_t;
+//------------------------------------------------------------------------------
+/** Lead signature for a FSINFO sector */
+uint32_t const FSINFO_LEAD_SIG = 0x41615252;
+/** Struct signature for a FSINFO sector */
+uint32_t const FSINFO_STRUCT_SIG = 0x61417272;
+/**
+ * \struct fat32_fsinfo
+ *
+ * \brief FSINFO sector for a FAT32 volume.
+ *
+ */
+struct fat32_fsinfo {
+           /** must be 0X52, 0X52, 0X61, 0X41 */
+  uint32_t  leadSignature;
+           /** must be zero */
+  uint8_t  reserved1[480];
+           /** must be 0X72, 0X72, 0X41, 0X61 */
+  uint32_t  structSignature;
+          /**
+           * Contains the last known free cluster count on the volume.
+           * If the value is 0xFFFFFFFF, then the free count is unknown
+           * and must be computed. Any other value can be used, but is
+           * not necessarily correct. It should be range checked at least
+           * to make sure it is <= volume cluster count.
+           */
+  uint32_t freeCount;
+          /**
+           * This is a hint for the FAT driver. It indicates the cluster
+           * number at which the driver should start looking for free clusters.
+           * If the value is 0xFFFFFFFF, then there is no hint and the driver
+           * should start looking at cluster 2.
+           */
+  uint32_t nextFree;
+           /** must be zero */
+  uint8_t  reserved2[12];
+           /** must be 0X00, 0X00, 0X55, 0XAA */
+  uint8_t  tailSignature[4];
+};
+/** Type name for FAT32 FSINFO Sector */
+typedef struct fat32_fsinfo fat32_fsinfo_t;
 //------------------------------------------------------------------------------
 // End Of Chain values for FAT entries
+/** FAT12 end of chain value used by Microsoft. */
+uint16_t const FAT12EOC = 0XFFF;
+/** Minimum value for FAT12 EOC.  Use to test for EOC. */
+uint16_t const FAT12EOC_MIN = 0XFF8;
 /** FAT16 end of chain value used by Microsoft. */
 uint16_t const FAT16EOC = 0XFFFF;
 /** Minimum value for FAT16 EOC.  Use to test for EOC. */
@@ -284,9 +460,6 @@ uint32_t const FAT32EOC = 0X0FFFFFFF;
 uint32_t const FAT32EOC_MIN = 0X0FFFFFF8;
 /** Mask a for FAT32 entry. Entries are 28 bits. */
 uint32_t const FAT32MASK = 0X0FFFFFFF;
-
-/** Type name for fat32BootSector */
-typedef struct fat32BootSector fbs_t;
 //------------------------------------------------------------------------------
 /**
  * \struct directoryEntry
@@ -319,8 +492,8 @@ typedef struct fat32BootSector fbs_t;
  * The valid time range is from Midnight 00:00:00 to 23:59:58.
  */
 struct directoryEntry {
-           /**
-            * Short 8.3 name.
+           /** Short 8.3 name.
+            *
             * The first eight bytes contain the file name with blank fill.
             * The last three bytes contain the file extension with blank fill.
             */
@@ -397,22 +570,41 @@ uint8_t const DIR_ATT_LONG_NAME = 0X0F;
 uint8_t const DIR_ATT_LONG_NAME_MASK = 0X3F;
 /** defined attribute bits */
 uint8_t const DIR_ATT_DEFINED_BITS = 0X3F;
-/** Directory entry is part of a long name */
+/** Directory entry is part of a long name
+ * \param[in] dir Pointer to a directory entry.
+ *
+ * \return true if the entry is for part of a long name else false.
+ */
 static inline uint8_t DIR_IS_LONG_NAME(const dir_t* dir) {
   return (dir->attributes & DIR_ATT_LONG_NAME_MASK) == DIR_ATT_LONG_NAME;
 }
 /** Mask for file/subdirectory tests */
 uint8_t const DIR_ATT_FILE_TYPE_MASK = (DIR_ATT_VOLUME_ID | DIR_ATT_DIRECTORY);
-/** Directory entry is for a file */
+/** Directory entry is for a file
+ * \param[in] dir Pointer to a directory entry.
+ *
+ * \return true if the entry is for a normal file else false.
+ */
 static inline uint8_t DIR_IS_FILE(const dir_t* dir) {
   return (dir->attributes & DIR_ATT_FILE_TYPE_MASK) == 0;
 }
-/** Directory entry is for a subdirectory */
+/** Directory entry is for a subdirectory
+ * \param[in] dir Pointer to a directory entry.
+ *
+ * \return true if the entry is for a subdirectory else false.
+ */
 static inline uint8_t DIR_IS_SUBDIR(const dir_t* dir) {
   return (dir->attributes & DIR_ATT_FILE_TYPE_MASK) == DIR_ATT_DIRECTORY;
 }
-/** Directory entry is for a file or subdirectory */
+/** Directory entry is for a file or subdirectory
+ * \param[in] dir Pointer to a directory entry.
+ *
+ * \return true if the entry is for a normal file or subdirectory else false.
+ */
 static inline uint8_t DIR_IS_FILE_OR_SUBDIR(const dir_t* dir) {
   return (dir->attributes & DIR_ATT_VOLUME_ID) == 0;
 }
-#endif  // FatStructs_h
+#endif  // SdFatStructs_h
+
+
+#endif
