@@ -257,6 +257,7 @@
 #include "duration_t.h"
 #include "types.h"
 #include "gcode.h"
+#include "adv_i3_plus_plus.h"
 
 #if HAS_ABL
   #include "vector_3.h"
@@ -13210,6 +13211,7 @@ void idle(
   #endif  // MAX7219_DEBUG
 
   lcd_update();
+  advi3pp::i3PlusPrinter::task();
 
   host_keepalive();
 
@@ -13551,6 +13553,8 @@ void setup() {
       pe_deactivate_magnet(1);
     #endif
   #endif
+
+  advi3pp::i3PlusPrinter::setup();
 }
 
 /**

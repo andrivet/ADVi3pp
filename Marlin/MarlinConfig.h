@@ -31,7 +31,7 @@
 #include "Conditionals_LCD.h"
 #include "Configuration_adv.h"
 #include "pins.h"
-#ifndef USBCON
+#if !(defined(USBCON) || defined(ARDUINO_SERIAL))
   #define HardwareSerial_h // trick to disable the standard HWserial
 #endif
 #include "Arduino.h"

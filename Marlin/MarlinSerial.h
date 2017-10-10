@@ -75,7 +75,7 @@
 #define BIN 2
 #define BYTE 0
 
-#ifndef USBCON
+#if !(defined(USBCON) || defined(ARDUINO_SERIAL))
   // Define constants and variables for buffering incoming serial data.  We're
   // using a ring buffer (I think), in which rx_buffer_head is the index of the
   // location to which to write the next incoming character and rx_buffer_tail

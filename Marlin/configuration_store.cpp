@@ -183,6 +183,7 @@ MarlinSettings settings;
 #include "planner.h"
 #include "temperature.h"
 #include "ultralcd.h"
+#include "adv_i3_plus_plus.h"
 #include "stepper.h"
 
 #if ENABLED(INCH_MODE_SUPPORT) || (ENABLED(ULTIPANEL) && ENABLED(TEMPERATURE_UNITS_SUPPORT))
@@ -637,6 +638,8 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(dummy);
     #endif
 
+    advi3pp::i3PlusPrinter::store_presets(&write_data, eeprom_index, working_crc);
+    
     #if HAS_MOTOR_CURRENT_PWM
       for (uint8_t q = 3; q--;) EEPROM_WRITE(stepper.motor_current_setting[q]);
     #else
@@ -997,6 +1000,8 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(dummy);
       #endif
 
+      advi3pp::i3PlusPrinter::restore_presets(&read_data, eeprom_index, working_crc);
+
       #if HAS_MOTOR_CURRENT_PWM
         for (uint8_t q = 3; q--;) EEPROM_READ(stepper.motor_current_setting[q]);
       #else
@@ -1191,6 +1196,8 @@ void MarlinSettings::reset() {
   planner.max_jerk[Z_AXIS] = DEFAULT_ZJERK;
   planner.max_jerk[E_AXIS] = DEFAULT_EJERK;
 
+  advi3pp::i3PlusPrinter::reset_presets();
+  
   #if ENABLED(ENABLE_LEVELING_FADE_HEIGHT)
     planner.z_fade_height = 0.0;
   #endif

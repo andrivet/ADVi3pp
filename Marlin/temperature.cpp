@@ -30,6 +30,7 @@
 #include "ultralcd.h"
 #include "planner.h"
 #include "language.h"
+#include "adv_i3_plus_plus.h"
 
 #if ENABLED(HEATER_0_USES_MAX6675)
   #include "spi.h"
@@ -390,6 +391,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
       if (ELAPSED(ms, temp_ms + 2000UL)) {
         #if HAS_TEMP_HOTEND || HAS_TEMP_BED
           print_heaterstates();
+          advi3pp::i3PlusPrinter::update_graph_data();
           SERIAL_EOL();
         #endif
 
@@ -443,6 +445,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
             _SET_BED_PID();
           #endif
         }
+        advi3pp::i3PlusPrinter::auto_pid_finished();
         return;
       }
       lcd_update();
@@ -508,6 +511,7 @@ int Temperature::getHeaterPower(int heater) {
 //
 void Temperature::_temp_error(const int8_t e, const char * const serial_msg, const char * const lcd_msg) {
   static bool killed = false;
+  advi3pp::i3PlusPrinter::temperature_error();
   if (IsRunning()) {
     SERIAL_ERROR_START();
     serialprintPGM(serial_msg);
