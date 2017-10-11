@@ -33,8 +33,7 @@ enum class OpMode: uint8_t
     LevelInit           = 1,
     LoadFilament        = 2,
     UnloadFilament      = 3,
-    Move                = 4,
-    AutoPID             = 5
+    Move                = 4
 };
 
 enum class GraphUpdate
@@ -219,13 +218,13 @@ public:
 
 private:
     void send_versions();
-    void execute_looped_operation(millis_t ms);
+    void execute_background_task(millis_t ms);
     void leveling_init(millis_t ms);
     void unload_filament(millis_t ms);
     void load_filament(millis_t ms);
     void status_update(millis_t ms);
     Page get_current_page();
-    void read_serial();
+    void read_lcd_serial();
     void send_stats();
     template<size_t S> void get_file_name(uint8_t index, Name<S>& name);
     Name<16> get_lcd_firmware_version();
@@ -235,7 +234,7 @@ private: // Actions
     void sd_card_select_file(KeyValue key_value);
     void print_stop(KeyValue key_value);
     void print_pause(KeyValue key_value);
-    void print_resumt(KeyValue key_value);
+    void print_resume(KeyValue key_value);
     void preheat(KeyValue key_value);
     void cooldown(KeyValue key_value);
     void motors_or_pid_settings(KeyValue key_value);

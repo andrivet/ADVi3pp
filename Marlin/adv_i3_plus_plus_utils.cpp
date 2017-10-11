@@ -24,7 +24,7 @@
  */
 #include "adv_i3_plus_plus.h"
 #include "adv_i3_plus_plus_utils.h"
-#include "adv_i3_plus_plus_private.h"
+#include "adv_i3_plus_plus_impl.h"
 
 using namespace advi3pp;
 
@@ -36,6 +36,12 @@ void Error(const char* message)
 // --------------------------------------------------------------------
 // Frame
 // --------------------------------------------------------------------
+
+//! Construct an input, empty, Frame.
+Frame::Frame()
+: position_{0}
+{
+}
 
 //! Construct an output Frame.
 //! @param command  The command to be set into this Frame
@@ -106,12 +112,11 @@ Frame& Frame::operator<<(Variable var)
     return *this;
 }
 
-//! Send tis Frame to the LCD display and then reset the Frame.
+//! Send tis Frame to the LCD display.
 void Frame::send()
 {
     Serial2.write(buffer_, 3 + buffer_[Position::Length]); // Header, length and data
     // Reset internals so it can be reused (same command)
-    reset(get_command());
 }
 
 //! Reset this Frame as an input Frame
@@ -232,4 +237,41 @@ Frame& Frame::operator>>(Action& action)
     (*this) >> value;
     action = static_cast<Action>(value.word);
     return *this;
+}
+
+
+WriteRegisterDataFrame::WriteRegisterDataFrame(Register reg)
+: Frame(Command::WriteRegisterData)
+{
+    *this << reg;
+}
+
+ReadRegisterDataFrame::ReadRegisterDataFrame(Register reg, uint8_t nb_bytes)
+: Frame{Command::ReadRegisterData}
+{
+    *this << Uint8{nb_bytes};
+}
+
+WriteRamDataFrame::WriteRamDataFrame(Variable var)
+: Frame{Command::WriteRamData}
+{
+    *this << var;
+}
+
+void WriteRamDataFrame::reset(Variable var)
+{
+    Frame::reset(get_command());
+    *this << var;
+}
+
+ReadRamDataFrame::ReadRamDataFrame(Variable var, uint8_t nb_words)
+: Frame{Command::ReadRamData}
+{
+    *this << var << Uint8{nb_words};
+}
+
+WriteCurveDataFrame::WriteCurveDataFrame(uint8_t channels)
+: Frame{Command::WriteCurveData}
+{
+    *this << Uint16{channels};
 }

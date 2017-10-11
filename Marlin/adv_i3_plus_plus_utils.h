@@ -40,6 +40,10 @@ enum class Variable: uint16_t;
 enum class Command: uint8_t;
 enum class Action: uint16_t;
 
+// --------------------------------------------------------------------
+// Uint8
+// --------------------------------------------------------------------
+
 //! An unsigned 8 bits value.
 struct Uint8
 {
@@ -48,6 +52,10 @@ struct Uint8
     constexpr explicit Uint8(Register reg) : byte{static_cast<uint8_t>(reg)} {}
     constexpr explicit Uint8(Page page) : byte{static_cast<uint8_t>(page)} {}
 };
+
+// --------------------------------------------------------------------
+// Uint16
+// --------------------------------------------------------------------
 
 //! An unsigned 16 bit. value.
 struct Uint16
@@ -68,6 +76,7 @@ constexpr Uint16 operator "" _u16(unsigned long long int word) { return Uint16(s
 // --------------------------------------------------------------------
 // Name
 // --------------------------------------------------------------------
+
 //! A fixed-size string of characters, truncating values when necessary.
 template<size_t S = 26>
 class Name
@@ -101,19 +110,15 @@ private:
 // Frame
 // --------------------------------------------------------------------
 //! A frame to be send to the LCD or received from the LCD
-class Frame
+struct Frame
 {
-public:
-    Frame() = default;
-    explicit Frame(Command command);
+    Frame();
 
     void send();
     Frame& operator<<(const Uint8& data);
     Frame& operator<<(const Uint16& data);
     template<size_t S> Frame& operator<<(const Name<S>& name);
-    Frame& operator<<(Register reg);
     Frame& operator<<(Page page);
-    Frame& operator<<(Variable var);
 
     uint8_t receive();
     Command get_command() const;
@@ -124,7 +129,12 @@ public:
     Frame& operator>>(Action& action);
 
     void reset();
+
+protected:
+    explicit Frame(Command command);
     void reset(Command command);
+    Frame& operator<<(Register reg);
+    Frame& operator<<(Variable var);
 
 private:
     void wait_for_data(uint8_t length);
@@ -138,6 +148,34 @@ private:
     uint8_t buffer_[FRAME_BUFFER_SIZE];
     uint8_t position_ = 0;
 };
+
+
+struct WriteRegisterDataFrame: Frame
+{
+    explicit WriteRegisterDataFrame(Register reg);
+};
+
+struct ReadRegisterDataFrame: Frame
+{
+    ReadRegisterDataFrame(Register reg, uint8_t nb_bytes);
+};
+
+struct WriteRamDataFrame: Frame
+{
+    explicit WriteRamDataFrame(Variable var);
+    void reset(Variable var);
+};
+
+struct ReadRamDataFrame: Frame
+{
+    ReadRamDataFrame(Variable var, uint8_t nb_words);
+};
+
+struct WriteCurveDataFrame: Frame
+{
+    explicit WriteCurveDataFrame(uint8_t channels);
+};
+
 
 // --------------------------------------------------------------------
 // Name

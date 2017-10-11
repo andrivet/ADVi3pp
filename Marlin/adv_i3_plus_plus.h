@@ -73,7 +73,6 @@ namespace advi3pp
     {
         static void setup();
         static void task();
-        static void show_page(Page page);
         static void update_graph_data();
         static void auto_pid_finished();
         static void store_presets(eeprom_write write, int eeprom_index, uint16_t& working_crc);
