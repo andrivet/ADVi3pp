@@ -32,54 +32,53 @@ class MarlinSettings;
 using eeprom_write = void (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
 using eeprom_read  = void (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc);
 
-namespace advi3pp
+namespace advi3pp {
+
+enum class Page: uint8_t
 {
+    None                = 0,
+    Boot                = 1,
+    Main                = 21,
+    SdCard              = 31,
+    Print               = 33,
+    PrintSettings       = 35,
+    Tools               = 37,
+    Preheat             = 39,
+    Move                = 41,
+    System              = 43,
+    PidSettings         = 45,
+    MotoSettings        = 47,
+    Filament            = 49,
+    Unload              = 51,
+    Load                = 53,
+    LevelingStart       = 55,
+    Leveling            = 56,
+    LcdUpdate           = 58,
+    Statistics          = 59,
+    AutoPidTuning       = 61,
+    Temperature         = 63,
+    AutoPidGraph        = 65,
+    AutoPidFinished     = 66,
+    ThermalRunawayError = 68,
+    About               = 69,
+    FactoryReset        = 71,
+    Mismatch            = 73
+};
 
-    enum class Page: uint8_t
-    {
-        None                = 0,
-        Boot                = 1,
-        Main                = 21,
-        SdCard              = 31,
-        Print               = 33,
-        PrintSettings       = 35,
-        Tools               = 37,
-        Preheat             = 39,
-        Move                = 41,
-        System              = 43,
-        PidSettings         = 45,
-        MotoSettings        = 47,
-        Filament            = 49,
-        Unload              = 51,
-        Load                = 53,
-        LevelingStart       = 55,
-        Leveling            = 56,
-        LcdUpdate           = 58,
-        Statistics          = 59,
-        AutoPidTuning       = 61,
-        Temperature         = 63,
-        AutoPidGraph        = 65,
-        AutoPidFinished     = 66,
-        ThermalRunawayError = 68,
-        About               = 69,
-        FactoryReset        = 71,
-        Mismatch            = 73
-    };
-
-    //!
-    //! The Duplicator i3 Plus printer and its LCD screen
-    //!
-    struct i3PlusPrinter
-    {
-        static void setup();
-        static void task();
-        static void update_graph_data();
-        static void auto_pid_finished();
-        static void store_presets(eeprom_write write, int eeprom_index, uint16_t& working_crc);
-        static void restore_presets(eeprom_read read, int eeprom_index, uint16_t& working_crc);
-        static void reset_presets();
-        static void temperature_error();
-    };
+//!
+//! The Duplicator i3 Plus printer and its LCD screen
+//!
+struct i3PlusPrinter
+{
+    static void setup();
+    static void task();
+    static void update_graph_data();
+    static void auto_pid_finished();
+    static void store_presets(eeprom_write write, int eeprom_index, uint16_t& working_crc);
+    static void restore_presets(eeprom_read read, int eeprom_index, uint16_t& working_crc);
+    static void reset_presets();
+    static void temperature_error();
+};
 
 }
 

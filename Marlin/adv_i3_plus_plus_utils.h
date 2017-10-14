@@ -41,6 +41,18 @@ enum class Command: uint8_t;
 enum class Action: uint16_t;
 
 // --------------------------------------------------------------------
+// Logging
+// --------------------------------------------------------------------
+
+#ifdef DEBUG
+#define ADVi3PP_ERROR(expresssion) {Name<100> message; message << expresssion; Serial.println(message.c_str());}
+#define ADVi3PP_LOG(expresssion)   {Name<100> message; message << expresssion; Serial.println(message.c_str());}
+#else
+#define ADVi3PP_ERROR(expresssion) {}
+#define ADVi3PP_LOG(expresssion)   {}
+#endif
+
+// --------------------------------------------------------------------
 // Uint8
 // --------------------------------------------------------------------
 
@@ -96,6 +108,9 @@ public:
 
     Name& operator<<(const char* value);
     Name& operator<<(uint16_t value);
+    Name& operator<<(Command command);
+    Name& operator<<(Register reg);
+    Name& operator<<(Variable var);
 
 private:
     void fill_remaining();
@@ -120,15 +135,22 @@ struct Frame
     template<size_t S> Frame& operator<<(const Name<S>& name);
     Frame& operator<<(Page page);
 
-    uint8_t receive();
+    bool available(uint8_t bytes = 3);
+    bool receive();
     Command get_command() const;
     size_t get_length() const;
-    const uint8_t* get_data() const;
     Frame& operator>>(Uint8& data);
     Frame& operator>>(Uint16& data);
     Frame& operator>>(Action& action);
+    Frame& operator>>(Command& command);
+    Frame& operator>>(Register& reg);
+    Frame& operator>>(Variable& var);
 
     void reset();
+
+#ifdef UNIT_TEST
+    const uint8_t* get_data() const;
+#endif
 
 protected:
     explicit Frame(Command command);
@@ -139,41 +161,61 @@ protected:
 private:
     void wait_for_data(uint8_t length);
 
-private:
+protected:
     static const size_t FRAME_BUFFER_SIZE = 255;
     static const uint8_t HEADER_BYTE_0 = 0x5A;
     static const uint8_t HEADER_BYTE_1 = 0xA5;
-    struct Position { enum { Header0, Header1, Length, Command, Data }; };
+    struct Position { enum { Header0 = 0, Header1 = 1, Length = 2, Command = 3, Data = 4, Register = 4, Variable = 4, NbBytes = 5, NbWords = 6 }; };
 
     uint8_t buffer_[FRAME_BUFFER_SIZE];
     uint8_t position_ = 0;
 };
 
 
-struct WriteRegisterDataFrame: Frame
+// --------------------------------------------------------------------
+// Frame subclasses
+// --------------------------------------------------------------------
+
+struct WriteRegisterDataRequest: Frame
 {
-    explicit WriteRegisterDataFrame(Register reg);
+    explicit WriteRegisterDataRequest(Register reg);
 };
 
-struct ReadRegisterDataFrame: Frame
+struct ReadRegisterDataRequest: Frame
 {
-    ReadRegisterDataFrame(Register reg, uint8_t nb_bytes);
+    ReadRegisterDataRequest(Register reg, uint8_t nb_bytes);
+    Register get_register() const;
+    uint8_t get_nb_bytes() const;
 };
 
-struct WriteRamDataFrame: Frame
+struct ReadRegisterDataResponse: Frame
 {
-    explicit WriteRamDataFrame(Variable var);
+    ReadRegisterDataResponse() = default;
+    bool receive(Register reg, uint8_t nb_bytes);
+    bool receive(const ReadRegisterDataRequest& request);
+};
+
+struct WriteRamDataRequest: Frame
+{
+    explicit WriteRamDataRequest(Variable var);
     void reset(Variable var);
 };
 
-struct ReadRamDataFrame: Frame
+struct ReadRamDataRequest: Frame
 {
-    ReadRamDataFrame(Variable var, uint8_t nb_words);
+    ReadRamDataRequest(Variable var, uint8_t nb_words);
 };
 
-struct WriteCurveDataFrame: Frame
+struct ReadRamDataResponse: Frame
 {
-    explicit WriteCurveDataFrame(uint8_t channels);
+    ReadRamDataResponse() = default;
+    bool receive(Variable var, uint8_t nb_words);
+    bool receive(const ReadRamDataRequest& request);
+};
+
+struct WriteCurveDataRequest: Frame
+{
+    explicit WriteCurveDataRequest(uint8_t channels);
 };
 
 
@@ -281,10 +323,45 @@ Name<S>& Name<S>::operator<<(uint16_t value)
     return (*this << buffer);
 }
 
+//! Append a Command to this Name. It is truncated if it does not fit into the Name.
+//! @tparam S           The maximum size of the Name
+//! @param command      The command to be append to this Name (after transformation into a string)
+//! @return             Itself
+template<size_t S>
+Name<S>& Name<S>::operator<<(Command command)
+{
+    return (*this << static_cast<uint8_t>(command));
+}
+
+//! Append a Register to this Name. It is truncated if it does not fit into the Name.
+//! @tparam S           The maximum size of the Name
+//! @param reg          The register to be append to this Name (after transformation into a string)
+//! @return             Itself
+template<size_t S>
+Name<S>&  Name<S>::operator<<(Register reg)
+{
+    return (*this << static_cast<uint8_t>(reg));
+}
+
+//! Append a Variable to this Name. It is truncated if it does not fit into the Name.
+//! @tparam S           The maximum size of the Name
+//! @param var          The variable to be append to this Name (after transformation into a string)
+//! @return             Itself
+template<size_t S>
+Name<S>&  Name<S>::operator<<(Variable var)
+{
+    return (*this << static_cast<uint16_t>(var));
+}
+
+
 // --------------------------------------------------------------------
 // Frame
 // --------------------------------------------------------------------
 
+//! Append a Name to this Frame.
+//! @tparam S           The size of the Name
+//! @param name         The name to be append
+//! @return             Itself
 template<size_t S>
 Frame& Frame::operator<<(const Name<S>& name)
 {

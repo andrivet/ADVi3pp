@@ -26,12 +26,7 @@
 #include "adv_i3_plus_plus_utils.h"
 #include "adv_i3_plus_plus_impl.h"
 
-using namespace advi3pp;
-
-void Error(const char* message)
-{
-    // TODO
-}
+namespace advi3pp { inline namespace internals {
 
 // --------------------------------------------------------------------
 // Frame
@@ -65,7 +60,7 @@ Frame& Frame::operator<<(const Uint8 &data)
         buffer_[Position::Length] += 1;
     }
     else
-        Error("Data truncated");
+        ADVi3PP_ERROR("Data truncated");
     return *this;
 }
 
@@ -81,7 +76,7 @@ Frame& Frame::operator<<(const Uint16 &data)
         buffer_[Position::Length] += 2;
     }
     else
-        Error("Data truncated");
+        ADVi3PP_ERROR("Data truncated");
     return *this;
 }
 
@@ -115,8 +110,8 @@ Frame& Frame::operator<<(Variable var)
 //! Send tis Frame to the LCD display.
 void Frame::send()
 {
+    ADVi3PP_LOG("Send a Frame of " << get_length() << " bytes, with command = " << static_cast<uint8_t>(get_command()));
     Serial2.write(buffer_, 3 + buffer_[Position::Length]); // Header, length and data
-    // Reset internals so it can be reused (same command)
 }
 
 //! Reset this Frame as an input Frame
@@ -141,41 +136,48 @@ void Frame::reset(Command command)
 void Frame::wait_for_data(uint8_t length)
 {
     while (Serial2.available() < length)
-        /*nothing*/;
+        delay(50);
+}
+
+bool Frame::available(uint8_t bytes)
+{
+    return Serial2.available() >= bytes;
 }
 
 //! Receive data from the LCD display.
-uint8_t Frame::receive()
+bool Frame::receive()
 {
-    if (Serial2.available() < 3)
-        return 0;
+    wait_for_data(3);
 
-    if (Serial2.read() != HEADER_BYTE_0)
-        return 0;
+    if(Serial2.read() != HEADER_BYTE_0 || Serial2.read() != HEADER_BYTE_1)
+    {
+        ADVi3PP_ERROR("Invalid header when receiving a Frame");
+        return false;
+    }
 
-    wait_for_data(1);
-    if (Serial2.read() != HEADER_BYTE_1)
-        return 0;
-
-    wait_for_data(1);
     auto length = static_cast<uint8_t>(Serial2.read());
+
+    ADVi3PP_LOG("Receive a Frame of " << length << " bytes.");
 
     buffer_[0] = HEADER_BYTE_0;
     buffer_[1] = HEADER_BYTE_1;
 
     if(length >= FRAME_BUFFER_SIZE - 3)
     {
-        Error("Data to be received is too big for the Frame buffer so skip it");
-        return 0;
+        ADVi3PP_ERROR("Data to be received is too big for the Frame buffer so skip it");
+        return false;
     }
 
     buffer_[2] = length;
     auto read = Serial2.readBytes(buffer_ + 3, length);
     if(read != length)
+    {
+        ADVi3PP_ERROR("Invalid amount of bytes received");
         return 0;
+    }
 
-    position_ = Position::Data;
-    return length + 3;
+    position_ = Position::Command;
+    return true;
 }
 
 //! Get the Command set inside this Frame.
@@ -190,11 +192,13 @@ size_t Frame::get_length() const
     return static_cast<size_t>(buffer_[Position::Length]);
 }
 
+#ifdef UNIT_TEST
 //! Return the raw data. This is used by unit testing.
 const uint8_t* Frame::get_data() const
 {
     return buffer_;
 }
+#endif
 
 //! Extract the next byte from this input Frame.
 //! @param data     Next byte extracted from this Frame
@@ -203,7 +207,7 @@ Frame& Frame::operator>>(Uint8& data)
 {
     if(position_ >= 3 + get_length())
     {
-        Error("Try to read a byte after the end of data");
+        ADVi3PP_LOG("Try to read a byte after the end of data");
         return *this;
     }
 
@@ -218,7 +222,7 @@ Frame& Frame::operator>>(Uint16& data)
 {
     if(position_ >= 3 + get_length() - 1)
     {
-        Error("Try to read a word after the end of data");
+        ADVi3PP_LOG("Try to read a word after the end of data");
         return *this;
     }
 
@@ -234,44 +238,135 @@ Frame& Frame::operator>>(Uint16& data)
 Frame& Frame::operator>>(Action& action)
 {
     Uint16 value;
-    (*this) >> value;
+    *this >> value;
     action = static_cast<Action>(value.word);
     return *this;
 }
 
+Frame& Frame::operator>>(Command& command)
+{
+    Uint8 value;
+    *this >> value;
+    command = static_cast<Command>(value.byte);
+    return *this;
+}
 
-WriteRegisterDataFrame::WriteRegisterDataFrame(Register reg)
+Frame& Frame::operator>>(Register& reg)
+{
+    Uint8 value;
+    *this >> value;
+    reg = static_cast<Register>(value.byte);
+    return *this;
+}
+
+Frame& Frame::operator>>(Variable& var)
+{
+    Uint16 value;
+    *this >> value;
+    var = static_cast<Variable>(value.word);
+    return *this;
+}
+
+WriteRegisterDataRequest::WriteRegisterDataRequest(Register reg)
 : Frame(Command::WriteRegisterData)
 {
     *this << reg;
 }
 
-ReadRegisterDataFrame::ReadRegisterDataFrame(Register reg, uint8_t nb_bytes)
+ReadRegisterDataRequest::ReadRegisterDataRequest(Register reg, uint8_t nb_bytes)
 : Frame{Command::ReadRegisterData}
 {
-    *this << Uint8{nb_bytes};
+    *this << reg << Uint8{nb_bytes};
 }
 
-WriteRamDataFrame::WriteRamDataFrame(Variable var)
+Register ReadRegisterDataRequest::get_register() const
+{
+    return static_cast<Register>(buffer_[Position::Register]);
+}
+
+uint8_t ReadRegisterDataRequest::get_nb_bytes() const
+{
+    return buffer_[Position::NbBytes];
+}
+
+bool ReadRegisterDataResponse::receive(Register reg, uint8_t nb_bytes)
+{
+    if(!Frame::receive())
+        return false;
+
+    Command command; Register frame_reg; Uint8 frame_nb_bytes;
+    *this >> command >> frame_reg >> frame_nb_bytes;
+    if(command != Command::ReadRegisterData)
+    {
+        ADVi3PP_ERROR("Command in response (" << command << ") does not correspond to request (" << Command::ReadRegisterData << ")");
+        return false;
+    }
+    if(frame_reg != reg)
+    {
+        ADVi3PP_ERROR("Register in response (" << frame_reg << ") does not correspond to request (" << reg << ")");
+        return false;
+    }
+    if(frame_nb_bytes.byte != nb_bytes)
+    {
+        ADVi3PP_ERROR("Data length in response (" << frame_nb_bytes.byte << ") does not correspond to request (" << nb_bytes << ")");
+        return false;
+    }
+
+    return true;
+}
+
+bool ReadRegisterDataResponse::receive(const ReadRegisterDataRequest& request)
+{
+    return receive(request.get_register(), request.get_nb_bytes());
+}
+
+WriteRamDataRequest::WriteRamDataRequest(Variable var)
 : Frame{Command::WriteRamData}
 {
     *this << var;
 }
 
-void WriteRamDataFrame::reset(Variable var)
+void WriteRamDataRequest::reset(Variable var)
 {
     Frame::reset(get_command());
     *this << var;
 }
 
-ReadRamDataFrame::ReadRamDataFrame(Variable var, uint8_t nb_words)
+ReadRamDataRequest::ReadRamDataRequest(Variable var, uint8_t nb_words)
 : Frame{Command::ReadRamData}
 {
     *this << var << Uint8{nb_words};
 }
 
-WriteCurveDataFrame::WriteCurveDataFrame(uint8_t channels)
+bool ReadRamDataResponse::receive(Variable var, uint8_t nb_words)
+{
+    if(!Frame::receive())
+        return false;
+    Command command; Variable frame_var; Uint8 frame_nb_words;
+    *this >> command >> frame_var >> frame_nb_words;
+    if(command != Command::ReadRamData)
+    {
+        ADVi3PP_ERROR("Command in response (" << command << ") does not correspond to request (" << Command::ReadRamData << ")");
+        return false;
+    }
+    if(frame_var != var)
+    {
+        ADVi3PP_ERROR("Register in response (" << frame_var << ") does not correspond to request (" << var << ")");
+        return false;
+    }
+    if(frame_nb_words.byte != nb_words)
+    {
+        ADVi3PP_ERROR("Data length in response (" << frame_nb_words.byte << ") does not correspond to request (" << nb_words << ")");
+        return false;
+    }
+
+    return true;
+}
+
+WriteCurveDataRequest::WriteCurveDataRequest(uint8_t channels)
 : Frame{Command::WriteCurveData}
 {
-    *this << Uint16{channels};
+    *this << Uint8{channels};
 }
+
+}}

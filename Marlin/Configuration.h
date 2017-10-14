@@ -578,12 +578,12 @@
 *
 * Will be the default values in the preheat menu
 **/
-#define DEFAULT_PREHEAT_PRESET1_HOTEND  180    // Preheat Presets
-#define DEFAULT_PREHEAT_PRESET1_BED  50
-#define DEFAULT_PREHEAT_PRESET2_HOTEND  220
-#define DEFAULT_PREHEAT_PRESET2_BED  60
-#define DEFAULT_PREHEAT_PRESET3_HOTEND  200
-#define DEFAULT_PREHEAT_PRESET3_BED  60
+#define DEFAULT_PREHEAT_PRESET1_HOTEND  180
+#define DEFAULT_PREHEAT_PRESET1_BED     50
+#define DEFAULT_PREHEAT_PRESET2_HOTEND  200
+#define DEFAULT_PREHEAT_PRESET2_BED     60
+#define DEFAULT_PREHEAT_PRESET3_HOTEND  220
+#define DEFAULT_PREHEAT_PRESET3_BED     70
 
 //===========================================================================
 //============================= Z Probe Options =============================

@@ -41,7 +41,7 @@
    * Verbose version identifier which should contain a reference to the location
    * from where the binary was downloaded or the source code was compiled.
    */
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (Github)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3++ 1.0.0)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
@@ -70,7 +70,7 @@
   /**
    * Defines a generic printer name to be output to the LCD after booting Marlin.
    */
-  #define MACHINE_NAME "3D Printer"
+  #define MACHINE_NAME "Wahnao Duplicator i3 Plus"
 
   /**
    * The SOURCE_CODE_URL is the location where users will find the Marlin Source
@@ -78,12 +78,12 @@
    * has a distinct Github fork— the Source Code URL should just be the main
    * Marlin repository.
    */
-  #define SOURCE_CODE_URL "https://github.com/MarlinFirmware/Marlin"
+  #define SOURCE_CODE_URL "https://github.com/andrivet/"
 
   /**
    * Default generic printer UUID.
    */
-  #define DEFAULT_MACHINE_UUID "cede2a2f-41a2-4748-9b12-c55c62f367ff"
+  #define DEFAULT_MACHINE_UUID "44b2f5d6-e7e4-47bf-be81-c2a6b4fc7975"
 
   /**
    * The WEBSITE_URL is the location where users can get more information such as

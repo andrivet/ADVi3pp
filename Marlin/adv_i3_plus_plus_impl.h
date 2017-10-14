@@ -27,20 +27,13 @@
 
 namespace advi3pp { inline namespace internals {
 
-enum class OpMode: uint8_t
+enum class BackgroundTask: uint8_t
 {
     None                = 0,
     LevelInit           = 1,
     LoadFilament        = 2,
     UnloadFilament      = 3,
     Move                = 4
-};
-
-enum class GraphUpdate
-{
-    No = 0,
-    Skip = 1,
-    Next = 2
 };
 
 //! List of commands and their values.
@@ -121,7 +114,10 @@ enum class Variable: uint16_t
     PrintSettingsBed        = 0x032D,
     PrintSettingsFan        = 0x032E,
 
-    LcdVersion              = 0x0500,
+    MarlinVersion           = 0x0500,
+    MotherboardVersion      = 0x0508,
+    LcdVersion              = 0x0510,
+    LcdFirmwareVersion      = 0x0518,
     TargetTemperature       = 0x0520,
     TotalPrints             = 0x0540,
     CompletedPrints         = 0x0541,
@@ -195,12 +191,20 @@ enum class KeyValue: uint16_t
     Back                    = 0x0001
 };
 
+// --------------------------------------------------------------------
+// Preset
+// --------------------------------------------------------------------
+
 //! Hostend and bad temperature preset.
 struct Preset
 {
     uint16_t hotend;
     uint16_t bed;
 };
+
+// --------------------------------------------------------------------
+// i3PlusPrinterImpl
+// --------------------------------------------------------------------
 
 //! Implementation of the Duplication i3 Plus printer and its LCD
 class i3PlusPrinterImpl
@@ -218,16 +222,18 @@ public:
 
 private:
     void send_versions();
-    void execute_background_task(millis_t ms);
-    void leveling_init(millis_t ms);
-    void unload_filament(millis_t ms);
-    void load_filament(millis_t ms);
-    void status_update(millis_t ms);
+    void execute_background_task();
+    void leveling_init();
+    void unload_filament();
+    void load_filament();
+    void send_status_update();
     Page get_current_page();
     void read_lcd_serial();
     void send_stats();
     template<size_t S> void get_file_name(uint8_t index, Name<S>& name);
     Name<16> get_lcd_firmware_version();
+    void set_next_background_task_time(unsigned int delta = 500);
+    void set_next_update_time(unsigned int delta = 500);
 
 private: // Actions
     void sd_card(KeyValue key_value);
@@ -269,9 +275,10 @@ private:
     static const size_t NB_PRESETS = 3;
 
     uint16_t last_file_index_ = 0;
-    millis_t next_op_time_ = 0, next_update_ = 0;
-    OpMode op_mode_ = OpMode::None;
-    GraphUpdate temp_graph_update_ = GraphUpdate::No;
+    millis_t next_op_time_ = 0;
+    millis_t next_update_time_ = 0;
+    BackgroundTask background_task_ = BackgroundTask::None;
+    bool temp_graph_update_ = false;
     Page last_page_ = Page::None;
     Preset presets_[NB_PRESETS];
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
