@@ -46,8 +46,8 @@ enum class Action: uint16_t;
 
 #ifdef DEBUG
 void Dump(const uint8_t* bytes, size_t size);
-#define ADVi3PP_ERROR(expresssion) {Name<100> message; message << expresssion; Serial.println(message.c_str());}
-#define ADVi3PP_LOG(expresssion)   {Name<100> message; message << expresssion; Serial.println(message.c_str());}
+#define ADVi3PP_ERROR(expresssion) {Chars<100> message; message << expresssion; Serial.println(message.c_str());}
+#define ADVi3PP_LOG(expresssion)   {Chars<100> message; message << expresssion; Serial.println(message.c_str());}
 #define ADVi3PP_DUMP(bytes, size)  {Dump(bytes, size);}
 #else
 #define ADVi3PP_ERROR(expresssion) {}
@@ -89,39 +89,39 @@ constexpr Uint8  operator "" _u8(unsigned long long int byte)  { return Uint8(st
 constexpr Uint16 operator "" _u16(unsigned long long int word) { return Uint16(static_cast<uint16_t>(word)); }
 
 // --------------------------------------------------------------------
-// Name
+// Chars
 // --------------------------------------------------------------------
 
 //! A fixed-size string of characters, truncating values when necessary.
 template<size_t S = 26>
-class Name
+class Chars
 {
 public:
-    Name();
-    explicit Name(const char* name);
-    explicit Name(duration_t duration);
+    Chars();
+    explicit Chars(const char* name);
+    explicit Chars(duration_t duration);
 
-    Name& operator=(const char* name);
-    Name& operator=(duration_t duration);
+    Chars& operator=(const char* name);
+    Chars& operator=(duration_t duration);
 
     const uint8_t* get() const { return buffer_; }
     constexpr size_t size() const { return S; }
     uint16_t length() const { return length_; }
     const char* c_str() const { return reinterpret_cast<const char*>(buffer_); }
 
-    Name& operator<<(const char* value);
-    Name& operator<<(uint16_t value);
-    Name& operator<<(Command command);
-    Name& operator<<(Register reg);
-    Name& operator<<(Variable var);
+    Chars& operator<<(const char* value);
+    Chars& operator<<(uint16_t value);
+    Chars& operator<<(Command command);
+    Chars& operator<<(Register reg);
+    Chars& operator<<(Variable var);
 
 private:
     void fill_remaining();
 
 private:
     static constexpr auto SIZE = S > 1 ? S : 1; // Avoid 0 size
-    uint8_t buffer_[SIZE]; //!< Fixed-sized buffer holding the content of the Name
-    uint16_t length_; //!< Length of the Name content
+    uint8_t buffer_[SIZE]; //!< Fixed-sized buffer holding the content of the Chars
+    uint16_t length_; //!< Length of the Chars content
 };
 
 // --------------------------------------------------------------------
@@ -133,7 +133,7 @@ struct Frame
     void send();
     Frame& operator<<(const Uint8& data);
     Frame& operator<<(const Uint16& data);
-    template<size_t S> Frame& operator<<(const Name<S>& name);
+    template<size_t S> Frame& operator<<(const Chars<S>& name);
     Frame& operator<<(Page page);
 
     bool available(uint8_t bytes = 3);
@@ -256,49 +256,49 @@ struct WriteCurveDataRequest: Frame
 
 
 // --------------------------------------------------------------------
-// Name
+// Chars
 // --------------------------------------------------------------------
 
-//! Construct an empty Name.
+//! Construct an empty Chars.
 //! @tparam S Maximum site of the name (including terminating 0 byte)
 template<size_t S>
-Name<S>::Name(): length_{0}
+Chars<S>::Chars(): length_{0}
 {
     memset(buffer_, 0, sizeof(buffer_));
 }
 
-//! Construct a Name from a duration.
+//! Construct a Chars from a duration.
 //! @tparam S Maximum site of the name (including terminating 0 byte)
-//! @param duration Duration to be translated to a Name
+//! @param duration Duration to be translated to a Chars
 template<size_t S>
-Name<S>::Name(duration_t duration)
+Chars<S>::Chars(duration_t duration)
 {
     *this = duration;
 }
 
-//! Constrcut a Name from a string of characters
+//! Constrcut a Chars from a string of characters
 //! @tparam S Maximum site of the name (including terminating 0 byte)
-//! @param name String of characters to be copied into this Name.
+//! @param name String of characters to be copied into this Chars.
 template<size_t S>
-Name<S>::Name(const char* name)
+Chars<S>::Chars(const char* name)
 {
     *this = name;
 }
 
 //! Fill the remaining space in the buffer with 0s
 template<size_t S>
-void Name<S>::fill_remaining()
+void Chars<S>::fill_remaining()
 {
     if(length_ < SIZE - 1)
         memset(buffer_ + length_ + 1, 0, SIZE - length_ - 1);
 }
 
-//! Assign a new value to this Name from a string of characters. It is truncated if it does not fit into the Name.
-//! @tparam S       The maximum size of the Name
-//! @param name     The value to be copied into this Name
+//! Assign a new value to this Chars from a string of characters. It is truncated if it does not fit into the Chars.
+//! @tparam S       The maximum size of the Chars
+//! @param name     The value to be copied into this Chars
 //! @return         Itself
 template<size_t S>
-Name<S>& Name<S>::operator=(const char* name)
+Chars<S>& Chars<S>::operator=(const char* name)
 {
     auto length = strlen(name);
     length_ = length < SIZE - 1 ? length : SIZE - 1;
@@ -313,11 +313,11 @@ Name<S>& Name<S>::operator=(const char* name)
 }
 
 //! Assign a new value to this name from a duration
-//! @tparam S           The maximum size of the Name
-//! @param duration     The value to be copied (after transformation) into this Name
+//! @tparam S           The maximum size of the Chars
+//! @param duration     The value to be copied (after transformation) into this Chars
 //! @return             Itself
 template<size_t S>
-Name<S>& Name<S>::operator=(duration_t duration)
+Chars<S>& Chars<S>::operator=(duration_t duration)
 {
     auto char_buffer = reinterpret_cast<char*>(buffer_);
     duration.toString(char_buffer);
@@ -326,12 +326,12 @@ Name<S>& Name<S>::operator=(duration_t duration)
     return *this;
 }
 
-//! Append a string of character to this Name. It is truncated if it does not fit into the Name.
-//! @tparam S           The maximum size of the Name
-//! @param value        The value to be append to this Name
+//! Append a string of character to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param value        The value to be append to this Chars
 //! @return             Itself
 template<size_t S>
-Name<S>& Name<S>::operator<<(const char* value)
+Chars<S>& Chars<S>::operator<<(const char* value)
 {
     auto value_length = strlen(value);
     auto actual_value_length = value_length < SIZE - 1 - length_ ? value_length : SIZE - 1 - length_;
@@ -347,44 +347,44 @@ Name<S>& Name<S>::operator<<(const char* value)
     return *this;
 }
 
-//! Append a decimal value to this Name. It is truncated if it does not fit into the Name.
-//! @tparam S           The maximum size of the Name
-//! @param value        The value to be append to this Name (after transformation into a string)
+//! Append a decimal value to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param value        The value to be append to this Chars (after transformation into a string)
 //! @return             Itself
 template<size_t S>
-Name<S>& Name<S>::operator<<(uint16_t value)
+Chars<S>& Chars<S>::operator<<(uint16_t value)
 {
     char buffer[32];
     sprintf(buffer, "%d", value);
     return (*this << buffer);
 }
 
-//! Append a Command to this Name. It is truncated if it does not fit into the Name.
-//! @tparam S           The maximum size of the Name
-//! @param command      The command to be append to this Name (after transformation into a string)
+//! Append a Command to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param command      The command to be append to this Chars (after transformation into a string)
 //! @return             Itself
 template<size_t S>
-Name<S>& Name<S>::operator<<(Command command)
+Chars<S>& Chars<S>::operator<<(Command command)
 {
     return (*this << static_cast<uint8_t>(command));
 }
 
-//! Append a Register to this Name. It is truncated if it does not fit into the Name.
-//! @tparam S           The maximum size of the Name
-//! @param reg          The register to be append to this Name (after transformation into a string)
+//! Append a Register to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param reg          The register to be append to this Chars (after transformation into a string)
 //! @return             Itself
 template<size_t S>
-Name<S>&  Name<S>::operator<<(Register reg)
+Chars<S>&  Chars<S>::operator<<(Register reg)
 {
     return (*this << static_cast<uint8_t>(reg));
 }
 
-//! Append a Variable to this Name. It is truncated if it does not fit into the Name.
-//! @tparam S           The maximum size of the Name
-//! @param var          The variable to be append to this Name (after transformation into a string)
+//! Append a Variable to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param var          The variable to be append to this Chars (after transformation into a string)
 //! @return             Itself
 template<size_t S>
-Name<S>&  Name<S>::operator<<(Variable var)
+Chars<S>&  Chars<S>::operator<<(Variable var)
 {
     return (*this << static_cast<uint16_t>(var));
 }
@@ -394,12 +394,12 @@ Name<S>&  Name<S>::operator<<(Variable var)
 // Frame
 // --------------------------------------------------------------------
 
-//! Append a Name to this Frame.
-//! @tparam S           The size of the Name
+//! Append a Chars to this Frame.
+//! @tparam S           The size of the Chars
 //! @param name         The name to be append
 //! @return             Itself
 template<size_t S>
-Frame& Frame::operator<<(const Name<S>& name)
+Frame& Frame::operator<<(const Chars<S>& name)
 {
     size_t length = position_ + name.size() < FRAME_BUFFER_SIZE ? name.size() : FRAME_BUFFER_SIZE - position_;
     // TODO: Truncate

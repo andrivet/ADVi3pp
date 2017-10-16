@@ -77,8 +77,8 @@ private:
     Page get_current_page();
     void read_lcd_serial();
     void send_stats();
-    template<size_t S> void get_file_name(uint8_t index, Name<S>& name);
-    Name<16> get_lcd_firmware_version();
+    template<size_t S> void get_file_name(uint8_t index, Chars<S>& name);
+    Chars<16> get_lcd_firmware_version();
     void set_next_background_task_time(unsigned int delta = 500);
     void set_next_update_time(unsigned int delta = 500);
 
