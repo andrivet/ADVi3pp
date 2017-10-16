@@ -28,6 +28,34 @@
 
 namespace advi3pp { inline namespace internals {
 
+#ifdef DEBUG
+// --------------------------------------------------------------------
+// Dump
+// --------------------------------------------------------------------
+
+//! Dump the bytes in hexadecimal and print them (serial)
+void Dump(const uint8_t* bytes, size_t size)
+{
+    static const size_t MAX_LENGTH = 20;
+
+    static const char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    if(size > MAX_LENGTH)
+        size = MAX_LENGTH;
+
+    char buffer[MAX_LENGTH * 3 + 1];
+    for(size_t index = 0; index < size; ++index)
+    {
+        buffer[index * 3 + 0] = digits[bytes[index] / 16];
+        buffer[index * 3 + 1] = digits[bytes[index] % 16];
+        buffer[index * 3 + 2] = ' ';
+    }
+    buffer[size * 3] = 0;
+
+    Serial.println(buffer);
+}
+
+#endif
+
 // --------------------------------------------------------------------
 // Frame
 // --------------------------------------------------------------------
@@ -110,7 +138,8 @@ Frame& Frame::operator<<(Variable var)
 //! Send tis Frame to the LCD display.
 void Frame::send()
 {
-    ADVi3PP_LOG("Send a Frame of " << get_length() << " bytes, with command = " << static_cast<uint8_t>(get_command()));
+    //ADVi3PP_LOG("Send a Frame of " << get_length() << " bytes, with command = " << static_cast<uint8_t>(get_command()));
+    //ADVi3PP_DUMP(buffer_, get_length() + 3);
     Serial2.write(buffer_, 3 + buffer_[Position::Length]); // Header, length and data
 }
 
@@ -147,6 +176,12 @@ bool Frame::available(uint8_t bytes)
 //! Receive data from the LCD display.
 bool Frame::receive()
 {
+    // Format of the frame:
+    // header | length | command | data
+    // -------|--------|---------|------
+    //      2 |      1 |       1 |    N  bytes
+    //  5A A5 |     06 |      83 |  ...
+
     wait_for_data(3);
 
     if(Serial2.read() != HEADER_BYTE_0 || Serial2.read() != HEADER_BYTE_1)
@@ -156,8 +191,6 @@ bool Frame::receive()
     }
 
     auto length = static_cast<uint8_t>(Serial2.read());
-
-    ADVi3PP_LOG("Receive a Frame of " << length << " bytes.");
 
     buffer_[0] = HEADER_BYTE_0;
     buffer_[1] = HEADER_BYTE_1;
@@ -175,6 +208,9 @@ bool Frame::receive()
         ADVi3PP_ERROR("Invalid amount of bytes received");
         return 0;
     }
+
+    ADVi3PP_LOG("Receive a Frame of " << length << " bytes.");
+    ADVi3PP_DUMP(buffer_, length + 3);
 
     position_ = Position::Command;
     return true;
@@ -338,8 +374,25 @@ ReadRamDataRequest::ReadRamDataRequest(Variable var, uint8_t nb_words)
     *this << var << Uint8{nb_words};
 }
 
+Variable ReadRamDataRequest::get_variable() const
+{
+    return static_cast<Variable>(buffer_[Position::Variable] * 256 + buffer_[Position::Variable + 1]);
+}
+
+uint8_t ReadRamDataRequest::get_nb_words() const
+{
+    return buffer_[Position::NbWords];
+}
+
+
 bool ReadRamDataResponse::receive(Variable var, uint8_t nb_words)
 {
+    // Format of the frame:
+    // header | length | command | variable | nb words | value
+    // -------|--------|---------|----------|----------|------
+    //      2 |      1 |       1 |        2 |        1 |     2   bytes
+    //  5A A5 |     06 |      83 |     0460 |       01 | 01 50
+
     if(!Frame::receive())
         return false;
     Command command; Variable frame_var; Uint8 frame_nb_words;
@@ -361,6 +414,11 @@ bool ReadRamDataResponse::receive(Variable var, uint8_t nb_words)
     }
 
     return true;
+}
+
+bool ReadRamDataResponse::receive(const ReadRamDataRequest& request)
+{
+    return receive(request.get_variable(), request.get_nb_words());
 }
 
 WriteCurveDataRequest::WriteCurveDataRequest(uint8_t channels)

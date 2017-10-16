@@ -45,11 +45,14 @@ enum class Action: uint16_t;
 // --------------------------------------------------------------------
 
 #ifdef DEBUG
+void Dump(const uint8_t* bytes, size_t size);
 #define ADVi3PP_ERROR(expresssion) {Name<100> message; message << expresssion; Serial.println(message.c_str());}
 #define ADVi3PP_LOG(expresssion)   {Name<100> message; message << expresssion; Serial.println(message.c_str());}
+#define ADVi3PP_DUMP(bytes, size)  {Dump(bytes, size);}
 #else
 #define ADVi3PP_ERROR(expresssion) {}
 #define ADVi3PP_LOG(expresssion)   {}
+#define ADVi3PP_DUMP(bytes, size)  {}
 #endif
 
 // --------------------------------------------------------------------
@@ -127,8 +130,6 @@ private:
 //! A frame to be send to the LCD or received from the LCD
 struct Frame
 {
-    Frame();
-
     void send();
     Frame& operator<<(const Uint8& data);
     Frame& operator<<(const Uint16& data);
@@ -153,6 +154,7 @@ struct Frame
 #endif
 
 protected:
+    Frame();
     explicit Frame(Command command);
     void reset(Command command);
     Frame& operator<<(Register reg);
@@ -171,15 +173,27 @@ protected:
     uint8_t position_ = 0;
 };
 
+// --------------------------------------------------------------------
+// IncomingFrame
+// --------------------------------------------------------------------
+
+struct IncomingFrame: Frame
+{
+    IncomingFrame(): Frame{} {}
+};
 
 // --------------------------------------------------------------------
-// Frame subclasses
+// WriteRegisterDataRequest
 // --------------------------------------------------------------------
 
 struct WriteRegisterDataRequest: Frame
 {
     explicit WriteRegisterDataRequest(Register reg);
 };
+
+// --------------------------------------------------------------------
+// ReadRegisterDataRequest
+// --------------------------------------------------------------------
 
 struct ReadRegisterDataRequest: Frame
 {
@@ -188,6 +202,10 @@ struct ReadRegisterDataRequest: Frame
     uint8_t get_nb_bytes() const;
 };
 
+// --------------------------------------------------------------------
+// ReadRegisterDataResponse
+// --------------------------------------------------------------------
+
 struct ReadRegisterDataResponse: Frame
 {
     ReadRegisterDataResponse() = default;
@@ -195,16 +213,30 @@ struct ReadRegisterDataResponse: Frame
     bool receive(const ReadRegisterDataRequest& request);
 };
 
+// --------------------------------------------------------------------
+// WriteRamDataRequest
+// --------------------------------------------------------------------
+
 struct WriteRamDataRequest: Frame
 {
     explicit WriteRamDataRequest(Variable var);
     void reset(Variable var);
 };
 
+// --------------------------------------------------------------------
+// ReadRamDataRequest
+// --------------------------------------------------------------------
+
 struct ReadRamDataRequest: Frame
 {
     ReadRamDataRequest(Variable var, uint8_t nb_words);
+    Variable get_variable() const;
+    uint8_t get_nb_words() const;
 };
+
+// --------------------------------------------------------------------
+// ReadRamDataResponse
+// --------------------------------------------------------------------
 
 struct ReadRamDataResponse: Frame
 {
@@ -212,6 +244,10 @@ struct ReadRamDataResponse: Frame
     bool receive(Variable var, uint8_t nb_words);
     bool receive(const ReadRamDataRequest& request);
 };
+
+// --------------------------------------------------------------------
+// WriteCurveDataRequest
+// --------------------------------------------------------------------
 
 struct WriteCurveDataRequest: Frame
 {
@@ -306,7 +342,7 @@ Name<S>& Name<S>::operator<<(const char* value)
     length_ += actual_value_length;
 
     buffer_[length_] = 0;
-    fill_remaining();
+    fill_remaining(); // TODO: Is it required in this case?
 
     return *this;
 }
