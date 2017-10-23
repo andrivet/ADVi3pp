@@ -225,7 +225,6 @@ void i3PlusPrinterImpl::load_filament()
 }
 
 //! If there is an operating running, execute its next step
-//! @param ms Time of the operation
 void i3PlusPrinterImpl::execute_background_task()
 {
     if(!ELAPSED(millis(), next_op_time_))
@@ -258,7 +257,6 @@ namespace
 }
 
 //! Update the status of the printer on the LCD.
-//! @param ms Time of the operation
 void i3PlusPrinterImpl::send_status_update()
 {
     auto current_time = millis();
