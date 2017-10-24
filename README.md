@@ -163,11 +163,11 @@ This custom firmware has the following features:
 
 ## LCD display
 
-![LCD board](https://raw.github.com/andrivet/Wanhao-i3-Plus/master/assets/LCD-board.jpg)
+![lcd-board](https://user-images.githubusercontent.com/981049/31936387-bc21d81e-b8b1-11e7-9635-783c5854a6a4.jpg)
 
-The LCD panel is manufactured by AMP Display Inc. and uses DGUS (DWIN Graphic User System) developed by DWIN Technologies. The reference of the LCD panel is `DMT48270M043_05W` and you can find its [datasheet](http://www.dwin.com.cn/uploads/English%20Documents/Mini%20DGUS/DMT48270M043_05W_DATASHEET.pdf) under "Resources" below.
+The LCD panel is manufactured by AMP Display Inc. and uses DGUS (DWIN Graphic User System) developed by DWIN Technologies. The reference of the LCD panel is `DMT48270M043_05W` and you can find its [datasheet](https://github.com/andrivet/ADVi3pp-LCD/blob/master/Resources/DMT48270M043_05W_DATASHEET.pdf) under "Resources" below.
 
-It is build around the proprietary K600+ kernel and simplifies the development of user interfaces: the different screens are defined by a set of files (images, fonts, etc) stored in the flash memory of the panel and they can be customized using a graphical editor (part of [DGUS SDK](http://www.dwin.com.cn/uploads/English%20Documents/DGUS_SDK.rar)).
+It is build around the proprietary K600+ kernel and simplifies the development of user interfaces: the different screens are defined by a set of files (images, fonts, etc) stored in the flash memory of the panel and they can be customized using a graphical editor (part of [DGUS SDK](https://github.com/andrivet/ADVi3pp-LCD/blob/master/Resources/DGUS_Setup_5.1.zip)).
 
 The LDC panel has thus two distinct software components:
 
@@ -177,10 +177,6 @@ The LDC panel has thus two distinct software components:
 ### LCD firmware
 
 **WARNING**: *Do not make the confusion between the actual LCD firmware (made by DWIN Technologies) and the LCD resources for the customization of the display (next paragraph).*
-
-There is a version of LCD firmware available on the DWIN web site ([firmware version 7.1 - 20161024](http://www.dwin.com.cn/uploads/产品数据手册/DGUS%20upgrade%20program%2020161024%20.rar)). 
-
-**I have not yet tested it. I will.**.
 
 ### LCD resources
 
@@ -204,21 +200,22 @@ for f in *.bmp; do convert "$f" -resize 480x272 BMP3:"$f"; done
 ```
 # Resources
 
-- [DMT48270M043_05W Datasheet](http://www.dwin.com.cn/uploads/English%20Documents/Mini%20DGUS/DMT48270M043_05W_DATASHEET.pdf)
-- [DWIN DGUS Display Development Guide version 4.3](http://dwin.com.cn/uploads/产品数据手册/DWIN%20DGUS%20DEV%20GUIDE_V43_2015.pdf)
-- [DGUS SDK](http://www.dwin.com.cn/uploads/English%20Documents/DGUS_SDK.rar) - Windows only
-- [DGUS firmware update](http://www.dwin.com.cn/uploads/产品数据手册/DGUS%20upgrade%20program%2020161024%20.rar). _WARNING: I have not yet tested it._
-- [DWIN Documentations and softwares](http://dwin.com.cn/english/products/bt-72876584214435.html)
+**Note:** *In the past, it was possible to download these resources directory from the [dwin.com.cn](http://dwin.com.cn) website. It is no more the case (you get plenty of errors) so I copy them into this repository.*
+
+- [DMT48270M043_05W Datasheet](https://github.com/andrivet/ADVi3pp-LCD/blob/master/Resources/DMT48270M043_05W_DATASHEET.pdf)
+- [DWIN DGUS Display Development Guide version 4.0 - 2014](https://github.com/andrivet/ADVi3pp-LCD/blob/master/Resources/DWIN%20DGUS%20DEV%20GUIDE_V40_2014.pdf)
+- [DGUS SDK User Guide 5.1](https://github.com/andrivet/ADVi3pp-LCD/blob/master/Resources/DGUSV5.10.pdf)
+- [DGUS SDK 5.1 Setup](https://github.com/andrivet/ADVi3pp-LCD/blob/master/Resources/DGUS_Setup_5.1.zip) - Windows only
 
 # Other projects
 
 There are some other projects (I am aware of) on a similar topic:
 
-- [i3plus+](https://github.com/Silverquark/i3PlusPlus) from Leo Lüker (Silverquark): a modified version of the Marlin 1.1.2 firmware for the WANHAO Duplicator i3 Plus 3d printer.
+- [i3plus+](https://github.com/Silverquark/i3PlusPlus) from Leo Lüker (Silverquark): a modified version of the Marlin 1.1.2 firmware for the WANHAO Duplicator i3 Plus 3d printer. **Important**: No more actively developed (that's why I created ADVi3++).
 
 - [i3extra](https://github.com/nepeee/i3Extra) from Nemcsik Péter: a modified version of the Marlin 1.1.0-RC8 firmware and updated LCD resources. **Important**: this project is no more maintained.
 
-- [Wanhao-I3-Plus](https://github.com/jamesarm97/Wanhao-I3-Plus) by James Armstrong: Sources of version 2.18 of Mainboard firware and LCD resources.
+- [Wanhao-I3-Plus](https://github.com/jamesarm97/Wanhao-I3-Plus) by James Armstrong: Sources of version 2.18 of Mainboard firmware and LCD resources.
 
 - [Wanhao-I3-Plus](https://github.com/garychen99/Duplicator-i3-plus) by WANHAO 3D PRINTER: Official sources of version 2.1.803 of Mainboard firmware and LCD resources.
 
