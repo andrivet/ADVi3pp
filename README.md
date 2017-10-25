@@ -31,7 +31,7 @@ There are two parts to flash:
 
 There are several ways to flash the mainboard firmware. The first step is to download the firmware from the **Releases** page on [GitHub](https://github.com/andrivet/ADVi3pp-Marlin/releases):
 
-[ADVi3pp-Mainboard-1.0.0.hex](https://github.com/andrivet/ADVi3pp-Marlin/releases/download/advi3%2B%2B1.0.0/ADVi3pp-Mainboard-1.0.0.hex)
+[ADVi3pp-Mainboard-x.x.x.hex](https://github.com/andrivet/ADVi3pp-Marlin/releases)
 
 #### Option 1 - Flash using Cura
 
@@ -40,7 +40,7 @@ There are several ways to flash the mainboard firmware. The first step is to dow
 * In the top menu, under **Settings** &#8594; **Printer**, select **Manage Printers**
 * Select your printer or **Add** your printer if it is not already done
 * Select **Upgrade Firmware** and then **Upload custom Firmware**
-* Select the downloaded file `ADVi3pp-Mainboard-1.0.0.hex` and click on **Open**
+* Select the downloaded file `ADVi3pp-Mainboard-x.x.x.hex` and click on **Open**
 
 #### Option 2 - Flash using OctoPrint
 
@@ -70,7 +70,7 @@ To flash the firmware:
 * Under **Plugins**, choose **Firmware Updater**
 * Click on the wrench icon, and after **Path to advdude**, enter `/usr/bin/avrdude` and click **Save**
 * Be sure your USB port appears after **Serial Port**
-* After **... from file**, click on **Browse** and select the firmware you have downloaded such as `ADVi3pp-Mainboard-1.0.0.hex`
+* After **... from file**, click on **Browse** and select the firmware you have downloaded such as `ADVi3pp-Mainboard-x.x.x.hex`
 * Click on **Flash from File**
 * The flashing process may take around 30 seconds
 * When it is finished, a message appears saying "Flashing successful". Click on **Save**
@@ -88,7 +88,7 @@ You have two possibilities to flash:
 
 ##### Option 1 - Manual copy
 
-* Download the LCD resources: [ADVi3pp-LCD-1.0.0.zip](https://github.com/andrivet/ADVi3pp-Marlin/releases/download/advi3%2B%2B1.0.0/ADVi3pp-LCD-1.0.0.zip)
+* Download the LCD resources: [ADVi3pp-LCD-x.x.x.zip](https://github.com/andrivet/ADVi3pp-Marlin/releases)
 * Unzip the file somewhere
 * Copy manually all the files and folders in the uncompressed zip file to the root of a microSD card. The microSD card **has** to be formatted with the following parameters: FAT32, 4096 bytes per cluster (i.e. 8 sectors). To format under Linux (and macOS with the `dosfstools` Homebrew package):
 
@@ -100,7 +100,7 @@ Of course, replace `/dev/disk2` with the right value.
 
 ##### Option 2 - SD image
 
-* Download the microSD card image: [ADVi3pp-LCD-1.0.0.img.zip](https://github.com/andrivet/ADVi3pp-Marlin/releases/download/advi3%2B%2B1.0.0/ADVi3pp-LCD-1.0.0.img.zip)
+* Download the microSD card image: [ADVi3pp-LCD-x.x.x.img.zip](https://github.com/andrivet/ADVi3pp-Marlin/releases)
 * Unzip the `.img.zip` file and use either `dd` (Linux, macOS) or [Etcher](https://etcher.io) (Windows, Linux, macOS). For example with `dd`:
 
 ```
