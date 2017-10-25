@@ -41,7 +41,7 @@
    * Verbose version identifier which should contain a reference to the location
    * from where the binary was downloaded or the source code was compiled.
    */
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3++ 1.0.0)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3++ 1.0.1)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
@@ -78,7 +78,7 @@
    * has a distinct Github fork— the Source Code URL should just be the main
    * Marlin repository.
    */
-  #define SOURCE_CODE_URL "https://github.com/andrivet/"
+  #define SOURCE_CODE_URL "https://github.com/andrivet/ADVi3pp-Marlin"
 
   /**
    * Default generic printer UUID.

@@ -36,7 +36,13 @@
 #pragma message "This is a DEBUG build"
 #endif
 
-namespace { const uint16_t advi3_pp_version = 0x0100; } // 1.0.0
+namespace
+{
+    const uint16_t advi3_pp_version = 0x0101;                       // 1.0.1
+    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x0100; // 1.0.0
+    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x0101; // 1.0.1
+}
+
 namespace { const unsigned long advi3_pp_baudrate = 115200; }
 
 namespace advi3pp {
@@ -75,7 +81,7 @@ void i3PlusPrinter::auto_pid_finished()
 //! @param write Function to use for the actual writing
 //! @param eeprom_index
 //! @param working_crc
-void i3PlusPrinter::store_presets(eeprom_write write, int eeprom_index, uint16_t& working_crc)
+void i3PlusPrinter::store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
     i3plus.store_presets(write, eeprom_index, working_crc);
 }
@@ -84,7 +90,7 @@ void i3PlusPrinter::store_presets(eeprom_write write, int eeprom_index, uint16_t
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void i3PlusPrinter::restore_presets(eeprom_read read, int eeprom_index, uint16_t& working_crc)
+void i3PlusPrinter::restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
     i3plus.restore_presets(read, eeprom_index, working_crc);
 }
@@ -132,7 +138,7 @@ void i3PlusPrinterImpl::task()
 //! @param write Function to use for the actual writing
 //! @param eeprom_index
 //! @param working_crc
-void i3PlusPrinterImpl::store_presets(eeprom_write write, int eeprom_index, uint16_t& working_crc)
+void i3PlusPrinterImpl::store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
     for(auto& preset: presets_)
     {
@@ -145,7 +151,7 @@ void i3PlusPrinterImpl::store_presets(eeprom_write write, int eeprom_index, uint
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void i3PlusPrinterImpl::restore_presets(eeprom_read read, int eeprom_index, uint16_t& working_crc)
+void i3PlusPrinterImpl::restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
     for(auto& preset: presets_)
     {
@@ -992,7 +998,7 @@ void i3PlusPrinterImpl::about(KeyValue key_value)
     adv_i3_pp_lcd_version_ = static_cast<uint16_t>(key_value);
     send_versions();
 
-    if(adv_i3_pp_lcd_version_ != advi3_pp_version)
+    if(adv_i3_pp_lcd_version_ < advi3_pp_oldest_lcd_compatible_version || adv_i3_pp_lcd_version_ > advi3_pp_newest_lcd_compatible_version)
         show_page(Page::Mismatch);
     else
         show_page(Page::About);

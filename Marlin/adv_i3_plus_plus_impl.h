@@ -62,8 +62,8 @@ public:
     void show_page(Page page);
     void update_graph_data();
     void auto_pid_finished();
-    void store_presets(eeprom_write write, int eeprom_index, uint16_t& working_crc);
-    void restore_presets(eeprom_read read, int eeprom_index, uint16_t& working_crc);
+    void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_presets();
     void temperature_error();
 
