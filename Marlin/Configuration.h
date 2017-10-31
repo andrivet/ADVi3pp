@@ -352,9 +352,9 @@
   // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 
   // Wanhao Duplicator i3 Plus
-  #define  DEFAULT_Kp 17.77
-  #define  DEFAULT_Ki 0.91
-  #define  DEFAULT_Kd 86.61
+  #define  DEFAULT_Kp 33.41
+  #define  DEFAULT_Ki 1.47
+  #define  DEFAULT_Kd 189.27
 
   // Ultimaker
   //#define  DEFAULT_Kp 17.77
@@ -530,7 +530,7 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 114.13 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 81, 81, 400.5, 94.3 }
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -567,8 +567,8 @@
  * When changing speed and direction, if the difference is less than the
  * value set here, it may happen instantaneously.
  */
-#define DEFAULT_XJERK                  8.0
-#define DEFAULT_YJERK                  8.0
+#define DEFAULT_XJERK                  10.0
+#define DEFAULT_YJERK                  10.0
 #define DEFAULT_ZJERK                  0.4
 #define DEFAULT_EJERK                  1.0
 
@@ -1065,13 +1065,13 @@
 // @section temperature
 
 // Preheat Constants
-#define PREHEAT_1_TEMP_HOTEND 180
-#define PREHEAT_1_TEMP_BED     60
-#define PREHEAT_1_FAN_SPEED   255 // Value from 0 to 255
+//#define PREHEAT_1_TEMP_HOTEND 180
+//#define PREHEAT_1_TEMP_BED     60
+//#define PREHEAT_1_FAN_SPEED   255 // Value from 0 to 255
 
-#define PREHEAT_2_TEMP_HOTEND 230
-#define PREHEAT_2_TEMP_BED    100
-#define PREHEAT_2_FAN_SPEED   255 // Value from 0 to 255
+//#define PREHEAT_2_TEMP_HOTEND 230
+//#define PREHEAT_2_TEMP_BED    100
+//#define PREHEAT_2_FAN_SPEED   255 // Value from 0 to 255
 
 /**
  * Nozzle Park -- EXPERIMENTAL
