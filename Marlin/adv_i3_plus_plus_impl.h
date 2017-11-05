@@ -32,10 +32,10 @@ namespace advi3pp { inline namespace internals {
 enum class BackgroundTask: uint8_t
 {
     None                = 0,
-    LevelInit           = 1,
+    Leveling            = 1,
     LoadFilament        = 2,
     UnloadFilament      = 3,
-    Move                = 4
+    ExtruderCalibration = 4
 };
 
 // --------------------------------------------------------------------
@@ -70,53 +70,93 @@ public:
 private:
     void send_versions();
     void execute_background_task();
-    void leveling_init();
-    void unload_filament();
-    void load_filament();
-    void send_status_update();
+    void send_status();
     Page get_current_page();
+    void save_current_page();
+    void set_next_back_pages(Page next, Page back = Page::None);
+    void show_back_page();
+    void show_next_page();
     void read_lcd_serial();
     void send_stats();
+    void show_sd_files(uint16_t last_index);
     template<size_t S> void get_file_name(uint8_t index, Chars<S>& name);
     Chars<16> get_lcd_firmware_version();
     void set_next_background_task_time(unsigned int delta = 500);
     void set_next_update_time(unsigned int delta = 500);
 
-private: // Actions
+private:
+    // Actions
+    void printing(KeyValue key_value);
+    void print_command(KeyValue key_value);
+    void load_unload(KeyValue key_value);
+    void preheat(KeyValue key_value);
+    void cooldown();
+    void move(KeyValue key_value);
+    void home(KeyValue key_value);
+    void disable_motors();
     void sd_card(KeyValue key_value);
     void sd_card_select_file(KeyValue key_value);
-    void print_stop(KeyValue key_value);
-    void print_pause(KeyValue key_value);
-    void print_resume(KeyValue key_value);
-    void preheat(KeyValue key_value);
-    void cooldown(KeyValue key_value);
-    void motors_or_pid_settings(KeyValue key_value);
-    void save_motors_or_pid_settings(KeyValue key_value);
+    void show_settings(KeyValue key_value);
+    void save_settings(KeyValue key_value);
+    void cancel_settings(KeyValue key_value);
     void factory_reset(KeyValue key_value);
-    void print_settings(KeyValue key_value);
-    void save_print_settings(KeyValue key_value);
-    void load_unload_back(KeyValue key_value);
-    void level(KeyValue key_value);
-    void filament(KeyValue key_value);
-    void move_x_plus(KeyValue key_value);
-    void move_x_minus(KeyValue key_value);
-    void move_y_plus(KeyValue key_value);
-    void move_y_minus(KeyValue key_value);
-    void move_z_plus(KeyValue key_value);
-    void move_z_minus(KeyValue key_value);
-    void move_e_plus(KeyValue key_value);
-    void move_e_minus(KeyValue key_value);
-    void disable_motors(KeyValue key_value);
-    void home_X(KeyValue key_value);
-    void home_y(KeyValue key_value);
-    void home_z(KeyValue key_value);
-    void home_all(KeyValue key_value);
-    void statistics(KeyValue key_value);
+    void leveling(KeyValue key_value);
+    void extruder_calibration(KeyValue key_value);
+    void xyz_motors_calibration(KeyValue key_value);
     void pid_tuning(KeyValue key_value);
-    void temperature_graph(KeyValue key_value);
-    void print(KeyValue key_value);
+    void statistics(KeyValue key_value);
     void about(KeyValue key_value);
-    void lcd_update_mode(KeyValue key_value);
+
+    // Sub-actions
+    void printing_show();
+    void printing_back();
+    void print_stop();
+    void print_pause();
+    void print_resume();
+    void print_back();
+    void load_unload_show();
+    void load_unload_start(bool load);
+    void load_unload_stop();
+    void preheat_show();
+    void preheat_preset(uint16_t presetIndex);
+    void move_x_plus();
+    void move_x_minus();
+    void move_y_plus();
+    void move_y_minus();
+    void move_z_plus();
+    void move_z_minus();
+    void move_e_plus();
+    void move_e_minus();
+    void home_x();
+    void home_y();
+    void home_z();
+    void home_all();
+    void show_print_settings(Page next, Page back = Page::None);
+    void show_pid_settings(Page next, Page back = Page::None);
+    void show_steps_settings(Page next, Page back = Page::None);
+    void show_feedrate_settings(Page next, Page back = Page::None);
+    void show_acceleration_settings(Page next, Page back = Page::None);
+    void show_jerk_settings(Page next, Page back = Page::None);
+    void save_print_settings();
+    void save_pid_settings();
+    void save_steps_settings();
+    void save_feedrate_settings();
+    void save_acceleration_settings();
+    void save_jerk_settings();
+    void pid_tuning_step1();
+    void pid_tuning_step2();
+    void leveling_home();
+    void leveling_point1();
+    void leveling_point2();
+    void leveling_point3();
+    void leveling_point4();
+    void leveling_finish();
+
+    // Background tasks
+    void load_filament_task();
+    void unload_filament_task();
+    void leveling_task();
+    void extruder_calibration_task();
 
 private:
     static const size_t NB_PRESETS = 3;
@@ -125,10 +165,11 @@ private:
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
     BackgroundTask background_task_ = BackgroundTask::None;
-    bool temp_graph_update_ = false;
-    Page last_page_ = Page::None;
+    Page back_page_ = Page::None;
+    Page next_page_ = Page::None;
     Preset presets_[NB_PRESETS];
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
+    Chars<26> message_;
 };
 
 }}

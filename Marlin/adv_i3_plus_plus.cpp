@@ -38,12 +38,13 @@
 
 namespace
 {
-    const uint16_t advi3_pp_version = 0x0101;                       // 1.0.1
-    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x0100; // 1.0.0
-    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x0101; // 1.0.1
-}
+    const uint16_t advi3_pp_version = 0x0200;                       // 2.0.0
+    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x0200; // 2.0.0
+    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x0200; // 2.0.0
 
-namespace { const unsigned long advi3_pp_baudrate = 115200; }
+    const unsigned long advi3_pp_baudrate = 115200;
+    const uint16_t nb_visible_sd_files = 5;
+}
 
 namespace advi3pp {
 
@@ -113,7 +114,6 @@ void i3PlusPrinter::temperature_error()
 // --------------------------------------------------------------------
 
 //! Initialize the printer and its LCD
-//!
 void i3PlusPrinterImpl::setup()
 {
 #ifdef DEBUG
@@ -125,14 +125,9 @@ void i3PlusPrinterImpl::setup()
     show_page(Page::Boot);
 }
 
-//! Read data from the LCD and act accordingly
-//!
-void i3PlusPrinterImpl::task()
-{
-    read_lcd_serial();
-    execute_background_task();
-    send_status_update();
-}
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Presets
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 //! Store presets in permanent memory.
 //! @param write Function to use for the actual writing
@@ -172,6 +167,10 @@ void i3PlusPrinterImpl::reset_presets()
     presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
 }
 
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Background tasks
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 //! Set the next (minimal) background task time
 //! @param delta    Duration to be added to the current time to compute the next (minimal) background task time
 void i3PlusPrinterImpl::set_next_background_task_time(unsigned int delta)
@@ -186,50 +185,6 @@ void i3PlusPrinterImpl::set_next_update_time(unsigned int delta)
     next_update_time_ = millis() + delta;
 }
 
-//! PID automatic tuning is finished.
-void i3PlusPrinterImpl::auto_pid_finished()
-{
-    ADVi3PP_LOG("Auto PID finished");
-    show_page(advi3pp::Page::AutoPidFinished);
-    enqueue_and_echo_command("M106 S0");
-    settings.save();
-}
-
-//! Start the bed leveling process.
-void i3PlusPrinterImpl::leveling_init()
-{
-    if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS]) //stuck if leveling problem?
-    {
-        ADVi3PP_LOG("Leveling Init");
-        background_task_ = BackgroundTask::None;
-        show_page(Page::Leveling);
-    }
-    else
-        set_next_background_task_time(200);
-}
-
-//! Unload the filament if the temperature is high enough.
-void i3PlusPrinterImpl::unload_filament()
-{
-    if(thermalManager.current_temperature[0] >= thermalManager.target_temperature[0] - 10)
-    {
-        ADVi3PP_LOG("Unload Filament");
-        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
-    }
-    set_next_background_task_time();
-}
-
-//! Load the filament if the temperature is high enough.
-void i3PlusPrinterImpl::load_filament()
-{
-    if(thermalManager.current_temperature[0] >= thermalManager.target_temperature[0] - 10)
-    {
-        ADVi3PP_LOG("Load Filament");
-        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
-    }
-    set_next_background_task_time();
-}
-
 //! If there is an operating running, execute its next step
 void i3PlusPrinterImpl::execute_background_task()
 {
@@ -238,17 +193,11 @@ void i3PlusPrinterImpl::execute_background_task()
 
     switch(background_task_)
     {
-        case BackgroundTask::LevelInit:
-            leveling_init();
-            break;
-        case BackgroundTask::UnloadFilament:
-            unload_filament();
-            break;
-        case BackgroundTask::LoadFilament:
-            load_filament();
-            break;
-        default:
-            break;
+        case BackgroundTask::Leveling:              leveling_task(); break;
+        case BackgroundTask::LoadFilament:          load_filament_task(); break;
+        case BackgroundTask::UnloadFilament:        unload_filament_task(); break;
+        case BackgroundTask::ExtruderCalibration:   extruder_calibration_task(); break;
+        default:                                    ADVi3PP_ERROR("Invalid background task " << static_cast<uint16_t>(background_task_)); break;
     }
 }
 
@@ -262,26 +211,9 @@ namespace
     int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { return value * targetScale / valueScale; }
 }
 
-//! Update the status of the printer on the LCD.
-void i3PlusPrinterImpl::send_status_update()
-{
-    auto current_time = millis();
-    if(!ELAPSED(current_time, next_update_time_))
-        return;
-    set_next_update_time();
-
-    WriteRamDataRequest frame{Variable::TargetBed};
-    frame << Uint16(thermalManager.target_temperature_bed)
-          << Uint16(thermalManager.degBed())
-          << Uint16(thermalManager.target_temperature[0])
-          << Uint16(thermalManager.degHotend(0))
-          << Uint16(scale(fanSpeeds[0], 256, 100))
-          << Uint16(card.percentDone());
-    frame.send();
-
-    if(temp_graph_update_)
-         update_graph_data();
-}
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Pages management
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
@@ -309,6 +241,76 @@ Page i3PlusPrinterImpl::get_current_page()
     Uint16 page; response >> page;
     ADVi3PP_LOG("Current page index = " << page.word);
     return static_cast<Page>(page.word);
+}
+
+void i3PlusPrinterImpl::save_current_page()
+{
+    back_page_ = get_current_page();
+}
+
+void i3PlusPrinterImpl::set_next_back_pages(Page next, Page back)
+{
+    if(back == Page::None)
+        save_current_page();
+    else
+        back_page_ = back;
+
+    next_page_ = next;
+}
+
+void i3PlusPrinterImpl::show_back_page()
+{
+    if(back_page_ == Page::None)
+    {
+        ADVi3PP_LOG("No Back page defined");
+        return;
+    }
+
+    show_page(back_page_);
+    back_page_ = Page::None;
+}
+
+void i3PlusPrinterImpl::show_next_page()
+{
+    if(next_page_ == Page::None)
+    {
+        ADVi3PP_LOG("No Next page defined");
+        return;
+    }
+
+    show_page(next_page_);
+    next_page_ = Page::None;
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Incoming LCD commands and status update
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+//! Read data from the LCD and act accordingly
+void i3PlusPrinterImpl::task()
+{
+    read_lcd_serial();
+    execute_background_task();
+    send_status();
+    update_graph_data();
+}
+
+//! Update the status of the printer on the LCD.
+void i3PlusPrinterImpl::send_status()
+{
+    auto current_time = millis();
+    if(!ELAPSED(current_time, next_update_time_))
+        return;
+    set_next_update_time();
+
+    WriteRamDataRequest frame{Variable::TargetBed};
+    frame << Uint16(thermalManager.target_temperature_bed)
+          << Uint16(thermalManager.degBed())
+          << Uint16(thermalManager.target_temperature[0])
+          << Uint16(thermalManager.degHotend(0))
+          << Uint16(scale(fanSpeeds[0], 256, 100))
+          << message_;
+    frame.send();
 }
 
 //! Read a frame from the LCD and act accordingly
@@ -339,104 +341,77 @@ void i3PlusPrinterImpl::read_lcd_serial()
 
     switch(action)
     {
-        case Action::SdCard:              sd_card(key_value); break;
-        case Action::SdCardSelectFile:    sd_card_select_file(key_value); break;
-        case Action::PrintStop:           print_stop(key_value); break;
-        case Action::PrintPause:          print_pause(key_value); break;
-        case Action::PrintResume:         print_resume(key_value); break;
-        case Action::Preheat:             preheat(key_value); break;
-        case Action::Cooldown:            cooldown(key_value); break;
-        case Action::MotorsSettings:      motors_or_pid_settings(key_value); break;
-        case Action::SaveSettings:        save_motors_or_pid_settings(key_value); break;
-        case Action::FactoryReset:        factory_reset(key_value); break;
-        case Action::PrintSettings:       print_settings(key_value); break;
-        case Action::SavePrintSettings:   save_print_settings(key_value); break;
-        case Action::LoadUnloadBack:      load_unload_back(key_value); break;
-        case Action::Level:               level(key_value); break;
-        case Action::Filament:            filament(key_value); break;
-        case Action::XPlus:               move_x_plus(key_value); break;
-        case Action::XMinus:              move_x_minus(key_value); break;
-        case Action::YPlus:               move_y_plus(key_value); break;
-        case Action::YMinus:              move_y_minus(key_value); break;
-        case Action::ZPlus:               move_z_plus(key_value); break;
-        case Action::ZMinus:              move_z_minus(key_value); break;
-        case Action::EPlus:               move_e_plus(key_value); break;
-        case Action::EMinus:              move_e_minus(key_value); break;
-        case Action::DisableMotors:       disable_motors(key_value); break;
-        case Action::HomeX:               home_X(key_value); break;
-        case Action::HomeY:               home_y(key_value); break;
-        case Action::HomeZ:               home_z(key_value); break;
-        case Action::HomeAll:             home_all(key_value); break;
-        case Action::Statistics:          statistics(key_value); break;
-        case Action::PidTuning:           pid_tuning(key_value); break;
-        case Action::TemperatureGraph:    temperature_graph(key_value); break;
-        case Action::Print:               print(key_value); break;
-        case Action::About:               about(key_value); break;
-        case Action::LcdUpdate:           lcd_update_mode(key_value);
-        default:                          ADVi3PP_ERROR("Unknown action " << static_cast<uint16_t>(action)); break;
+        case Action::Printing:              printing(key_value); break;
+        case Action::PrintCommand:          print_command(key_value); break;
+        case Action::LoadUnload:            load_unload(key_value); break;
+        case Action::Preheat:               preheat(key_value); break;
+        case Action::Cooldown:              cooldown(); break;
+        case Action::Move:                  move(key_value); break;
+        case Action::Home:                  home(key_value); break;
+        case Action::DisableMotors:         disable_motors(); break;
+        case Action::SdCard:                sd_card(key_value); break;
+        case Action::SdCardSelectFile:      sd_card_select_file(key_value); break;
+        case Action::ShowSettings:          show_settings(key_value); break;
+        case Action::SaveSettings:          save_settings(key_value); break;
+        case Action::CancelSettings:        cancel_settings(key_value); break;
+        case Action::FactoryReset:          factory_reset(key_value); break;
+        case Action::Leveling:              leveling(key_value); break;
+        case Action::ExtruderCalibration:   extruder_calibration(key_value); break;
+        case Action::XYZMotorsCalibration:  xyz_motors_calibration(key_value); break;
+        case Action::PidTuning:             pid_tuning(key_value); break;
+        case Action::Statistics:            statistics(key_value); break;
+        case Action::About:                 about(key_value); break;
+        default:                            ADVi3PP_ERROR("Invalid action " << static_cast<uint16_t>(action)); break;
     }
 }
 
-//! LCD SD card menu
-void i3PlusPrinterImpl::sd_card(KeyValue key_value)
-{
-    static const uint16_t NB_VISIBLE_FILES = 5;
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Printing & SD Card
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+void i3PlusPrinterImpl::printing(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::PrintShow:           printing_show(); break;
+        case KeyValue::PrintBack:           printing_back(); break;
+        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::printing_show()
+{
     if(card.sdprinting)
     {
-        show_page(Page::Print);
+        show_page(Page::SdPrint);
         return;
     }
 
-    if(key_value == KeyValue::Show)
-    {
-        card.initsd();
-        if(card.cardOK)
-            last_file_index_ = card.getnrfilenames() - 1;
-        else
-        {
-            temp_graph_update_ = true;
-            show_page(Page::Temperature);
-            return;
-        }
-    }
-
+    card.initsd();
     if(!card.cardOK)
-        return;
-
-    uint16_t nb_files = card.getnrfilenames();
-    if(nb_files > NB_VISIBLE_FILES)
     {
-        switch(key_value)
-        {
-            case KeyValue::Up:
-                if((last_file_index_ + NB_VISIBLE_FILES) < nb_files)
-                    last_file_index_ += NB_VISIBLE_FILES;
-                break;
-
-            case KeyValue::Down:
-                if(last_file_index_ >= NB_VISIBLE_FILES)
-                    last_file_index_ -= NB_VISIBLE_FILES;
-                break;
-
-            default:
-                break;
-        }
+        show_page(IsRunning() ? Page::Print : Page::Temperature);
+        return;
     }
 
+    show_sd_files(card.getnrfilenames() - 1);
+    save_current_page();
+    show_page(Page::SdCard);
+}
+
+void i3PlusPrinterImpl::show_sd_files(uint16_t last_index)
+{
     WriteRamDataRequest frame{Variable::FileName1};
 
+    last_file_index_ = last_index;
     Chars<> name;
-    for(uint8_t index = 0; index < NB_VISIBLE_FILES; ++index)
+    for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
         frame << name;
     }
-
     frame.send();
-
-    show_page(Page::SdCard);
-};
+}
 
 //! Get a filename with a given index.
 //! @tparam S       Size of the buffer
@@ -470,12 +445,63 @@ void i3PlusPrinterImpl::sd_card_select_file(KeyValue key_value)
     card.startFileprint();
     print_job_timer.start();
 
-    temp_graph_update_ = true;
-    show_page(Page::Print);
+    show_page(Page::SdPrint);
+}
+
+//! LCD SD card menu
+void i3PlusPrinterImpl::sd_card(KeyValue key_value)
+{
+    if(!card.cardOK)
+        return;
+
+    uint16_t nb_files = card.getnrfilenames();
+    if(nb_files <= nb_visible_sd_files)
+        return;
+
+    auto last_file_index = last_file_index_;
+
+    switch(key_value)
+    {
+        case KeyValue::SdUp:
+            if((last_file_index + nb_visible_sd_files) < nb_files)
+                last_file_index += nb_visible_sd_files;
+            break;
+
+        case KeyValue::SdDown:
+            if(last_file_index >= nb_visible_sd_files)
+                last_file_index -= nb_visible_sd_files;
+            break;
+
+        default:
+            break;
+    }
+
+    show_sd_files(last_file_index);
+};
+
+void i3PlusPrinterImpl::printing_back()
+{
+    show_back_page();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Printing commands
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void i3PlusPrinterImpl::print_command(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::PrintStop:           print_stop(); break;
+        case KeyValue::PrintPause:          print_pause(); break;
+        case KeyValue::PrintResume:         print_resume(); break;
+        case KeyValue::PrintBack:           print_back(); break;
+        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
 }
 
 //! Stop printing
-void i3PlusPrinterImpl::print_stop(KeyValue)
+void i3PlusPrinterImpl::print_stop()
 {
     ADVi3PP_LOG("Stop Print");
 
@@ -484,15 +510,10 @@ void i3PlusPrinterImpl::print_stop(KeyValue)
     quickstop_stepper();
     print_job_timer.stop();
     thermalManager.disable_all_heaters();
-#if FAN_COUNT > 0
-    for(auto& fanSpeed : fanSpeeds)
-        fanSpeed = 0;
-#endif
-    temp_graph_update_ = false;
 }
 
 //! Pause printing
-void i3PlusPrinterImpl::print_pause(KeyValue)
+void i3PlusPrinterImpl::print_pause()
 {
     ADVi3PP_LOG("Pause Print");
 
@@ -504,7 +525,7 @@ void i3PlusPrinterImpl::print_pause(KeyValue)
 }
 
 //! Resume the current print
-void i3PlusPrinterImpl::print_resume(KeyValue)
+void i3PlusPrinterImpl::print_resume()
 {
     ADVi3PP_LOG("Resume Print");
 
@@ -516,22 +537,131 @@ void i3PlusPrinterImpl::print_resume(KeyValue)
 #endif
 }
 
-//! Preheat the nozzle and save the presets.
-//! @param key_value    The index (starting from 1) of the preset to use
-void i3PlusPrinterImpl::preheat(KeyValue key_value)
+void i3PlusPrinterImpl::print_back()
 {
-    if(key_value == KeyValue::Show)
+    // TODO
+}
+
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Load and Unload Filament
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void i3PlusPrinterImpl::load_unload(KeyValue key_value)
+{
+    switch(key_value)
     {
-        ADVi3PP_LOG("Preheat Show page");
-        WriteRamDataRequest frame{Variable::Preset1Bed};
-        for(auto& preset : presets_)
-            frame << Uint16(preset.hotend) << Uint16(preset.bed);
-        frame.send();
-        show_page(Page::Preheat);
+        case KeyValue::LoadUnload:          load_unload_show(); break;
+        case KeyValue::Load:                load_unload_start(true); break;
+        case KeyValue::Unload:              load_unload_start(false); break;
+        case KeyValue::LoadUnloaddStop:     load_unload_stop(); break;
+        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::load_unload_show()
+{
+    WriteRamDataRequest frame{Variable::TargetTemperature};
+    frame << 200_u16;
+    frame.send();
+    show_page(Page::LoadUnload);
+}
+
+//! Handle the Filament screen.
+//! @param key_value    The step in the Filament screen
+void i3PlusPrinterImpl::load_unload_start(bool load)
+{
+    ReadRamDataRequest frame{Variable::TargetTemperature, 1};
+    frame.send();
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        ADVi3PP_ERROR("Error while receiving Frame to read Target Temperature");
         return;
     }
 
+    Uint16 hotend;
+    response >> hotend;
+
+    thermalManager.setTargetHotend(hotend.word, 0);
+    enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
+
+    next_op_time_ = millis() + 500;
+
+    background_task_ = load
+                       ? BackgroundTask::LoadFilament
+                       : BackgroundTask::UnloadFilament;
+}
+
+//! Handle back from the Load on Unload LCD screen.
+void i3PlusPrinterImpl::load_unload_stop()
+{
+    ADVi3PP_LOG("Load/Unload Stop");
+    background_task_ = BackgroundTask::None;
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
+    thermalManager.setTargetHotend(0, 0);
+    show_page(Page::LoadUnload);
+}
+
+//! Load the filament if the temperature is high enough.
+void i3PlusPrinterImpl::load_filament_task()
+{
+    if(thermalManager.current_temperature[0] >= thermalManager.target_temperature[0] - 10)
+    {
+        ADVi3PP_LOG("Load Filament");
+        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
+    }
+    set_next_background_task_time();
+}
+
+//! Unload the filament if the temperature is high enough.
+void i3PlusPrinterImpl::unload_filament_task()
+{
+    if(thermalManager.current_temperature[0] >= thermalManager.target_temperature[0] - 10)
+    {
+        ADVi3PP_LOG("Unload Filament");
+        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
+    }
+    set_next_background_task_time();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Preheat & Cooldown
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void i3PlusPrinterImpl::preheat(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::PreheatShow:     preheat_show(); break;
+        default:                        preheat_preset(static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::preheat_show()
+{
+    ADVi3PP_LOG("Preheat page");
+    WriteRamDataRequest frame{Variable::Preset1Bed};
+    for(auto& preset : presets_)
+        frame << Uint16(preset.hotend) << Uint16(preset.bed);
+    frame.send();
+    show_page(Page::Preheat);
+}
+
+//! Preheat the nozzle and save the presets.
+//! @param key_value    The index (starting from 1) of the preset to use
+void i3PlusPrinterImpl::preheat_preset(uint16_t presetIndex)
+{
     ADVi3PP_LOG("Preheat Start");
+
+    presetIndex -= 1;
+    if(presetIndex >= NB_PRESETS)
+    {
+        ADVi3PP_LOG("Invalid preset # " << presetIndex);
+        return;
+    }
 
     ReadRamDataRequest frame{Variable::Preset1Bed, 6};
     frame.send();
@@ -551,11 +681,9 @@ void i3PlusPrinterImpl::preheat(KeyValue key_value)
         preset.bed = bed.word;
     }
 
+    // Save presets
     enqueue_and_echo_commands_P(PSTR("M500"));
 
-    auto presetIndex = static_cast<uint16_t>(key_value) - 1;
-    if(presetIndex >= NB_PRESETS)
-        return;
     const Preset& preset = presets_[presetIndex];
 
     Chars<> command;
@@ -565,70 +693,200 @@ void i3PlusPrinterImpl::preheat(KeyValue key_value)
 
     command = "M140 S"; command << preset.bed;
     enqueue_and_echo_command(command.c_str());
+
+    save_current_page();
+    show_page(Page::Temperature);
 }
 
 //! Cooldown the bed and the nozzle
-void i3PlusPrinterImpl::cooldown(KeyValue)
+void i3PlusPrinterImpl::cooldown()
 {
     ADVi3PP_LOG("Cooldown");
     thermalManager.disable_all_heaters();
 }
 
-//! Display on the LCD screen the Motors or PID settings.
-//! @param key_value    Which settings to display
-void i3PlusPrinterImpl::motors_or_pid_settings(KeyValue key_value)
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Move & Home
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+//! Execute a move command
+void i3PlusPrinterImpl::move(KeyValue key_value)
 {
-    WriteRamDataRequest frame{Variable::MotorSettingsX};
-    frame << Uint16(planner.axis_steps_per_mm[X_AXIS] * 10)
-          << Uint16(planner.axis_steps_per_mm[Y_AXIS] * 10)
-          << Uint16(planner.axis_steps_per_mm[Z_AXIS] * 10)
-          << Uint16(planner.axis_steps_per_mm[E_AXIS] * 10)
-          << Uint16(PID_PARAM(Kp, 0) * 10)
-          << Uint16(unscalePID_i(PID_PARAM(Ki, 0)) * 10)
-          << Uint16(unscalePID_d(PID_PARAM(Kd, 0)) * 10);
-    frame.send();
-
-    show_page(key_value == KeyValue::PidSettings ? Page::PidSettings: Page::MotoSettings);
-}
-
-//! Save the Motors and PID settings.
-void i3PlusPrinterImpl::save_motors_or_pid_settings(KeyValue)
-{
-    ReadRamDataRequest frame{Variable::MotorSettingsX, 7};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    switch(key_value)
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Motors Settings");
-        return;
+        case KeyValue::MoveXplus:           move_x_plus(); break;
+        case KeyValue::MoveXminus:          move_x_minus(); break;
+        case KeyValue::MoveYplus:           move_y_plus(); break;
+        case KeyValue::MoveYminus:          move_y_minus(); break;
+        case KeyValue::MoveZplus:           move_z_plus(); break;
+        case KeyValue::MoveZminus:          move_z_minus(); break;
+        case KeyValue::MoveEplus:           move_e_plus(); break;
+        case KeyValue::MoveEminus:          move_e_minus(); break;
+        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
     }
-
-    Uint16 x, y, z, e, p, i, d;
-    response >> x >> y >> z >> e >> p >> i >> d;
-
-    planner.axis_steps_per_mm[X_AXIS] = static_cast<float>(x.word) / 10;
-    planner.axis_steps_per_mm[Y_AXIS] = static_cast<float>(y.word) / 10;
-    planner.axis_steps_per_mm[Z_AXIS] = static_cast<float>(z.word) / 10;
-    planner.axis_steps_per_mm[E_AXIS] = static_cast<float>(e.word) / 10;
-
-    PID_PARAM(Kp, 0) = static_cast<float>(p.word) / 10;
-    PID_PARAM(Ki, 0) = scalePID_i(static_cast<float>(i.word) / 10);
-    PID_PARAM(Kd, 0) = scalePID_d(static_cast<float>(d.word) / 10);
-
-    enqueue_and_echo_commands_P(PSTR("M500"));
-    show_page(Page::System);
 }
 
-//! Reset all settings of the printer to factory ones.
-void i3PlusPrinterImpl::factory_reset(KeyValue)
+//! Execute a home command
+void i3PlusPrinterImpl::home(KeyValue key_value)
 {
-    enqueue_and_echo_commands_P(PSTR("M502"));
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    switch(key_value)
+    {
+        case KeyValue::HomeX:               home_x(); break;
+        case KeyValue::HomeY:               home_y(); break;
+        case KeyValue::HomeZ:               home_z(); break;
+        case KeyValue::HomeAll:             home_all(); break;
+        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+//! Move the nozzle.
+void i3PlusPrinterImpl::move_x_plus()
+{
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(PSTR("G1 X5 F3000"));
+    enqueue_and_echo_commands_P(PSTR("G90"));
+}
+
+//! Move the nozzle.
+void i3PlusPrinterImpl::move_x_minus()
+{
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(PSTR("G1 X-5 F3000"));
+    enqueue_and_echo_commands_P(PSTR("G90"));
+}
+
+//! Move the nozzle.
+void i3PlusPrinterImpl::move_y_plus()
+{
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(PSTR("G1 Y5 F3000"));
+    enqueue_and_echo_commands_P(PSTR("G90"));
+}
+
+//! Move the nozzle.
+void i3PlusPrinterImpl::move_y_minus()
+{
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(PSTR("G1 Y-5 F3000"));
+    enqueue_and_echo_commands_P(PSTR("G90"));
+}
+
+//! Move the nozzle.
+void i3PlusPrinterImpl::move_z_plus()
+{
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0.5 F3000"));
+    enqueue_and_echo_commands_P(PSTR("G90"));
+}
+
+//! Move the nozzle.
+void i3PlusPrinterImpl::move_z_minus()
+{
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z-0.5 F3000"));
+    enqueue_and_echo_commands_P(PSTR("G90"));
+}
+
+//! Extrude some filament.
+void i3PlusPrinterImpl::move_e_plus()
+{
+    if(thermalManager.degHotend(0) < 180)
+        return;
+
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
+    enqueue_and_echo_commands_P(PSTR("G90"));
+}
+
+//! Unextrude.
+void i3PlusPrinterImpl::move_e_minus()
+{
+    if(thermalManager.degHotend(0) < 180)
+        return;
+
+    clear_command_queue();
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
+    enqueue_and_echo_commands_P(PSTR("G90"));
+}
+
+//! Disable the motors.
+void i3PlusPrinterImpl::disable_motors()
+{
+    enqueue_and_echo_commands_P(PSTR("M84"));
+    axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+}
+
+//! Go to home on the X axis.
+void i3PlusPrinterImpl::home_x()
+{
+    enqueue_and_echo_commands_P(PSTR("G28 X0"));
+}
+
+//! Go to home on the Y axis.
+void i3PlusPrinterImpl::home_y()
+{
+    enqueue_and_echo_commands_P(PSTR("G28 Y0"));
+}
+
+//! Go to home on the Z axis.
+void i3PlusPrinterImpl::home_z()
+{
+    enqueue_and_echo_commands_P(PSTR("G28 Z0"));
+}
+
+//! Go to home on all axis.
+void i3PlusPrinterImpl::home_all()
+{
+    enqueue_and_echo_commands_P(PSTR("G28"));
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Settings
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void i3PlusPrinterImpl::show_settings(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::SettingsPrint:           show_print_settings(Page::Settings); break;
+        case KeyValue::SettingsPID:             show_pid_settings(Page::Settings); break;
+        case KeyValue::SettingsSteps:           show_steps_settings(Page::Settings); break;
+        case KeyValue::SettingsFeedrate:        show_feedrate_settings(Page::Settings); break;
+        case KeyValue::SettingsAcceleration:    show_acceleration_settings(Page::Settings); break;
+        case KeyValue::SettingsJerk:            show_jerk_settings(Page::Settings); break;
+        default:                                ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::save_settings(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::SettingsPrint:           save_print_settings(); break;
+        case KeyValue::SettingsPID:             save_pid_settings(); break;
+        case KeyValue::SettingsSteps:           save_steps_settings(); break;
+        case KeyValue::SettingsFeedrate:        save_feedrate_settings(); break;
+        case KeyValue::SettingsAcceleration:    save_acceleration_settings(); break;
+        case KeyValue::SettingsJerk:            save_jerk_settings(); break;
+        default:                                ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::cancel_settings(KeyValue)
+{
+    show_back_page();
 }
 
 //! Display on the LCD screen the printing settings.
-void i3PlusPrinterImpl::print_settings(KeyValue)
+void i3PlusPrinterImpl::show_print_settings(Page next, Page back)
 {
     WriteRamDataRequest frame{Variable::PrintSettingsSpeed};
     frame << Uint16(feedrate_percentage)
@@ -636,11 +894,13 @@ void i3PlusPrinterImpl::print_settings(KeyValue)
           << Uint16(thermalManager.degTargetBed())
           << Uint16(scale(fanSpeeds[0], 256, 100));
     frame.send();
+
+    set_next_back_pages(next, back);
     show_page(Page::PrintSettings);
 }
 
 //! Save the printing settings.
-void i3PlusPrinterImpl::save_print_settings(KeyValue)
+void i3PlusPrinterImpl::save_print_settings()
 {
     ReadRamDataRequest frame{Variable::PrintSettingsSpeed, 4};
     frame.send();
@@ -660,211 +920,218 @@ void i3PlusPrinterImpl::save_print_settings(KeyValue)
     thermalManager.setTargetBed(bed.word);
     fanSpeeds[0] = scale(fan.word, 100, 256);
 
-    show_page(Page::Print);
+    show_next_page();
 }
 
-//! Handle back from the Load on Unload LCD screen.
-void i3PlusPrinterImpl::load_unload_back(KeyValue)
+void i3PlusPrinterImpl::show_pid_settings(Page next, Page back)
 {
-    ADVi3PP_LOG("Load/Unload Back");
-    background_task_ = BackgroundTask::None;
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
-    thermalManager.setTargetHotend(0, 0);
-    show_page(Page::Filament);
+    WriteRamDataRequest frame{Variable::PidP};
+    frame << Uint16(PID_PARAM(Kp, 0) * 10)
+          << Uint16(unscalePID_i(PID_PARAM(Ki, 0)) * 10)
+          << Uint16(unscalePID_d(PID_PARAM(Kd, 0)) * 10);
+    frame.send();
+
+    set_next_back_pages(next, back);
+    show_page(Page::PidSettings);
 }
 
-//! Handle leveling.
-//! @param key_value    The step of the leveling
-void i3PlusPrinterImpl::level(KeyValue key_value)
+void i3PlusPrinterImpl::save_pid_settings()
 {
-    ADVi3PP_LOG("Level step " << static_cast<uint16_t>(key_value));
-    switch(key_value)
-    {
-        case KeyValue::LevelStart:
-            show_page(Page::LevelingStart);
-            axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
-            enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
-            enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-            next_op_time_ = millis() + 200;
-            background_task_ = BackgroundTask::LevelInit;
-            break;
-
-        case KeyValue::LevelStep1:
-            enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
-            enqueue_and_echo_commands_P((PSTR("G1 X30 Y30 F6000")));
-            enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
-            break;
-
-        case KeyValue::LevelStep2:
-            enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
-            enqueue_and_echo_commands_P((PSTR("G1 X170 Y170 F6000")));
-            enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
-            break;
-
-        case KeyValue::LevelStep3:
-            enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
-            enqueue_and_echo_commands_P((PSTR("G1 X170 Y30 F6000")));
-            enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
-            break;
-
-        case KeyValue::LevelStep4:
-            enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
-            enqueue_and_echo_commands_P((PSTR("G1 X30 Y170 F6000")));
-            enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
-            break;
-
-        case KeyValue::LevelFinish:
-            enqueue_and_echo_commands_P((PSTR("G1 Z30 F2000")));
-            show_page(Page::Tools);
-            break;
-    }
-}
-
-//! Handle the Filament screen.
-//! @param key_value    The step in the Filament screen
-void i3PlusPrinterImpl::filament(KeyValue key_value)
-{
-    if(key_value == KeyValue::Show)
-    {
-        WriteRamDataRequest frame{Variable::TargetTemperature};
-        frame << 200_u16;
-        frame.send();
-        show_page(Page::Filament);
-        return;
-    }
-
-    ReadRamDataRequest frame{Variable::TargetTemperature, 1};
+    ReadRamDataRequest frame{Variable::PidD, 3};
     frame.send();
 
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Target Temperature");
+        ADVi3PP_ERROR("Error while receiving Frame to read PID Settings");
         return;
     }
 
-    Uint16 hotend;
-    response >> hotend;
+    Uint16 p, i, d;
+    response >> p >> i >> d;
 
-    thermalManager.setTargetHotend(hotend.word, 0);
-    enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
+    PID_PARAM(Kp, 0) = static_cast<float>(p.word) / 10;
+    PID_PARAM(Ki, 0) = scalePID_i(static_cast<float>(i.word) / 10);
+    PID_PARAM(Kd, 0) = scalePID_d(static_cast<float>(d.word) / 10);
 
-    next_op_time_ = millis() + 500;
+    enqueue_and_echo_commands_P(PSTR("M500"));
 
-    background_task_ = key_value == KeyValue::Load
-                       ? BackgroundTask::LoadFilament
-                       : BackgroundTask::UnloadFilament;
+    show_next_page();
 }
 
-//! Move the nozzle.
-void i3PlusPrinterImpl::move_x_plus(KeyValue)
+void i3PlusPrinterImpl::show_steps_settings(Page next, Page back)
 {
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 X5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
+    WriteRamDataRequest frame{Variable::MotorSettingsX};
+    frame << Uint16(planner.axis_steps_per_mm[X_AXIS] * 10)
+          << Uint16(planner.axis_steps_per_mm[Y_AXIS] * 10)
+          << Uint16(planner.axis_steps_per_mm[Z_AXIS] * 10)
+          << Uint16(planner.axis_steps_per_mm[E_AXIS] * 10);
+    frame.send();
+
+    set_next_back_pages(next, back);
+    show_page(Page::MotorsSettings);
 }
 
-//! Move the nozzle.
-void i3PlusPrinterImpl::move_x_minus(KeyValue)
+void i3PlusPrinterImpl::save_steps_settings()
 {
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 X-5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
-}
+    ReadRamDataRequest frame{Variable::MotorSettingsX, 4};
+    frame.send();
 
-//! Move the nozzle.
-void i3PlusPrinterImpl::move_y_plus(KeyValue)
-{
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 Y5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
-}
-
-//! Move the nozzle.
-void i3PlusPrinterImpl::move_y_minus(KeyValue)
-{
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 Y-5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
-}
-
-//! Move the nozzle.
-void i3PlusPrinterImpl::move_z_plus(KeyValue)
-{
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0.5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
-}
-
-//! Move the nozzle.
-void i3PlusPrinterImpl::move_z_minus(KeyValue)
-{
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z-0.5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
-}
-
-//! Extrude some filament.
-void i3PlusPrinterImpl::move_e_plus(KeyValue)
-{
-    if(thermalManager.degHotend(0) >= 180)
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
     {
-        clear_command_queue();
-        enqueue_and_echo_commands_P(PSTR("G91"));
-        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
-        enqueue_and_echo_commands_P(PSTR("G90"));
+        ADVi3PP_ERROR("Error while receiving Frame to read Steps Settings");
+        return;
     }
+
+    Uint16 x, y, z, e;
+    response >> x >> y >> z >> e;
+
+    planner.axis_steps_per_mm[X_AXIS] = static_cast<float>(x.word) / 10;
+    planner.axis_steps_per_mm[Y_AXIS] = static_cast<float>(y.word) / 10;
+    planner.axis_steps_per_mm[Z_AXIS] = static_cast<float>(z.word) / 10;
+    planner.axis_steps_per_mm[E_AXIS] = static_cast<float>(e.word) / 10;
+
+    enqueue_and_echo_commands_P(PSTR("M500"));
+
+    show_next_page();
 }
 
-//! Unextrude.
-void i3PlusPrinterImpl::move_e_minus(KeyValue)
+void i3PlusPrinterImpl::show_feedrate_settings(Page next, Page back)
 {
-    if(thermalManager.degHotend(0) >= 180)
+    WriteRamDataRequest frame{Variable::FeedrateMaxX};
+    frame << Uint16(planner.max_feedrate_mm_s[X_AXIS] * 10)
+          << Uint16(planner.max_feedrate_mm_s[Y_AXIS] * 10)
+          << Uint16(planner.max_feedrate_mm_s[Z_AXIS] * 10)
+          << Uint16(planner.max_feedrate_mm_s[E_AXIS] * 10)
+          << Uint16(planner.min_feedrate_mm_s * 10)
+          << Uint16(planner.min_travel_feedrate_mm_s * 10);
+    frame.send();
+
+    set_next_back_pages(next, back);
+    show_page(Page::FeedrateSettings);
+}
+
+void i3PlusPrinterImpl::save_feedrate_settings()
+{
+    ReadRamDataRequest frame{Variable::FeedrateMaxX, 6};
+    frame.send();
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
     {
-        clear_command_queue();
-        enqueue_and_echo_commands_P(PSTR("G91"));
-        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
-        enqueue_and_echo_commands_P(PSTR("G90"));
+        ADVi3PP_ERROR("Error while receiving Frame to read Feedrate Settings");
+        return;
     }
+
+    Uint16 x, y, z, e, min, travel;
+    response >> x >> y >> z >> e >> min >> travel;
+
+    planner.max_feedrate_mm_s[X_AXIS] = static_cast<float>(x.word) / 10;
+    planner.max_feedrate_mm_s[Y_AXIS] = static_cast<float>(y.word) / 10;
+    planner.max_feedrate_mm_s[Z_AXIS] = static_cast<float>(z.word) / 10;
+    planner.max_feedrate_mm_s[E_AXIS] = static_cast<float>(e.word) / 10;
+    planner.min_feedrate_mm_s         = static_cast<float>(min.word) / 10;
+    planner.min_travel_feedrate_mm_s  = static_cast<float>(travel.word) / 10;
+
+    enqueue_and_echo_commands_P(PSTR("M500"));
+
+    show_next_page();
 }
 
-//! Disable the motors.
-void i3PlusPrinterImpl::disable_motors(KeyValue)
+void i3PlusPrinterImpl::show_acceleration_settings(Page next, Page back)
 {
-    enqueue_and_echo_commands_P(PSTR("M84"));
-    axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+    WriteRamDataRequest frame{Variable::AccelerationMaxX};
+    frame << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[X_AXIS]) * 10)
+          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[Y_AXIS]) * 10)
+          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[Z_AXIS]) * 10)
+          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[E_AXIS]) * 10)
+          << Uint16(static_cast<uint16_t>(planner.acceleration * 10))
+          << Uint16(static_cast<uint16_t>(planner.retract_acceleration * 10))
+          << Uint16(static_cast<uint16_t>(planner.travel_acceleration * 10));
+    frame.send();
+
+    set_next_back_pages(next, back);
+    show_page(Page::AccelerationSettings);
 }
 
-//! Go to home on the X axis.
-void i3PlusPrinterImpl::home_X(KeyValue)
+void i3PlusPrinterImpl::save_acceleration_settings()
 {
-    enqueue_and_echo_commands_P(PSTR("G28 X0"));
+    ReadRamDataRequest frame{Variable::AccelerationMaxX, 7};
+    frame.send();
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        ADVi3PP_ERROR("Error while receiving Frame to read Acceleration Settings");
+        return;
+    }
+
+    Uint16 x, y, z, e, print, retract, travel;
+    response >> x >> y >> z >> e >> print >> retract >> travel;
+
+    planner.max_acceleration_mm_per_s2[X_AXIS] = static_cast<uint32_t>(x.word) / 10;
+    planner.max_acceleration_mm_per_s2[Y_AXIS] = static_cast<uint32_t>(y.word) / 10;
+    planner.max_acceleration_mm_per_s2[Z_AXIS] = static_cast<uint32_t>(z.word) / 10;
+    planner.max_acceleration_mm_per_s2[E_AXIS] = static_cast<uint32_t>(e.word) / 10;
+    planner.acceleration                       = static_cast<float>(print.word) / 10;
+    planner.retract_acceleration               = static_cast<float>(retract.word) / 10;
+    planner.travel_acceleration                = static_cast<float>(travel.word) / 10;
+
+    enqueue_and_echo_commands_P(PSTR("M500"));
+
+    show_next_page();
 }
 
-//! Go to home on the Y axis.
-void i3PlusPrinterImpl::home_y(KeyValue)
+void i3PlusPrinterImpl::show_jerk_settings(Page next, Page back)
 {
-    enqueue_and_echo_commands_P(PSTR("G28 Y0"));
+    WriteRamDataRequest frame{Variable::JerkX};
+    frame << Uint16(planner.max_jerk[X_AXIS] * 10)
+          << Uint16(planner.max_jerk[Y_AXIS] * 10)
+          << Uint16(planner.max_jerk[Z_AXIS] * 10)
+          << Uint16(planner.max_jerk[E_AXIS] * 10);
+    frame.send();
+
+    set_next_back_pages(next, back);
+    show_page(Page::JerkSettings);
 }
 
-//! Go to home on the Z axis.
-void i3PlusPrinterImpl::home_z(KeyValue)
+void i3PlusPrinterImpl::save_jerk_settings()
 {
-    enqueue_and_echo_commands_P(PSTR("G28 Z0"));
+    ReadRamDataRequest frame{Variable::JerkX, 4};
+    frame.send();
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        ADVi3PP_ERROR("Error while receiving Frame to read Acceleration Settings");
+        return;
+    }
+
+    Uint16 x, y, z, e;
+    response >> x >> y >> z >> e;
+
+    planner.max_jerk[X_AXIS] = static_cast<uint32_t>(x.word) / 10;
+    planner.max_jerk[Y_AXIS] = static_cast<uint32_t>(y.word) / 10;
+    planner.max_jerk[Z_AXIS] = static_cast<uint32_t>(z.word) / 10;
+    planner.max_jerk[E_AXIS] = static_cast<uint32_t>(e.word) / 10;
+
+    enqueue_and_echo_commands_P(PSTR("M500"));
+
+    show_next_page();
 }
 
-//! Go to home on all axis.
-void i3PlusPrinterImpl::home_all(KeyValue)
+//! Reset all settings of the printer to factory ones.
+void i3PlusPrinterImpl::factory_reset(KeyValue)
 {
-    enqueue_and_echo_commands_P(PSTR("G28"));
+    enqueue_and_echo_commands_P(PSTR("M502"));
+    enqueue_and_echo_commands_P(PSTR("M500"));
 }
+
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Statistics
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 //! Display statistics on the LCD screem.
 void i3PlusPrinterImpl::statistics(KeyValue)
@@ -873,81 +1140,9 @@ void i3PlusPrinterImpl::statistics(KeyValue)
     show_page(Page::Statistics);
 }
 
-//! Handle PID tuning.
-//! @param key_value    The step of the PID tuning
-void i3PlusPrinterImpl::pid_tuning(KeyValue key_value)
-{
-    if(key_value == KeyValue::Show)
-    {
-        WriteRamDataRequest frame{Variable::TargetTemperature};
-        frame << 200_u16;
-        frame.send();
-        show_page(Page::AutoPidTuning);
-        return;
-    };
-
-    ReadRamDataRequest frame{Variable::TargetTemperature, 1};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
-    {
-        ADVi3PP_ERROR("Error while receiving Frame to read Target Temperature");
-        return;
-    }
-    Uint16 hotend; response >> hotend;
-
-    enqueue_and_echo_command("M106 S255"); // Turn on fam
-    Chars<> auto_pid_command; auto_pid_command << "M303 S" << hotend.word << "E0 C8 U1";
-    enqueue_and_echo_command(auto_pid_command.c_str());
-
-    temp_graph_update_ = true;
-    show_page(Page::AutoPidGraph);
-};
-
-//! Show the temperatures on the LCD screen.
-//! @param key_value    The step on the LCD screen
-void i3PlusPrinterImpl::temperature_graph(KeyValue key_value)
-{
-    ADVi3PP_LOG("Temperature graph, key value = " << static_cast<uint8_t>(key_value));
-    if(key_value == KeyValue::Back)
-    {
-        temp_graph_update_ = false;
-        show_page(last_page_);
-        return;
-    }
-
-    last_page_ = get_current_page();
-    temp_graph_update_ = true;
-    show_page(Page::Temperature);
-}
-
-//! Show the printing screen.
-void i3PlusPrinterImpl::print(KeyValue)
-{
-    temp_graph_update_ = true;
-    if(!card.sdprinting)
-    {
-        WriteRamDataRequest frame{Variable::SelectedFileName};
-        frame << Chars<>{""};
-        frame.send();
-    }
-
-    show_page(Page::Print);
-}
-
-//! Show the LCD Update Mode screen.
-void i3PlusPrinterImpl::lcd_update_mode(KeyValue)
-{
-    show_page(Page::LcdUpdate);
-
-    while(true)
-    {
-        watchdog_reset();
-        if(Serial.available())
-            Serial2.write(Serial.read());
-    }
-}
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// About & Versions
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 //! Get the current LCD firmware version.
 //! @return     The version as a string.
@@ -1004,6 +1199,168 @@ void i3PlusPrinterImpl::about(KeyValue key_value)
         show_page(Page::About);
 }
 
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// PID Tuning
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+//! Handle PID tuning.
+//! @param key_value    The step of the PID tuning
+void i3PlusPrinterImpl::pid_tuning(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::PidTuningStep1:   pid_tuning_step1(); break;
+        case KeyValue::PidTuningStep2:   pid_tuning_step2(); break;
+        default:                         ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::pid_tuning_step1()
+{
+    WriteRamDataRequest frame{Variable::TargetTemperature};
+    frame << 200_u16;
+    frame.send();
+    show_page(Page::PidTuning1);
+}
+
+void i3PlusPrinterImpl::pid_tuning_step2()
+{
+    ReadRamDataRequest frame{Variable::TargetTemperature, 1};
+    frame.send();
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        ADVi3PP_ERROR("Error while receiving Frame to read Target Temperature");
+        return;
+    }
+    Uint16 hotend; response >> hotend;
+
+    enqueue_and_echo_command("M106 S255"); // Turn on fam
+    Chars<> auto_pid_command; auto_pid_command << "M303 S" << hotend.word << "E0 C8 U1";
+    enqueue_and_echo_command(auto_pid_command.c_str());
+
+    show_page(Page::PidTuning2);
+};
+
+//! PID automatic tuning is finished.
+void i3PlusPrinterImpl::auto_pid_finished()
+{
+    ADVi3PP_LOG("Auto PID finished");
+    enqueue_and_echo_command("M106 S0");
+    show_pid_settings(Page::Calibration, Page::PidTuning1);
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Leveling
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void i3PlusPrinterImpl::leveling(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::LevelingHome:    leveling_home(); break;
+        case KeyValue::LevelingPoint1:  leveling_point1(); break;
+        case KeyValue::LevelingPoint2:  leveling_point2(); break;
+        case KeyValue::LevelingPoint3:  leveling_point3(); break;
+        case KeyValue::LevelingPoint4:  leveling_point4(); break;
+        case KeyValue::LevelingBack:    leveling_finish(); break;
+        default:                        ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::leveling_home()
+{
+    show_page(Page::Leveling1);
+    axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+    enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
+    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
+    next_op_time_ = millis() + 200;
+    background_task_ = BackgroundTask::Leveling;
+}
+
+void i3PlusPrinterImpl::leveling_task()
+{
+    if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
+    {
+        ADVi3PP_LOG("Leveling Homed, start process");
+        background_task_ = BackgroundTask::None;
+        show_page(Page::Leveling2);
+    }
+    else
+        set_next_background_task_time(200);
+}
+
+//! Handle leveling point #1.
+void i3PlusPrinterImpl::leveling_point1()
+{
+    ADVi3PP_LOG("Level step 1");
+    enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
+    enqueue_and_echo_commands_P((PSTR("G1 X30 Y30 F6000")));
+    enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
+}
+
+//! Handle leveling point #2.
+void i3PlusPrinterImpl::leveling_point2()
+{
+    ADVi3PP_LOG("Level step 2");
+    enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
+    enqueue_and_echo_commands_P((PSTR("G1 X170 Y170 F6000")));
+    enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
+}
+
+//! Handle leveling point #3.
+void i3PlusPrinterImpl::leveling_point3()
+{
+    ADVi3PP_LOG("Level step 3");
+    enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
+    enqueue_and_echo_commands_P((PSTR("G1 X170 Y30 F6000")));
+    enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
+}
+
+//! Handle leveling point #4.
+void i3PlusPrinterImpl::leveling_point4()
+{
+    ADVi3PP_LOG("Level step 3");
+    enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
+    enqueue_and_echo_commands_P((PSTR("G1 X30 Y170 F6000")));
+    enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
+}
+
+//! Handle leveling point #4.
+void i3PlusPrinterImpl::leveling_finish()
+{
+    enqueue_and_echo_commands_P((PSTR("G1 Z30 F2000")));
+    show_page(Page::Calibration);
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Extruder calibration
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void i3PlusPrinterImpl::extruder_calibration_task()
+{
+    // TODO
+}
+
+void i3PlusPrinterImpl::extruder_calibration(KeyValue key_value)
+{
+    // TODO
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// XYZ Motors calibration
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void i3PlusPrinterImpl::xyz_motors_calibration(KeyValue key_value)
+{
+    // TODO
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Status
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 //! Send statistics to the LCD screen.
 void i3PlusPrinterImpl::send_stats()
 {
@@ -1037,11 +1394,17 @@ void i3PlusPrinterImpl::send_stats()
 //! Update the graphics (two channels: the bed and the hotend).
 void i3PlusPrinterImpl::update_graph_data()
 {
-    WriteCurveDataRequest frame{0b00000011};
+    WriteCurveDataRequest frame{0b00001111};
     frame << Uint16{thermalManager.degBed()}
+          << Uint16{thermalManager.degBed()}
+          << Uint16{thermalManager.degHotend(0)}
           << Uint16{thermalManager.degHotend(0)};
     frame.send();
 }
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Errors
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 //! Display the Thermal Runaway Error screen.
 void i3PlusPrinterImpl::temperature_error()

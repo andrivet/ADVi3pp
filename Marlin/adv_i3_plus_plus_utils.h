@@ -46,13 +46,13 @@ enum class Action: uint16_t;
 
 #ifdef DEBUG
 void Dump(const uint8_t* bytes, size_t size);
-#define ADVi3PP_ERROR(expresssion) {Chars<100> message; message << expresssion; Serial.println(message.c_str());}
-#define ADVi3PP_LOG(expresssion)   {Chars<100> message; message << expresssion; Serial.println(message.c_str());}
+#define ADVi3PP_ERROR(expresssion) {Chars<100> message; message << expresssion; Serial.println(message.c_str());} while(false)
+#define ADVi3PP_LOG(expresssion)   {Chars<100> message; message << expresssion; Serial.println(message.c_str());} while(false)
 #define ADVi3PP_DUMP(bytes, size)  {Dump(bytes, size);}
 #else
-#define ADVi3PP_ERROR(expresssion) {}
-#define ADVi3PP_LOG(expresssion)   {}
-#define ADVi3PP_DUMP(bytes, size)  {}
+#define ADVi3PP_ERROR(expresssion) {} while(false)
+#define ADVi3PP_LOG(expresssion)   {} while(false)
+#define ADVi3PP_DUMP(bytes, size)  {} while(false)
 #endif
 
 // --------------------------------------------------------------------
