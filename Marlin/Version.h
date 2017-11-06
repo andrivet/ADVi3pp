@@ -41,14 +41,14 @@
    * Verbose version identifier which should contain a reference to the location
    * from where the binary was downloaded or the source code was compiled.
    */
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3++ 1.0.1)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3++ 2.0.0 Beta 1)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
    * here we define this default string as the date where the latest release
    * version was tagged.
    */
-  #define STRING_DISTRIBUTION_DATE "2017-10-10 12:00"
+  #define STRING_DISTRIBUTION_DATE "2017-11-06 12:00"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
@@ -89,6 +89,6 @@
    * The WEBSITE_URL is the location where users can get more information such as
    * documentation about a specific Marlin release.
    */
-  #define WEBSITE_URL "http://marlinfw.org"
+  #define WEBSITE_URL "https://github.com/andrivet/ADVi3pp-Marlin"
 
 #endif // USE_AUTOMATIC_VERSIONING

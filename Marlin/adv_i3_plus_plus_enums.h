@@ -31,11 +31,11 @@ namespace advi3pp { inline namespace internals {
 //! List of commands and their values.
 enum class Command: uint8_t
 {
-    WriteRegisterData       = 0x80,
-    ReadRegisterData        = 0x81,
-    WriteRamData            = 0x82,
-    ReadRamData             = 0x83,
-    WriteCurveData          = 0x84
+    WriteRegisterData       = 0x80, // 128
+    ReadRegisterData        = 0x81, // 129
+    WriteRamData            = 0x82, // 130
+    ReadRamData             = 0x83, // 131
+    WriteCurveData          = 0x84  // 132
 };
 
 //! List of registers and their values.
@@ -216,7 +216,8 @@ enum class KeyValue: uint16_t
     LevelingPoint4          = 0x0004,
     LevelingBack            = 0x0099,
 
-    CalibrationStart        = 0x0000,
+    CalibrationShow         = 0x0000,
+    CalibrationStart        = 0x0001,
     CalibrationSettings     = 0x0002,
     CalibrationCancel       = 0x0099,
 

@@ -80,7 +80,6 @@ struct i3PlusPrinter
 {
     static void setup();
     static void task();
-    static void update_graph_data();
     static void auto_pid_finished();
     static void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     static void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);

@@ -26,7 +26,6 @@
 #include "temperature.h"
 #include "cardreader.h"
 #include "stepper.h"
-#include "watchdog.h"
 
 #include "adv_i3_plus_plus.h"
 #include "adv_i3_plus_plus_utils.h"
@@ -41,6 +40,7 @@ namespace
     const uint16_t advi3_pp_version = 0x0200;                       // 2.0.0
     const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x0200; // 2.0.0
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x0200; // 2.0.0
+    // Modify also DETAILED_BUILD_VERSION in Version.h
 
     const unsigned long advi3_pp_baudrate = 115200;
     const uint16_t nb_visible_sd_files = 5;
@@ -64,12 +64,6 @@ void i3PlusPrinter::setup()
 void i3PlusPrinter::task()
 {
     i3plus.task();
-}
-
-//! Update the graphs on the LCD screen.
-void i3PlusPrinter::update_graph_data()
-{
-    i3plus.update_graph_data();
 }
 
 //! PID automatic tuning is finished.
@@ -193,6 +187,7 @@ void i3PlusPrinterImpl::execute_background_task()
 
     switch(background_task_)
     {
+        case BackgroundTask::None:                  break;
         case BackgroundTask::Leveling:              leveling_task(); break;
         case BackgroundTask::LoadFilament:          load_filament_task(); break;
         case BackgroundTask::UnloadFilament:        unload_filament_task(); break;
@@ -222,7 +217,7 @@ void i3PlusPrinterImpl::show_page(Page page)
     ADVi3PP_LOG("Show page " << static_cast<uint8_t>(page));
     WriteRegisterDataRequest frame{Register::PictureID};
     frame << 00_u8 << page;
-    frame.send();
+    frame.send(true);
 }
 
 //! Retrieve the current page on the LCD screen
@@ -234,7 +229,7 @@ Page i3PlusPrinterImpl::get_current_page()
     ReadRegisterDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read PictureID");
+        ADVi3PP_ERROR("Reading PictureID");
         return Page::None;
     }
 
@@ -243,11 +238,15 @@ Page i3PlusPrinterImpl::get_current_page()
     return static_cast<Page>(page.word);
 }
 
+//! Get the current page and save it as the "Back" page.
 void i3PlusPrinterImpl::save_current_page()
 {
     back_page_ = get_current_page();
 }
 
+//! Set "Next" and "Back" page
+//! @param next     Next page
+//! @param back     Back page or None to take the current page
 void i3PlusPrinterImpl::set_next_back_pages(Page next, Page back)
 {
     if(back == Page::None)
@@ -258,11 +257,12 @@ void i3PlusPrinterImpl::set_next_back_pages(Page next, Page back)
     next_page_ = next;
 }
 
+//! Show the "Back" page on the LCD display.
 void i3PlusPrinterImpl::show_back_page()
 {
     if(back_page_ == Page::None)
     {
-        ADVi3PP_LOG("No Back page defined");
+        ADVi3PP_ERROR("No Back page defined");
         return;
     }
 
@@ -270,11 +270,12 @@ void i3PlusPrinterImpl::show_back_page()
     back_page_ = Page::None;
 }
 
+//! Show the "Next" page on the LCD display.
 void i3PlusPrinterImpl::show_next_page()
 {
     if(next_page_ == Page::None)
     {
-        ADVi3PP_LOG("No Next page defined");
+        ADVi3PP_ERROR("No Next page defined");
         return;
     }
 
@@ -292,7 +293,7 @@ void i3PlusPrinterImpl::task()
     read_lcd_serial();
     execute_background_task();
     send_status();
-    update_graph_data();
+    send_graph_data();
 }
 
 //! Update the status of the printer on the LCD.
@@ -310,10 +311,10 @@ void i3PlusPrinterImpl::send_status()
           << Uint16(thermalManager.degHotend(0))
           << Uint16(scale(fanSpeeds[0], 256, 100))
           << message_;
-    frame.send();
+    frame.send(false);
 }
 
-//! Read a frame from the LCD and act accordingly
+//! Read a frame from the LCD and act accordingly.
 void i3PlusPrinterImpl::read_lcd_serial()
 {
     // Format of the frame (example):
@@ -328,7 +329,7 @@ void i3PlusPrinterImpl::read_lcd_serial()
 
     if(!frame.receive())
     {
-        ADVi3PP_ERROR("Error while reading an incoming Frame");
+        ADVi3PP_ERROR("reading incoming Frame");
         return;
     }
 
@@ -337,7 +338,7 @@ void i3PlusPrinterImpl::read_lcd_serial()
     auto key_value = static_cast<KeyValue>(value.word);
 
     // TODO: Check that length == 1, that Hi(action) == 0x04
-    ADVi3PP_LOG("Receive a Frame of " << nb_words.byte << " words, with action = " << static_cast<uint16_t>(action) << " and KeyValue = " << value.word);
+    ADVi3PP_LOG(">>> " << nb_words.byte << " words, Action = " << static_cast<uint16_t>(action) << ", KeyValue = " << value.word);
 
     switch(action)
     {
@@ -369,6 +370,8 @@ void i3PlusPrinterImpl::read_lcd_serial()
 // Printing & SD Card
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+//! Handle printing action.
+//! @param key_value    The sub-action to handle
 void i3PlusPrinterImpl::printing(KeyValue key_value)
 {
     switch(key_value)
@@ -379,11 +382,14 @@ void i3PlusPrinterImpl::printing(KeyValue key_value)
     }
 }
 
+//! Show one of the printing screens depending of the context: either the SD screen, the SD printing screen,
+//! the printing screen or the temperature screen.
 void i3PlusPrinterImpl::printing_show()
 {
     if(card.sdprinting)
     {
         show_page(Page::SdPrint);
+        update_graphs();
         return;
     }
 
@@ -391,6 +397,7 @@ void i3PlusPrinterImpl::printing_show()
     if(!card.cardOK)
     {
         show_page(IsRunning() ? Page::Print : Page::Temperature);
+        update_graphs();
         return;
     }
 
@@ -399,6 +406,8 @@ void i3PlusPrinterImpl::printing_show()
     show_page(Page::SdCard);
 }
 
+//! Show the list of files on SD.
+//! @param last_index   Index of the last file to display
 void i3PlusPrinterImpl::show_sd_files(uint16_t last_index)
 {
     WriteRamDataRequest frame{Variable::FileName1};
@@ -410,7 +419,7 @@ void i3PlusPrinterImpl::show_sd_files(uint16_t last_index)
         get_file_name(index, name);
         frame << name;
     }
-    frame.send();
+    frame.send(true);
 }
 
 //! Get a filename with a given index.
@@ -439,13 +448,14 @@ void i3PlusPrinterImpl::sd_card_select_file(KeyValue key_value)
 
     WriteRamDataRequest frame{Variable::SelectedFileName};
     frame << name;
-    frame.send();
+    frame.send(true);
 
     card.openFile(card.filename, true);
     card.startFileprint();
     print_job_timer.start();
 
     show_page(Page::SdPrint);
+    update_graphs();
 }
 
 //! LCD SD card menu
@@ -479,6 +489,7 @@ void i3PlusPrinterImpl::sd_card(KeyValue key_value)
     show_sd_files(last_file_index);
 };
 
+//! Handle Back button.
 void i3PlusPrinterImpl::printing_back()
 {
     show_back_page();
@@ -488,6 +499,8 @@ void i3PlusPrinterImpl::printing_back()
 // Printing commands
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+//! Handle print commands.
+//! @param key_value    The sub-action to handle
 void i3PlusPrinterImpl::print_command(KeyValue key_value)
 {
     switch(key_value)
@@ -537,6 +550,7 @@ void i3PlusPrinterImpl::print_resume()
 #endif
 }
 
+//! Handle the Back button
 void i3PlusPrinterImpl::print_back()
 {
     // TODO
@@ -547,6 +561,8 @@ void i3PlusPrinterImpl::print_back()
 // Load and Unload Filament
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+//! Handle Load & Unload actions.
+//! @param key_value    The sub-action to handle
 void i3PlusPrinterImpl::load_unload(KeyValue key_value)
 {
     switch(key_value)
@@ -559,6 +575,7 @@ void i3PlusPrinterImpl::load_unload(KeyValue key_value)
     }
 }
 
+//! Show the Load & Unload screen on the LCD display.
 void i3PlusPrinterImpl::load_unload_show()
 {
     WriteRamDataRequest frame{Variable::TargetTemperature};
@@ -567,8 +584,8 @@ void i3PlusPrinterImpl::load_unload_show()
     show_page(Page::LoadUnload);
 }
 
-//! Handle the Filament screen.
-//! @param key_value    The step in the Filament screen
+//! Start Load or Unload action.
+//! @param load    Which action to start (i.e. which screen to display)
 void i3PlusPrinterImpl::load_unload_start(bool load)
 {
     ReadRamDataRequest frame{Variable::TargetTemperature, 1};
@@ -577,7 +594,7 @@ void i3PlusPrinterImpl::load_unload_start(bool load)
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Target Temperature");
+        ADVi3PP_ERROR("Receiving Frame (Target Temperature)");
         return;
     }
 
@@ -631,6 +648,8 @@ void i3PlusPrinterImpl::unload_filament_task()
 // Preheat & Cooldown
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+//! Handle Preheat actions.
+//! @param key_value    Sub-action to handle
 void i3PlusPrinterImpl::preheat(KeyValue key_value)
 {
     switch(key_value)
@@ -640,6 +659,7 @@ void i3PlusPrinterImpl::preheat(KeyValue key_value)
     }
 }
 
+//! Show the preheat screen
 void i3PlusPrinterImpl::preheat_show()
 {
     ADVi3PP_LOG("Preheat page");
@@ -659,7 +679,7 @@ void i3PlusPrinterImpl::preheat_preset(uint16_t presetIndex)
     presetIndex -= 1;
     if(presetIndex >= NB_PRESETS)
     {
-        ADVi3PP_LOG("Invalid preset # " << presetIndex);
+        ADVi3PP_ERROR("Invalid preset # " << presetIndex);
         return;
     }
 
@@ -669,7 +689,7 @@ void i3PlusPrinterImpl::preheat_preset(uint16_t presetIndex)
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Presets");
+        ADVi3PP_ERROR("Receiving Frame (Presets)");
         return;
     }
 
@@ -696,6 +716,7 @@ void i3PlusPrinterImpl::preheat_preset(uint16_t presetIndex)
 
     save_current_page();
     show_page(Page::Temperature);
+    update_graphs();
 }
 
 //! Cooldown the bed and the nozzle
@@ -727,6 +748,7 @@ void i3PlusPrinterImpl::move(KeyValue key_value)
 }
 
 //! Execute a home command
+//! @param key_value    Which home command to execute
 void i3PlusPrinterImpl::home(KeyValue key_value)
 {
     switch(key_value)
@@ -908,7 +930,7 @@ void i3PlusPrinterImpl::save_print_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Print Settings");
+        ADVi3PP_ERROR("Receiving Frame (Print Settings)");
         return;
     }
 
@@ -943,7 +965,7 @@ void i3PlusPrinterImpl::save_pid_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read PID Settings");
+        ADVi3PP_ERROR("Receiving Frame (PID Settings)");
         return;
     }
 
@@ -969,7 +991,7 @@ void i3PlusPrinterImpl::show_steps_settings(Page next, Page back)
     frame.send();
 
     set_next_back_pages(next, back);
-    show_page(Page::MotorsSettings);
+    show_page(Page::StepsSettings);
 }
 
 void i3PlusPrinterImpl::save_steps_settings()
@@ -980,7 +1002,7 @@ void i3PlusPrinterImpl::save_steps_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Steps Settings");
+        ADVi3PP_ERROR("Receiving Frame (Steps Settings)");
         return;
     }
 
@@ -1020,7 +1042,7 @@ void i3PlusPrinterImpl::save_feedrate_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Feedrate Settings");
+        ADVi3PP_ERROR("Receiving Frame (Feedrate Settings)");
         return;
     }
 
@@ -1063,7 +1085,7 @@ void i3PlusPrinterImpl::save_acceleration_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Acceleration Settings");
+        ADVi3PP_ERROR("Receiving Frame (Acceleration Settings)");
         return;
     }
 
@@ -1104,7 +1126,7 @@ void i3PlusPrinterImpl::save_jerk_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Acceleration Settings");
+        ADVi3PP_ERROR("Receiving Frame (Acceleration Settings)");
         return;
     }
 
@@ -1126,6 +1148,7 @@ void i3PlusPrinterImpl::factory_reset(KeyValue)
 {
     enqueue_and_echo_commands_P(PSTR("M502"));
     enqueue_and_echo_commands_P(PSTR("M500"));
+    show_page(Page::Settings);
 }
 
 
@@ -1154,7 +1177,7 @@ Chars<16> i3PlusPrinterImpl::get_lcd_firmware_version()
     ReadRegisterDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Version");
+        ADVi3PP_ERROR("Receiving Frame (Version)");
         return Chars<16>("Unknown");
     }
 
@@ -1231,7 +1254,7 @@ void i3PlusPrinterImpl::pid_tuning_step2()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Error while receiving Frame to read Target Temperature");
+        ADVi3PP_ERROR("Receiving Frame (Target Temperature)");
         return;
     }
     Uint16 hotend; response >> hotend;
@@ -1345,7 +1368,37 @@ void i3PlusPrinterImpl::extruder_calibration_task()
 
 void i3PlusPrinterImpl::extruder_calibration(KeyValue key_value)
 {
-    // TODO
+    switch(key_value)
+    {
+        case KeyValue::CalibrationShow:         show_extruder_calibration(); break;
+        case KeyValue::CalibrationStart:        start_extruder_calibration(); break;
+        case KeyValue::CalibrationSettings:     extruder_calibrartion_settings(); break;
+        case KeyValue::CalibrationCancel:       cancel_extruder_calibration(); break;
+        default:                                ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::show_extruder_calibration()
+{
+    WriteRamDataRequest frame{Variable::TargetTemperature};
+    frame << 200_u16;
+    frame.send();
+    show_page(Page::ExtruderCalibration1);
+}
+
+void i3PlusPrinterImpl::start_extruder_calibration()
+{
+
+}
+
+void i3PlusPrinterImpl::extruder_calibrartion_settings()
+{
+
+}
+
+void i3PlusPrinterImpl::cancel_extruder_calibration()
+{
+
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1354,7 +1407,24 @@ void i3PlusPrinterImpl::extruder_calibration(KeyValue key_value)
 
 void i3PlusPrinterImpl::xyz_motors_calibration(KeyValue key_value)
 {
-    // TODO
+    switch(key_value)
+    {
+        case KeyValue::CalibrationShow:         show_xyz_motors_calibration(); break;
+        case KeyValue::CalibrationSettings:     xyz_motors_calibration_settings(); break;
+        default:                                ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+    }
+}
+
+void i3PlusPrinterImpl::show_xyz_motors_calibration()
+{
+    WriteRamDataRequest frame{Variable::Measure1};
+    frame << 200_u16 << 200_u16 << 200_u16;
+    frame.send();
+    show_page(Page::ExtruderCalibration1);
+}
+
+void i3PlusPrinterImpl::xyz_motors_calibration_settings()
+{
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1391,15 +1461,26 @@ void i3PlusPrinterImpl::send_stats()
 #endif
 }
 
-//! Update the graphics (two channels: the bed and the hotend).
-void i3PlusPrinterImpl::update_graph_data()
+void i3PlusPrinterImpl::update_graphs()
 {
+    update_graphs_ = true;
+    next_update_graph_time_ = millis() + 2000;
+}
+
+//! Update the graphics (two channels: the bed and the hotend).
+void i3PlusPrinterImpl::send_graph_data()
+{
+    if(!update_graphs_ || !ELAPSED(millis(), next_update_graph_time_))
+        return;
+
     WriteCurveDataRequest frame{0b00001111};
     frame << Uint16{thermalManager.degBed()}
           << Uint16{thermalManager.degBed()}
           << Uint16{thermalManager.degHotend(0)}
           << Uint16{thermalManager.degHotend(0)};
-    frame.send();
+    frame.send(false);
+
+    next_update_graph_time_ = millis() + 500;
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

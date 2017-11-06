@@ -46,7 +46,7 @@ enum class Action: uint16_t;
 
 #ifdef DEBUG
 void Dump(const uint8_t* bytes, size_t size);
-#define ADVi3PP_ERROR(expresssion) {Chars<100> message; message << expresssion; Serial.println(message.c_str());} while(false)
+#define ADVi3PP_ERROR(expresssion) {Chars<100> message{"*** ERROR "}; message << expresssion; Serial.println(message.c_str());} while(false)
 #define ADVi3PP_LOG(expresssion)   {Chars<100> message; message << expresssion; Serial.println(message.c_str());} while(false)
 #define ADVi3PP_DUMP(bytes, size)  {Dump(bytes, size);}
 #else
@@ -130,7 +130,7 @@ private:
 //! A frame to be send to the LCD or received from the LCD
 struct Frame
 {
-    void send();
+    void send(bool logging = true); // Logging is only used in DEBUG builds
     Frame& operator<<(const Uint8& data);
     Frame& operator<<(const Uint16& data);
     template<size_t S> Frame& operator<<(const Chars<S>& name);

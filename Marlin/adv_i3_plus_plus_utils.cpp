@@ -136,10 +136,13 @@ Frame& Frame::operator<<(Variable var)
 }
 
 //! Send tis Frame to the LCD display.
-void Frame::send()
+void Frame::send(bool logging)
 {
-    //ADVi3PP_LOG("Send a Frame of " << get_length() << " bytes, with command = " << static_cast<uint8_t>(get_command()));
-    //ADVi3PP_DUMP(buffer_, get_length() + 3);
+    if(logging)
+    {
+        ADVi3PP_LOG(">>> " << get_length() << " bytes, cmd = " << static_cast<uint8_t>(get_command()));
+        ADVi3PP_DUMP(buffer_, get_length() + 3);
+    }
     Serial2.write(buffer_, 3 + buffer_[Position::Length]); // Header, length and data
 }
 
@@ -209,7 +212,7 @@ bool Frame::receive()
         return 0;
     }
 
-    ADVi3PP_LOG("Receive a Frame of " << length << " bytes.");
+    ADVi3PP_LOG("<<< " << length << " bytes.");
     ADVi3PP_DUMP(buffer_, length + 3);
 
     position_ = Position::Command;

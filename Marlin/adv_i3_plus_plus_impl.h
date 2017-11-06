@@ -60,7 +60,6 @@ public:
     void setup();
     void task();
     void show_page(Page page);
-    void update_graph_data();
     void auto_pid_finished();
     void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
@@ -83,6 +82,8 @@ private:
     Chars<16> get_lcd_firmware_version();
     void set_next_background_task_time(unsigned int delta = 500);
     void set_next_update_time(unsigned int delta = 500);
+    void update_graphs();
+    void send_graph_data();
 
 private:
     // Actions
@@ -151,6 +152,12 @@ private:
     void leveling_point3();
     void leveling_point4();
     void leveling_finish();
+    void show_extruder_calibration();
+    void start_extruder_calibration();
+    void extruder_calibrartion_settings();
+    void cancel_extruder_calibration();
+    void show_xyz_motors_calibration();
+    void xyz_motors_calibration_settings();
 
     // Background tasks
     void load_filament_task();
@@ -165,6 +172,8 @@ private:
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
     BackgroundTask background_task_ = BackgroundTask::None;
+    bool update_graphs_ = false;
+    millis_t next_update_graph_time_ = 0;
     Page back_page_ = Page::None;
     Page next_page_ = Page::None;
     Preset presets_[NB_PRESETS];
