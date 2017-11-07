@@ -179,6 +179,17 @@ void i3PlusPrinterImpl::set_next_update_time(unsigned int delta)
     next_update_time_ = millis() + delta;
 }
 
+void i3PlusPrinterImpl::set_background_task(BackgroundTask task, unsigned int delta)
+{
+    background_task_ = task;
+    set_next_background_task_time(delta);
+}
+
+void i3PlusPrinterImpl::clear_background_task()
+{
+    background_task_ = BackgroundTask::None;
+}
+
 //! If there is an operating running, execute its next step
 void i3PlusPrinterImpl::execute_background_task()
 {
@@ -388,6 +399,7 @@ void i3PlusPrinterImpl::printing_show()
 {
     if(card.sdprinting)
     {
+        save_current_page();
         show_page(Page::SdPrint);
         update_graphs();
         return;
@@ -396,7 +408,8 @@ void i3PlusPrinterImpl::printing_show()
     card.initsd();
     if(!card.cardOK)
     {
-        show_page(IsRunning() ? Page::Print : Page::Temperature);
+        save_current_page();
+        show_page(print_job_timer.isRunning() ? Page::Print : Page::Temperature);
         update_graphs();
         return;
     }
@@ -557,6 +570,31 @@ void i3PlusPrinterImpl::print_back()
 }
 
 
+void i3PlusPrinterImpl::set_target_temperature(uint16_t temperature)
+{
+    WriteRamDataRequest frame{Variable::TargetTemperature};
+    frame << Uint16(temperature);
+    frame.send();
+}
+
+
+uint16_t i3PlusPrinterImpl::i3PlusPrinterImpl::get_target_temperature()
+{
+    ReadRamDataRequest frame{Variable::TargetTemperature, 1};
+    frame.send();
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        ADVi3PP_ERROR("Receiving Frame (Target Temperature)");
+        return 0;
+    }
+
+    Uint16 hotend;
+    response >> hotend;
+    return hotend.word;
+}
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Load and Unload Filament
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -578,9 +616,7 @@ void i3PlusPrinterImpl::load_unload(KeyValue key_value)
 //! Show the Load & Unload screen on the LCD display.
 void i3PlusPrinterImpl::load_unload_show()
 {
-    WriteRamDataRequest frame{Variable::TargetTemperature};
-    frame << 200_u16;
-    frame.send();
+    set_target_temperature(200);
     show_page(Page::LoadUnload);
 }
 
@@ -588,34 +624,22 @@ void i3PlusPrinterImpl::load_unload_show()
 //! @param load    Which action to start (i.e. which screen to display)
 void i3PlusPrinterImpl::load_unload_start(bool load)
 {
-    ReadRamDataRequest frame{Variable::TargetTemperature, 1};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
-    {
-        ADVi3PP_ERROR("Receiving Frame (Target Temperature)");
+    auto hotend = get_target_temperature();
+    if(hotend <= 0)
         return;
-    }
 
-    Uint16 hotend;
-    response >> hotend;
-
-    thermalManager.setTargetHotend(hotend.word, 0);
+    thermalManager.setTargetHotend(hotend, 0);
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
-    next_op_time_ = millis() + 500;
-
-    background_task_ = load
-                       ? BackgroundTask::LoadFilament
-                       : BackgroundTask::UnloadFilament;
+    set_background_task(load ? BackgroundTask::LoadFilament : BackgroundTask::UnloadFilament);
+    show_page(load ? Page::Load2 : Page::Unload2);
 }
 
 //! Handle back from the Load on Unload LCD screen.
 void i3PlusPrinterImpl::load_unload_stop()
 {
     ADVi3PP_LOG("Load/Unload Stop");
-    background_task_ = BackgroundTask::None;
+    clear_background_task();
     clear_command_queue();
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     thermalManager.setTargetHotend(0, 0);
@@ -1064,13 +1088,13 @@ void i3PlusPrinterImpl::save_feedrate_settings()
 void i3PlusPrinterImpl::show_acceleration_settings(Page next, Page back)
 {
     WriteRamDataRequest frame{Variable::AccelerationMaxX};
-    frame << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[X_AXIS]) * 10)
-          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[Y_AXIS]) * 10)
-          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[Z_AXIS]) * 10)
-          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[E_AXIS]) * 10)
-          << Uint16(static_cast<uint16_t>(planner.acceleration * 10))
-          << Uint16(static_cast<uint16_t>(planner.retract_acceleration * 10))
-          << Uint16(static_cast<uint16_t>(planner.travel_acceleration * 10));
+    frame << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[X_AXIS]))
+          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[Y_AXIS]))
+          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[Z_AXIS]))
+          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[E_AXIS]))
+          << Uint16(static_cast<uint16_t>(planner.acceleration))
+          << Uint16(static_cast<uint16_t>(planner.retract_acceleration))
+          << Uint16(static_cast<uint16_t>(planner.travel_acceleration));
     frame.send();
 
     set_next_back_pages(next, back);
@@ -1092,13 +1116,13 @@ void i3PlusPrinterImpl::save_acceleration_settings()
     Uint16 x, y, z, e, print, retract, travel;
     response >> x >> y >> z >> e >> print >> retract >> travel;
 
-    planner.max_acceleration_mm_per_s2[X_AXIS] = static_cast<uint32_t>(x.word) / 10;
-    planner.max_acceleration_mm_per_s2[Y_AXIS] = static_cast<uint32_t>(y.word) / 10;
-    planner.max_acceleration_mm_per_s2[Z_AXIS] = static_cast<uint32_t>(z.word) / 10;
-    planner.max_acceleration_mm_per_s2[E_AXIS] = static_cast<uint32_t>(e.word) / 10;
-    planner.acceleration                       = static_cast<float>(print.word) / 10;
-    planner.retract_acceleration               = static_cast<float>(retract.word) / 10;
-    planner.travel_acceleration                = static_cast<float>(travel.word) / 10;
+    planner.max_acceleration_mm_per_s2[X_AXIS] = static_cast<uint32_t>(x.word);
+    planner.max_acceleration_mm_per_s2[Y_AXIS] = static_cast<uint32_t>(y.word);
+    planner.max_acceleration_mm_per_s2[Z_AXIS] = static_cast<uint32_t>(z.word);
+    planner.max_acceleration_mm_per_s2[E_AXIS] = static_cast<uint32_t>(e.word);
+    planner.acceleration                       = static_cast<float>(print.word);
+    planner.retract_acceleration               = static_cast<float>(retract.word);
+    planner.travel_acceleration                = static_cast<float>(travel.word);
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 
@@ -1240,27 +1264,18 @@ void i3PlusPrinterImpl::pid_tuning(KeyValue key_value)
 
 void i3PlusPrinterImpl::pid_tuning_step1()
 {
-    WriteRamDataRequest frame{Variable::TargetTemperature};
-    frame << 200_u16;
-    frame.send();
+    set_target_temperature(200);
     show_page(Page::PidTuning1);
 }
 
 void i3PlusPrinterImpl::pid_tuning_step2()
 {
-    ReadRamDataRequest frame{Variable::TargetTemperature, 1};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
-    {
-        ADVi3PP_ERROR("Receiving Frame (Target Temperature)");
+    auto hotend = get_target_temperature();
+    if(hotend <= 0)
         return;
-    }
-    Uint16 hotend; response >> hotend;
 
     enqueue_and_echo_command("M106 S255"); // Turn on fam
-    Chars<> auto_pid_command; auto_pid_command << "M303 S" << hotend.word << "E0 C8 U1";
+    Chars<> auto_pid_command; auto_pid_command << "M303 S" << hotend << "E0 C8 U1";
     enqueue_and_echo_command(auto_pid_command.c_str());
 
     show_page(Page::PidTuning2);
@@ -1298,8 +1313,7 @@ void i3PlusPrinterImpl::leveling_home()
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    next_op_time_ = millis() + 200;
-    background_task_ = BackgroundTask::Leveling;
+    set_background_task(BackgroundTask::Leveling);
 }
 
 void i3PlusPrinterImpl::leveling_task()
@@ -1307,7 +1321,7 @@ void i3PlusPrinterImpl::leveling_task()
     if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
     {
         ADVi3PP_LOG("Leveling Homed, start process");
-        background_task_ = BackgroundTask::None;
+        clear_background_task();
         show_page(Page::Leveling2);
     }
     else
@@ -1380,25 +1394,51 @@ void i3PlusPrinterImpl::extruder_calibration(KeyValue key_value)
 
 void i3PlusPrinterImpl::show_extruder_calibration()
 {
-    WriteRamDataRequest frame{Variable::TargetTemperature};
+    set_target_temperature(200);
+
+    WriteRamDataRequest frame{Variable::Measure1};
     frame << 200_u16;
     frame.send();
+
     show_page(Page::ExtruderCalibration1);
 }
 
 void i3PlusPrinterImpl::start_extruder_calibration()
 {
+    auto hotend = get_target_temperature();
+    if(hotend <= 0)
+        return;
 
+    thermalManager.setTargetHotend(hotend, 0);
+    set_background_task(BackgroundTask::ExtruderCalibration);
+    show_page(Page::ExtruderCalibration2);
 }
 
 void i3PlusPrinterImpl::extruder_calibrartion_settings()
 {
+    ReadRamDataRequest frame{Variable::Measure1, 1};
+    frame.send();
 
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        ADVi3PP_ERROR("Receiving Frame (Measures)");
+        return;
+    }
+
+    Uint16 e; response >> e;
+
+    // new = old * (100 / distance_actually_moved)
+    // new = old * 100 / (100 - distance_measured)
+
+    planner.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * 100 / (100 - e.word);
+
+    show_steps_settings(Page::Calibration, Page::ExtruderCalibration1);
 }
 
 void i3PlusPrinterImpl::cancel_extruder_calibration()
 {
-
+    show_page(Page::ExtruderCalibration1);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1425,6 +1465,27 @@ void i3PlusPrinterImpl::show_xyz_motors_calibration()
 
 void i3PlusPrinterImpl::xyz_motors_calibration_settings()
 {
+    ReadRamDataRequest frame{Variable::Measure1, 3};
+    frame.send();
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        ADVi3PP_ERROR("Receiving Frame (Measures)");
+        return;
+    }
+
+    Uint16 x, y, z;
+    response >> x >> y >> z;
+
+    // new = old * (100 / distance_actually_moved)
+    // new = old * 100 / (100 - distance_measured)
+
+    planner.axis_steps_per_mm[X_AXIS] = planner.axis_steps_per_mm[X_AXIS] * 100 / (100 - x.word);
+    planner.axis_steps_per_mm[Y_AXIS] = planner.axis_steps_per_mm[Y_AXIS] * 100 / (100 - y.word);
+    planner.axis_steps_per_mm[Z_AXIS] = planner.axis_steps_per_mm[Z_AXIS] * 100 / (100 - z.word);
+
+    show_steps_settings(Page::Calibration, Page::XYZMotorsCalibration);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

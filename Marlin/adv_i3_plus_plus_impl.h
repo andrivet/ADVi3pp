@@ -82,8 +82,12 @@ private:
     Chars<16> get_lcd_firmware_version();
     void set_next_background_task_time(unsigned int delta = 500);
     void set_next_update_time(unsigned int delta = 500);
+    void set_background_task(BackgroundTask task, unsigned int delta = 500);
+    void clear_background_task();
     void update_graphs();
     void send_graph_data();
+    void set_target_temperature(uint16_t temperature);
+    uint16_t get_target_temperature();
 
 private:
     // Actions
