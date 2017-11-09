@@ -46,6 +46,7 @@ namespace
     const uint16_t nb_visible_sd_files = 5;
     const uint16_t calibration_cube_size = 20; // 20 mm
     const uint16_t calibration_extruder_filament = 100; // 10 cm
+	const uint16_t calibration_extruder_delta = 20; // 2 cm
 }
 
 namespace advi3pp {
@@ -1377,14 +1378,6 @@ void i3PlusPrinterImpl::leveling_finish()
 // Extruder calibration
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-template <typename T, typename U, typename V>
-void adjust_value(T& value, U expected, V measured)
-{
-    // new = old * (expected / distance_actually_moved)
-    // new = old * expected / (expected - distance_measured)
-    value = value * expected / (expected - measured);
-};
-
 void i3PlusPrinterImpl::extruder_calibration(KeyValue key_value)
 {
     switch(key_value)
@@ -1464,13 +1457,16 @@ void i3PlusPrinterImpl::extruder_calibrartion_settings()
     }
 
     Uint16 e; response >> e;
-    adjust_value(planner.axis_steps_per_mm[E_AXIS], extruded, e.word);
+	planner.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * extruded / (extruded + calibration_extruder_delta - e.word);
 
     show_steps_settings(Page::Calibration, Page::ExtruderCalibration1);
 }
 
 void i3PlusPrinterImpl::cancel_extruder_calibration()
 {
+    thermalManager.setTargetHotend(0, 0);
+    thermalManager.setTargetBed(0);
+
     enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
@@ -1499,6 +1495,13 @@ void i3PlusPrinterImpl::show_xyz_motors_calibration()
     show_page(Page::XYZMotorsCalibration);
 }
 
+void adjust_value(float& value, double expected, double measured)
+{
+	ADVi3PP_LOG("Adjust: old = " << value << ", expected = " << expected << ", measured = " << measured);
+	value = value * expected / measured;
+	ADVi3PP_LOG("Adjust: new = " << value);
+};
+
 void i3PlusPrinterImpl::xyz_motors_calibration_settings()
 {
     ReadRamDataRequest frame{Variable::Measure1, 3};
@@ -1514,9 +1517,9 @@ void i3PlusPrinterImpl::xyz_motors_calibration_settings()
     Uint16 x, y, z;
     response >> x >> y >> z;
 
-    adjust_value(planner.axis_steps_per_mm[X_AXIS], calibration_cube_size, x.word);
-    adjust_value(planner.axis_steps_per_mm[Y_AXIS], calibration_cube_size, y.word);
-    adjust_value(planner.axis_steps_per_mm[Z_AXIS], calibration_cube_size, z.word);
+    adjust_value(planner.axis_steps_per_mm[X_AXIS], calibration_cube_size * 10, x.word);
+    adjust_value(planner.axis_steps_per_mm[Y_AXIS], calibration_cube_size * 10, y.word);
+    adjust_value(planner.axis_steps_per_mm[Z_AXIS], calibration_cube_size * 10, z.word);
 
     show_steps_settings(Page::Calibration, Page::XYZMotorsCalibration);
 }
