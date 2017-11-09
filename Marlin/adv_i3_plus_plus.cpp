@@ -1010,7 +1010,7 @@ void i3PlusPrinterImpl::save_pid_settings()
 
 void i3PlusPrinterImpl::show_steps_settings(Page next, Page back)
 {
-    WriteRamDataRequest frame{Variable::MotorSettingsX};
+    WriteRamDataRequest frame{Variable::StepSettingsX};
     frame << Uint16(planner.axis_steps_per_mm[X_AXIS] * 10)
           << Uint16(planner.axis_steps_per_mm[Y_AXIS] * 10)
           << Uint16(planner.axis_steps_per_mm[Z_AXIS] * 10)
@@ -1023,7 +1023,7 @@ void i3PlusPrinterImpl::show_steps_settings(Page next, Page back)
 
 void i3PlusPrinterImpl::save_steps_settings()
 {
-    ReadRamDataRequest frame{Variable::MotorSettingsX, 4};
+    ReadRamDataRequest frame{Variable::StepSettingsX, 4};
     frame.send();
 
     ReadRamDataResponse response;
@@ -1395,7 +1395,7 @@ void i3PlusPrinterImpl::show_extruder_calibration()
     set_target_temperature(200);
 
     WriteRamDataRequest frame{Variable::Measure1};
-    frame << 200_u16;
+    frame << 20_u16;
     frame.send();
 
     show_page(Page::ExtruderCalibration1);
@@ -1464,6 +1464,8 @@ void i3PlusPrinterImpl::extruder_calibrartion_settings()
 
 void i3PlusPrinterImpl::cancel_extruder_calibration()
 {
+    clear_background_task();
+
     thermalManager.setTargetHotend(0, 0);
     thermalManager.setTargetBed(0);
 
