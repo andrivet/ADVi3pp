@@ -158,6 +158,7 @@ private:
     void leveling_finish();
     void show_extruder_calibration();
     void start_extruder_calibration();
+    void extruder_calibration_finished();
     void extruder_calibrartion_settings();
     void cancel_extruder_calibration();
     void show_xyz_motors_calibration();

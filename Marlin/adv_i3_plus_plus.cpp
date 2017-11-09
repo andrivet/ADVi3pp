@@ -44,6 +44,8 @@ namespace
 
     const unsigned long advi3_pp_baudrate = 115200;
     const uint16_t nb_visible_sd_files = 5;
+    const uint16_t calibration_cube_size = 20; // 20 mm
+    const uint16_t calibration_extruder_filament = 100; // 10 cm
 }
 
 namespace advi3pp {
@@ -566,7 +568,7 @@ void i3PlusPrinterImpl::print_resume()
 //! Handle the Back button
 void i3PlusPrinterImpl::print_back()
 {
-    // TODO
+    show_back_page();
 }
 
 
@@ -972,9 +974,9 @@ void i3PlusPrinterImpl::save_print_settings()
 void i3PlusPrinterImpl::show_pid_settings(Page next, Page back)
 {
     WriteRamDataRequest frame{Variable::PidP};
-    frame << Uint16(PID_PARAM(Kp, 0) * 10)
-          << Uint16(unscalePID_i(PID_PARAM(Ki, 0)) * 10)
-          << Uint16(unscalePID_d(PID_PARAM(Kd, 0)) * 10);
+    frame << Uint16(PID_PARAM(Kp, 0) * 100)
+          << Uint16(unscalePID_i(PID_PARAM(Ki, 0)) * 100)
+          << Uint16(unscalePID_d(PID_PARAM(Kd, 0)) * 100);
     frame.send();
 
     set_next_back_pages(next, back);
@@ -996,9 +998,9 @@ void i3PlusPrinterImpl::save_pid_settings()
     Uint16 p, i, d;
     response >> p >> i >> d;
 
-    PID_PARAM(Kp, 0) = static_cast<float>(p.word) / 10;
-    PID_PARAM(Ki, 0) = scalePID_i(static_cast<float>(i.word) / 10);
-    PID_PARAM(Kd, 0) = scalePID_d(static_cast<float>(d.word) / 10);
+    PID_PARAM(Kp, 0) = static_cast<float>(p.word) / 100;
+    PID_PARAM(Ki, 0) = scalePID_i(static_cast<float>(i.word) / 100);
+    PID_PARAM(Kd, 0) = scalePID_d(static_cast<float>(d.word) / 100);
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 
@@ -1046,12 +1048,12 @@ void i3PlusPrinterImpl::save_steps_settings()
 void i3PlusPrinterImpl::show_feedrate_settings(Page next, Page back)
 {
     WriteRamDataRequest frame{Variable::FeedrateMaxX};
-    frame << Uint16(planner.max_feedrate_mm_s[X_AXIS] * 10)
-          << Uint16(planner.max_feedrate_mm_s[Y_AXIS] * 10)
-          << Uint16(planner.max_feedrate_mm_s[Z_AXIS] * 10)
-          << Uint16(planner.max_feedrate_mm_s[E_AXIS] * 10)
-          << Uint16(planner.min_feedrate_mm_s * 10)
-          << Uint16(planner.min_travel_feedrate_mm_s * 10);
+    frame << Uint16(planner.max_feedrate_mm_s[X_AXIS])
+          << Uint16(planner.max_feedrate_mm_s[Y_AXIS])
+          << Uint16(planner.max_feedrate_mm_s[Z_AXIS])
+          << Uint16(planner.max_feedrate_mm_s[E_AXIS])
+          << Uint16(planner.min_feedrate_mm_s)
+          << Uint16(planner.min_travel_feedrate_mm_s);
     frame.send();
 
     set_next_back_pages(next, back);
@@ -1073,12 +1075,12 @@ void i3PlusPrinterImpl::save_feedrate_settings()
     Uint16 x, y, z, e, min, travel;
     response >> x >> y >> z >> e >> min >> travel;
 
-    planner.max_feedrate_mm_s[X_AXIS] = static_cast<float>(x.word) / 10;
-    planner.max_feedrate_mm_s[Y_AXIS] = static_cast<float>(y.word) / 10;
-    planner.max_feedrate_mm_s[Z_AXIS] = static_cast<float>(z.word) / 10;
-    planner.max_feedrate_mm_s[E_AXIS] = static_cast<float>(e.word) / 10;
-    planner.min_feedrate_mm_s         = static_cast<float>(min.word) / 10;
-    planner.min_travel_feedrate_mm_s  = static_cast<float>(travel.word) / 10;
+    planner.max_feedrate_mm_s[X_AXIS] = static_cast<float>(x.word);
+    planner.max_feedrate_mm_s[Y_AXIS] = static_cast<float>(y.word);
+    planner.max_feedrate_mm_s[Z_AXIS] = static_cast<float>(z.word);
+    planner.max_feedrate_mm_s[E_AXIS] = static_cast<float>(e.word);
+    planner.min_feedrate_mm_s         = static_cast<float>(min.word);
+    planner.min_travel_feedrate_mm_s  = static_cast<float>(travel.word);
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 
@@ -1375,10 +1377,13 @@ void i3PlusPrinterImpl::leveling_finish()
 // Extruder calibration
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void i3PlusPrinterImpl::extruder_calibration_task()
+template <typename T, typename U, typename V>
+void adjust_value(T& value, U expected, V measured)
 {
-    // TODO
-}
+    // new = old * (expected / distance_actually_moved)
+    // new = old * expected / (expected - distance_measured)
+    value = value * expected / (expected - measured);
+};
 
 void i3PlusPrinterImpl::extruder_calibration(KeyValue key_value)
 {
@@ -1411,11 +1416,43 @@ void i3PlusPrinterImpl::start_extruder_calibration()
 
     thermalManager.setTargetHotend(hotend, 0);
     set_background_task(BackgroundTask::ExtruderCalibration);
+    enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
     show_page(Page::ExtruderCalibration2);
+}
+
+void i3PlusPrinterImpl::extruder_calibration_task()
+{
+    if(current_position[E_AXIS] >= calibration_extruder_filament)
+    {
+        extruder_calibration_finished();
+        return;
+    }
+
+    if(thermalManager.current_temperature[0] < thermalManager.target_temperature[0] - 10)
+    {
+        set_next_background_task_time();
+        return;
+    }
+
+    enqueue_and_echo_commands_P(PSTR("G1 E1 F100")); // Extrude 1mm slowly
+    set_next_background_task_time();
+}
+
+void i3PlusPrinterImpl::extruder_calibration_finished()
+{
+    ADVi3PP_LOG("Filament extruded " << current_position[E_AXIS]);
+    clear_background_task();
+    show_page(Page::ExtruderCalibration3);
 }
 
 void i3PlusPrinterImpl::extruder_calibrartion_settings()
 {
+    auto extruded = current_position[E_AXIS];
+    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
     ReadRamDataRequest frame{Variable::Measure1, 1};
     frame.send();
 
@@ -1427,17 +1464,16 @@ void i3PlusPrinterImpl::extruder_calibrartion_settings()
     }
 
     Uint16 e; response >> e;
-
-    // new = old * (100 / distance_actually_moved)
-    // new = old * 100 / (100 - distance_measured)
-
-    planner.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * 100 / (100 - e.word);
+    adjust_value(planner.axis_steps_per_mm[E_AXIS], extruded, e.word);
 
     show_steps_settings(Page::Calibration, Page::ExtruderCalibration1);
 }
 
 void i3PlusPrinterImpl::cancel_extruder_calibration()
 {
+    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
     show_page(Page::ExtruderCalibration1);
 }
 
@@ -1460,7 +1496,7 @@ void i3PlusPrinterImpl::show_xyz_motors_calibration()
     WriteRamDataRequest frame{Variable::Measure1};
     frame << 200_u16 << 200_u16 << 200_u16;
     frame.send();
-    show_page(Page::ExtruderCalibration1);
+    show_page(Page::XYZMotorsCalibration);
 }
 
 void i3PlusPrinterImpl::xyz_motors_calibration_settings()
@@ -1478,12 +1514,9 @@ void i3PlusPrinterImpl::xyz_motors_calibration_settings()
     Uint16 x, y, z;
     response >> x >> y >> z;
 
-    // new = old * (100 / distance_actually_moved)
-    // new = old * 100 / (100 - distance_measured)
-
-    planner.axis_steps_per_mm[X_AXIS] = planner.axis_steps_per_mm[X_AXIS] * 100 / (100 - x.word);
-    planner.axis_steps_per_mm[Y_AXIS] = planner.axis_steps_per_mm[Y_AXIS] * 100 / (100 - y.word);
-    planner.axis_steps_per_mm[Z_AXIS] = planner.axis_steps_per_mm[Z_AXIS] * 100 / (100 - z.word);
+    adjust_value(planner.axis_steps_per_mm[X_AXIS], calibration_cube_size, x.word);
+    adjust_value(planner.axis_steps_per_mm[Y_AXIS], calibration_cube_size, y.word);
+    adjust_value(planner.axis_steps_per_mm[Z_AXIS], calibration_cube_size, z.word);
 
     show_steps_settings(Page::Calibration, Page::XYZMotorsCalibration);
 }
