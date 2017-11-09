@@ -37,7 +37,7 @@
 //
 #define X_STOP_PIN         54
 #define Y_STOP_PIN         24
-#define Z_STOP_PIN         23//23
+#define Z_STOP_PIN         23
 
 //
 // Steppers
@@ -69,7 +69,7 @@
 // Heaters / Fans
 //
 #define HEATER_0_PIN       4
-#define HEATER_BED_PIN     3 //34 mod 3 orig
+#define HEATER_BED_PIN     3
 
 #define FAN_PIN            5
 
