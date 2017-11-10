@@ -21,7 +21,7 @@
  */
 
 /**
- * Bi3Plus pin assignments
+ *Wanhao Duplicator i3 Plus pin assignments
  */
 
 #ifndef __AVR_ATmega2560__
@@ -35,9 +35,9 @@
 //
 // Limit Switches
 //
-#define X_STOP_PIN         54
-#define Y_STOP_PIN         24
-#define Z_STOP_PIN         23
+#define X_STOP_PIN         54	// A0  (PF0)
+#define Y_STOP_PIN         24	// AD2 (PA2)
+#define Z_STOP_PIN         23	// AD1 (PA1)
 
 //
 // Steppers
@@ -62,8 +62,8 @@
 //
 // Temperature Sensors
 //
-#define TEMP_0_PIN         1
-#define TEMP_BED_PIN       14
+#define TEMP_0_PIN         1	// A1  (PF1)
+#define TEMP_BED_PIN       14	// A14 (PK6)
 
 //
 // Heaters / Fans

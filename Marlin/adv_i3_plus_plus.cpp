@@ -1573,10 +1573,10 @@ void i3PlusPrinterImpl::send_graph_data()
         return;
 
     WriteCurveDataRequest frame{0b00001111};
-    frame << Uint16{thermalManager.degBed()}
-          << Uint16{thermalManager.degBed()}
+    frame << Uint16{thermalManager.degHotend(0)}
           << Uint16{thermalManager.degHotend(0)}
-          << Uint16{thermalManager.degHotend(0)};
+          << Uint16{thermalManager.degBed()}
+          << Uint16{thermalManager.degBed()};
     frame.send(false);
 
     next_update_graph_time_ = millis() + 500;

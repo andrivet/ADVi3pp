@@ -1233,7 +1233,9 @@
 /**
  * M43 - display pin status, watch pins for changes, watch endstops & toggle LED, Z servo probe test, toggle pins
  */
-//#define PINS_DEBUGGING
+#ifdef DEBUG
+#define PINS_DEBUGGING
+#endif
 
 /**
  * Auto-report temperatures with M155 S<seconds>
