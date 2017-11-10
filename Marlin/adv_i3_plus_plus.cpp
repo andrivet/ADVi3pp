@@ -1395,7 +1395,7 @@ void i3PlusPrinterImpl::show_extruder_calibration()
     set_target_temperature(200);
 
     WriteRamDataRequest frame{Variable::Measure1};
-    frame << 20_u16;
+    frame << 200_u16;
     frame.send();
 
     show_page(Page::ExtruderCalibration1);
@@ -1457,6 +1457,7 @@ void i3PlusPrinterImpl::extruder_calibrartion_settings()
     }
 
     Uint16 e; response >> e;
+    e.word /= 10;
 	planner.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * extruded / (extruded + calibration_extruder_delta - e.word);
 
     show_steps_settings(Page::Calibration, Page::ExtruderCalibration1);
