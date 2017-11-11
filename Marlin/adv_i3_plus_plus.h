@@ -73,10 +73,8 @@ enum class Page: uint8_t
     Temperature             = 86
 };
 
-//!
-//! The Duplicator i3 Plus printer and its LCD screen
-//!
-struct i3PlusPrinter
+//! The Duplicator i3 Plus printer.
+struct Printer
 {
     static void setup();
     static void task();
@@ -85,6 +83,22 @@ struct i3PlusPrinter
     static void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     static void reset_presets();
     static void temperature_error();
+};
+
+//! The Duplicator i3 Plus LCD Screen
+struct LCD
+{
+    static void update();
+    static void init();
+    static bool has_status();
+    static void set_status(const char* const message, const bool persist);
+    static void set_status_PGM(const char* const message, const int8_t level);
+    static void set_alert_status_PGM(const char* message);
+    static void status_printf_P(const uint8_t level, const char * const fmt, ...);
+    static void buttons_update();
+    static void reset_alert_level();
+    static bool detected();
+    static void refresh();
 };
 
 }

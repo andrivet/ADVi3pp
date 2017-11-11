@@ -108,6 +108,7 @@ public:
     constexpr size_t size() const { return S; }
     uint16_t length() const { return length_; }
     const char* c_str() const { return reinterpret_cast<const char*>(buffer_); }
+    void vprintf(const char * const fmt, va_list args);
 
     Chars& operator<<(const char* value);
     Chars& operator<<(uint16_t value);
@@ -125,8 +126,16 @@ private:
 };
 
 // --------------------------------------------------------------------
+// Message
+// --------------------------------------------------------------------
+
+//! Message to be displayed on the LCD
+using Message = Chars<26>;
+
+// --------------------------------------------------------------------
 // Frame
 // --------------------------------------------------------------------
+
 //! A frame to be send to the LCD or received from the LCD
 struct Frame
 {
@@ -387,6 +396,12 @@ template<size_t S>
 Chars<S>&  Chars<S>::operator<<(Variable var)
 {
     return (*this << static_cast<uint16_t>(var));
+}
+
+template<size_t S>
+void Chars<S>::vprintf(const char * const fmt, va_list args)
+{
+    vsnprintf(reinterpret_cast<char*>(buffer_), SIZE, fmt, args);
 }
 
 

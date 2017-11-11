@@ -24,6 +24,7 @@
 #define ULTRALCD_H
 
 #include "Marlin.h"
+#include "adv_i3_plus_plus.h"
 
 #if ENABLED(ULTRA_LCD)
 
@@ -167,6 +168,20 @@
   #else
     #define LCD_CLICKED false
   #endif
+
+#elif ENABLED(I3PLUS_LCD)
+
+  inline void lcd_update() { advi3pp::LCD::update(); }
+  inline void lcd_init() { advi3pp::LCD::init(); }
+  inline bool lcd_hasstatus() { return advi3pp::LCD::has_status(); }
+  inline void lcd_setstatus(const char* const message, const bool persist=false) { advi3pp::LCD::set_status(message, persist); }
+  inline void lcd_setstatusPGM(const char* const message, const int8_t level=0) { advi3pp::LCD::set_status_PGM(message, level); }
+  inline void lcd_setalertstatusPGM(const char* message) { advi3pp::LCD::set_alert_status_PGM(message); }
+  inline void lcd_status_printf_P(const uint8_t level, const char * const fmt, ...) { advi3pp::LCD::status_printf_P(level, fmt); }
+  inline void lcd_buttons_update() { advi3pp::LCD::buttons_update(); }
+  inline void lcd_reset_alert_level() { advi3pp::LCD::reset_alert_level(); }
+  inline bool lcd_detected() { return advi3pp::LCD::detected(); }
+  inline void lcd_refresh() { advi3pp::LCD::refresh(); }
 
 #else // no LCD
 

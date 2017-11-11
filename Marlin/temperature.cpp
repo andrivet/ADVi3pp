@@ -444,7 +444,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
             _SET_BED_PID();
           #endif
         }
-        advi3pp::i3PlusPrinter::auto_pid_finished();
+        advi3pp::Printer::auto_pid_finished();
         return;
       }
       lcd_update();
@@ -510,7 +510,7 @@ int Temperature::getHeaterPower(int heater) {
 //
 void Temperature::_temp_error(const int8_t e, const char * const serial_msg, const char * const lcd_msg) {
   static bool killed = false;
-  advi3pp::i3PlusPrinter::temperature_error();
+  advi3pp::Printer::temperature_error();
   if (IsRunning()) {
     SERIAL_ERROR_START();
     serialprintPGM(serial_msg);

@@ -1241,6 +1241,7 @@
  */
 //#define ULTRA_LCD   // Character based
 //#define DOGLCD      // Full graphics display
+#define I3PLUS_LCD
 
 /**
  * SD CARD

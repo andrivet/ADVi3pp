@@ -26,6 +26,7 @@
 #define ADV_I3_PLUS_PLUS_PRIVATE_H
 
 #include "adv_i3_plus_plus_enums.h"
+#include "adv_i3_plus_plus_utils.h"
 
 namespace advi3pp { inline namespace internals {
 
@@ -50,13 +51,12 @@ struct Preset
 };
 
 // --------------------------------------------------------------------
-// i3PlusPrinterImpl
+// PrinterImpl
 // --------------------------------------------------------------------
 
-//! Implementation of the Duplication i3 Plus printer and its LCD
-class i3PlusPrinterImpl
+//! Implementation of the Duplication i3 Plus printer
+struct PrinterImpl
 {
-public:
     void setup();
     void task();
     void show_page(Page page);
@@ -183,8 +183,35 @@ private:
     Page next_page_ = Page::None;
     Preset presets_[NB_PRESETS];
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
-    Chars<26> message_;
     double extruded_;
+};
+
+// --------------------------------------------------------------------
+// LCDImpl
+// --------------------------------------------------------------------
+
+//! Implementation of the Duplication i3 Plus LCD
+struct LCDImpl
+{
+    static LCDImpl& instance();
+
+    void update();
+    void init();
+    bool has_status();
+    void set_status(const char* message, bool persist);
+    void set_status_PGM(const char* message, int8_t level);
+    void set_alert_status_PGM(const char* message);
+    void status_printf_P(const uint8_t level, const char* fmt, va_list argp);
+    void buttons_update();
+    void reset_alert_level();
+    bool detected();
+    void refresh();
+    const Message& get_message() const;
+
+private:
+    int8_t level_ = 0;
+    bool status_ = false;
+    Message message_;
 };
 
 }}

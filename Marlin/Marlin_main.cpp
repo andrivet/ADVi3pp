@@ -13273,7 +13273,7 @@ void idle(
   #endif  // MAX7219_DEBUG
 
   lcd_update();
-  advi3pp::i3PlusPrinter::task();
+  advi3pp::Printer::task();
 
   host_keepalive();
 
@@ -13622,7 +13622,7 @@ void setup() {
     WRITE(LCD_PINS_RS, HIGH);
   #endif
   
-  advi3pp::i3PlusPrinter::setup();
+  advi3pp::Printer::setup();
 }
 
 /**
