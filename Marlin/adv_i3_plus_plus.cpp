@@ -103,7 +103,7 @@ void Printer::reset_presets()
     printer.reset_presets();
 }
 
-//! Called when a temperature error occured and display the error on the LCD.
+//! Called when a temperature error occurred and display the error on the LCD.
 void Printer::temperature_error()
 {
     printer.temperature_error();

@@ -50,14 +50,14 @@ bool LCD::has_status()
     return lcd.has_status();
 }
 
-void LCD::set_status(const char* const message, const bool persist)
+void LCD::set_status(const char* message, bool persist)
 {
-    lcd.set_status(message, persist);
+    lcd.set_status(message);
 }
 
-void LCD::set_status_PGM(const char* const message, const int8_t level)
+void LCD::set_status_PGM(const char* message, int8_t level)
 {
-    lcd.set_status_PGM(message, level);
+    lcd.set_status_PGM(message);
 }
 
 void LCD::set_alert_status_PGM(const char* message)
@@ -65,12 +65,9 @@ void LCD::set_alert_status_PGM(const char* message)
     lcd.set_alert_status_PGM(message);
 }
 
-void LCD::status_printf_P(const uint8_t level, const char * const fmt, ...)
+void LCD::status_printf_P(int8_t level, const char * const fmt, va_list args)
 {
-    va_list args;
-    va_start(args, fmt);
-    lcd.status_printf_P(level, fmt, args);
-    va_end(args);
+    lcd.status_printf_P(fmt, args);
 }
 
 void LCD::buttons_update()
@@ -117,15 +114,16 @@ bool LCDImpl::has_status()
     return status_;
 }
 
-void LCDImpl::set_status(const char* const message, const bool /*persist*/)
+void LCDImpl::set_status(const char* message, const bool /*persist*/)
 {
     if(level_ > 0)
         return;
+	Serial.print("STATUS: "); Serial.println(message);
     message_ = message;
     status_ = true;
 }
 
-void LCDImpl::set_status_PGM(const char* const message, int8_t level)
+void LCDImpl::set_status_PGM(const char* message, int8_t level)
 {
     if(level < 0)
         level = level_ = 0;
@@ -133,6 +131,7 @@ void LCDImpl::set_status_PGM(const char* const message, int8_t level)
         return;
     level_ = level;
 
+	Serial.print("STATUS PGM: "); Serial.println(message);
     message_ = message;
     status_ = true;
 }
@@ -142,7 +141,7 @@ void LCDImpl::set_alert_status_PGM(const char* message)
     set_status_PGM(message, 1);
 }
 
-void LCDImpl::status_printf_P(const uint8_t level, const char * const fmt, va_list argp)
+void LCDImpl::status_printf_P(uint8_t level, const char * fmt, va_list argp)
 {
     if (level < level_)
         return;
@@ -150,6 +149,7 @@ void LCDImpl::status_printf_P(const uint8_t level, const char * const fmt, va_li
 
     message_.vprintf(fmt, argp);
     status_ = true;
+	Serial.print("STATUS V: "); Serial.println(message_.c_str());
 }
 
 void LCDImpl::buttons_update()

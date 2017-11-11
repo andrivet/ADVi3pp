@@ -198,10 +198,10 @@ struct LCDImpl
     void update();
     void init();
     bool has_status();
-    void set_status(const char* message, bool persist);
-    void set_status_PGM(const char* message, int8_t level);
+    void set_status(const char* message);
+    void set_status_PGM(const char* message);
     void set_alert_status_PGM(const char* message);
-    void status_printf_P(const uint8_t level, const char* fmt, va_list argp);
+    void status_printf_P(const char* fmt, va_list argp);
     void buttons_update();
     void reset_alert_level();
     bool detected();
@@ -209,9 +209,11 @@ struct LCDImpl
     const Message& get_message() const;
 
 private:
-    int8_t level_ = 0;
-    bool status_ = false;
     Message message_;
+	Message messagePGM_;
+	
+	mutable Message whole_message_;
+	mutable bool recompute_whole_message_ = false;
 };
 
 }}

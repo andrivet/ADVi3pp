@@ -26,6 +26,7 @@
 #define ADV_I3_PLUS_PLUS_H
 
 #include <stdint.h>
+#include <stdarg.h>
 
 
 class MarlinSettings;
@@ -91,10 +92,10 @@ struct LCD
     static void update();
     static void init();
     static bool has_status();
-    static void set_status(const char* const message, const bool persist);
-    static void set_status_PGM(const char* const message, const int8_t level);
+    static void set_status(const char* message, bool persist);
+    static void set_status_PGM(const char* message, int8_t level);
     static void set_alert_status_PGM(const char* message);
-    static void status_printf_P(const uint8_t level, const char * const fmt, ...);
+    static void status_printf_P(int8_t level, const char * const fmt, va_list args);
     static void buttons_update();
     static void reset_alert_level();
     static bool detected();

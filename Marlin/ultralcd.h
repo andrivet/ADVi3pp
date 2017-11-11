@@ -177,7 +177,7 @@
   inline void lcd_setstatus(const char* const message, const bool persist=false) { advi3pp::LCD::set_status(message, persist); }
   inline void lcd_setstatusPGM(const char* const message, const int8_t level=0) { advi3pp::LCD::set_status_PGM(message, level); }
   inline void lcd_setalertstatusPGM(const char* message) { advi3pp::LCD::set_alert_status_PGM(message); }
-  inline void lcd_status_printf_P(const uint8_t level, const char * const fmt, ...) { advi3pp::LCD::status_printf_P(level, fmt); }
+  inline void lcd_status_printf_P(const uint8_t level, const char * const fmt, ...) { va_list args; va_start(args, fmt); advi3pp::LCD::status_printf_P(level, fmt, args); va_end(args); }
   inline void lcd_buttons_update() { advi3pp::LCD::buttons_update(); }
   inline void lcd_reset_alert_level() { advi3pp::LCD::reset_alert_level(); }
   inline bool lcd_detected() { return advi3pp::LCD::detected(); }
@@ -199,8 +199,11 @@
 
 #endif // ULTRA_LCD
 
-#define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(PSTR(x))
-#define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatusPGM(PSTR(x))
+//#define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(PSTR(x))
+//#define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatusPGM(PSTR(x))
+
+#define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(x)
+#define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatusPGM(x)
 
 void lcd_reset_status();
 

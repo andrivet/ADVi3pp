@@ -46,12 +46,12 @@ enum class Action: uint16_t;
 
 #ifdef DEBUG
 void Dump(const uint8_t* bytes, size_t size);
-#define ADVi3PP_ERROR(expresssion) {Chars<100> message{"*** ERROR "}; message << expresssion; Serial.println(message.c_str());} while(false)
-#define ADVi3PP_LOG(expresssion)   {Chars<100> message; message << expresssion; Serial.println(message.c_str());} while(false)
+#define ADVi3PP_ERROR(expression) {Chars<100> message{"*** ERROR "}; message << expression; Serial.println(message.c_str());} while(false)
+#define ADVi3PP_LOG(expression)   {Chars<100> message; message << expression; Serial.println(message.c_str());} while(false)
 #define ADVi3PP_DUMP(bytes, size)  {Dump(bytes, size);}
 #else
-#define ADVi3PP_ERROR(expresssion) {} while(false)
-#define ADVi3PP_LOG(expresssion)   {} while(false)
+#define ADVi3PP_ERROR(expression) {} while(false)
+#define ADVi3PP_LOG(expression)   {} while(false)
 #define ADVi3PP_DUMP(bytes, size)  {} while(false)
 #endif
 
@@ -285,7 +285,7 @@ Chars<S>::Chars(duration_t duration)
     *this = duration;
 }
 
-//! Constrcut a Chars from a string of characters
+//! Construct a Chars from a string of characters
 //! @tparam S Maximum site of the name (including terminating 0 byte)
 //! @param name String of characters to be copied into this Chars.
 template<size_t S>
@@ -402,6 +402,8 @@ template<size_t S>
 void Chars<S>::vprintf(const char * const fmt, va_list args)
 {
     vsnprintf(reinterpret_cast<char*>(buffer_), SIZE, fmt, args);
+	length_ = strlen(reinterpret_cast<const char*>(buffer_));
+	fill_remaining();
 }
 
 
