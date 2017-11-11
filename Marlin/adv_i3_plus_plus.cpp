@@ -35,6 +35,10 @@
 #pragma message "This is a DEBUG build"
 #endif
 
+#ifdef SIMULATOR
+#pragma message "This is a SIMULATOR build"
+#endif
+
 namespace
 {
     const uint16_t advi3_pp_version = 0x0200;                       // 2.0.0
@@ -115,6 +119,9 @@ void i3PlusPrinterImpl::setup()
 {
 #ifdef DEBUG
     ADVi3PP_LOG("This is a DEBUG build");
+#endif
+#ifdef SIMULATOR
+    ADVi3PP_LOG("This is a SIMULATOR build");
 #endif
 
     Serial2.begin(advi3_pp_baudrate);
@@ -1435,17 +1442,17 @@ void i3PlusPrinterImpl::extruder_calibration_task()
 
 void i3PlusPrinterImpl::extruder_calibration_finished()
 {
-    ADVi3PP_LOG("Filament extruded " << current_position[E_AXIS]);
+    extruded_ = current_position[E_AXIS];
+    ADVi3PP_LOG("Filament extruded " << extruded_);
+    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
     clear_background_task();
     show_page(Page::ExtruderCalibration3);
 }
 
 void i3PlusPrinterImpl::extruder_calibrartion_settings()
 {
-    auto extruded = current_position[E_AXIS];
-    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
-
     ReadRamDataRequest frame{Variable::Measure1, 1};
     frame.send();
 
@@ -1458,9 +1465,9 @@ void i3PlusPrinterImpl::extruder_calibrartion_settings()
 
     Uint16 e; response >> e;
     e.word /= 10;
-	planner.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * extruded / (extruded + calibration_extruder_delta - e.word);
+	planner.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
 
-    show_steps_settings(Page::Calibration, Page::ExtruderCalibration1);
+    show_steps_settings(Page::Calibration, Page::ExtruderCalibration3);
 }
 
 void i3PlusPrinterImpl::cancel_extruder_calibration()

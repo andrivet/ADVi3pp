@@ -184,6 +184,7 @@ private:
     Preset presets_[NB_PRESETS];
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
     Chars<26> message_;
+    double extruded_;
 };
 
 }}
