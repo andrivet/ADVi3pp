@@ -1314,6 +1314,7 @@ void PrinterImpl::leveling(KeyValue key_value)
         case KeyValue::LevelingPoint2:  leveling_point2(); break;
         case KeyValue::LevelingPoint3:  leveling_point3(); break;
         case KeyValue::LevelingPoint4:  leveling_point4(); break;
+        case KeyValue::LevelingPoint5:  leveling_point5(); break;
         case KeyValue::LevelingBack:    leveling_finish(); break;
         default:                        ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
@@ -1373,6 +1374,14 @@ void PrinterImpl::leveling_point4()
     ADVi3PP_LOG("Level step 3");
     enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
     enqueue_and_echo_commands_P((PSTR("G1 X30 Y170 F6000")));
+    enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
+}
+
+//! Handle leveling point #5.
+void PrinterImpl::leveling_point5()
+{
+    enqueue_and_echo_commands_P((PSTR("G1 Z10 F2000")));
+    enqueue_and_echo_commands_P((PSTR("G1 X100 Y100 F6000")));
     enqueue_and_echo_commands_P((PSTR("G1 Z0 F1000")));
 }
 

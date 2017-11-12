@@ -215,6 +215,7 @@ enum class KeyValue: uint16_t
     LevelingPoint2          = 0x0002,
     LevelingPoint3          = 0x0003,
     LevelingPoint4          = 0x0004,
+    LevelingPoint5          = 0x0005,
     LevelingBack            = 0x0099,
 
     CalibrationShow         = 0x0000,
