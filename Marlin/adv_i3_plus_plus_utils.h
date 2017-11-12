@@ -44,16 +44,26 @@ enum class Action: uint16_t;
 // Logging
 // --------------------------------------------------------------------
 
+String StringPrintWithFormat(const char * fmt, va_list args);
+
 #ifdef DEBUG
 void Dump(const uint8_t* bytes, size_t size);
-#define ADVi3PP_ERROR(expression) {Chars<100> message{"*** ERROR "}; message << expression; Serial.println(message.c_str());} while(false)
-#define ADVi3PP_LOG(expression)   {Chars<100> message; message << expression; Serial.println(message.c_str());} while(false)
-#define ADVi3PP_DUMP(bytes, size)  {Dump(bytes, size);}
+#define ADVi3PP_ERROR(expression) { String message{F("*** ERROR ")}; message << expression; Serial.println(message); } while(false)
+#define ADVi3PP_LOG(expression)   { String message; message << expression; Serial.println(message); } while(false)
+#define ADVi3PP_DUMP(bytes, size) { Dump(bytes, size); }
 #else
 #define ADVi3PP_ERROR(expression) {} while(false)
 #define ADVi3PP_LOG(expression)   {} while(false)
 #define ADVi3PP_DUMP(bytes, size)  {} while(false)
 #endif
+
+inline String& operator<< (String& rhs, const __FlashStringHelper* lhs) { rhs += lhs; return rhs; }
+inline String& operator<< (String& rhs, const String& lhs) { rhs += lhs; return rhs; }
+
+String& operator<<(String& rhs, uint16_t lhs);
+String& operator<<(String& rhs, Command lhs);
+String& operator<<(String& rhs, Register lhs);
+String& operator<<(String& rhs, Variable lhs);
 
 // --------------------------------------------------------------------
 // Uint8
@@ -89,48 +99,22 @@ constexpr Uint8  operator "" _u8(unsigned long long int byte)  { return Uint8(st
 constexpr Uint16 operator "" _u16(unsigned long long int word) { return Uint16(static_cast<uint16_t>(word)); }
 
 // --------------------------------------------------------------------
-// Chars
+// TruncatedString
 // --------------------------------------------------------------------
 
-//! A fixed-size string of characters, truncating values when necessary.
-template<size_t S = 26>
-class Chars
+class Frame;
+
+struct TruncatedString
 {
-public:
-    Chars();
-    explicit Chars(const char* name);
-    explicit Chars(duration_t duration);
+    TruncatedString(const String& str, size_t max);
+    explicit TruncatedString(duration_t duration, size_t max);
 
-    Chars& operator=(const char* name);
-    Chars& operator=(duration_t duration);
-
-    const uint8_t* get() const { return buffer_; }
-    constexpr size_t size() const { return S; }
-    uint16_t length() const { return length_; }
-    const char* c_str() const { return reinterpret_cast<const char*>(buffer_); }
-    void vprintf(const char *fmt, va_list args);
-
-    Chars& operator<<(const char* value);
-    Chars& operator<<(uint16_t value);
-    Chars& operator<<(Command command);
-    Chars& operator<<(Register reg);
-    Chars& operator<<(Variable var);
+    friend Frame& operator<<(Frame& frame, const TruncatedString& data);
 
 private:
-    void fill_remaining();
-
-private:
-    static constexpr auto SIZE = S > 1 ? S : 1; // Avoid 0 size
-    uint8_t buffer_[SIZE]; //!< Fixed-sized buffer holding the content of the Chars
-    uint16_t length_; //!< Length of the Chars content
+    String string_;
 };
 
-// --------------------------------------------------------------------
-// Message
-// --------------------------------------------------------------------
-
-//! Message to be displayed on the LCD
-using Message = Chars<26>;
 
 // --------------------------------------------------------------------
 // Frame
@@ -140,23 +124,25 @@ using Message = Chars<26>;
 struct Frame
 {
     void send(bool logging = true); // Logging is only used in DEBUG builds
-    Frame& operator<<(const Uint8& data);
-    Frame& operator<<(const Uint16& data);
-    template<size_t S> Frame& operator<<(const Chars<S>& name);
-    Frame& operator<<(Page page);
 
     bool available(uint8_t bytes = 3);
     bool receive();
     Command get_command() const;
     size_t get_length() const;
-    Frame& operator>>(Uint8& data);
-    Frame& operator>>(Uint16& data);
-    Frame& operator>>(Action& action);
-    Frame& operator>>(Command& command);
-    Frame& operator>>(Register& reg);
-    Frame& operator>>(Variable& var);
-
     void reset();
+
+    friend Frame& operator<<(Frame& frame, const Uint8& data);
+    friend Frame& operator<<(Frame& frame, const Uint16& data);
+    friend Frame& operator<<(Frame& frame, const String& data);
+    friend Frame& operator<<(Frame& frame, const TruncatedString& data);
+    friend Frame& operator<<(Frame& frame, Page page);
+
+    friend Frame& operator>>(Frame& frame, Uint8& data);
+    friend Frame& operator>>(Frame& frame, Uint16& data);
+    friend Frame& operator>>(Frame& frame, Action& action);
+    friend Frame& operator>>(Frame& frame, Command& command);
+    friend Frame& operator>>(Frame& frame, Register& reg);
+    friend Frame& operator>>(Frame& frame, Variable& var);
 
 #ifdef UNIT_TEST
     const uint8_t* get_data() const;
@@ -166,8 +152,8 @@ protected:
     Frame();
     explicit Frame(Command command);
     void reset(Command command);
-    Frame& operator<<(Register reg);
-    Frame& operator<<(Variable var);
+    friend Frame& operator<<(Frame& frame, Register reg);
+    friend Frame& operator<<(Frame& frame, Variable var);
 
 private:
     void wait_for_data(uint8_t length);
@@ -181,6 +167,7 @@ protected:
     uint8_t buffer_[FRAME_BUFFER_SIZE];
     uint8_t position_ = 0;
 };
+
 
 // --------------------------------------------------------------------
 // IncomingFrame
@@ -262,9 +249,6 @@ struct WriteCurveDataRequest: Frame
 {
     explicit WriteCurveDataRequest(uint8_t channels);
 };
-
-
-#include "adv_i3_plus_plus_utils.inline.h"
 
 
 }}

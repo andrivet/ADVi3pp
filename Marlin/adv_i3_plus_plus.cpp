@@ -118,10 +118,10 @@ void Printer::temperature_error()
 void PrinterImpl::setup()
 {
 #ifdef DEBUG
-    ADVi3PP_LOG("This is a DEBUG build");
+    ADVi3PP_LOG(F("This is a DEBUG build"));
 #endif
 #ifdef SIMULATOR
-    ADVi3PP_LOG("This is a SIMULATOR build");
+    ADVi3PP_LOG(F("This is a SIMULATOR build"));
 #endif
 
     Serial2.begin(advi3_pp_baudrate);
@@ -213,7 +213,7 @@ void PrinterImpl::execute_background_task()
         case BackgroundTask::LoadFilament:          load_filament_task(); break;
         case BackgroundTask::UnloadFilament:        unload_filament_task(); break;
         case BackgroundTask::ExtruderCalibration:   extruder_calibration_task(); break;
-        default:                                    ADVi3PP_ERROR("Invalid background task " << static_cast<uint16_t>(background_task_)); break;
+        default:                                    ADVi3PP_ERROR(F("Invalid background task ") << static_cast<uint16_t>(background_task_)); break;
     }
 }
 
@@ -235,7 +235,7 @@ namespace
 //! @param [in] page The page to be displayed on the LCD screen
 void PrinterImpl::show_page(Page page)
 {
-    ADVi3PP_LOG("Show page " << static_cast<uint8_t>(page));
+    ADVi3PP_LOG(F("Show page ") << static_cast<uint8_t>(page));
     WriteRegisterDataRequest frame{Register::PictureID};
     frame << 00_u8 << page;
     frame.send(true);
@@ -250,12 +250,12 @@ Page PrinterImpl::get_current_page()
     ReadRegisterDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Reading PictureID");
+        ADVi3PP_ERROR(F("Reading PictureID"));
         return Page::None;
     }
 
     Uint16 page; response >> page;
-    ADVi3PP_LOG("Current page index = " << page.word);
+    ADVi3PP_LOG(F("Current page index = ") << page.word);
     return static_cast<Page>(page.word);
 }
 
@@ -331,7 +331,7 @@ void PrinterImpl::send_status()
           << Uint16(thermalManager.target_temperature[0])
           << Uint16(thermalManager.degHotend(0))
           << Uint16(scale(fanSpeeds[0], 256, 100))
-          << LCDImpl::instance().get_message();
+          << TruncatedString(LCDImpl::instance().get_message(), 26);
     frame.send(false);
 }
 
@@ -350,7 +350,7 @@ void PrinterImpl::read_lcd_serial()
 
     if(!frame.receive())
     {
-        ADVi3PP_ERROR("reading incoming Frame");
+        ADVi3PP_ERROR(F("reading incoming Frame"));
         return;
     }
 
@@ -359,7 +359,7 @@ void PrinterImpl::read_lcd_serial()
     auto key_value = static_cast<KeyValue>(value.word);
 
     // TODO: Check that length == 1, that Hi(action) == 0x04
-    ADVi3PP_LOG(">>> " << nb_words.byte << " words, Action = " << static_cast<uint16_t>(action) << ", KeyValue = " << value.word);
+    ADVi3PP_LOG(F(">>> ") << nb_words.byte << F(" words, Action = ") << static_cast<uint16_t>(action) << F(", KeyValue = ") << value.word);
 
     switch(action)
     {
@@ -383,7 +383,7 @@ void PrinterImpl::read_lcd_serial()
         case Action::PidTuning:             pid_tuning(key_value); break;
         case Action::Statistics:            statistics(key_value); break;
         case Action::About:                 about(key_value); break;
-        default:                            ADVi3PP_ERROR("Invalid action " << static_cast<uint16_t>(action)); break;
+        default:                            ADVi3PP_ERROR(F("Invalid action ") << static_cast<uint16_t>(action)); break;
     }
 }
 
@@ -399,7 +399,7 @@ void PrinterImpl::printing(KeyValue key_value)
     {
         case KeyValue::PrintShow:           printing_show(); break;
         case KeyValue::PrintBack:           printing_back(); break;
-        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                            ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -436,11 +436,11 @@ void PrinterImpl::show_sd_files(uint16_t last_index)
     WriteRamDataRequest frame{Variable::FileName1};
 
     last_file_index_ = last_index;
-    Chars<> name;
+    String name;
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
-        frame << name;
+        frame << TruncatedString(name, 26); // Important to truncate, there is only space for 26 chars
     }
     frame.send(true);
 }
@@ -449,8 +449,7 @@ void PrinterImpl::show_sd_files(uint16_t last_index)
 //! @tparam S       Size of the buffer
 //! @param index    Index of the filename
 //! @param name     Copy the filename into this Chars
-template<size_t S>
-void PrinterImpl::get_file_name(uint8_t index, Chars<S>& name)
+void PrinterImpl::get_file_name(uint8_t index, String& name)
 {
     card.getfilename(last_file_index_ - index);
     name = card.longFilename;
@@ -467,7 +466,7 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
     if(file_index > last_file_index_)
         return;
     card.getfilename(last_file_index_ - file_index);
-    Chars<> name{card.longFilename};
+    TruncatedString name{card.longFilename, 26};
 
     WriteRamDataRequest frame{Variable::SelectedFileName};
     frame << name;
@@ -532,7 +531,7 @@ void PrinterImpl::print_command(KeyValue key_value)
         case KeyValue::PrintPause:          print_pause(); break;
         case KeyValue::PrintResume:         print_resume(); break;
         case KeyValue::PrintBack:           print_back(); break;
-        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                            ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -596,7 +595,7 @@ uint16_t PrinterImpl::PrinterImpl::get_target_temperature()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Target Temperature)");
+        ADVi3PP_ERROR(F("Receiving Frame (Target Temperature)"));
         return 0;
     }
 
@@ -619,7 +618,7 @@ void PrinterImpl::load_unload(KeyValue key_value)
         case KeyValue::Load:                load_unload_start(true); break;
         case KeyValue::Unload:              load_unload_start(false); break;
         case KeyValue::LoadUnloaddStop:     load_unload_stop(); break;
-        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                            ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -708,12 +707,12 @@ void PrinterImpl::preheat_show()
 //! @param key_value    The index (starting from 1) of the preset to use
 void PrinterImpl::preheat_preset(uint16_t presetIndex)
 {
-    ADVi3PP_LOG("Preheat Start");
+    ADVi3PP_LOG(F("Preheat Start"));
 
     presetIndex -= 1;
     if(presetIndex >= NB_PRESETS)
     {
-        ADVi3PP_ERROR("Invalid preset # " << presetIndex);
+        ADVi3PP_ERROR(F("Invalid preset # ") << presetIndex);
         return;
     }
 
@@ -723,7 +722,7 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Presets)");
+        ADVi3PP_ERROR(F("Receiving Frame (Presets)"));
         return;
     }
 
@@ -740,12 +739,12 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
 
     const Preset& preset = presets_[presetIndex];
 
-    Chars<> command;
+    String command;
 
-    command = "M104 S"; command << preset.hotend;
+    command = F("M104 S"); command << preset.hotend;
     enqueue_and_echo_command(command.c_str());
 
-    command = "M140 S"; command << preset.bed;
+    command = F("M140 S"); command << preset.bed;
     enqueue_and_echo_command(command.c_str());
 
     save_current_page();
@@ -756,7 +755,7 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
 //! Cooldown the bed and the nozzle
 void PrinterImpl::cooldown()
 {
-    ADVi3PP_LOG("Cooldown");
+    ADVi3PP_LOG(F("Cooldown"));
     thermalManager.disable_all_heaters();
 }
 
@@ -777,7 +776,7 @@ void PrinterImpl::move(KeyValue key_value)
         case KeyValue::MoveZminus:          move_z_minus(); break;
         case KeyValue::MoveEplus:           move_e_plus(); break;
         case KeyValue::MoveEminus:          move_e_minus(); break;
-        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                            ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -791,7 +790,7 @@ void PrinterImpl::home(KeyValue key_value)
         case KeyValue::HomeY:               home_y(); break;
         case KeyValue::HomeZ:               home_z(); break;
         case KeyValue::HomeAll:             home_all(); break;
-        default:                            ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                            ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -918,7 +917,7 @@ void PrinterImpl::show_settings(KeyValue key_value)
         case KeyValue::SettingsFeedrate:        show_feedrate_settings(Page::Settings); break;
         case KeyValue::SettingsAcceleration:    show_acceleration_settings(Page::Settings); break;
         case KeyValue::SettingsJerk:            show_jerk_settings(Page::Settings); break;
-        default:                                ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                                ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -932,7 +931,7 @@ void PrinterImpl::save_settings(KeyValue key_value)
         case KeyValue::SettingsFeedrate:        save_feedrate_settings(); break;
         case KeyValue::SettingsAcceleration:    save_acceleration_settings(); break;
         case KeyValue::SettingsJerk:            save_jerk_settings(); break;
-        default:                                ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                                ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -964,7 +963,7 @@ void PrinterImpl::save_print_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Print Settings)");
+        ADVi3PP_ERROR(F("Receiving Frame (Print Settings)"));
         return;
     }
 
@@ -999,7 +998,7 @@ void PrinterImpl::save_pid_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (PID Settings)");
+        ADVi3PP_ERROR(F("Receiving Frame (PID Settings)"));
         return;
     }
 
@@ -1036,7 +1035,7 @@ void PrinterImpl::save_steps_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Steps Settings)");
+        ADVi3PP_ERROR(F("Receiving Frame (Steps Settings)"));
         return;
     }
 
@@ -1076,7 +1075,7 @@ void PrinterImpl::save_feedrate_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Feedrate Settings)");
+        ADVi3PP_ERROR(F("Receiving Frame (Feedrate Settings)"));
         return;
     }
 
@@ -1119,7 +1118,7 @@ void PrinterImpl::save_acceleration_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Acceleration Settings)");
+        ADVi3PP_ERROR(F("Receiving Frame (Acceleration Settings)"));
         return;
     }
 
@@ -1160,7 +1159,7 @@ void PrinterImpl::save_jerk_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Acceleration Settings)");
+        ADVi3PP_ERROR(F("Receiving Frame (Acceleration Settings)"));
         return;
     }
 
@@ -1203,7 +1202,7 @@ void PrinterImpl::statistics(KeyValue)
 
 //! Get the current LCD firmware version.
 //! @return     The version as a string.
-Chars<16> PrinterImpl::get_lcd_firmware_version()
+String PrinterImpl::get_lcd_firmware_version()
 {
     ReadRegisterDataRequest frame{Register::Version, 1};
     frame.send();
@@ -1211,22 +1210,22 @@ Chars<16> PrinterImpl::get_lcd_firmware_version()
     ReadRegisterDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Version)");
-        return Chars<16>("Unknown");
+        ADVi3PP_ERROR(F("Receiving Frame (Version)"));
+        return F("Unknown");
     }
 
     Uint8 version; response >> version;
-    Chars<16> lcd_version; lcd_version << (version.byte / 0x10) << "." << (version.byte % 0x10);
-    ADVi3PP_LOG("LCD Firmware raw version = " << version.byte);
+    String lcd_version; lcd_version << (version.byte / 0x10) << "." << (version.byte % 0x10);
+    ADVi3PP_LOG(F("LCD Firmware raw version = ") << version.byte);
     return lcd_version;
 }
 
 //! Convert a version from its hexadecimal representation.
 //! @param hex_version  Hexadecimal representation of the version
 //! @return             Version as a string
-Chars<16> convert_version(uint16_t hex_version)
+String convert_version(uint16_t hex_version)
 {
-    Chars<16> version;
+    String version;
     version << hex_version / 0x0100 << "." << (hex_version % 0x100) / 0x10 << "." << hex_version % 0x10;
     return version;
 }
@@ -1234,13 +1233,16 @@ Chars<16> convert_version(uint16_t hex_version)
 //! Send the different versions to the LCD screen.
 void PrinterImpl::send_versions()
 {
-    Chars<16> marlin_version{SHORT_BUILD_VERSION};
-    Chars<16> motherboard_version = convert_version(advi3_pp_version);
-    Chars<16> advi3pp_lcd_version = convert_version(adv_i3_pp_lcd_version_);
-    Chars<16> lcd_firmware_version = get_lcd_firmware_version();
+    String marlin_version{SHORT_BUILD_VERSION};
+    String motherboard_version = convert_version(advi3_pp_version);
+    String advi3pp_lcd_version = convert_version(adv_i3_pp_lcd_version_);
+    String lcd_firmware_version = get_lcd_firmware_version();
 
     WriteRamDataRequest frame{Variable::MarlinVersion};
-    frame << marlin_version << motherboard_version << advi3pp_lcd_version << lcd_firmware_version;
+    frame << TruncatedString(marlin_version, 16)
+          << TruncatedString(motherboard_version, 16)
+          << TruncatedString(advi3pp_lcd_version, 16)
+          << TruncatedString(lcd_firmware_version, 16);
     frame.send();
 }
 
@@ -1268,7 +1270,7 @@ void PrinterImpl::pid_tuning(KeyValue key_value)
     {
         case KeyValue::PidTuningStep1:   pid_tuning_step1(); break;
         case KeyValue::PidTuningStep2:   pid_tuning_step2(); break;
-        default:                         ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                         ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -1284,8 +1286,8 @@ void PrinterImpl::pid_tuning_step2()
     if(hotend <= 0)
         return;
 
-    enqueue_and_echo_command("M106 S255"); // Turn on fam
-    Chars<> auto_pid_command; auto_pid_command << "M303 S" << hotend << "E0 C8 U1";
+    enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fam
+    String auto_pid_command; auto_pid_command << F("M303 S") << hotend << F("E0 C8 U1");
     enqueue_and_echo_command(auto_pid_command.c_str());
 
     show_page(Page::PidTuning2);
@@ -1295,7 +1297,7 @@ void PrinterImpl::pid_tuning_step2()
 void PrinterImpl::auto_pid_finished()
 {
     ADVi3PP_LOG("Auto PID finished");
-    enqueue_and_echo_command("M106 S0");
+    enqueue_and_echo_commands_P(PSTR("M106 S0"));
     show_pid_settings(Page::Calibration, Page::PidTuning1);
 }
 
@@ -1313,7 +1315,7 @@ void PrinterImpl::leveling(KeyValue key_value)
         case KeyValue::LevelingPoint3:  leveling_point3(); break;
         case KeyValue::LevelingPoint4:  leveling_point4(); break;
         case KeyValue::LevelingBack:    leveling_finish(); break;
-        default:                        ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                        ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -1330,7 +1332,7 @@ void PrinterImpl::leveling_task()
 {
     if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
     {
-        ADVi3PP_LOG("Leveling Homed, start process");
+        ADVi3PP_LOG(F("Leveling Homed, start process"));
         clear_background_task();
         show_page(Page::Leveling2);
     }
@@ -1393,7 +1395,7 @@ void PrinterImpl::extruder_calibration(KeyValue key_value)
         case KeyValue::CalibrationStart:        start_extruder_calibration(); break;
         case KeyValue::CalibrationSettings:     extruder_calibrartion_settings(); break;
         case KeyValue::CalibrationCancel:       cancel_extruder_calibration(); break;
-        default:                                ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                                ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -1493,7 +1495,7 @@ void PrinterImpl::xyz_motors_calibration(KeyValue key_value)
     {
         case KeyValue::CalibrationShow:         show_xyz_motors_calibration(); break;
         case KeyValue::CalibrationSettings:     xyz_motors_calibration_settings(); break;
-        default:                                ADVi3PP_ERROR("Invalid key value " << static_cast<uint16_t>(key_value)); break;
+        default:                                ADVi3PP_ERROR(F("Invalid key value ") << static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -1507,9 +1509,9 @@ void PrinterImpl::show_xyz_motors_calibration()
 
 void adjust_value(float& value, double expected, double measured)
 {
-	ADVi3PP_LOG("Adjust: old = " << value << ", expected = " << expected << ", measured = " << measured);
+	ADVi3PP_LOG(F("Adjust: old = ") << value << F(", expected = ") << expected << F(", measured = ") << measured);
 	value = value * expected / measured;
-	ADVi3PP_LOG("Adjust: new = " << value);
+	ADVi3PP_LOG(F("Adjust: new = ") << value);
 };
 
 void PrinterImpl::xyz_motors_calibration_settings()
@@ -1520,7 +1522,7 @@ void PrinterImpl::xyz_motors_calibration_settings()
     ReadRamDataResponse response;
     if(!response.receive(frame))
     {
-        ADVi3PP_ERROR("Receiving Frame (Measures)");
+        ADVi3PP_ERROR(F("Receiving Frame (Measures)"));
         return;
     }
 
@@ -1547,25 +1549,23 @@ void PrinterImpl::send_stats()
     frame << Uint16(stats.totalPrints) << Uint16(stats.finishedPrints);
     frame.send();
 
-#if ENABLED(PRINTCOUNTER)
     duration_t duration = stats.printTime;
     frame.reset(Variable::TotalPrintTime);
-    frame << Chars<16>{duration};
+    frame << TruncatedString{duration, 16};
     frame.send();
 
     duration = stats.longestPrint;
     frame.reset(Variable::LongestPrintTime);
-    frame << Chars<16>{duration};
+    frame << TruncatedString{duration, 16};
     frame.send();
 
-    Chars<> filament_used;
+    String filament_used;
     filament_used << static_cast<unsigned int>(stats.filamentUsed / 1000)
                   << "."
                   << static_cast<unsigned int>(stats.filamentUsed / 100) % 10;
     frame.reset(Variable::TotalFilament);
-    frame << Chars<>{filament_used.c_str()};
+    frame << TruncatedString{filament_used, 16};
     frame.send();
-#endif
 }
 
 void PrinterImpl::update_graphs()

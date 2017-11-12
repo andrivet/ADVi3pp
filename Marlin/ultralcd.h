@@ -199,11 +199,8 @@
 
 #endif // ULTRA_LCD
 
-//#define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(PSTR(x))
-//#define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatusPGM(PSTR(x))
-
-#define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(x)
-#define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatusPGM(x)
+#define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(PSTR(x))
+#define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatusPGM(PSTR(x))
 
 void lcd_reset_status();
 

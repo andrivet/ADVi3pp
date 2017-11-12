@@ -166,7 +166,8 @@ enum class Action: uint16_t
     XYZMotorsCalibration    = 0x0442,
     PidTuning               = 0x0443,
     Statistics              = 0x0450,
-    About                   = 0x0451
+    About                   = 0x0451,
+    Undefined               = 0xFFFF
 };
 
 //! Key values used by the LCD screens.

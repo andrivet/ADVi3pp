@@ -57,6 +57,87 @@ void Dump(const uint8_t* bytes, size_t size)
 #endif
 
 // --------------------------------------------------------------------
+// TruncatedString
+// --------------------------------------------------------------------
+
+TruncatedString::TruncatedString(const String& str, size_t max)
+{
+    if(str.length() <= max)
+        string_ = str;
+    else
+        string_ = str.substring(0, max);
+}
+
+TruncatedString::TruncatedString(duration_t duration, size_t max)
+{
+    char buffer[21 + 1]; // 21, from the doc
+    duration.toString(buffer);
+    auto length = strlen(buffer);
+    if(length > max)
+        buffer[length] = 0;
+    string_.concat(buffer);
+}
+
+// --------------------------------------------------------------------
+// String
+// --------------------------------------------------------------------
+
+//! Append a string of character to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param value        The value to be append to this Chars
+//! @return             Itself
+String& operator<<(String& str, const char* value)
+{
+    str += value;
+    return str;
+}
+
+//! Append a decimal value to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param value        The value to be append to this Chars (after transformation into a string)
+//! @return             Itself
+String& operator<<(String& str, uint16_t value)
+{
+    str += value;
+    return str;
+}
+
+//! Append a Command to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param command      The command to be append to this Chars (after transformation into a string)
+//! @return             Itself
+String& operator<<(String& str, Command command)
+{
+    return (str << static_cast<uint8_t>(command));
+}
+
+//! Append a Register to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param reg          The register to be append to this Chars (after transformation into a string)
+//! @return             Itself
+String& operator<<(String& str, Register reg)
+{
+    return (str << static_cast<uint8_t>(reg));
+}
+
+//! Append a Variable to this Chars. It is truncated if it does not fit into the Chars.
+//! @tparam S           The maximum size of the Chars
+//! @param var          The variable to be append to this Chars (after transformation into a string)
+//! @return             Itself
+String& operator<<(String& str, Variable var)
+{
+    return (str << static_cast<uint16_t>(var));
+}
+
+String StringPrintWithFormat(const char * fmt, va_list args)
+{
+    static const size_t MAX_SIZE = 100;
+    char buffer[MAX_SIZE + 1];
+    vsnprintf(buffer, MAX_SIZE, fmt, args);
+    return String(buffer);
+}
+
+// --------------------------------------------------------------------
 // Frame
 // --------------------------------------------------------------------
 
@@ -80,59 +161,73 @@ Frame::Frame(Command command)
 //! Append a byte to this Frame.
 //! @param data     Byte to be appended
 //! @return         Itself
-Frame& Frame::operator<<(const Uint8 &data)
+Frame& operator<<(Frame& frame, const Uint8 &data)
 {
-    if(position_ < FRAME_BUFFER_SIZE)
+    if(frame.position_ < frame.FRAME_BUFFER_SIZE)
     {
-        buffer_[position_++] = data.byte;
-        buffer_[Position::Length] += 1;
+        frame.buffer_[frame.position_++] = data.byte;
+        frame.buffer_[Frame::Position::Length] += 1;
     }
     else
-        ADVi3PP_ERROR("Data truncated");
-    return *this;
+        ADVi3PP_ERROR(F("Data truncated"));
+    return frame;
 }
 
 //! Append a word to this Frame.
 //! @param data     Word to be appended
 //! @return         Itself
-Frame& Frame::operator<<(const Uint16 &data)
+Frame& operator<<(Frame& frame, const Uint16 &data)
 {
-    if(position_ < FRAME_BUFFER_SIZE - 1)
+    if(frame.position_ < frame.FRAME_BUFFER_SIZE - 1)
     {
-        buffer_[position_++] = highByte(data.word);
-        buffer_[position_++] = lowByte(data.word);
-        buffer_[Position::Length] += 2;
+        frame.buffer_[frame.position_++] = highByte(data.word);
+        frame.buffer_[frame.position_++] = lowByte(data.word);
+        frame.buffer_[Frame::Position::Length] += 2;
     }
     else
-        ADVi3PP_ERROR("Data truncated");
-    return *this;
+        ADVi3PP_ERROR(F("Data truncated"));
+    return frame;
 }
 
 //! Append a Register to this Frame.
 //! @param reg      Register to be appended
 //! @return         Itself
-Frame& Frame::operator<<(Register reg)
+Frame& operator<<(Frame& frame, Register reg)
 {
-    *this << Uint8(reg);
-    return *this;
+    frame << Uint8(reg);
+    return frame;
 }
 
 //! Append a Page to this Frame.
 //! @param page     Page to be appended
 //! @return         Itself
-Frame& Frame::operator<<(Page page)
+Frame& operator<<(Frame& frame, Page page)
 {
-    *this << Uint8(page);
-    return *this;
+    frame << Uint8(page);
+    return frame;
 }
 
 //! Append a Variable to this Frame.
 //! @param var      Variable to be appended
 //! @return         Itself
-Frame& Frame::operator<<(Variable var)
+Frame& operator<<(Frame& frame, Variable var)
 {
-    *this << Uint16(var);
-    return *this;
+    frame << Uint16(var);
+    return frame;
+}
+
+Frame& operator<<(Frame& frame, const TruncatedString& data)
+{
+    return frame << data.string_;
+}
+
+Frame& operator<<(Frame& frame, const String& data)
+{
+    size_t length = frame.position_ + data.length() < frame.FRAME_BUFFER_SIZE ? data.length() : frame.FRAME_BUFFER_SIZE - frame.position_;
+    memcpy(frame.buffer_ + frame.position_, data.begin(), length);
+    frame.position_ += length;
+    frame.buffer_[Frame::Position::Length] += length;
+    return frame;
 }
 
 //! Send tis Frame to the LCD display.
@@ -242,68 +337,68 @@ const uint8_t* Frame::get_data() const
 //! Extract the next byte from this input Frame.
 //! @param data     Next byte extracted from this Frame
 //! @return         Itself
-Frame& Frame::operator>>(Uint8& data)
+Frame& operator>>(Frame& frame, Uint8& data)
 {
-    if(position_ >= 3 + get_length())
+    if(frame.position_ >= 3 + frame.get_length())
     {
-        ADVi3PP_LOG("Try to read a byte after the end of data");
-        return *this;
+        ADVi3PP_LOG(F("Try to read a byte after the end of data"));
+        return frame;
     }
 
-    data.byte = buffer_[position_++];
-    return *this;
+    data.byte = frame.buffer_[frame.position_++];
+    return frame;
 }
 
 //! Extract the next word from this input Frame.
 //! @param data     Next word extracted from this Frame
 //! @return         Itself
-Frame& Frame::operator>>(Uint16& data)
+Frame& operator>>(Frame& frame, Uint16& data)
 {
-    if(position_ >= 3 + get_length() - 1)
+    if(frame.position_ >= 3 + frame.get_length() - 1)
     {
-        ADVi3PP_LOG("Try to read a word after the end of data");
-        return *this;
+        ADVi3PP_LOG(F("Try to read a word after the end of data"));
+        return frame;
     }
 
     Uint8 msb, lsb;
-    (*this) >> msb >> lsb;
+    frame >> msb >> lsb;
     data.word = lsb.byte + 256 * msb.byte;
-    return *this;
+    return frame;
 }
 
 //! Extract the Action from this input Frame.
 //! @param action   Action extracted from this Frame
 //! @return         Itself
-Frame& Frame::operator>>(Action& action)
+Frame& operator>>(Frame& frame, Action& action)
 {
     Uint16 value;
-    *this >> value;
+    frame >> value;
     action = static_cast<Action>(value.word);
-    return *this;
+    return frame;
 }
 
-Frame& Frame::operator>>(Command& command)
+Frame& operator>>(Frame& frame, Command& command)
 {
     Uint8 value;
-    *this >> value;
+    frame >> value;
     command = static_cast<Command>(value.byte);
-    return *this;
+    return frame;
 }
 
-Frame& Frame::operator>>(Register& reg)
+Frame& operator>>(Frame& frame, Register& reg)
 {
     Uint8 value;
-    *this >> value;
+    frame >> value;
     reg = static_cast<Register>(value.byte);
-    return *this;
+    return frame;
 }
 
-Frame& Frame::operator>>(Variable& var)
+Frame& operator>>(Frame& frame, Variable& var)
 {
     Uint16 value;
-    *this >> value;
+    frame >> value;
     var = static_cast<Variable>(value.word);
-    return *this;
+    return frame;
 }
 
 WriteRegisterDataRequest::WriteRegisterDataRequest(Register reg)
@@ -429,5 +524,6 @@ WriteCurveDataRequest::WriteCurveDataRequest(uint8_t channels)
 {
     *this << Uint8{channels};
 }
+
 
 }}

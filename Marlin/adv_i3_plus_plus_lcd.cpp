@@ -50,12 +50,12 @@ bool LCD::has_status()
     return lcd.has_status();
 }
 
-void LCD::set_status(const char* message, bool persist)
+void LCD::set_status(const char* message, bool /*persist*/)
 {
     lcd.set_status(message);
 }
 
-void LCD::set_status_PGM(const char* message, int8_t level)
+void LCD::set_status_PGM(const char* message, int8_t /*level*/)
 {
     lcd.set_status_PGM(message);
 }
@@ -65,7 +65,7 @@ void LCD::set_alert_status_PGM(const char* message)
     lcd.set_alert_status_PGM(message);
 }
 
-void LCD::status_printf_P(int8_t level, const char * const fmt, va_list args)
+void LCD::status_printf_P(int8_t /*level*/, const char * const fmt, va_list args)
 {
     lcd.status_printf_P(fmt, args);
 }
@@ -116,14 +116,14 @@ bool LCDImpl::has_status()
 
 void LCDImpl::set_status(const char* message)
 {
-	Serial.print("STATUS: "); Serial.println(message);
+	ADVi3PP_LOG(F("STATUS: ") << message);
     message_ = message;
 	recompute_whole_message_ = true;
 }
 
 void LCDImpl::set_status_PGM(const char* message)
 {
-	Serial.print("STATUS PGM: "); Serial.println(message);
+    ADVi3PP_LOG(F("STATUS PGM: ") << message);
     messagePGM_ = message;
 	recompute_whole_message_ = true;
 }
@@ -135,9 +135,9 @@ void LCDImpl::set_alert_status_PGM(const char* message)
 
 void LCDImpl::status_printf_P(const char * fmt, va_list argp)
 {
-    messagePGM_.vprintf(fmt, argp);
+    messagePGM_ = StringPrintWithFormat(fmt, argp);
 	recompute_whole_message_ = true;
-	Serial.print("STATUS V: "); Serial.println(message_.c_str());
+    ADVi3PP_LOG(F("STATUS V: ") << message_);
 }
 
 void LCDImpl::buttons_update()
@@ -160,14 +160,14 @@ void LCDImpl::refresh()
     /* Do nothing */
 }
 
-const Message& LCDImpl::get_message() const
+const String& LCDImpl::get_message() const
 {
 	if(recompute_whole_message_)
 	{
 		whole_message_ = message_;
 		if(message_.length() > 0 && messagePGM_.length() > 0)
-			whole_message_ << " - ";
-		whole_message_ << messagePGM_.c_str();
+			whole_message_ += " - ";
+		whole_message_ += messagePGM_;
 		recompute_whole_message_ = false;
 	}
     return whole_message_;

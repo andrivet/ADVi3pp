@@ -26,6 +26,7 @@
 #define ADV_I3_PLUS_PLUS_PRIVATE_H
 
 #include "adv_i3_plus_plus_enums.h"
+#include "adv_i3_plus_plus.h"
 #include "adv_i3_plus_plus_utils.h"
 
 namespace advi3pp { inline namespace internals {
@@ -36,7 +37,8 @@ enum class BackgroundTask: uint8_t
     Leveling            = 1,
     LoadFilament        = 2,
     UnloadFilament      = 3,
-    ExtruderCalibration = 4
+    ExtruderCalibration = 4,
+    Undefined           = 99
 };
 
 // --------------------------------------------------------------------
@@ -78,8 +80,8 @@ private:
     void read_lcd_serial();
     void send_stats();
     void show_sd_files(uint16_t last_index);
-    template<size_t S> void get_file_name(uint8_t index, Chars<S>& name);
-    Chars<16> get_lcd_firmware_version();
+    void get_file_name(uint8_t index, String& name);
+    String get_lcd_firmware_version();
     void set_next_background_task_time(unsigned int delta = 500);
     void set_next_update_time(unsigned int delta = 500);
     void set_background_task(BackgroundTask task, unsigned int delta = 500);
@@ -206,13 +208,13 @@ struct LCDImpl
     void reset_alert_level();
     bool detected();
     void refresh();
-    const Message& get_message() const;
+    const String& get_message() const;
 
 private:
-    Message message_;
-	Message messagePGM_;
+    String message_;
+    String messagePGM_;
 	
-	mutable Message whole_message_;
+	mutable String whole_message_;
 	mutable bool recompute_whole_message_ = false;
 };
 
