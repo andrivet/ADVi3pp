@@ -304,7 +304,7 @@ bool Frame::receive()
     if(read != length)
     {
         ADVi3PP_ERROR("Invalid amount of bytes received");
-        return 0;
+        return false;
     }
 
     ADVi3PP_LOG("<<< " << length << " bytes.");

@@ -184,9 +184,9 @@ private:
     millis_t next_update_graph_time_ = 0;
     Page back_page_ = Page::None;
     Page next_page_ = Page::None;
-    Preset presets_[NB_PRESETS];
+    Preset presets_[NB_PRESETS] = { 0, 0, 0 };
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
-    double extruded_;
+    double extruded_ = 0.0;
 };
 
 // --------------------------------------------------------------------
