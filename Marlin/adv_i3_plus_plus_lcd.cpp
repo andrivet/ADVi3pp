@@ -111,44 +111,32 @@ void LCDImpl::init()
 
 bool LCDImpl::has_status()
 {
-    return status_;
+    return message_.length() > 0 || messagePGM_.length() > 0;
 }
 
-void LCDImpl::set_status(const char* message, const bool /*persist*/)
+void LCDImpl::set_status(const char* message)
 {
-    if(level_ > 0)
-        return;
 	Serial.print("STATUS: "); Serial.println(message);
     message_ = message;
-    status_ = true;
+	recompute_whole_message_ = true;
 }
 
-void LCDImpl::set_status_PGM(const char* message, int8_t level)
+void LCDImpl::set_status_PGM(const char* message)
 {
-    if(level < 0)
-        level = level_ = 0;
-    if(level < level_)
-        return;
-    level_ = level;
-
 	Serial.print("STATUS PGM: "); Serial.println(message);
-    message_ = message;
-    status_ = true;
+    messagePGM_ = message;
+	recompute_whole_message_ = true;
 }
 
 void LCDImpl::set_alert_status_PGM(const char* message)
 {
-    set_status_PGM(message, 1);
+    set_status_PGM(message);
 }
 
-void LCDImpl::status_printf_P(uint8_t level, const char * fmt, va_list argp)
+void LCDImpl::status_printf_P(const char * fmt, va_list argp)
 {
-    if (level < level_)
-        return;
-    level_ = level;
-
-    message_.vprintf(fmt, argp);
-    status_ = true;
+    messagePGM_.vprintf(fmt, argp);
+	recompute_whole_message_ = true;
 	Serial.print("STATUS V: "); Serial.println(message_.c_str());
 }
 
@@ -159,7 +147,7 @@ void LCDImpl::buttons_update()
 
 void LCDImpl::reset_alert_level()
 {
-    level_ = 0;
+    /* Do nothing */
 }
 
 bool LCDImpl::detected()
@@ -174,7 +162,15 @@ void LCDImpl::refresh()
 
 const Message& LCDImpl::get_message() const
 {
-    return message_;
+	if(recompute_whole_message_)
+	{
+		whole_message_ = message_;
+		if(message_.length() > 0 && messagePGM_.length() > 0)
+			whole_message_ << " - ";
+		whole_message_ << messagePGM_.c_str();
+		recompute_whole_message_ = false;
+	}
+    return whole_message_;
 }
 
 }
