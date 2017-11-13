@@ -137,6 +137,8 @@ struct TruncatedString
     TruncatedString(const String& str, size_t size);
     explicit TruncatedString(duration_t duration, size_t size);
 
+    inline size_t length() const { return string_.length(); }
+
     friend Frame& operator<<(Frame& frame, const TruncatedString& data);
 
 private:

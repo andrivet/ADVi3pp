@@ -267,6 +267,7 @@ struct LCDImpl
     bool detected();
     void refresh();
     const String& get_message() const;
+    void queue_message(const String& message);
     void reset_messaage();
 
 private:

@@ -65,7 +65,6 @@ inline namespace { PrinterImpl printer; };
 void Printer::setup()
 {
     printer.setup();
-    LCD::reset_message();
 }
 
 //! Read data from the LCD and act accordingly.
@@ -468,6 +467,8 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
         return;
     card.getfilename(last_file_index_ - file_index);
     TruncatedString name{card.longFilename, 26};
+    if(name.length() <= 0) // If the SD card is not readable
+        return;
 
     WriteRamDataRequest frame{Variable::SelectedFileName};
     frame << name;
@@ -539,21 +540,22 @@ void PrinterImpl::print_command(KeyValue key_value)
 //! Stop printing
 void PrinterImpl::print_stop()
 {
-    Log::log() << "Stop Print" << Log::endl();
+    Log::log() << F("Stop Print") << Log::endl();
 
-    LCD::reset_message();
     card.stopSDPrint();
     clear_command_queue();
     quickstop_stepper();
     print_job_timer.stop();
     thermalManager.disable_all_heaters();
+    show_page(Page::SdCard);
 }
 
 //! Pause printing
 void PrinterImpl::print_pause()
 {
-    Log::log() << "Pause Print" << Log::endl();
+    Log::log() << F("Pause Print") << Log::endl();
 
+    LCD::queue_message(F("Pause printing"));
     card.pauseSDPrint();
     print_job_timer.pause();
 #if ENABLED(PARK_HEAD_ON_PAUSE)
@@ -564,8 +566,9 @@ void PrinterImpl::print_pause()
 //! Resume the current print
 void PrinterImpl::print_resume()
 {
-    Log::log() << "Resume Print" << Log::endl();
+    Log::log() << F("Resume Print") << Log::endl();
 
+    LCD::queue_message(F("Resume printing"));
 #if ENABLED(PARK_HEAD_ON_PAUSE)
     enqueue_and_echo_commands_P(PSTR("M24"));
 #else
@@ -1488,7 +1491,8 @@ void PrinterImpl::extruder_calibrartion_settings()
 
     Uint16 e; response >> e;
     e.word /= 10;
-	steps_.axis_steps_per_mm[E_AXIS] = steps_.axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
+	steps_.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
+    Log::log() << F("Adjust: old = ") << planner.axis_steps_per_mm[E_AXIS] << F(", expected = ") << extruded_ << F(", measured = ") << (extruded_ + calibration_extruder_delta - e.word) << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
 
     show_steps_settings(Page::Calibration, Page::ExtruderCalibration3, false);
 }
@@ -1528,11 +1532,11 @@ void PrinterImpl::show_xyz_motors_calibration()
     show_page(Page::XYZMotorsCalibration);
 }
 
-void adjust_value(float& value, double expected, double measured)
+float adjust_value(float old, double expected, double measured)
 {
-    Log::log() << F("Adjust: old = ") << value << F(", expected = ") << expected << F(", measured = ") << measured << Log::endl();
-	value = value * expected / measured;
-    Log::log() << F("Adjust: new = ") << value << Log::endl();
+	auto new_value = old * expected / measured;
+    Log::log() << F("Adjust: old = ") << old << F(", expected = ") << expected << F(", measured = ") << measured << F(", new = ") << new_value << Log::endl();
+    return new_value;
 };
 
 void PrinterImpl::xyz_motors_calibration_settings()
@@ -1550,9 +1554,9 @@ void PrinterImpl::xyz_motors_calibration_settings()
     Uint16 x, y, z;
     response >> x >> y >> z;
 
-    adjust_value(steps_.axis_steps_per_mm[X_AXIS], calibration_cube_size * 10, x.word);
-    adjust_value(steps_.axis_steps_per_mm[Y_AXIS], calibration_cube_size * 10, y.word);
-    adjust_value(steps_.axis_steps_per_mm[Z_AXIS], calibration_cube_size * 10, z.word);
+    steps_.axis_steps_per_mm[X_AXIS] = adjust_value(planner.axis_steps_per_mm[X_AXIS], calibration_cube_size * 10, x.word);
+    steps_.axis_steps_per_mm[Y_AXIS] = adjust_value(planner.axis_steps_per_mm[Y_AXIS], calibration_cube_size * 10, y.word);
+    steps_.axis_steps_per_mm[Z_AXIS] = adjust_value(planner.axis_steps_per_mm[Z_AXIS], calibration_cube_size * 10, z.word);
 
     show_steps_settings(Page::Calibration, Page::XYZMotorsCalibration, false);
 }

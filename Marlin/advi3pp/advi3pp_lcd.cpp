@@ -85,6 +85,11 @@ void LCD::refresh()
     lcd.refresh();
 }
 
+void LCD::queue_message(const String &message)
+{
+    lcd.queue_message(message);
+}
+
 void LCD::reset_message()
 {
     lcd.reset_messaage();
@@ -166,9 +171,15 @@ const String& LCDImpl::get_message() const
 	return message_;
 }
 
+void LCDImpl::queue_message(const String &message)
+{
+    String msg{F("M117 ")}; msg << message;
+    enqueue_and_echo_command(msg.c_str());
+}
+
 void LCDImpl::reset_messaage()
 {
-    message_ = "";
+     enqueue_and_echo_commands_P(PSTR("M117"));
 }
 
 }

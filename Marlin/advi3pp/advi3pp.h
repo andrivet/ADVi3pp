@@ -28,8 +28,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-
 class MarlinSettings;
+class String;
 using eeprom_write = void (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
 using eeprom_read  = void (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc);
 
@@ -99,6 +99,7 @@ struct LCD
     static void reset_alert_level();
     static bool detected();
     static void refresh();
+    static void queue_message(const String& message);
     static void reset_message();
 };
 
