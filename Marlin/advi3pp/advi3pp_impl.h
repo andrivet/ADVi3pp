@@ -168,7 +168,8 @@ private:
     void about(KeyValue key_value);
 
     // Sub-actions
-    void printing_show();
+    void printing_sd();
+    void printing_temps();
     void printing_back();
     void print_stop();
     void print_pause();
@@ -270,8 +271,15 @@ struct LCDImpl
     void queue_message(const String& message);
     void reset_messaage();
 
+    void set_progress_name(const String& name);
+    const String& get_progress() const;
+    void reset_progress();
+
 private:
     String message_;
+    String progress_name_;
+    mutable String progress_percent_;
+    mutable int percent_ = -1;
 };
 
 }}

@@ -24,6 +24,7 @@
  */
 
 #include "Marlin.h"
+#include "cardreader.h"
 #include "advi3pp.h"
 #include "advi3pp_impl.h"
 
@@ -180,6 +181,31 @@ void LCDImpl::queue_message(const String &message)
 void LCDImpl::reset_messaage()
 {
      enqueue_and_echo_commands_P(PSTR("M117"));
+}
+
+void LCDImpl::set_progress_name(const String& name)
+{
+    progress_name_ = name;
+    progress_percent_ = "";
+    percent_ = -1;
+}
+
+const String& LCDImpl::get_progress() const
+{
+    auto done = card.percentDone();
+    if(done != percent_)
+    {
+        progress_percent_ = progress_name_ + " " + percent_ + "%";
+        percent_ = done;
+    }
+    return progress_percent_;
+}
+
+void LCDImpl::reset_progress()
+{
+    progress_name_ = "";
+    progress_percent_ = "";
+    percent_ = -1;
 }
 
 }

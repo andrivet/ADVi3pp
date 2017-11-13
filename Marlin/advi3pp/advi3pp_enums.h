@@ -173,7 +173,9 @@ enum class Action: uint16_t
 //! Key values used by the LCD screens.
 enum class KeyValue: uint16_t
 {
-    PrintShow               = 0x0000,
+    PrintingSD              = 0x0000,
+    PrintingTemps           = 0x0001,
+
     PrintStop               = 0x0000,
     PrintPause              = 0x0001,
     PrintResume             = 0x0002,

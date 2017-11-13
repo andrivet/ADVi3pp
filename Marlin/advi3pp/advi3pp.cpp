@@ -331,7 +331,8 @@ void PrinterImpl::send_status()
           << Uint16(thermalManager.target_temperature[0])
           << Uint16(thermalManager.degHotend(0))
           << Uint16(scale(fanSpeeds[0], 256, 100))
-          << TruncatedString(LCDImpl::instance().get_message(), 26);
+          << TruncatedString(LCDImpl::instance().get_message(), 26)
+          << TruncatedString(LCDImpl::instance().get_progress(), 26);
     frame.send(false);
 }
 
@@ -397,7 +398,8 @@ void PrinterImpl::printing(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::PrintShow:           printing_show(); break;
+        case KeyValue::PrintingSD:          printing_sd(); break;
+        case KeyValue::PrintingTemps:       printing_temps(); break;
         case KeyValue::PrintBack:           printing_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -405,7 +407,7 @@ void PrinterImpl::printing(KeyValue key_value)
 
 //! Show one of the printing screens depending of the context: either the SD screen, the SD printing screen,
 //! the printing screen or the temperature screen.
-void PrinterImpl::printing_show()
+void PrinterImpl::printing_sd()
 {
     if(card.sdprinting)
     {
@@ -428,6 +430,31 @@ void PrinterImpl::printing_show()
     save_current_page();
     show_page(Page::SdCard);
 }
+
+//! Show one of the printing screens depending of the context: either the SD printing screen,
+//! the printing screen or the temperature screen.
+void PrinterImpl::printing_temps()
+{
+    if(card.sdprinting)
+    {
+        save_current_page();
+        show_page(Page::SdPrint);
+        update_graphs();
+        return;
+    }
+
+    card.initsd();
+    if(!card.cardOK)
+    {
+        save_current_page();
+        show_page(print_job_timer.isRunning() ? Page::Print : Page::Temperature);
+        update_graphs();
+        return;
+    }
+
+    show_page(Page::Temperature);
+}
+
 
 //! Show the list of files on SD.
 //! @param last_index   Index of the last file to display
@@ -469,6 +496,8 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
     TruncatedString name{card.longFilename, 26};
     if(name.length() <= 0) // If the SD card is not readable
         return;
+
+    LCDImpl::instance().set_progress_name(card.longFilename);
 
     WriteRamDataRequest frame{Variable::SelectedFileName};
     frame << name;
@@ -542,6 +571,7 @@ void PrinterImpl::print_stop()
 {
     Log::log() << F("Stop Print") << Log::endl();
 
+    LCDImpl::instance().reset_progress();
     card.stopSDPrint();
     clear_command_queue();
     quickstop_stepper();
