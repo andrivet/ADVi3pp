@@ -22,9 +22,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "adv_i3_plus_plus.h"
-#include "adv_i3_plus_plus_utils.h"
-#include "adv_i3_plus_plus_impl.h"
+#include "advi3pp.h"
+#include "advi3pp_utils.h"
+#include "advi3pp_impl.h"
 
 namespace advi3pp { inline namespace internals {
 
@@ -60,22 +60,27 @@ void Dump(const uint8_t* bytes, size_t size)
 // TruncatedString
 // --------------------------------------------------------------------
 
-TruncatedString::TruncatedString(const String& str, size_t max)
+TruncatedString::TruncatedString(const String& str, size_t size)
 {
-    if(str.length() <= max)
-        string_ = str;
+    if(str.length() <= size)
+		assign(str.c_str(), size);
     else
-        string_ = str.substring(0, max);
+        string_ = str.substring(0, size);
 }
 
-TruncatedString::TruncatedString(duration_t duration, size_t max)
+TruncatedString::TruncatedString(duration_t duration, size_t size)
 {
     char buffer[21 + 1]; // 21, from the doc
     duration.toString(buffer);
-    auto length = strlen(buffer);
-    if(length > max)
-        buffer[length] = 0;
-    string_.concat(buffer);
+	assign(buffer, size);
+}
+
+void TruncatedString::assign(const char* str, size_t size)
+{
+	string_.reserve(size);
+	string_ = str;
+	while(string_.length() < size)
+		string_ += ' ';
 }
 
 // --------------------------------------------------------------------
@@ -127,14 +132,6 @@ String& operator<<(String& str, Register reg)
 String& operator<<(String& str, Variable var)
 {
     return (str << static_cast<uint16_t>(var));
-}
-
-String StringPrintWithFormat(const char * fmt, va_list args)
-{
-    static const size_t MAX_SIZE = 100;
-    char buffer[MAX_SIZE + 1];
-    vsnprintf(buffer, MAX_SIZE, fmt, args);
-    return String(buffer);
 }
 
 // --------------------------------------------------------------------
@@ -224,7 +221,7 @@ Frame& operator<<(Frame& frame, const TruncatedString& data)
 Frame& operator<<(Frame& frame, const String& data)
 {
     size_t length = frame.position_ + data.length() < frame.FRAME_BUFFER_SIZE ? data.length() : frame.FRAME_BUFFER_SIZE - frame.position_;
-    memcpy(frame.buffer_ + frame.position_, data.begin(), length);
+    memcpy(frame.buffer_ + frame.position_, data.c_str(), length);
     frame.position_ += length;
     frame.buffer_[Frame::Position::Length] += length;
     return frame;

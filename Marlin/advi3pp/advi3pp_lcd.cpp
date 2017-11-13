@@ -24,8 +24,8 @@
  */
 
 #include "Marlin.h"
-#include "adv_i3_plus_plus.h"
-#include "adv_i3_plus_plus_impl.h"
+#include "advi3pp.h"
+#include "advi3pp_impl.h"
 
 namespace advi3pp {
 
@@ -133,11 +133,15 @@ void LCDImpl::set_alert_status_PGM(const char* message)
     set_status_PGM(message);
 }
 
-void LCDImpl::status_printf_P(const char * fmt, va_list argp)
+void LCDImpl::status_printf_P(const char * fmt, va_list args)
 {
-    messagePGM_ = StringPrintWithFormat(fmt, argp);
+    static const size_t MAX_SIZE = 100;
+    static char buffer[MAX_SIZE + 1];
+
+    vsnprintf_P(buffer, MAX_SIZE, fmt, args);
+    messagePGM_ = buffer;
 	recompute_whole_message_ = true;
-    ADVi3PP_LOG(F("STATUS V: ") << message_);
+    ADVi3PP_LOG(F("STATUS V: ") << messagePGM_);
 }
 
 void LCDImpl::buttons_update()
@@ -173,4 +177,12 @@ const String& LCDImpl::get_message() const
     return whole_message_;
 }
 
+}
+
+void lcd_status_printf_P(const uint8_t /*level*/, const char * const fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    advi3pp::lcd.status_printf_P(fmt, args);
+    va_end(args);
 }

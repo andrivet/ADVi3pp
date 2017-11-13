@@ -27,9 +27,9 @@
 #include "cardreader.h"
 #include "stepper.h"
 
-#include "adv_i3_plus_plus.h"
-#include "adv_i3_plus_plus_utils.h"
-#include "adv_i3_plus_plus_impl.h"
+#include "advi3pp.h"
+#include "advi3pp_utils.h"
+#include "advi3pp_impl.h"
 
 #ifdef DEBUG
 #pragma message "This is a DEBUG build"

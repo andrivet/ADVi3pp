@@ -257,7 +257,7 @@
 #include "duration_t.h"
 #include "types.h"
 #include "gcode.h"
-#include "adv_i3_plus_plus.h"
+#include "advi3pp/advi3pp.h"
 
 #if HAS_ABL
   #include "vector_3.h"

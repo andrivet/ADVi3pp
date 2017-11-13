@@ -183,7 +183,7 @@ MarlinSettings settings;
 #include "planner.h"
 #include "temperature.h"
 #include "ultralcd.h"
-#include "adv_i3_plus_plus.h"
+#include "advi3pp/advi3pp.h"
 #include "stepper.h"
 
 #if ENABLED(INCH_MODE_SUPPORT) || (ENABLED(ULTIPANEL) && ENABLED(TEMPERATURE_UNITS_SUPPORT))

@@ -30,7 +30,7 @@
 #include "ultralcd.h"
 #include "planner.h"
 #include "language.h"
-#include "adv_i3_plus_plus.h"
+#include "advi3pp/advi3pp.h"
 
 #if ENABLED(HEATER_0_USES_MAX6675)
   #include "spi.h"

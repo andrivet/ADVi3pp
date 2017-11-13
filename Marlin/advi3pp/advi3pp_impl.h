@@ -25,9 +25,9 @@
 #ifndef ADV_I3_PLUS_PLUS_PRIVATE_H
 #define ADV_I3_PLUS_PLUS_PRIVATE_H
 
-#include "adv_i3_plus_plus_enums.h"
-#include "adv_i3_plus_plus.h"
-#include "adv_i3_plus_plus_utils.h"
+#include "advi3pp_enums.h"
+#include "advi3pp.h"
+#include "advi3pp_utils.h"
 
 namespace advi3pp { inline namespace internals {
 
@@ -184,7 +184,7 @@ private:
     millis_t next_update_graph_time_ = 0;
     Page back_page_ = Page::None;
     Page next_page_ = Page::None;
-    Preset presets_[NB_PRESETS] = { 0, 0, 0 };
+    Preset presets_[NB_PRESETS];
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
     double extruded_ = 0.0;
 };

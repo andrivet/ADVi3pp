@@ -44,8 +44,6 @@ enum class Action: uint16_t;
 // Logging
 // --------------------------------------------------------------------
 
-String StringPrintWithFormat(const char * fmt, va_list args);
-
 #ifdef DEBUG
 void Dump(const uint8_t* bytes, size_t size);
 #define ADVi3PP_ERROR(expression) { String message{F("*** ERROR ")}; message << expression; Serial.println(message); } while(false)
@@ -106,10 +104,13 @@ class Frame;
 
 struct TruncatedString
 {
-    TruncatedString(const String& str, size_t max);
-    explicit TruncatedString(duration_t duration, size_t max);
+    TruncatedString(const String& str, size_t size);
+    explicit TruncatedString(duration_t duration, size_t size);
 
     friend Frame& operator<<(Frame& frame, const TruncatedString& data);
+
+private:
+	void assign(const char* str, size_t size);
 
 private:
     String string_;
