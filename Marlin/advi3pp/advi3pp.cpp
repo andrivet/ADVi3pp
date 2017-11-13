@@ -1017,13 +1017,16 @@ void PrinterImpl::save_pid_settings()
     show_next_page();
 }
 
-void PrinterImpl::show_steps_settings(Page next, Page back)
+void PrinterImpl::show_steps_settings(Page next, Page back, bool init)
 {
+    if(init)
+        steps_.init();
+
     WriteRamDataRequest frame{Variable::StepSettingsX};
-    frame << Uint16(planner.axis_steps_per_mm[X_AXIS] * 10)
-          << Uint16(planner.axis_steps_per_mm[Y_AXIS] * 10)
-          << Uint16(planner.axis_steps_per_mm[Z_AXIS] * 10)
-          << Uint16(planner.axis_steps_per_mm[E_AXIS] * 10);
+    frame << Uint16(steps_.axis_steps_per_mm[X_AXIS] * 10)
+          << Uint16(steps_.axis_steps_per_mm[Y_AXIS] * 10)
+          << Uint16(steps_.axis_steps_per_mm[Z_AXIS] * 10)
+          << Uint16(steps_.axis_steps_per_mm[E_AXIS] * 10);
     frame.send();
 
     set_next_back_pages(next, back);
@@ -1045,25 +1048,27 @@ void PrinterImpl::save_steps_settings()
     Uint16 x, y, z, e;
     response >> x >> y >> z >> e;
 
-    planner.axis_steps_per_mm[X_AXIS] = static_cast<float>(x.word) / 10;
-    planner.axis_steps_per_mm[Y_AXIS] = static_cast<float>(y.word) / 10;
-    planner.axis_steps_per_mm[Z_AXIS] = static_cast<float>(z.word) / 10;
-    planner.axis_steps_per_mm[E_AXIS] = static_cast<float>(e.word) / 10;
-
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    steps_.axis_steps_per_mm[X_AXIS] = static_cast<float>(x.word) / 10;
+    steps_.axis_steps_per_mm[Y_AXIS] = static_cast<float>(y.word) / 10;
+    steps_.axis_steps_per_mm[Z_AXIS] = static_cast<float>(z.word) / 10;
+    steps_.axis_steps_per_mm[E_AXIS] = static_cast<float>(e.word) / 10;
+    steps_.save();
 
     show_next_page();
 }
 
-void PrinterImpl::show_feedrate_settings(Page next, Page back)
+void PrinterImpl::show_feedrate_settings(Page next, Page back, bool init)
 {
+    if(init)
+        feedrates_.init();
+
     WriteRamDataRequest frame{Variable::FeedrateMaxX};
-    frame << Uint16(planner.max_feedrate_mm_s[X_AXIS])
-          << Uint16(planner.max_feedrate_mm_s[Y_AXIS])
-          << Uint16(planner.max_feedrate_mm_s[Z_AXIS])
-          << Uint16(planner.max_feedrate_mm_s[E_AXIS])
-          << Uint16(planner.min_feedrate_mm_s)
-          << Uint16(planner.min_travel_feedrate_mm_s);
+    frame << Uint16(feedrates_.max_feedrate_mm_s[X_AXIS])
+          << Uint16(feedrates_.max_feedrate_mm_s[Y_AXIS])
+          << Uint16(feedrates_.max_feedrate_mm_s[Z_AXIS])
+          << Uint16(feedrates_.max_feedrate_mm_s[E_AXIS])
+          << Uint16(feedrates_.min_feedrate_mm_s)
+          << Uint16(feedrates_.min_travel_feedrate_mm_s);
     frame.send();
 
     set_next_back_pages(next, back);
@@ -1085,28 +1090,30 @@ void PrinterImpl::save_feedrate_settings()
     Uint16 x, y, z, e, min, travel;
     response >> x >> y >> z >> e >> min >> travel;
 
-    planner.max_feedrate_mm_s[X_AXIS] = static_cast<float>(x.word);
-    planner.max_feedrate_mm_s[Y_AXIS] = static_cast<float>(y.word);
-    planner.max_feedrate_mm_s[Z_AXIS] = static_cast<float>(z.word);
-    planner.max_feedrate_mm_s[E_AXIS] = static_cast<float>(e.word);
-    planner.min_feedrate_mm_s         = static_cast<float>(min.word);
-    planner.min_travel_feedrate_mm_s  = static_cast<float>(travel.word);
-
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    feedrates_.max_feedrate_mm_s[X_AXIS] = static_cast<float>(x.word);
+    feedrates_.max_feedrate_mm_s[Y_AXIS] = static_cast<float>(y.word);
+    feedrates_.max_feedrate_mm_s[Z_AXIS] = static_cast<float>(z.word);
+    feedrates_.max_feedrate_mm_s[E_AXIS] = static_cast<float>(e.word);
+    feedrates_.min_feedrate_mm_s         = static_cast<float>(min.word);
+    feedrates_.min_travel_feedrate_mm_s  = static_cast<float>(travel.word);
+    feedrates_.save();
 
     show_next_page();
 }
 
-void PrinterImpl::show_acceleration_settings(Page next, Page back)
+void PrinterImpl::show_acceleration_settings(Page next, Page back, bool init)
 {
+    if(init)
+        accelerations_.init();
+
     WriteRamDataRequest frame{Variable::AccelerationMaxX};
-    frame << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[X_AXIS]))
-          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[Y_AXIS]))
-          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[Z_AXIS]))
-          << Uint16(static_cast<uint16_t>(planner.max_acceleration_mm_per_s2[E_AXIS]))
-          << Uint16(static_cast<uint16_t>(planner.acceleration))
-          << Uint16(static_cast<uint16_t>(planner.retract_acceleration))
-          << Uint16(static_cast<uint16_t>(planner.travel_acceleration));
+    frame << Uint16(static_cast<uint16_t>(accelerations_.max_acceleration_mm_per_s2[X_AXIS]))
+          << Uint16(static_cast<uint16_t>(accelerations_.max_acceleration_mm_per_s2[Y_AXIS]))
+          << Uint16(static_cast<uint16_t>(accelerations_.max_acceleration_mm_per_s2[Z_AXIS]))
+          << Uint16(static_cast<uint16_t>(accelerations_.max_acceleration_mm_per_s2[E_AXIS]))
+          << Uint16(static_cast<uint16_t>(accelerations_.acceleration))
+          << Uint16(static_cast<uint16_t>(accelerations_.retract_acceleration))
+          << Uint16(static_cast<uint16_t>(accelerations_.travel_acceleration));
     frame.send();
 
     set_next_back_pages(next, back);
@@ -1128,26 +1135,28 @@ void PrinterImpl::save_acceleration_settings()
     Uint16 x, y, z, e, print, retract, travel;
     response >> x >> y >> z >> e >> print >> retract >> travel;
 
-    planner.max_acceleration_mm_per_s2[X_AXIS] = static_cast<uint32_t>(x.word);
-    planner.max_acceleration_mm_per_s2[Y_AXIS] = static_cast<uint32_t>(y.word);
-    planner.max_acceleration_mm_per_s2[Z_AXIS] = static_cast<uint32_t>(z.word);
-    planner.max_acceleration_mm_per_s2[E_AXIS] = static_cast<uint32_t>(e.word);
-    planner.acceleration                       = static_cast<float>(print.word);
-    planner.retract_acceleration               = static_cast<float>(retract.word);
-    planner.travel_acceleration                = static_cast<float>(travel.word);
-
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    accelerations_.max_acceleration_mm_per_s2[X_AXIS] = static_cast<uint32_t>(x.word);
+    accelerations_.max_acceleration_mm_per_s2[Y_AXIS] = static_cast<uint32_t>(y.word);
+    accelerations_.max_acceleration_mm_per_s2[Z_AXIS] = static_cast<uint32_t>(z.word);
+    accelerations_.max_acceleration_mm_per_s2[E_AXIS] = static_cast<uint32_t>(e.word);
+    accelerations_.acceleration                       = static_cast<float>(print.word);
+    accelerations_.retract_acceleration               = static_cast<float>(retract.word);
+    accelerations_.travel_acceleration                = static_cast<float>(travel.word);
+    accelerations_.save();
 
     show_next_page();
 }
 
-void PrinterImpl::show_jerk_settings(Page next, Page back)
+void PrinterImpl::show_jerk_settings(Page next, Page back, bool init)
 {
+    if(init)
+        jerks_.init();
+
     WriteRamDataRequest frame{Variable::JerkX};
-    frame << Uint16(planner.max_jerk[X_AXIS] * 10)
-          << Uint16(planner.max_jerk[Y_AXIS] * 10)
-          << Uint16(planner.max_jerk[Z_AXIS] * 10)
-          << Uint16(planner.max_jerk[E_AXIS] * 10);
+    frame << Uint16(jerks_.max_jerk[X_AXIS] * 10)
+          << Uint16(jerks_.max_jerk[Y_AXIS] * 10)
+          << Uint16(jerks_.max_jerk[Z_AXIS] * 10)
+          << Uint16(jerks_.max_jerk[E_AXIS] * 10);
     frame.send();
 
     set_next_back_pages(next, back);
@@ -1169,12 +1178,11 @@ void PrinterImpl::save_jerk_settings()
     Uint16 x, y, z, e;
     response >> x >> y >> z >> e;
 
-    planner.max_jerk[X_AXIS] = static_cast<uint32_t>(x.word) / 10;
-    planner.max_jerk[Y_AXIS] = static_cast<uint32_t>(y.word) / 10;
-    planner.max_jerk[Z_AXIS] = static_cast<uint32_t>(z.word) / 10;
-    planner.max_jerk[E_AXIS] = static_cast<uint32_t>(e.word) / 10;
-
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    jerks_.max_jerk[X_AXIS] = static_cast<uint32_t>(x.word) / 10;
+    jerks_.max_jerk[Y_AXIS] = static_cast<uint32_t>(y.word) / 10;
+    jerks_.max_jerk[Z_AXIS] = static_cast<uint32_t>(z.word) / 10;
+    jerks_.max_jerk[E_AXIS] = static_cast<uint32_t>(e.word) / 10;
+    jerks_.save();
 
     show_next_page();
 }
@@ -1480,9 +1488,9 @@ void PrinterImpl::extruder_calibrartion_settings()
 
     Uint16 e; response >> e;
     e.word /= 10;
-	planner.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
+	steps_.axis_steps_per_mm[E_AXIS] = steps_.axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
 
-    show_steps_settings(Page::Calibration, Page::ExtruderCalibration3);
+    show_steps_settings(Page::Calibration, Page::ExtruderCalibration3, false);
 }
 
 void PrinterImpl::cancel_extruder_calibration()
@@ -1542,11 +1550,11 @@ void PrinterImpl::xyz_motors_calibration_settings()
     Uint16 x, y, z;
     response >> x >> y >> z;
 
-    adjust_value(planner.axis_steps_per_mm[X_AXIS], calibration_cube_size * 10, x.word);
-    adjust_value(planner.axis_steps_per_mm[Y_AXIS], calibration_cube_size * 10, y.word);
-    adjust_value(planner.axis_steps_per_mm[Z_AXIS], calibration_cube_size * 10, z.word);
+    adjust_value(steps_.axis_steps_per_mm[X_AXIS], calibration_cube_size * 10, x.word);
+    adjust_value(steps_.axis_steps_per_mm[Y_AXIS], calibration_cube_size * 10, y.word);
+    adjust_value(steps_.axis_steps_per_mm[Z_AXIS], calibration_cube_size * 10, z.word);
 
-    show_steps_settings(Page::Calibration, Page::XYZMotorsCalibration);
+    show_steps_settings(Page::Calibration, Page::XYZMotorsCalibration, false);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1611,6 +1619,104 @@ void PrinterImpl::send_graph_data()
 void PrinterImpl::temperature_error()
 {
     show_page(advi3pp::Page::ThermalRunawayError);
+}
+
+// --------------------------------------------------------------------
+// StepSettings
+// --------------------------------------------------------------------
+
+void StepSettings::init()
+{
+    axis_steps_per_mm[X_AXIS] = planner.axis_steps_per_mm[X_AXIS];
+    axis_steps_per_mm[Y_AXIS] = planner.axis_steps_per_mm[Y_AXIS];
+    axis_steps_per_mm[Z_AXIS] = planner.axis_steps_per_mm[Z_AXIS];
+    axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS];
+}
+
+void StepSettings::save()
+{
+    planner.axis_steps_per_mm[X_AXIS] = axis_steps_per_mm[X_AXIS];
+    planner.axis_steps_per_mm[Y_AXIS] = axis_steps_per_mm[Y_AXIS];
+    planner.axis_steps_per_mm[Z_AXIS] = axis_steps_per_mm[Z_AXIS];
+    planner.axis_steps_per_mm[E_AXIS] = axis_steps_per_mm[E_AXIS];
+
+    enqueue_and_echo_commands_P(PSTR("M500"));
+}
+
+// --------------------------------------------------------------------
+// FeedrateSettings
+// --------------------------------------------------------------------
+
+void FeedrateSettings::init()
+{
+    max_feedrate_mm_s[X_AXIS] = planner.max_feedrate_mm_s[X_AXIS];
+    max_feedrate_mm_s[Y_AXIS] = planner.max_feedrate_mm_s[Y_AXIS];
+    max_feedrate_mm_s[Z_AXIS] = planner.max_feedrate_mm_s[Z_AXIS];
+    max_feedrate_mm_s[E_AXIS] = planner.max_feedrate_mm_s[E_AXIS];
+    min_feedrate_mm_s = planner.min_feedrate_mm_s;
+    min_travel_feedrate_mm_s = planner.min_travel_feedrate_mm_s;
+}
+
+void FeedrateSettings::save()
+{
+    planner.max_feedrate_mm_s[X_AXIS] = max_feedrate_mm_s[X_AXIS];
+    planner.max_feedrate_mm_s[Y_AXIS] = max_feedrate_mm_s[Y_AXIS];
+    planner.max_feedrate_mm_s[Z_AXIS] = max_feedrate_mm_s[Z_AXIS];
+    planner.max_feedrate_mm_s[E_AXIS] = max_feedrate_mm_s[E_AXIS];
+    planner.min_feedrate_mm_s = min_feedrate_mm_s;
+    planner.min_travel_feedrate_mm_s = min_travel_feedrate_mm_s;
+
+    enqueue_and_echo_commands_P(PSTR("M500"));
+}
+
+// --------------------------------------------------------------------
+// AccelerationSettings
+// --------------------------------------------------------------------
+
+void AccelerationSettings::init()
+{
+    max_acceleration_mm_per_s2[X_AXIS] = planner.max_acceleration_mm_per_s2[X_AXIS];
+    max_acceleration_mm_per_s2[Y_AXIS] = planner.max_acceleration_mm_per_s2[Y_AXIS];
+    max_acceleration_mm_per_s2[Z_AXIS] = planner.max_acceleration_mm_per_s2[Z_AXIS];
+    max_acceleration_mm_per_s2[E_AXIS] = planner.max_acceleration_mm_per_s2[E_AXIS];
+    acceleration = planner.acceleration;
+    retract_acceleration = planner.retract_acceleration;
+    travel_acceleration = planner.travel_acceleration;
+}
+
+void AccelerationSettings::save()
+{
+    planner.max_acceleration_mm_per_s2[X_AXIS] = max_acceleration_mm_per_s2[X_AXIS];
+    planner.max_acceleration_mm_per_s2[Y_AXIS] = max_acceleration_mm_per_s2[Y_AXIS];
+    planner.max_acceleration_mm_per_s2[Z_AXIS] = max_acceleration_mm_per_s2[Z_AXIS];
+    planner.max_acceleration_mm_per_s2[E_AXIS] = max_acceleration_mm_per_s2[E_AXIS];
+    planner.acceleration = acceleration;
+    planner.retract_acceleration = retract_acceleration;
+    planner.travel_acceleration =  travel_acceleration;
+
+    enqueue_and_echo_commands_P(PSTR("M500"));
+}
+
+// --------------------------------------------------------------------
+// JerkSettings
+// --------------------------------------------------------------------
+
+void JerkSettings::init()
+{
+    max_jerk[X_AXIS] = planner.max_jerk[X_AXIS];
+    max_jerk[Y_AXIS] = planner.max_jerk[Y_AXIS];
+    max_jerk[Z_AXIS] = planner.max_jerk[Z_AXIS];
+    max_jerk[E_AXIS] = planner.max_jerk[E_AXIS];
+}
+
+void JerkSettings::save()
+{
+    planner.max_jerk[X_AXIS] = max_jerk[X_AXIS];
+    planner.max_jerk[Y_AXIS] = max_jerk[Y_AXIS];
+    planner.max_jerk[Z_AXIS] = max_jerk[Z_AXIS];
+    planner.max_jerk[E_AXIS] = max_jerk[E_AXIS];
+
+    enqueue_and_echo_commands_P(PSTR("M500"));
 }
 
 }

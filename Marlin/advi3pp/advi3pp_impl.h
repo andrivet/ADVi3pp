@@ -53,6 +53,59 @@ struct Preset
 };
 
 // --------------------------------------------------------------------
+// StepSettings
+// --------------------------------------------------------------------
+
+struct StepSettings
+{
+    void init();
+    void save();
+
+    float axis_steps_per_mm[XYZE_N];
+};
+
+// --------------------------------------------------------------------
+// FeedrateSettings
+// --------------------------------------------------------------------
+
+struct FeedrateSettings
+{
+    void init();
+    void save();
+
+    float max_feedrate_mm_s[XYZE_N];
+    float min_feedrate_mm_s;
+    float min_travel_feedrate_mm_s;
+};
+
+// --------------------------------------------------------------------
+// AccelerationSettings
+// --------------------------------------------------------------------
+
+struct AccelerationSettings
+{
+    void init();
+    void save();
+
+    uint32_t max_acceleration_mm_per_s2[XYZE_N];
+    float acceleration;
+    float retract_acceleration;
+    float travel_acceleration;
+};
+
+// --------------------------------------------------------------------
+// JerkSettings
+// --------------------------------------------------------------------
+
+struct JerkSettings
+{
+    void init();
+    void save();
+
+    float max_jerk[XYZE];
+};
+
+// --------------------------------------------------------------------
 // PrinterImpl
 // --------------------------------------------------------------------
 
@@ -140,10 +193,10 @@ private:
     void home_all();
     void show_print_settings(Page next, Page back = Page::None);
     void show_pid_settings(Page next, Page back = Page::None);
-    void show_steps_settings(Page next, Page back = Page::None);
-    void show_feedrate_settings(Page next, Page back = Page::None);
-    void show_acceleration_settings(Page next, Page back = Page::None);
-    void show_jerk_settings(Page next, Page back = Page::None);
+    void show_steps_settings(Page next, Page back = Page::None, bool init = true);
+    void show_feedrate_settings(Page next, Page back = Page::None, bool init = true);
+    void show_acceleration_settings(Page next, Page back = Page::None, bool init = true);
+    void show_jerk_settings(Page next, Page back = Page::None, bool init = true);
     void save_print_settings();
     void save_pid_settings();
     void save_steps_settings();
@@ -185,6 +238,10 @@ private:
     Page back_page_ = Page::None;
     Page next_page_ = Page::None;
     Preset presets_[NB_PRESETS] = { {0, 0}, {0, 0}, {0, 0} };
+    StepSettings steps_;
+    FeedrateSettings feedrates_;
+    AccelerationSettings accelerations_;
+    JerkSettings jerks_;
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
     double extruded_ = 0.0;
 };
