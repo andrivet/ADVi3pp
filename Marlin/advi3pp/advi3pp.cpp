@@ -189,12 +189,16 @@ void PrinterImpl::set_next_update_time(unsigned int delta)
     next_update_time_ = millis() + delta;
 }
 
+//! Set the next background task and its delay
+//! @param task     The next background task
+//! @param delta    Duration to be added to the current time to execute the background tast
 void PrinterImpl::set_background_task(BackgroundTask task, unsigned int delta)
 {
     background_task_ = task;
     set_next_background_task_time(delta);
 }
 
+//! Reset the background task
 void PrinterImpl::clear_background_task()
 {
     background_task_ = BackgroundTask::None;
@@ -365,7 +369,7 @@ void PrinterImpl::read_lcd_serial()
     switch(action)
     {
         case Action::Printing:              printing(key_value); break;
-        case Action::PrintCommand:          print_command(key_value); break;
+        case Action::PrintCommand: sd_print_command(key_value); break;
         case Action::LoadUnload:            load_unload(key_value); break;
         case Action::Preheat:               preheat(key_value); break;
         case Action::Cooldown:              cooldown(); break;
@@ -553,20 +557,20 @@ void PrinterImpl::printing_back()
 
 //! Handle print commands.
 //! @param key_value    The sub-action to handle
-void PrinterImpl::print_command(KeyValue key_value)
+void PrinterImpl::sd_print_command(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::PrintStop:           print_stop(); break;
-        case KeyValue::PrintPause:          print_pause(); break;
-        case KeyValue::PrintResume:         print_resume(); break;
-        case KeyValue::PrintBack:           print_back(); break;
+        case KeyValue::PrintStop:           sd_print_stop(); break;
+        case KeyValue::PrintPause:          sd_print_pause(); break;
+        case KeyValue::PrintResume:         sd_print_resume(); break;
+        case KeyValue::PrintBack:           sd_print_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
-//! Stop printing
-void PrinterImpl::print_stop()
+//! Stop SD printing
+void PrinterImpl::sd_print_stop()
 {
     Log::log() << F("Stop Print") << Log::endl();
 
@@ -579,8 +583,8 @@ void PrinterImpl::print_stop()
     show_page(Page::SdCard);
 }
 
-//! Pause printing
-void PrinterImpl::print_pause()
+//! Pause SD printing
+void PrinterImpl::sd_print_pause()
 {
     Log::log() << F("Pause Print") << Log::endl();
 
@@ -592,8 +596,8 @@ void PrinterImpl::print_pause()
 #endif
 }
 
-//! Resume the current print
-void PrinterImpl::print_resume()
+//! Resume the current SD printing
+void PrinterImpl::sd_print_resume()
 {
     Log::log() << F("Resume Print") << Log::endl();
 
@@ -607,12 +611,17 @@ void PrinterImpl::print_resume()
 }
 
 //! Handle the Back button
-void PrinterImpl::print_back()
+void PrinterImpl::sd_print_back()
 {
     show_back_page();
 }
 
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Target temperature
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+//! Set the target temperature on the LCD screens
+//! @param temperature  The temperature to set
 void PrinterImpl::set_target_temperature(uint16_t temperature)
 {
     WriteRamDataRequest frame{Variable::TargetTemperature};
@@ -620,7 +629,8 @@ void PrinterImpl::set_target_temperature(uint16_t temperature)
     frame.send();
 }
 
-
+//! Get the target temperature set on the LCD screen
+//! @return     The temperature
 uint16_t PrinterImpl::PrinterImpl::get_target_temperature()
 {
     ReadRamDataRequest frame{Variable::TargetTemperature, 1};
@@ -942,6 +952,8 @@ void PrinterImpl::home_all()
 // Settings
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+//! Show a set of settings
+//! @param key_value    The set to display
 void PrinterImpl::show_settings(KeyValue key_value)
 {
     switch(key_value)
@@ -956,6 +968,8 @@ void PrinterImpl::show_settings(KeyValue key_value)
     }
 }
 
+//! Save a set of settings
+//! @param key_value    The set to save
 void PrinterImpl::save_settings(KeyValue key_value)
 {
     switch(key_value)
@@ -970,6 +984,7 @@ void PrinterImpl::save_settings(KeyValue key_value)
     }
 }
 
+//! Cancel settings
 void PrinterImpl::cancel_settings(KeyValue)
 {
     show_back_page();
@@ -1013,6 +1028,9 @@ void PrinterImpl::save_print_settings()
     show_next_page();
 }
 
+//! Show the PID settings
+//! @param next     The page to display when the settings are saved
+//! @param back     The page to display when the settings are canceled
 void PrinterImpl::show_pid_settings(Page next, Page back)
 {
     WriteRamDataRequest frame{Variable::PidP};
@@ -1025,6 +1043,7 @@ void PrinterImpl::show_pid_settings(Page next, Page back)
     show_page(Page::PidSettings);
 }
 
+//! Save the PID settings
 void PrinterImpl::save_pid_settings()
 {
     ReadRamDataRequest frame{Variable::PidD, 3};
@@ -1049,6 +1068,10 @@ void PrinterImpl::save_pid_settings()
     show_next_page();
 }
 
+//! Show the Steps settings
+//! @param next     The page to display when the settings are saved
+//! @param back     The page to display when the settings are canceled
+//! @param init     Initialize the settings are use those already set
 void PrinterImpl::show_steps_settings(Page next, Page back, bool init)
 {
     if(init)
@@ -1065,6 +1088,7 @@ void PrinterImpl::show_steps_settings(Page next, Page back, bool init)
     show_page(Page::StepsSettings);
 }
 
+//! Save the Steps settings
 void PrinterImpl::save_steps_settings()
 {
     ReadRamDataRequest frame{Variable::StepSettingsX, 4};
@@ -1089,6 +1113,10 @@ void PrinterImpl::save_steps_settings()
     show_next_page();
 }
 
+//! Show the Feedrate settings
+//! @param next     The page to display when the settings are saved
+//! @param back     The page to display when the settings are canceled
+//! @param init     Initialize the settings are use those already set
 void PrinterImpl::show_feedrate_settings(Page next, Page back, bool init)
 {
     if(init)
@@ -1107,6 +1135,7 @@ void PrinterImpl::show_feedrate_settings(Page next, Page back, bool init)
     show_page(Page::FeedrateSettings);
 }
 
+//! Save the Feedrate settings
 void PrinterImpl::save_feedrate_settings()
 {
     ReadRamDataRequest frame{Variable::FeedrateMaxX, 6};
@@ -1133,6 +1162,10 @@ void PrinterImpl::save_feedrate_settings()
     show_next_page();
 }
 
+//! Show the Acceleration settings
+//! @param next     The page to display when the settings are saved
+//! @param back     The page to display when the settings are canceled
+//! @param init     Initialize the settings are use those already set
 void PrinterImpl::show_acceleration_settings(Page next, Page back, bool init)
 {
     if(init)
@@ -1152,6 +1185,7 @@ void PrinterImpl::show_acceleration_settings(Page next, Page back, bool init)
     show_page(Page::AccelerationSettings);
 }
 
+//! Save the Acceleration settings
 void PrinterImpl::save_acceleration_settings()
 {
     ReadRamDataRequest frame{Variable::AccelerationMaxX, 7};
@@ -1179,6 +1213,10 @@ void PrinterImpl::save_acceleration_settings()
     show_next_page();
 }
 
+//! Show the Jerk settings
+//! @param next     The page to display when the settings are saved
+//! @param back     The page to display when the settings are canceled
+//! @param init     Initialize the settings are use those already set
 void PrinterImpl::show_jerk_settings(Page next, Page back, bool init)
 {
     if(init)
@@ -1195,6 +1233,7 @@ void PrinterImpl::show_jerk_settings(Page next, Page back, bool init)
     show_page(Page::JerkSettings);
 }
 
+//! Save the Jerk settings
 void PrinterImpl::save_jerk_settings()
 {
     ReadRamDataRequest frame{Variable::JerkX, 4};
@@ -1317,12 +1356,14 @@ void PrinterImpl::pid_tuning(KeyValue key_value)
     }
 }
 
+//! Show step #1 of PID tuning
 void PrinterImpl::pid_tuning_step1()
 {
     set_target_temperature(200);
     show_page(Page::PidTuning1);
 }
 
+//! Show step #2 of PID tuning
 void PrinterImpl::pid_tuning_step2()
 {
     auto hotend = get_target_temperature();
@@ -1363,6 +1404,7 @@ void PrinterImpl::leveling(KeyValue key_value)
     }
 }
 
+//! Home the printer for bed leveling.
 void PrinterImpl::leveling_home()
 {
     show_page(Page::Leveling1);
@@ -1372,6 +1414,7 @@ void PrinterImpl::leveling_home()
     set_background_task(BackgroundTask::Leveling);
 }
 
+//! Leveling Background task.
 void PrinterImpl::leveling_task()
 {
     if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
@@ -1452,6 +1495,7 @@ void PrinterImpl::extruder_calibration(KeyValue key_value)
     }
 }
 
+//! Show the extruder calibration screen.
 void PrinterImpl::show_extruder_calibration()
 {
     set_target_temperature(200);
@@ -1463,6 +1507,7 @@ void PrinterImpl::show_extruder_calibration()
     show_page(Page::ExtruderCalibration1);
 }
 
+//! Start extruder calibration.
 void PrinterImpl::start_extruder_calibration()
 {
     auto hotend = get_target_temperature();
@@ -1477,6 +1522,7 @@ void PrinterImpl::start_extruder_calibration()
     show_page(Page::ExtruderCalibration2);
 }
 
+//! Extruder calibration background task.
 void PrinterImpl::extruder_calibration_task()
 {
     if(current_position[E_AXIS] >= calibration_extruder_filament)
@@ -1495,6 +1541,7 @@ void PrinterImpl::extruder_calibration_task()
     set_next_background_task_time();
 }
 
+//! Record the amount of filament extruded.
 void PrinterImpl::extruder_calibration_finished()
 {
     extruded_ = current_position[E_AXIS];
@@ -1506,6 +1553,7 @@ void PrinterImpl::extruder_calibration_finished()
     show_page(Page::ExtruderCalibration3);
 }
 
+//! Compute the extruder (E axis) new value and show the steps settings.
 void PrinterImpl::extruder_calibrartion_settings()
 {
     ReadRamDataRequest frame{Variable::Measure1, 1};
@@ -1526,6 +1574,7 @@ void PrinterImpl::extruder_calibrartion_settings()
     show_steps_settings(Page::Calibration, Page::ExtruderCalibration3, false);
 }
 
+//! Cancel the extruder calibration.
 void PrinterImpl::cancel_extruder_calibration()
 {
     clear_background_task();
@@ -1658,6 +1707,7 @@ void PrinterImpl::temperature_error()
 // StepSettings
 // --------------------------------------------------------------------
 
+//! Initialize temporary Step settings.
 void StepSettings::init()
 {
     axis_steps_per_mm[X_AXIS] = planner.axis_steps_per_mm[X_AXIS];
@@ -1666,6 +1716,7 @@ void StepSettings::init()
     axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS];
 }
 
+//! Save temporary Step settings.
 void StepSettings::save()
 {
     planner.axis_steps_per_mm[X_AXIS] = axis_steps_per_mm[X_AXIS];
@@ -1680,6 +1731,7 @@ void StepSettings::save()
 // FeedrateSettings
 // --------------------------------------------------------------------
 
+//! Initialize temporary Feedrate settings.
 void FeedrateSettings::init()
 {
     max_feedrate_mm_s[X_AXIS] = planner.max_feedrate_mm_s[X_AXIS];
@@ -1690,6 +1742,7 @@ void FeedrateSettings::init()
     min_travel_feedrate_mm_s = planner.min_travel_feedrate_mm_s;
 }
 
+//! Save temporary Feedrate settings.
 void FeedrateSettings::save()
 {
     planner.max_feedrate_mm_s[X_AXIS] = max_feedrate_mm_s[X_AXIS];
@@ -1706,6 +1759,7 @@ void FeedrateSettings::save()
 // AccelerationSettings
 // --------------------------------------------------------------------
 
+//! Initialize temporary Acceleration settings.
 void AccelerationSettings::init()
 {
     max_acceleration_mm_per_s2[X_AXIS] = planner.max_acceleration_mm_per_s2[X_AXIS];
@@ -1717,6 +1771,7 @@ void AccelerationSettings::init()
     travel_acceleration = planner.travel_acceleration;
 }
 
+//! Save temporary Acceleration settings.
 void AccelerationSettings::save()
 {
     planner.max_acceleration_mm_per_s2[X_AXIS] = max_acceleration_mm_per_s2[X_AXIS];
@@ -1734,6 +1789,7 @@ void AccelerationSettings::save()
 // JerkSettings
 // --------------------------------------------------------------------
 
+//! Initialize temporary Jerk settings.
 void JerkSettings::init()
 {
     max_jerk[X_AXIS] = planner.max_jerk[X_AXIS];
@@ -1742,6 +1798,7 @@ void JerkSettings::init()
     max_jerk[E_AXIS] = planner.max_jerk[E_AXIS];
 }
 
+//! Save temporary Jerk settings.
 void JerkSettings::save()
 {
     planner.max_jerk[X_AXIS] = max_jerk[X_AXIS];

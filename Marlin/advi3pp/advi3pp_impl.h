@@ -147,7 +147,7 @@ private:
 private:
     // Actions
     void printing(KeyValue key_value);
-    void print_command(KeyValue key_value);
+    void sd_print_command(KeyValue key_value);
     void load_unload(KeyValue key_value);
     void preheat(KeyValue key_value);
     void cooldown();
@@ -171,10 +171,10 @@ private:
     void printing_sd();
     void printing_temps();
     void printing_back();
-    void print_stop();
-    void print_pause();
-    void print_resume();
-    void print_back();
+    void sd_print_stop();
+    void sd_print_pause();
+    void sd_print_resume();
+    void sd_print_back();
     void load_unload_show();
     void load_unload_start(bool load);
     void load_unload_stop();

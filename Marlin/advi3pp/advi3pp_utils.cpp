@@ -99,6 +99,9 @@ void Log::dump(const uint8_t* bytes, size_t size)
 // FixedSizeString
 // --------------------------------------------------------------------
 
+//! Construct a fixed-size string from a string and a size
+//! @param str      The string
+//! @param size     The size
 FixedSizeString::FixedSizeString(const String& str, size_t size)
 {
     if(str.length() <= size)
@@ -107,6 +110,9 @@ FixedSizeString::FixedSizeString(const String& str, size_t size)
         string_ = str.substring(0, size);
 }
 
+//! Construct a fixed-size string from a duration and a size
+//! @param duration     The duration
+//! @param size         The size
 FixedSizeString::FixedSizeString(duration_t duration, size_t size)
 {
     char buffer[21 + 1]; // 21, from the doc
@@ -114,6 +120,9 @@ FixedSizeString::FixedSizeString(duration_t duration, size_t size)
 	assign(buffer, size);
 }
 
+//! Assign a fixed-size string from a string and a size
+//! @param str      The string
+//! @param size     The size
 void FixedSizeString::assign(const char* str, size_t size)
 {
 	string_.reserve(size);
@@ -126,9 +135,8 @@ void FixedSizeString::assign(const char* str, size_t size)
 // String
 // --------------------------------------------------------------------
 
-//! Append a string of character to this Chars. It is truncated if it does not fit into the Chars.
-//! @tparam S           The maximum size of the Chars
-//! @param value        The value to be append to this Chars
+//! Append a string of character to this String.
+//! @param value        The value to be append to this String
 //! @return             Itself
 String& operator<<(String& str, const char* value)
 {
@@ -136,9 +144,8 @@ String& operator<<(String& str, const char* value)
     return str;
 }
 
-//! Append a decimal value to this Chars. It is truncated if it does not fit into the Chars.
-//! @tparam S           The maximum size of the Chars
-//! @param value        The value to be append to this Chars (after transformation into a string)
+//! Append a decimal value to this String.
+//! @param value        The value to be append to this String
 //! @return             Itself
 String& operator<<(String& str, uint16_t value)
 {
@@ -146,27 +153,24 @@ String& operator<<(String& str, uint16_t value)
     return str;
 }
 
-//! Append a Command to this Chars. It is truncated if it does not fit into the Chars.
-//! @tparam S           The maximum size of the Chars
-//! @param command      The command to be append to this Chars (after transformation into a string)
+//! Append a Command to this String..
+//! @param command      The command to be append to this String (after transformation into a string)
 //! @return             Itself
 String& operator<<(String& str, Command command)
 {
     return (str << static_cast<uint8_t>(command));
 }
 
-//! Append a Register to this Chars. It is truncated if it does not fit into the Chars.
-//! @tparam S           The maximum size of the Chars
-//! @param reg          The register to be append to this Chars (after transformation into a string)
+//! Append a Register to this String.
+//! @param reg          The register to be append to this String (after transformation into a string)
 //! @return             Itself
 String& operator<<(String& str, Register reg)
 {
     return (str << static_cast<uint8_t>(reg));
 }
 
-//! Append a Variable to this Chars. It is truncated if it does not fit into the Chars.
-//! @tparam S           The maximum size of the Chars
-//! @param var          The variable to be append to this Chars (after transformation into a string)
+//! Append a Variable to this String.
+//! @param var          The variable to be append to this String (after transformation into a string)
 //! @return             Itself
 String& operator<<(String& str, Variable var)
 {
@@ -195,6 +199,7 @@ Frame::Frame(Command command)
 }
 
 //! Append a byte to this Frame.
+//! @param frame    The frame
 //! @param data     Byte to be appended
 //! @return         Itself
 Frame& operator<<(Frame& frame, const Uint8 &data)
@@ -210,6 +215,7 @@ Frame& operator<<(Frame& frame, const Uint8 &data)
 }
 
 //! Append a word to this Frame.
+//! @param frame    The frame
 //! @param data     Word to be appended
 //! @return         Itself
 Frame& operator<<(Frame& frame, const Uint16 &data)
@@ -226,6 +232,7 @@ Frame& operator<<(Frame& frame, const Uint16 &data)
 }
 
 //! Append a Register to this Frame.
+//! @param frame    The frame
 //! @param reg      Register to be appended
 //! @return         Itself
 Frame& operator<<(Frame& frame, Register reg)
@@ -235,6 +242,7 @@ Frame& operator<<(Frame& frame, Register reg)
 }
 
 //! Append a Page to this Frame.
+//! @param frame    The frame
 //! @param page     Page to be appended
 //! @return         Itself
 Frame& operator<<(Frame& frame, Page page)
@@ -244,6 +252,7 @@ Frame& operator<<(Frame& frame, Page page)
 }
 
 //! Append a Variable to this Frame.
+//! @param frame    The frame
 //! @param var      Variable to be appended
 //! @return         Itself
 Frame& operator<<(Frame& frame, Variable var)
@@ -252,11 +261,19 @@ Frame& operator<<(Frame& frame, Variable var)
     return frame;
 }
 
+//! Append a FixedSizeString to this frame.
+//! @param frame    The frame
+//! @param data     The FixedSizeString to append
+//! @return         Itself
 Frame& operator<<(Frame& frame, const FixedSizeString& data)
 {
     return frame << data.string_;
 }
 
+//! Append a String to this frame.
+//! @param frame    The frame
+//! @param data     The String to append
+//! @return         Itself
 Frame& operator<<(Frame& frame, const String& data)
 {
     size_t length = frame.position_ + data.length() < frame.FRAME_BUFFER_SIZE ? data.length() : frame.FRAME_BUFFER_SIZE - frame.position_;
@@ -266,7 +283,8 @@ Frame& operator<<(Frame& frame, const String& data)
     return frame;
 }
 
-//! Send tis Frame to the LCD display.
+//! Send htis Frame to the LCD display.
+//! @param logging  Enable logging in DEBUG release
 void Frame::send(bool logging)
 {
     if(logging)
@@ -302,6 +320,9 @@ void Frame::wait_for_data(uint8_t length)
         delay(50);
 }
 
+//! Check if data (bytes) are available.
+//! @param bytes    The amount of bytes
+//! @return         True if the amount of bytes is available
 bool Frame::available(uint8_t bytes)
 {
     return Serial2.available() >= bytes;
@@ -371,6 +392,7 @@ const uint8_t* Frame::get_data() const
 #endif
 
 //! Extract the next byte from this input Frame.
+//! @param frame    The Frame
 //! @param data     Next byte extracted from this Frame
 //! @return         Itself
 Frame& operator>>(Frame& frame, Uint8& data)
@@ -386,6 +408,7 @@ Frame& operator>>(Frame& frame, Uint8& data)
 }
 
 //! Extract the next word from this input Frame.
+//! @param frame    The Frame
 //! @param data     Next word extracted from this Frame
 //! @return         Itself
 Frame& operator>>(Frame& frame, Uint16& data)
@@ -403,6 +426,7 @@ Frame& operator>>(Frame& frame, Uint16& data)
 }
 
 //! Extract the Action from this input Frame.
+//! @param frame    The Frame
 //! @param action   Action extracted from this Frame
 //! @return         Itself
 Frame& operator>>(Frame& frame, Action& action)
@@ -413,6 +437,10 @@ Frame& operator>>(Frame& frame, Action& action)
     return frame;
 }
 
+//! Extract the Command from this input Frame.
+//! @param frame    The Frame
+//! @param command  Command extracted
+//! @return         Itself
 Frame& operator>>(Frame& frame, Command& command)
 {
     Uint8 value;
@@ -421,6 +449,10 @@ Frame& operator>>(Frame& frame, Command& command)
     return frame;
 }
 
+//! Extract a Register from this Frame
+//! @param frame    The Frame
+//! @param reg      Register extracted
+//! @return         Itself
 Frame& operator>>(Frame& frame, Register& reg)
 {
     Uint8 value;
@@ -429,6 +461,10 @@ Frame& operator>>(Frame& frame, Register& reg)
     return frame;
 }
 
+//! Extract a Variable from this Frame
+//! @param frame    The Frame
+//! @param var      Variable extracted
+//! @return         Itself
 Frame& operator>>(Frame& frame, Variable& var)
 {
     Uint16 value;
