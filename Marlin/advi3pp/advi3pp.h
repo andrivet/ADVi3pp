@@ -99,6 +99,7 @@ struct LCD
     static void reset_alert_level();
     static bool detected();
     static void refresh();
+    static void reset_message();
 };
 
 }

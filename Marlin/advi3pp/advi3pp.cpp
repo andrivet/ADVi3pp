@@ -65,6 +65,7 @@ inline namespace { PrinterImpl printer; };
 void Printer::setup()
 {
     printer.setup();
+    LCD::reset_message();
 }
 
 //! Read data from the LCD and act accordingly.
@@ -540,6 +541,7 @@ void PrinterImpl::print_stop()
 {
     Log::log() << "Stop Print" << Log::endl();
 
+    LCD::reset_message();
     card.stopSDPrint();
     clear_command_queue();
     quickstop_stepper();
@@ -756,6 +758,7 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
 void PrinterImpl::cooldown()
 {
     Log::log() << F("Cooldown") << Log::endl();
+    LCD::reset_message();
     thermalManager.disable_all_heaters();
 }
 

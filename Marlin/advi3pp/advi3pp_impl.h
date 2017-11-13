@@ -210,6 +210,7 @@ struct LCDImpl
     bool detected();
     void refresh();
     const String& get_message() const;
+    void reset_messaage();
 
 private:
     String message_;

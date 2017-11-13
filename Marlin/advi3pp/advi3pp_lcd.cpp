@@ -85,6 +85,11 @@ void LCD::refresh()
     lcd.refresh();
 }
 
+void LCD::reset_message()
+{
+    lcd.reset_messaage();
+}
+
 // --------------------------------------------------------------------
 // LCDImpl
 // --------------------------------------------------------------------
@@ -159,6 +164,11 @@ void LCDImpl::refresh()
 const String& LCDImpl::get_message() const
 {
 	return message_;
+}
+
+void LCDImpl::reset_messaage()
+{
+    message_ = "";
 }
 
 }
