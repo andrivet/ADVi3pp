@@ -331,8 +331,8 @@ void PrinterImpl::send_status()
           << Uint16(thermalManager.target_temperature[0])
           << Uint16(thermalManager.degHotend(0))
           << Uint16(scale(fanSpeeds[0], 256, 100))
-          << TruncatedString(LCDImpl::instance().get_message(), 26)
-          << TruncatedString(LCDImpl::instance().get_progress(), 26);
+          << FixedSizeString(LCDImpl::instance().get_message(), 26)
+          << FixedSizeString(LCDImpl::instance().get_progress(), 26);
     frame.send(false);
 }
 
@@ -409,9 +409,10 @@ void PrinterImpl::printing(KeyValue key_value)
 //! the printing screen or the temperature screen.
 void PrinterImpl::printing_sd()
 {
+    save_current_page();
+
     if(card.sdprinting)
     {
-        save_current_page();
         show_page(Page::SdPrint);
         update_graphs();
         return;
@@ -420,14 +421,12 @@ void PrinterImpl::printing_sd()
     card.initsd();
     if(!card.cardOK)
     {
-        save_current_page();
         show_page(print_job_timer.isRunning() ? Page::Print : Page::Temperature);
         update_graphs();
         return;
     }
 
     show_sd_files(card.getnrfilenames() - 1);
-    save_current_page();
     show_page(Page::SdCard);
 }
 
@@ -435,9 +434,10 @@ void PrinterImpl::printing_sd()
 //! the printing screen or the temperature screen.
 void PrinterImpl::printing_temps()
 {
+    save_current_page();
+
     if(card.sdprinting)
     {
-        save_current_page();
         show_page(Page::SdPrint);
         update_graphs();
         return;
@@ -446,7 +446,6 @@ void PrinterImpl::printing_temps()
     card.initsd();
     if(!card.cardOK)
     {
-        save_current_page();
         show_page(print_job_timer.isRunning() ? Page::Print : Page::Temperature);
         update_graphs();
         return;
@@ -467,7 +466,7 @@ void PrinterImpl::show_sd_files(uint16_t last_index)
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
-        frame << TruncatedString(name, 26); // Important to truncate, there is only space for 26 chars
+        frame << FixedSizeString(name, 26); // Important to truncate, there is only space for 26 chars
     }
     frame.send(true);
 }
@@ -493,7 +492,7 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
     if(file_index > last_file_index_)
         return;
     card.getfilename(last_file_index_ - file_index);
-    TruncatedString name{card.longFilename, 26};
+    FixedSizeString name{card.longFilename, 26};
     if(name.length() <= 0) // If the SD card is not readable
         return;
 
@@ -1283,10 +1282,10 @@ void PrinterImpl::send_versions()
     String lcd_firmware_version = get_lcd_firmware_version();
 
     WriteRamDataRequest frame{Variable::MarlinVersion};
-    frame << TruncatedString(marlin_version, 16)
-          << TruncatedString(motherboard_version, 16)
-          << TruncatedString(advi3pp_lcd_version, 16)
-          << TruncatedString(lcd_firmware_version, 16);
+    frame << FixedSizeString(marlin_version, 16)
+          << FixedSizeString(motherboard_version, 16)
+          << FixedSizeString(advi3pp_lcd_version, 16)
+          << FixedSizeString(lcd_firmware_version, 16);
     frame.send();
 }
 
@@ -1606,12 +1605,12 @@ void PrinterImpl::send_stats()
 
     duration_t duration = stats.printTime;
     frame.reset(Variable::TotalPrintTime);
-    frame << TruncatedString{duration, 16};
+    frame << FixedSizeString{duration, 16};
     frame.send();
 
     duration = stats.longestPrint;
     frame.reset(Variable::LongestPrintTime);
-    frame << TruncatedString{duration, 16};
+    frame << FixedSizeString{duration, 16};
     frame.send();
 
     String filament_used;
@@ -1619,7 +1618,7 @@ void PrinterImpl::send_stats()
                   << "."
                   << static_cast<unsigned int>(stats.filamentUsed / 100) % 10;
     frame.reset(Variable::TotalFilament);
-    frame << TruncatedString{filament_used, 16};
+    frame << FixedSizeString{filament_used, 16};
     frame.send();
 }
 

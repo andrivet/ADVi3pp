@@ -96,10 +96,10 @@ void Log::dump(const uint8_t* bytes, size_t size)
 #endif
 
 // --------------------------------------------------------------------
-// TruncatedString
+// FixedSizeString
 // --------------------------------------------------------------------
 
-TruncatedString::TruncatedString(const String& str, size_t size)
+FixedSizeString::FixedSizeString(const String& str, size_t size)
 {
     if(str.length() <= size)
 		assign(str.c_str(), size);
@@ -107,14 +107,14 @@ TruncatedString::TruncatedString(const String& str, size_t size)
         string_ = str.substring(0, size);
 }
 
-TruncatedString::TruncatedString(duration_t duration, size_t size)
+FixedSizeString::FixedSizeString(duration_t duration, size_t size)
 {
     char buffer[21 + 1]; // 21, from the doc
     duration.toString(buffer);
 	assign(buffer, size);
 }
 
-void TruncatedString::assign(const char* str, size_t size)
+void FixedSizeString::assign(const char* str, size_t size)
 {
 	string_.reserve(size);
 	string_ = String{str};
@@ -252,7 +252,7 @@ Frame& operator<<(Frame& frame, Variable var)
     return frame;
 }
 
-Frame& operator<<(Frame& frame, const TruncatedString& data)
+Frame& operator<<(Frame& frame, const FixedSizeString& data)
 {
     return frame << data.string_;
 }

@@ -127,19 +127,19 @@ constexpr Uint8  operator "" _u8(unsigned long long int byte)  { return Uint8(st
 constexpr Uint16 operator "" _u16(unsigned long long int word) { return Uint16(static_cast<uint16_t>(word)); }
 
 // --------------------------------------------------------------------
-// TruncatedString
+// FixedSizeString
 // --------------------------------------------------------------------
 
 class Frame;
 
-struct TruncatedString
+struct FixedSizeString
 {
-    TruncatedString(const String& str, size_t size);
-    explicit TruncatedString(duration_t duration, size_t size);
+    FixedSizeString(const String& str, size_t size);
+    explicit FixedSizeString(duration_t duration, size_t size);
 
     inline size_t length() const { return string_.length(); }
 
-    friend Frame& operator<<(Frame& frame, const TruncatedString& data);
+    friend Frame& operator<<(Frame& frame, const FixedSizeString& data);
 
 private:
 	void assign(const char* str, size_t size);
@@ -167,7 +167,7 @@ struct Frame
     friend Frame& operator<<(Frame& frame, const Uint8& data);
     friend Frame& operator<<(Frame& frame, const Uint16& data);
     friend Frame& operator<<(Frame& frame, const String& data);
-    friend Frame& operator<<(Frame& frame, const TruncatedString& data);
+    friend Frame& operator<<(Frame& frame, const FixedSizeString& data);
     friend Frame& operator<<(Frame& frame, Page page);
 
     friend Frame& operator>>(Frame& frame, Uint8& data);
