@@ -65,11 +65,6 @@ void LCD::set_alert_status_PGM(const char* message)
     lcd.set_alert_status_PGM(message);
 }
 
-void LCD::status_printf_P(int8_t /*level*/, const char * const fmt, va_list args)
-{
-    lcd.status_printf_P(fmt, args);
-}
-
 void LCD::buttons_update()
 {
     lcd.buttons_update();
@@ -111,21 +106,19 @@ void LCDImpl::init()
 
 bool LCDImpl::has_status()
 {
-    return message_.length() > 0 || messagePGM_.length() > 0;
+    return message_.length() > 0;
 }
 
 void LCDImpl::set_status(const char* message)
 {
-	ADVi3PP_LOG(F("STATUS: ") << message);
+	Log::log() << F("STATUS: ") << message << Log::endl();
     message_ = message;
-	recompute_whole_message_ = true;
 }
 
 void LCDImpl::set_status_PGM(const char* message)
 {
-    ADVi3PP_LOG(F("STATUS PGM: ") << message);
-    messagePGM_ = message;
-	recompute_whole_message_ = true;
+    message_ = String{reinterpret_cast<const __FlashStringHelper*>(message)};
+    Log::log() << F("STATUS PGM: ") << message_ << Log::endl();
 }
 
 void LCDImpl::set_alert_status_PGM(const char* message)
@@ -139,9 +132,8 @@ void LCDImpl::status_printf_P(const char * fmt, va_list args)
     static char buffer[MAX_SIZE + 1];
 
     vsnprintf_P(buffer, MAX_SIZE, fmt, args);
-    messagePGM_ = buffer;
-	recompute_whole_message_ = true;
-    ADVi3PP_LOG(F("STATUS V: ") << messagePGM_);
+    message_ = String{buffer};
+    Log::log() << F("STATUS V: ") << message_ << Log::endl();
 }
 
 void LCDImpl::buttons_update()
@@ -166,15 +158,7 @@ void LCDImpl::refresh()
 
 const String& LCDImpl::get_message() const
 {
-	if(recompute_whole_message_)
-	{
-		whole_message_ = message_;
-		if(message_.length() > 0 && messagePGM_.length() > 0)
-			whole_message_ += " - ";
-		whole_message_ += messagePGM_;
-		recompute_whole_message_ = false;
-	}
-    return whole_message_;
+	return message_;
 }
 
 }

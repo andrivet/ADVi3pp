@@ -45,18 +45,48 @@ enum class Action: uint16_t;
 // --------------------------------------------------------------------
 
 #ifdef DEBUG
-void Dump(const uint8_t* bytes, size_t size);
-#define ADVi3PP_ERROR(expression) { String message{F("*** ERROR ")}; message << expression; Serial.println(message); } while(false)
-#define ADVi3PP_LOG(expression)   { String message; message << expression; Serial.println(message); } while(false)
-#define ADVi3PP_DUMP(bytes, size) { Dump(bytes, size); }
+struct Log
+{
+    struct EndOfLine {};
+
+    Log& operator<<(const String& data);
+    Log& operator<<(uint8_t data);
+    Log& operator<<(uint16_t data);
+    Log& operator<<(double data);
+    void operator<<(EndOfLine eol);
+
+    inline static Log& log() { return logging_; }
+    static Log& error();
+    inline static EndOfLine endl() { return EndOfLine{}; }
+    static void dump(const uint8_t* bytes, size_t size);
+
+private:
+    static Log logging_;
+};
+
 #else
-#define ADVi3PP_ERROR(expression) {} while(false)
-#define ADVi3PP_LOG(expression)   {} while(false)
-#define ADVi3PP_DUMP(bytes, size)  {} while(false)
+struct Log
+{
+    struct EndOfLine {};
+
+    inline Log& operator<<(const String& data) { return log(); }
+    inline Log& operator<<(uint8_t data) { return log(); }
+    inline Log& operator<<(uint16_t data) { return log(); }
+    inline Log& operator<<(double data) { return log(); }
+    inline void operator<<(EndOfLine eol) {};
+
+    inline static Log& log() { return logging_; }
+    inline static Log& error() { return log(); }
+    inline static EndOfLine endl() { return EndOfLine{}; }
+    inline static void dump(const uint8_t* bytes, size_t size) {}
+
+private:
+    static Log logging_;
+};
 #endif
 
-inline String& operator<< (String& rhs, const __FlashStringHelper* lhs) { rhs += lhs; return rhs; }
-inline String& operator<< (String& rhs, const String& lhs) { rhs += lhs; return rhs; }
+inline String& operator<<(String& rhs, const __FlashStringHelper* lhs) { rhs += lhs; return rhs; }
+inline String& operator<<(String& rhs, const String& lhs) { rhs += lhs; return rhs; }
 
 String& operator<<(String& rhs, uint16_t lhs);
 String& operator<<(String& rhs, Command lhs);
