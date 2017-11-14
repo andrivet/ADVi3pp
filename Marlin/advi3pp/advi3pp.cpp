@@ -109,9 +109,9 @@ void Printer::temperature_error()
     printer.temperature_error();
 }
 
-void Printer::update_graphs()
+void Printer::send_temperatures_data()
 {
-    printer.update_graphs();
+    printer.send_temperatures_data();
 }
 
 // --------------------------------------------------------------------
@@ -327,7 +327,7 @@ void PrinterImpl::task()
     read_lcd_serial();
     execute_background_task();
     send_status();
-    send_graph_data();
+    update_graphs();
 }
 
 //! Update the status of the printer on the LCD.
@@ -347,6 +347,19 @@ void PrinterImpl::send_status()
           << FixedSizeString(LCDImpl::instance().get_message(), 26)
           << FixedSizeString(LCDImpl::instance().get_progress(), 26);
     frame.send(false);
+}
+
+void PrinterImpl::send_temperatures_data()
+{
+    WriteRamDataRequest frame{Variable::TargetBed};
+    frame << Uint16(thermalManager.target_temperature_bed)
+          << Uint16(thermalManager.degBed())
+          << Uint16(thermalManager.target_temperature[0])
+          << Uint16(thermalManager.degHotend(0))
+          << Uint16(scale(fanSpeeds[0], 255, 100));
+    frame.send(false);
+
+    send_graphs_data();
 }
 
 //! Read a frame from the LCD and act accordingly.
@@ -431,7 +444,7 @@ void PrinterImpl::main(KeyValue key_value)
 //! the printing screen or the temperature screen.
 void PrinterImpl::main_temps()
 {
-    update_graphs();
+    set_update_graphs();
 
     // If there is a SD card print running, display the SD print screen
     if(card.cardOK && card.sdprinting)
@@ -452,7 +465,7 @@ void PrinterImpl::main_sd()
     if(card.cardOK && card.sdprinting)
     {
         show_page(Page::SdPrint);
-        update_graphs();
+        set_update_graphs();
         return;
     }
 
@@ -462,7 +475,7 @@ void PrinterImpl::main_sd()
     {
         // SD card not accessible so fallback to USB printing
         show_page(print_job_timer.isRunning() ? Page::UsbPrint : Page::Temperature);
-        update_graphs();
+        set_update_graphs();
         return;
     }
 
@@ -550,7 +563,7 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
     print_job_timer.start();
 
     show_page(Page::SdPrint);
-    update_graphs();
+    set_update_graphs();
 }
 
 //! LCD SD card menu
@@ -901,7 +914,7 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
     enqueue_and_echo_command(command.c_str());
 
     show_page(Page::Temperature);
-    update_graphs();
+    set_update_graphs();
 }
 
 //! Cooldown the bed and the nozzle
@@ -1062,7 +1075,7 @@ void PrinterImpl::show_settings(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::SettingsPrint:           show_print_settings(); break;
-        case KeyValue::SettingsPID:             show_pid_settings(); break;
+        case KeyValue::SettingsPID:             show_pid_settings(true); break;
         case KeyValue::SettingsSteps:           show_steps_settings(); break;
         case KeyValue::SettingsFeedrate:        show_feedrate_settings(); break;
         case KeyValue::SettingsAcceleration:    show_acceleration_settings(); break;
@@ -1133,7 +1146,7 @@ void PrinterImpl::save_print_settings()
 }
 
 //! Show the PID settings
-void PrinterImpl::show_pid_settings(bool init)
+void PrinterImpl::show_pid_settings(bool back, bool init)
 {
     if(init)
         old_pid_.init();
@@ -1144,7 +1157,7 @@ void PrinterImpl::show_pid_settings(bool init)
           << Uint16(unscalePID_d(Temperature::Kd) * 100);
     frame.send();
 
-    show_page(Page::PidSettings);
+    show_page(Page::PidSettings, back);
 }
 
 //! Save the PID settings
@@ -1510,7 +1523,7 @@ void PrinterImpl::pid_tuning_step1()
     old_pid_.init();
     set_target_temperature(200);
     save_forward_page();
-    show_page(Page::PidTuning1, true);
+    show_page(Page::PidTuning1);
 }
 
 //! Show step #2 of PID tuning
@@ -1524,7 +1537,7 @@ void PrinterImpl::pid_tuning_step2()
     String auto_pid_command; auto_pid_command << F("M303 S") << hotend << F("E0 C8 U1");
     enqueue_and_echo_command(auto_pid_command.c_str());
 
-    show_page(Page::PidTuning2, false);
+    show_page(Page::PidTuning2);
 };
 
 //! PID automatic tuning is finished.
@@ -1532,7 +1545,7 @@ void PrinterImpl::auto_pid_finished()
 {
     Log::log() << F("Auto PID finished") << Log::endl();
     enqueue_and_echo_commands_P(PSTR("M106 S0"));
-    show_pid_settings(false);
+    show_pid_settings(false, false);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1836,26 +1849,30 @@ void PrinterImpl::send_stats()
     frame.send();
 }
 
-void PrinterImpl::update_graphs()
+void PrinterImpl::set_update_graphs()
 {
     update_graphs_ = true;
     next_update_graph_time_ = millis() + 2000;
 }
 
-//! Update the graphics (two channels: the bed and the hotend).
-void PrinterImpl::send_graph_data()
+void PrinterImpl::update_graphs()
 {
     if(!update_graphs_ || !ELAPSED(millis(), next_update_graph_time_))
         return;
 
+    send_graphs_data();
+    next_update_graph_time_ = millis() + 500;
+}
+    
+//! Update the graphics (two channels: the bed and the hotend).
+void PrinterImpl::send_graphs_data()
+{
     WriteCurveDataRequest frame{0b00001111};
     frame << Uint16{thermalManager.degHotend(0)}
           << Uint16{thermalManager.degHotend(0)}
           << Uint16{thermalManager.degBed()}
           << Uint16{thermalManager.degBed()};
     frame.send(false);
-
-    next_update_graph_time_ = millis() + 500;
 }
 
 void PrinterImpl::clear_graphs()

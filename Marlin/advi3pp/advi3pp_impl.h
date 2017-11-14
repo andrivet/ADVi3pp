@@ -132,7 +132,7 @@ struct PrinterImpl
     void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_presets();
     void temperature_error();
-    void update_graphs();
+    void send_temperatures_data();
 
 private:
     void clear_graphs();
@@ -152,7 +152,9 @@ private:
     void set_next_update_time(unsigned int delta = 500);
     void set_background_task(BackgroundTask task, unsigned int delta = 500);
     void clear_background_task();
-    void send_graph_data();
+    void send_graphs_data();
+    void set_update_graphs();
+    void update_graphs();
     void set_target_temperature(uint16_t temperature);
     uint16_t get_target_temperature();
     bool is_version_valid() const;
@@ -217,7 +219,7 @@ private:
     void home_all();
     void move_back();
     void show_print_settings();
-    void show_pid_settings(bool init = true);
+    void show_pid_settings(bool back, bool init = true);
     void show_steps_settings(bool init = true);
     void show_feedrate_settings(bool init = true);
     void show_acceleration_settings(bool init = true);
