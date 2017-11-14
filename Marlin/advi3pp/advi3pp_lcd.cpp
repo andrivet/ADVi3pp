@@ -192,10 +192,13 @@ void LCDImpl::set_progress_name(const String& name)
 
 const String& LCDImpl::get_progress() const
 {
+    if(progress_name_.length() <= 0)
+        return progress_name_; // i.e. empty
+    
     auto done = card.percentDone();
     if(done != percent_)
     {
-        progress_percent_ = progress_name_ + " " + percent_ + "%";
+        progress_percent_ = progress_name_ + " " + done + "%";
         percent_ = done;
     }
     return progress_percent_;

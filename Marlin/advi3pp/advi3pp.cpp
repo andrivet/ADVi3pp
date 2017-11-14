@@ -266,7 +266,7 @@ Page PrinterImpl::get_current_page()
 //! Get the current page and save it as the "Back" page.
 void PrinterImpl::save_current_page()
 {
-    back_page_ = get_current_page();
+    back_pages_.push(get_current_page());
 }
 
 //! Set "Next" and "Back" page
@@ -277,7 +277,7 @@ void PrinterImpl::set_next_back_pages(Page next, Page back)
     if(back == Page::None)
         save_current_page();
     else
-        back_page_ = back;
+        back_pages_.push(back);
 
     next_page_ = next;
 }
@@ -285,14 +285,13 @@ void PrinterImpl::set_next_back_pages(Page next, Page back)
 //! Show the "Back" page on the LCD display.
 void PrinterImpl::show_back_page()
 {
-    if(back_page_ == Page::None)
+    if(back_pages_.is_empty())
     {
         Log::error() << "No Back page defined" << Log::endl();
         return;
     }
 
-    show_page(back_page_);
-    back_page_ = Page::None;
+    show_page(back_pages_.pop());
 }
 
 //! Show the "Next" page on the LCD display.

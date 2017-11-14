@@ -64,6 +64,9 @@ private:
     static Log logging_;
 };
 
+void __assert (const char *msg, const char *file, uint16_t line);
+#define assert(E) (void)((E) || (__assert (#E, __FILE__, __LINE__), 0))
+
 #else
 struct Log
 {
@@ -83,6 +86,9 @@ struct Log
 private:
     static Log logging_;
 };
+
+#define assert(E) (void)
+
 #endif
 
 inline String& operator<<(String& rhs, const __FlashStringHelper* lhs) { rhs += lhs; return rhs; }
@@ -92,6 +98,43 @@ String& operator<<(String& rhs, uint16_t lhs);
 String& operator<<(String& rhs, Command lhs);
 String& operator<<(String& rhs, Register lhs);
 String& operator<<(String& rhs, Variable lhs);
+
+// --------------------------------------------------------------------
+// Stack - Simple Stack
+// --------------------------------------------------------------------
+
+template<typename T, size_t S>
+struct Stack
+{
+    void push(T e);
+    T pop();
+    bool is_empty() const;
+
+private:
+    T elements_[S];
+    size_t top_ = 0;
+};
+
+template<typename T, size_t S>
+void Stack<T, S>::push(T e)
+{
+    assert(top_ <= S);
+    elements_[top_++] = e;
+};
+
+template<typename T, size_t S>
+T Stack<T, S>::pop()
+{
+    assert(!is_empty());
+    return elements_[--top_];
+};
+
+template<typename T, size_t S>
+bool Stack<T, S>::is_empty() const
+{
+    return top_ == 0;
+};
+
 
 // --------------------------------------------------------------------
 // Uint8

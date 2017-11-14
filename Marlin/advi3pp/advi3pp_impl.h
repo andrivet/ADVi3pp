@@ -236,7 +236,7 @@ private:
     BackgroundTask background_task_ = BackgroundTask::None;
     bool update_graphs_ = false;
     millis_t next_update_graph_time_ = 0;
-    Page back_page_ = Page::None;
+    Stack<Page, 5> back_pages_;
     Page next_page_ = Page::None;
     Preset presets_[NB_PRESETS] = { {0, 0}, {0, 0}, {0, 0} };
     StepSettings steps_;

@@ -93,6 +93,11 @@ void Log::dump(const uint8_t* bytes, size_t size)
     Serial.println(buffer);
 }
 
+void __assert(const char *msg, const char *file, uint16_t line)
+{
+    Log::log() << F("### ASSERTION FAILED: ") << msg << " in file " << file << ", line " << line << Log::endl();
+}
+
 #endif
 
 // --------------------------------------------------------------------
