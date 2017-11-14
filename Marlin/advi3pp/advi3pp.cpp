@@ -109,6 +109,10 @@ void Printer::temperature_error()
     printer.temperature_error();
 }
 
+void Printer::update_graphs()
+{
+    printer.update_graphs();
+}
 
 // --------------------------------------------------------------------
 // PrinterImpl
@@ -126,6 +130,7 @@ void PrinterImpl::setup()
 
     Serial2.begin(advi3_pp_baudrate);
     send_versions();
+    clear_graphs();
     show_page(Page::Boot, false);
 }
 
@@ -338,7 +343,7 @@ void PrinterImpl::send_status()
           << Uint16(thermalManager.degBed())
           << Uint16(thermalManager.target_temperature[0])
           << Uint16(thermalManager.degHotend(0))
-          << Uint16(scale(fanSpeeds[0], 256, 100))
+          << Uint16(scale(fanSpeeds[0], 255, 100))
           << FixedSizeString(LCDImpl::instance().get_message(), 26)
           << FixedSizeString(LCDImpl::instance().get_progress(), 26);
     frame.send(false);
@@ -1095,7 +1100,7 @@ void PrinterImpl::show_print_settings()
     frame << Uint16(feedrate_percentage)
           << Uint16(thermalManager.degTargetHotend(0))
           << Uint16(thermalManager.degTargetBed())
-          << Uint16(scale(fanSpeeds[0], 256, 100));
+          << Uint16(scale(fanSpeeds[0], 255, 100));
     frame.send();
 
     show_page(Page::PrintSettings);
@@ -1120,7 +1125,7 @@ void PrinterImpl::save_print_settings()
     feedrate_percentage = speed.word;
     thermalManager.setTargetHotend(hotend.word, 0);
     thermalManager.setTargetBed(bed.word);
-    fanSpeeds[0] = scale(fan.word, 100, 256);
+    fanSpeeds[0] = scale(fan.word, 100, 255);
 
     show_forward_page();
 }
@@ -1849,6 +1854,13 @@ void PrinterImpl::send_graph_data()
     frame.send(false);
 
     next_update_graph_time_ = millis() + 500;
+}
+
+void PrinterImpl::clear_graphs()
+{
+    WriteRegisterDataRequest request{Register::TrendlineClear};
+    request << 0x55_u8;
+    request.send();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

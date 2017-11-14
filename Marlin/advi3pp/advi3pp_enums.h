@@ -49,7 +49,7 @@ enum class Register: uint8_t
     TouchPanelStatus        = 0x06,
     TouchPanelPosition      = 0x07,
     TouchPanelEnable        = 0x0B,
-    RunTime                 = 0xC,
+    RunTime                 = 0x0C,
     R0                      = 0x10,
     R1                      = 0x11,
     R2                      = 0x12,

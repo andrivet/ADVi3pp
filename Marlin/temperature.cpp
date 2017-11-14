@@ -391,7 +391,8 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
       if (ELAPSED(ms, temp_ms + 2000UL)) {
         #if HAS_TEMP_HOTEND || HAS_TEMP_BED
           print_heaterstates();
-          SERIAL_EOL();
+          advi3pp::Printer::update_graphs();
+        SERIAL_EOL();
         #endif
 
         temp_ms = ms;
