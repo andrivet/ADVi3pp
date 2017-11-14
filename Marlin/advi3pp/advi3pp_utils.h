@@ -87,7 +87,7 @@ private:
     static Log logging_;
 };
 
-#define assert(E) (void)
+#define assert(E) (void)(false)
 
 #endif
 
