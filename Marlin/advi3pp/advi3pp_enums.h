@@ -147,14 +147,13 @@ enum class Variable: uint16_t
 //! List of actions sent by the LCD.
 enum class Action: uint16_t
 {
-    Printing                = 0x0400,
-    PrintCommand            = 0x0401,
+    Main                    = 0x0400,
+    SdPrintCommand          = 0x0401,
+    UsbPrintCommand         = 0x0402,
     LoadUnload              = 0x0410,
     Preheat                 = 0x0412,
     Cooldown                = 0x0413,
     Move                    = 0x0414,
-    Home                    = 0x0415,
-    DisableMotors           = 0x0416,
     SdCard                  = 0x0420,
     SdCardSelectFile        = 0x0421,
     ShowSettings            = 0x0430,
@@ -173,34 +172,37 @@ enum class Action: uint16_t
 //! Key values used by the LCD screens.
 enum class KeyValue: uint16_t
 {
-    PrintingTemps           = 0x0000,
-    PrintingSD              = 0x0001,
+    MainTemps               = 0x0000,
+    MainSD                  = 0x0001,
+    MainControls            = 0x0002,
+    MainCalibrations        = 0x0003,
+    MainSettings            = 0x0004,
+    MainMotors              = 0x0005,
 
     PrintStop               = 0x0000,
     PrintPause              = 0x0001,
     PrintResume             = 0x0002,
-    PrintBack               = 0x0099,
 
     LoadUnload              = 0x0000,
     Load                    = 0x0001,
     Unload                  = 0x0002,
-    LoadUnloaddStop         = 0x0099,
 
     PreheatShow             = 0x0000,
 
-    MoveXplus               = 0x0000,
-    MoveXminus              = 0x0001,
-    MoveYplus               = 0x0002,
-    MoveYminus              = 0x0003,
-    MoveZplus               = 0x0004,
-    MoveZminus              = 0x0005,
-    MoveEplus               = 0x0006,
-    MoveEminus              = 0x0007,
-
-    HomeAll                 = 0x0000,
-    HomeX                   = 0x0001,
-    HomeY                   = 0x0002,
-    HomeZ                   = 0x0003,
+    MoveShow                = 0x0000,
+    MoveXplus               = 0x0010,
+    MoveXminus              = 0x0011,
+    MoveYplus               = 0x0020,
+    MoveYminus              = 0x0021,
+    MoveZplus               = 0x0030,
+    MoveZminus              = 0x0031,
+    MoveEplus               = 0x0040,
+    MoveEminus              = 0x0041,
+    HomeAll                 = 0x0100,
+    HomeX                   = 0x0101,
+    HomeY                   = 0x0102,
+    HomeZ                   = 0x0103,
+    DisableMotors           = 0x0200,
 
     SdUp                    = 0x0000,
     SdDown                  = 0x0001,
@@ -212,21 +214,29 @@ enum class KeyValue: uint16_t
     SettingsAcceleration    = 0x0004,
     SettingsJerk            = 0x0005,
 
+    StatisticsShow          = 0x0000,
+
     LevelingHome            = 0x0000,
     LevelingPoint1          = 0x0001,
     LevelingPoint2          = 0x0002,
     LevelingPoint3          = 0x0003,
     LevelingPoint4          = 0x0004,
     LevelingPoint5          = 0x0005,
-    LevelingBack            = 0x0099,
 
     CalibrationShow         = 0x0000,
     CalibrationStart        = 0x0001,
     CalibrationSettings     = 0x0002,
-    CalibrationCancel       = 0x0099,
 
     PidTuningStep1          = 0x0000,
-    PidTuningStep2          = 0x0001
+    PidTuningStep2          = 0x0001,
+
+    AboutForward            = 0x0001,
+
+    ResetShow               = 0x0000,
+    ResetConfirm            = 0x0001,
+
+    Back                    = 0x0099,
+    Cancel                  = 0x0099
 };
 
 }}

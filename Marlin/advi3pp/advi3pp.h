@@ -50,7 +50,7 @@ enum class Page: uint8_t
     Move                    = 38,
     SdCard                  = 40,
     SdPrint                 = 42,
-    Print                   = 44,
+    UsbPrint                = 44,
     Leveling1               = 46,
     Leveling2               = 48,
     ExtruderCalibration1    = 50,

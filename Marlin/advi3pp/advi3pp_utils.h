@@ -109,6 +109,7 @@ struct Stack
     void push(T e);
     T pop();
     bool is_empty() const;
+    bool contains(T e) const;
 
 private:
     T elements_[S];
@@ -133,6 +134,15 @@ template<typename T, size_t S>
 bool Stack<T, S>::is_empty() const
 {
     return top_ == 0;
+};
+
+template<typename T, size_t S>
+bool Stack<T, S>::contains(T e) const
+{
+    for(size_t i = 0; i < top_; ++i)
+        if(elements_[top_ - i - 1] == e)
+            return true;
+    return false;
 };
 
 

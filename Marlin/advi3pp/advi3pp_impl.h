@@ -53,6 +53,18 @@ struct Preset
 };
 
 // --------------------------------------------------------------------
+// PidpSettings
+// --------------------------------------------------------------------
+
+struct PidSettings
+{
+    void init();
+    void save();
+
+    float Kp, Ki, Kd;
+};
+
+// --------------------------------------------------------------------
 // StepSettings
 // --------------------------------------------------------------------
 
@@ -114,7 +126,7 @@ struct PrinterImpl
 {
     void setup();
     void task();
-    void show_page(Page page);
+    void show_page(Page page, bool save_back = true);
     void auto_pid_finished();
     void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
@@ -126,10 +138,9 @@ private:
     void execute_background_task();
     void send_status();
     Page get_current_page();
-    void save_current_page();
-    void set_next_back_pages(Page next, Page back = Page::None);
     void show_back_page();
-    void show_next_page();
+    void save_forward_page();
+    void show_forward_page();
     void read_lcd_serial();
     void send_stats();
     void show_sd_files(uint16_t last_index);
@@ -143,16 +154,17 @@ private:
     void send_graph_data();
     void set_target_temperature(uint16_t temperature);
     uint16_t get_target_temperature();
+    bool is_version_valid() const;
 
 private:
     // Actions
-    void printing(KeyValue key_value);
+    void main(KeyValue key_value);
     void sd_print_command(KeyValue key_value);
+    void usb_print_command(KeyValue key_value);
     void load_unload(KeyValue key_value);
     void preheat(KeyValue key_value);
     void cooldown();
     void move(KeyValue key_value);
-    void home(KeyValue key_value);
     void disable_motors();
     void sd_card(KeyValue key_value);
     void sd_card_select_file(KeyValue key_value);
@@ -168,17 +180,26 @@ private:
     void about(KeyValue key_value);
 
     // Sub-actions
-    void printing_sd();
-    void printing_temps();
-    void printing_back();
+    void main_temps();
+    void main_sd();
+    void main_controls();
+    void main_calibrations();
+    void main_settings();
+    void main_motors();
+    void back();
     void sd_print_stop();
     void sd_print_pause();
     void sd_print_resume();
     void sd_print_back();
+    void usb_print_stop();
+    void usb_print_pause();
+    void usb_print_resume();
+    void usb_print_back();
     void load_unload_show();
     void load_unload_start(bool load);
     void load_unload_stop();
     void preheat_show();
+    void preheat_back();
     void preheat_preset(uint16_t presetIndex);
     void move_x_plus();
     void move_x_minus();
@@ -192,18 +213,20 @@ private:
     void home_y();
     void home_z();
     void home_all();
-    void show_print_settings(Page next, Page back = Page::None);
-    void show_pid_settings(Page next, Page back = Page::None);
-    void show_steps_settings(Page next, Page back = Page::None, bool init = true);
-    void show_feedrate_settings(Page next, Page back = Page::None, bool init = true);
-    void show_acceleration_settings(Page next, Page back = Page::None, bool init = true);
-    void show_jerk_settings(Page next, Page back = Page::None, bool init = true);
+    void show_print_settings();
+    void show_pid_settings(bool init = true);
+    void show_steps_settings(bool init = true);
+    void show_feedrate_settings(bool init = true);
+    void show_acceleration_settings(bool init = true);
+    void show_jerk_settings(bool init = true);
     void save_print_settings();
     void save_pid_settings();
     void save_steps_settings();
     void save_feedrate_settings();
     void save_acceleration_settings();
     void save_jerk_settings();
+    void show_stats();
+    void stats_back();
     void pid_tuning_step1();
     void pid_tuning_step2();
     void leveling_home();
@@ -219,7 +242,11 @@ private:
     void extruder_calibrartion_settings();
     void cancel_extruder_calibration();
     void show_xyz_motors_calibration();
+    void cancel_xyz_motors_calibration();
     void xyz_motors_calibration_settings();
+    void show_factory_reset_warning();
+    void do_factory_reset();
+    void cancel_factory_reset();
 
     // Background tasks
     void load_filament_task();
@@ -236,9 +263,10 @@ private:
     BackgroundTask background_task_ = BackgroundTask::None;
     bool update_graphs_ = false;
     millis_t next_update_graph_time_ = 0;
-    Stack<Page, 5> back_pages_;
-    Page next_page_ = Page::None;
+    Stack<Page, 8> back_pages_;
+    Page forward_page_ = Page::None;
     Preset presets_[NB_PRESETS] = { {0, 0}, {0, 0}, {0, 0} };
+    PidSettings pid_;
     StepSettings steps_;
     FeedrateSettings feedrates_;
     AccelerationSettings accelerations_;
