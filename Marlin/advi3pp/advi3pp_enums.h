@@ -166,6 +166,16 @@ enum class Action: uint16_t
     PidTuning               = 0x0443,
     Statistics              = 0x0450,
     About                   = 0x0451,
+
+    MoveXplus               = 0x0200,
+    MoveXminus              = 0x0201,
+    MoveYplus               = 0x0210,
+    MoveYminus              = 0x0211,
+    MoveZplus               = 0x0220,
+    MoveZminus              = 0x0221,
+    MoveEplus               = 0x0230,
+    MoveEminus              = 0x0231,
+
     Undefined               = 0xFFFF
 };
 
@@ -190,14 +200,6 @@ enum class KeyValue: uint16_t
     PreheatShow             = 0x0000,
 
     MoveShow                = 0x0000,
-    MoveXplus               = 0x0010,
-    MoveXminus              = 0x0011,
-    MoveYplus               = 0x0020,
-    MoveYminus              = 0x0021,
-    MoveZplus               = 0x0030,
-    MoveZminus              = 0x0031,
-    MoveEplus               = 0x0040,
-    MoveEminus              = 0x0041,
     HomeAll                 = 0x0100,
     HomeX                   = 0x0101,
     HomeY                   = 0x0102,

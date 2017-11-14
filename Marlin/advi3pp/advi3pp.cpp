@@ -384,6 +384,14 @@ void PrinterImpl::read_lcd_serial()
         case Action::Preheat:               preheat(key_value); break;
         case Action::Cooldown:              cooldown(); break;
         case Action::Move:                  move(key_value); break;
+        case Action::MoveXplus:             move_x_plus(); break;
+        case Action::MoveXminus:            move_x_minus(); break;
+        case Action::MoveYplus:             move_y_plus(); break;
+        case Action::MoveYminus:            move_y_minus(); break;
+        case Action::MoveZplus:             move_z_plus(); break;
+        case Action::MoveZminus:            move_z_minus(); break;
+        case Action::MoveEplus:             move_e_plus(); break;
+        case Action::MoveEminus:            move_e_minus(); break;
         case Action::SdCard:                sd_card(key_value); break;
         case Action::SdCardSelectFile:      sd_card_select_file(key_value); break;
         case Action::ShowSettings:          show_settings(key_value); break;
@@ -914,14 +922,6 @@ void PrinterImpl::move(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::MoveShow:            show_move(); break;
-        case KeyValue::MoveXplus:           move_x_plus(); break;
-        case KeyValue::MoveXminus:          move_x_minus(); break;
-        case KeyValue::MoveYplus:           move_y_plus(); break;
-        case KeyValue::MoveYminus:          move_y_minus(); break;
-        case KeyValue::MoveZplus:           move_z_plus(); break;
-        case KeyValue::MoveZminus:          move_z_minus(); break;
-        case KeyValue::MoveEplus:           move_e_plus(); break;
-        case KeyValue::MoveEminus:          move_e_minus(); break;
         case KeyValue::HomeX:               home_x(); break;
         case KeyValue::HomeY:               home_y(); break;
         case KeyValue::HomeZ:               home_z(); break;
@@ -1088,8 +1088,10 @@ void PrinterImpl::save_settings(KeyValue key_value)
 }
 
 //! Cancel settings
-void PrinterImpl::cancel_settings(KeyValue)
+void PrinterImpl::cancel_settings(KeyValue key_value)
 {
+    if(key_value == KeyValue::SettingsPID)
+        old_pid_.save(); // Restore old values
     show_back_page();
 }
 
@@ -1134,12 +1136,12 @@ void PrinterImpl::save_print_settings()
 void PrinterImpl::show_pid_settings(bool init)
 {
     if(init)
-        pid_.init();
+        old_pid_.init();
 
     WriteRamDataRequest frame{Variable::PidP};
-    frame << Uint16(pid_.Kp * 100)
-          << Uint16(unscalePID_i(pid_.Ki) * 100)
-          << Uint16(unscalePID_d(pid_.Kd) * 100);
+    frame << Uint16(Temperature::Kp * 100)
+          << Uint16(unscalePID_i(Temperature::Ki) * 100)
+          << Uint16(unscalePID_d(Temperature::Kd) * 100);
     frame.send();
 
     show_page(Page::PidSettings);
@@ -1161,10 +1163,9 @@ void PrinterImpl::save_pid_settings()
     Uint16 p, i, d;
     response >> p >> i >> d;
 
-    pid_.Kp = static_cast<float>(p.word) / 100;
-    pid_.Ki = scalePID_i(static_cast<float>(i.word) / 100);
-    pid_.Kd = scalePID_d(static_cast<float>(d.word) / 100);
-    pid_.save();
+    Temperature::Kp = static_cast<float>(p.word) / 100;
+    Temperature::Kp = scalePID_i(static_cast<float>(i.word) / 100);
+    Temperature::Kp = scalePID_d(static_cast<float>(d.word) / 100);
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 
@@ -1506,6 +1507,7 @@ void PrinterImpl::pid_tuning(KeyValue key_value)
 //! Show step #1 of PID tuning
 void PrinterImpl::pid_tuning_step1()
 {
+    old_pid_.init();
     set_target_temperature(200);
     save_forward_page();
     show_page(Page::PidTuning1, true);

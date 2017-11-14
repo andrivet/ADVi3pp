@@ -272,7 +272,7 @@ private:
     Stack<Page, 8> back_pages_;
     Page forward_page_ = Page::None;
     Preset presets_[NB_PRESETS] = { {0, 0}, {0, 0}, {0, 0} };
-    PidSettings pid_;
+    PidSettings old_pid_;
     StepSettings steps_;
     FeedrateSettings feedrates_;
     AccelerationSettings accelerations_;
