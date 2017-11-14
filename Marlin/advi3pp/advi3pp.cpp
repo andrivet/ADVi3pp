@@ -908,6 +908,7 @@ void PrinterImpl::move(KeyValue key_value)
 {
     switch(key_value)
     {
+        case KeyValue::MoveShow:            show_move(); break;
         case KeyValue::MoveXplus:           move_x_plus(); break;
         case KeyValue::MoveXminus:          move_x_minus(); break;
         case KeyValue::MoveYplus:           move_y_plus(); break;
@@ -921,8 +922,19 @@ void PrinterImpl::move(KeyValue key_value)
         case KeyValue::HomeZ:               home_z(); break;
         case KeyValue::HomeAll:             home_all(); break;
         case KeyValue::DisableMotors:       disable_motors(); break;
+        case KeyValue::Back:                move_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
+}
+
+void PrinterImpl::show_move()
+{
+    show_page(Page::Move);
+}
+
+void PrinterImpl::move_back()
+{
+    show_back_page();
 }
 
 //! Move the nozzle.
@@ -1445,15 +1457,29 @@ bool PrinterImpl::is_version_valid() const
 //! Display the About screen,
 void PrinterImpl::about(KeyValue key_value)
 {
-    if(key_value == KeyValue::AboutForward)
+    switch(key_value)
     {
-        show_page(Page::About, false);
-        return;
+        case KeyValue::AboutForward:            about_forward(); break;
+        case KeyValue::Back:                    about_back(); break;
+        default:                                show_about(static_cast<uint16_t>(key_value)); break;
     }
+}
 
-    adv_i3_pp_lcd_version_ = static_cast<uint16_t>(key_value);
+void PrinterImpl::about_forward()
+{
+    show_page(Page::About, false);
+}
+
+void PrinterImpl::about_back()
+{
+    show_back_page();
+}
+
+void PrinterImpl::show_about(uint16_t version)
+{
+    adv_i3_pp_lcd_version_ = version;
     send_versions();
-    show_page(is_version_valid() ? Page::About : Page::Mismatch);
+    show_page(is_version_valid() ? Page::About : Page::Mismatch);    
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1524,7 +1550,7 @@ void PrinterImpl::leveling(KeyValue key_value)
 //! Home the printer for bed leveling.
 void PrinterImpl::leveling_home()
 {
-    show_page(Page::Leveling1, false);
+    show_page(Page::Leveling1);
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
@@ -1538,7 +1564,7 @@ void PrinterImpl::leveling_task()
     {
         Log::log() << F("Leveling Homed, start process") << Log::endl();
         clear_background_task();
-        show_page(Page::Leveling2);
+        show_page(Page::Leveling2, false);
     }
     else
         set_next_background_task_time(200);

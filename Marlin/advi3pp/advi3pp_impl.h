@@ -201,6 +201,7 @@ private:
     void preheat_show();
     void preheat_back();
     void preheat_preset(uint16_t presetIndex);
+    void show_move();
     void move_x_plus();
     void move_x_minus();
     void move_y_plus();
@@ -213,6 +214,7 @@ private:
     void home_y();
     void home_z();
     void home_all();
+    void move_back();
     void show_print_settings();
     void show_pid_settings(bool init = true);
     void show_steps_settings(bool init = true);
@@ -247,6 +249,9 @@ private:
     void show_factory_reset_warning();
     void do_factory_reset();
     void cancel_factory_reset();
+    void about_forward();
+    void about_back();
+    void show_about(uint16_t version);
 
     // Background tasks
     void load_filament_task();
