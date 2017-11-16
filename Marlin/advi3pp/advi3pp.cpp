@@ -1163,7 +1163,7 @@ void PrinterImpl::show_pid_settings(bool back, bool init)
 //! Save the PID settings
 void PrinterImpl::save_pid_settings()
 {
-    ReadRamDataRequest frame{Variable::PidD, 3};
+    ReadRamDataRequest frame{Variable::PidP, 3};
     frame.send();
 
     ReadRamDataResponse response;
@@ -1177,8 +1177,8 @@ void PrinterImpl::save_pid_settings()
     response >> p >> i >> d;
 
     Temperature::Kp = static_cast<float>(p.word) / 100;
-    Temperature::Kp = scalePID_i(static_cast<float>(i.word) / 100);
-    Temperature::Kp = scalePID_d(static_cast<float>(d.word) / 100);
+    Temperature::Ki = scalePID_i(static_cast<float>(i.word) / 100);
+    Temperature::Kd = scalePID_d(static_cast<float>(d.word) / 100);
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 
