@@ -469,12 +469,19 @@ void PrinterImpl::main_sd()
         return;
     }
 
+    if(print_job_timer.isRunning())
+    {
+        show_page(Page::UsbPrint);
+        set_update_graphs();
+        return;
+    }        
+
     // Try to initialize the SD card
     card.initsd();
     if(!card.cardOK)
     {
-        // SD card not accessible so fallback to USB printing
-        show_page(print_job_timer.isRunning() ? Page::UsbPrint : Page::Temperature);
+        // SD card not accessible so fall back to Temperatures
+        show_page(Page::Temperature);
         set_update_graphs();
         return;
     }
@@ -1149,7 +1156,10 @@ void PrinterImpl::save_print_settings()
 void PrinterImpl::show_pid_settings(bool back, bool init)
 {
     if(init)
+    {
         old_pid_.init();
+        save_forward_page();
+    }        
 
     WriteRamDataRequest frame{Variable::PidP};
     frame << Uint16(Temperature::Kp * 100)
@@ -1190,7 +1200,10 @@ void PrinterImpl::save_pid_settings()
 void PrinterImpl::show_steps_settings(bool init)
 {
     if(init)
+    {
         steps_.init();
+        save_forward_page();
+    }        
 
     WriteRamDataRequest frame{Variable::StepSettingsX};
     frame << Uint16(steps_.axis_steps_per_mm[X_AXIS] * 10)
@@ -1232,7 +1245,10 @@ void PrinterImpl::save_steps_settings()
 void PrinterImpl::show_feedrate_settings(bool init)
 {
     if(init)
+    {    
         feedrates_.init();
+        save_forward_page();
+    }        
 
     WriteRamDataRequest frame{Variable::FeedrateMaxX};
     frame << Uint16(feedrates_.max_feedrate_mm_s[X_AXIS])
@@ -1278,7 +1294,10 @@ void PrinterImpl::save_feedrate_settings()
 void PrinterImpl::show_acceleration_settings(bool init)
 {
     if(init)
+    {
         accelerations_.init();
+        save_forward_page();
+    }        
 
     WriteRamDataRequest frame{Variable::AccelerationMaxX};
     frame << Uint16(static_cast<uint16_t>(accelerations_.max_acceleration_mm_per_s2[X_AXIS]))
@@ -1326,7 +1345,10 @@ void PrinterImpl::save_acceleration_settings()
 void PrinterImpl::show_jerk_settings(bool init)
 {
     if(init)
+    {
         jerks_.init();
+        save_forward_page();
+    }        
 
     WriteRamDataRequest frame{Variable::JerkX};
     frame << Uint16(jerks_.max_jerk[X_AXIS] * 10)
@@ -1777,6 +1799,7 @@ void PrinterImpl::show_xyz_motors_calibration()
     WriteRamDataRequest frame{Variable::Measure1};
     frame << 200_u16 << 200_u16 << 200_u16;
     frame.send();
+    save_forward_page();
     show_page(Page::XYZMotorsCalibration);
 }
 
