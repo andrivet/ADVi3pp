@@ -24,7 +24,7 @@
 #define ULTRALCD_H
 
 #include "Marlin.h"
-#include "advi3pp/advi3pp.h"
+#include "advi3pp.h"
 
 #if ENABLED(ULTRA_LCD)
 
