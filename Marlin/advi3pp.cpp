@@ -565,6 +565,8 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
     frame << name;
     frame.send(true);
 
+    axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+
     card.openFile(card.filename, true);
     card.startFileprint();
     print_job_timer.start();
@@ -635,6 +637,8 @@ void PrinterImpl::sd_print_stop()
     print_job_timer.stop();
     thermalManager.disable_all_heaters();
 
+    axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+
     show_back_page();
 }
 
@@ -643,7 +647,7 @@ void PrinterImpl::sd_print_pause()
 {
     Log::log() << F("Pause Print") << Log::endl();
 
-    LCD::queue_message(F("Pause printing"));
+    LCD::queue_message(F("Pause printing. Please wait a few seconds..."));
     card.pauseSDPrint();
     print_job_timer.pause();
 #if ENABLED(PARK_HEAD_ON_PAUSE)
