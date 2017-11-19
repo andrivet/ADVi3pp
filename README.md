@@ -20,137 +20,16 @@ The objectives with this custom version (when compared with Wanhao stock firmwar
 * About screen with the various versions (LCD, Mainboard, ...) and integrity check.
 * Etc.
 
-## How to flash
+## ADVi3++ User Manual
 
-There are two parts to flash:
+A complete and up to date [User Manual](https://andrivet.github.io/ADVi3pp-User-Manual/) is published on [GitHub Pages](https://andrivet.github.io/ADVi3pp-User-Manual/). This manual contains:
 
-* The mainboard (Marlin) firmware
-* The LCD resources
+* a list of features
+* How to Flash the firmware
+* LCD Touch Screen Manual
+* Default Configuration used by ADVi3++
+* Resources 
 
-### Part 1 - Flash the mainboard firmware
-
-There are several ways to flash the mainboard firmware. The first step is to download the firmware from the **Releases** page on [GitHub](https://github.com/andrivet/ADVi3pp-Marlin/releases):
-
-[ADVi3pp-Mainboard-x.x.x.hex](https://github.com/andrivet/ADVi3pp-Marlin/releases)
-
-#### Option 1 - Flash using Cura
-
-* if net yet done, download Cura. I recommend either [Cura for Wanhao](http://www.wanhao3dprinter.com/Down/ShowArticle.asp?ArticleID=56) (if you directly connect the printer to your computer with a USB cable) or [Ultimaker Cura 3](https://ultimaker.com/en/products/ultimaker-cura) (if, for example, you are using OctoPrint to print)
-* Start **Cura**
-* In the top menu, under **Settings** &#8594; **Printer**, select **Manage Printers**
-* Select your printer or **Add** your printer if it is not already done
-* Select **Upgrade Firmware** and then **Upload custom Firmware**
-* Select the downloaded file `ADVi3pp-Mainboard-x.x.x.hex` and click on **Open**
-
-#### Option 2 - Flash using OctoPrint
-
-You need `advdude` and the development build of the **Firmware Updater** plugin.
-
-To install `advdude` on a Raspberry Pi:
-
-* Connect to the Raspberry (for example through SSH) and enter the command:
-
-```
-sudo apt update; sudo apt install avrdude
-```
-
-To install the development build of the **Firmware Updater** plugin
-
-* Open a navigator and connect to **OctoPrint**
-* **Login** and click on the wrench icon in the toolbar
-* Select **Plugin Manager** &#8594; **Get More...**
-* Under **from URL** enter `https://github.com/OctoPrint/OctoPrint-FirmwareUpdater/archive/devel.zip` and click on **Install**
-* Restart **OctoPrint**
-
-To flash the firmware:
-
-![firmwareupdater](https://user-images.githubusercontent.com/981049/31636354-65b72dfe-b2ca-11e7-8c7d-7279477906d0.png)
-
-* When **OctoPrint** in rebooted and the UI reloaded, click on the wrench icon in the toolbar
-* Under **Plugins**, choose **Firmware Updater**
-* Click on the wrench icon, and after **Path to advdude**, enter `/usr/bin/avrdude` and click **Save**
-* Be sure your USB port appears after **Serial Port**
-* After **... from file**, click on **Browse** and select the firmware you have downloaded such as `ADVi3pp-Mainboard-x.x.x.hex`
-* Click on **Flash from File**
-* The flashing process may take around 30 seconds
-* When it is finished, a message appears saying "Flashing successful". Click on **Save**
-* Reconnect the printer
-
-### Part 2 - Flash the LCD resources
-
-**Note**: *The LCD resources are hosted on their own GitHub project: [ADVi3pp-LCD](https://github.com/andrivet/ADVi3pp-LCD).*
-
-#### Step 1 - Prepare a microSD card
-
-**IMPORTANT**: *You have to use a microSD card with a maximum capacity of **8GiB**. If you use a microSD card with a greater capacity, the results are **unreliable** (sometimes it flashes, sometimes not). This is a limitation of the LCD display itself.*
-
-You have two possibilities to flash:
-
-##### Option 1 - Manual copy
-
-* Download the LCD resources: [ADVi3pp-LCD-x.x.x.zip](https://github.com/andrivet/ADVi3pp-Marlin/releases)
-* Unzip the file somewhere
-* Copy manually all the files and folders in the uncompressed zip file to the root of a microSD card. The microSD card **has** to be formatted with the following parameters: FAT32, 4096 bytes per cluster (i.e. 8 sectors). To format under Linux (and macOS with the `dosfstools` Homebrew package):
-
-```
-mkfs.fat -F 32 -n SD -s 8 -v /dev/disk2
-```
-
-Of course, replace `/dev/disk2` with the right value.
-
-##### Option 2 - SD image
-
-* Download the microSD card image: [ADVi3pp-LCD-x.x.x.img.zip](https://github.com/andrivet/ADVi3pp-Marlin/releases)
-* Unzip the `.img.zip` file and use either `dd` (Linux, macOS) or [Etcher](https://etcher.io) (Windows, Linux, macOS). For example with `dd`:
-
-```
-unzip ADVi3pp-LCD-1.0.0.img.zip
-sudo dd if=ADVi3pp-LCD-1.0.0.img of=/dev/disk2 bs=64K
-```
-
-Of course, replace `/dev/disk2` with the right value.
-
-If you prefer graphical applications, [Etcher](https://etcher.io) is a great multi-platform tool.
-
-#### Step 2 - Install the new version
-
-- Disconnect the printer from power
-- Remove the two screws located on the front and loose the two M3 screws on the top
-
-![front-panel-screws](https://user-images.githubusercontent.com/981049/31637200-e3ecc438-b2cd-11e7-888f-aad32bc96676.jpg)
-
-- Remove the front panel carefully (don't break the flat cable)
-- If you are lucky, you can insert the microSD card on the left of the panel (this is the case on the Monoprice clone)
-- Otherwise, remove the four M3 screws and remove the cover
-- Insert the microSD card in the slot
-
-![lcd-board-microsd](https://user-images.githubusercontent.com/981049/31637212-f5511148-b2cd-11e7-958a-9f496205c498.jpg)
-
-- Turn on the printer (either by connecting it to power or by connecting the USB slot to the computer)
-- The screen turns blue and then every image will appear one by one
-- After around 2 or 3 minutes, the screen turns black
-- Turn off the printer and remove the microSD card
-- Re-assemle the front panel, do not forget the two M3 screws on the top
-- Turn the printer on. You know have the new version of the LCD images
-
-# Features
-
-![screens](https://user-images.githubusercontent.com/981049/31637836-ebc14dc0-b2d0-11e7-8d02-d14152116ba9.gif)
-
-This custom firmware has the following features:
-
-* Boot animation with colors and the Marlin logo
-* Colored screens
-* About screen with versions of the different components (Mainboard and LCD **ADVi3++** versions, LCD firmware version, Marlin version) and integrity check
-* SD card and printing menu
-* Temperature graphs accessible from several screens by pressing the temperature numbers
-* Load and Unload filament
-* Preheat bed and hotend with 3 sets of values
-* Move head, extrude, unextrude
-* Statistics
-* PID automatic tuning
-* Bed leveling (4 points)
-* Factory Reset with warning
 
 # Sister project
 
@@ -235,6 +114,8 @@ Thank to [Marlin](http://marlinfw.org) for their great work.
 * Copyright &copy; 2011 Camiel Gubbels / Erik van der Zalm
 
 # License
+
+![](https://www.gnu.org/graphics/gplv3-127x51.png)
 
 > This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
