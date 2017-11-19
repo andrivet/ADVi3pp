@@ -1539,6 +1539,7 @@ void PrinterImpl::pid_tuning(KeyValue key_value)
     {
         case KeyValue::PidTuningStep1:   pid_tuning_step1(); break;
         case KeyValue::PidTuningStep2:   pid_tuning_step2(); break;
+        case KeyValue::Cancel:           pid_tuning_cancel(); break;
         default:                         Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
@@ -1572,6 +1573,11 @@ void PrinterImpl::auto_pid_finished()
     Log::log() << F("Auto PID finished") << Log::endl();
     enqueue_and_echo_commands_P(PSTR("M106 S0"));
     show_pid_settings(false, false);
+}
+
+void PrinterImpl::pid_tuning_cancel()
+{
+    show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

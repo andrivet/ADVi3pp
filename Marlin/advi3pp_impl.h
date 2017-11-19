@@ -234,6 +234,7 @@ private:
     void stats_back();
     void pid_tuning_step1();
     void pid_tuning_step2();
+    void pid_tuning_cancel();
     void leveling_home();
     void leveling_point1();
     void leveling_point2();
