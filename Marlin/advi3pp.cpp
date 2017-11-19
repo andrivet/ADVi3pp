@@ -565,11 +565,11 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
     frame << name;
     frame.send(true);
 
-    axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
-
     card.openFile(card.filename, true);
     card.startFileprint();
     print_job_timer.start();
+
+    stepper.finish_and_disable(); // To circumvent homing problems
 
     show_page(Page::SdPrint);
     set_update_graphs();
@@ -637,8 +637,6 @@ void PrinterImpl::sd_print_stop()
     print_job_timer.stop();
     thermalManager.disable_all_heaters();
 
-    axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
-
     show_back_page();
 }
 
@@ -647,7 +645,7 @@ void PrinterImpl::sd_print_pause()
 {
     Log::log() << F("Pause Print") << Log::endl();
 
-    LCD::queue_message(F("Pause printing. Please wait a few seconds..."));
+    LCD::queue_message(F("Pause printing..."));
     card.pauseSDPrint();
     print_job_timer.pause();
 #if ENABLED(PARK_HEAD_ON_PAUSE)
@@ -958,6 +956,7 @@ void PrinterImpl::move(KeyValue key_value)
 
 void PrinterImpl::show_move()
 {
+    stepper.finish_and_disable(); // To circumvent homing problems
     show_page(Page::Move);
 }
 
@@ -1049,6 +1048,7 @@ void PrinterImpl::disable_motors()
 {
     enqueue_and_echo_commands_P(PSTR("M84"));
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+    axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
 }
 
 //! Go to home on the X axis.
@@ -1129,6 +1129,7 @@ void PrinterImpl::show_print_settings()
           << Uint16(scale(fanSpeeds[0], 255, 100));
     frame.send();
 
+    save_forward_page();
     show_page(Page::PrintSettings);
 }
 
@@ -1604,6 +1605,7 @@ void PrinterImpl::leveling_home()
 {
     show_page(Page::Leveling1);
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+    axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
     set_background_task(BackgroundTask::Leveling);
