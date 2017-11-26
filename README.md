@@ -30,6 +30,7 @@ A complete and up to date [User Manual](https://andrivet.github.io/ADVi3pp-User-
 * Default Configuration used by ADVi3++
 * Resources 
 
+This manual is also available as a [standalone PDF file](https://github.com/andrivet/ADVi3pp-User-Manual/blob/master/ADVi3%2B%2B%20User%20Manual.pdf).
 
 # Sister project
 
