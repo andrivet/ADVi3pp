@@ -35,46 +35,46 @@
 //
 // Limit Switches
 //
-#define X_STOP_PIN         54	// A0  (PF0)
-#define Y_STOP_PIN         24	// AD2 (PA2)
-#define Z_STOP_PIN         23	// AD1 (PA1)
+#define X_STOP_PIN         54	// PF0 / A0
+#define Y_STOP_PIN         24	// PA2 / AD2
+#define Z_STOP_PIN         23	// PA1 / AD1
 
 //
 // Steppers
 //
-#define X_STEP_PIN         61
-#define X_DIR_PIN          62
-#define X_ENABLE_PIN       60
+#define X_STEP_PIN         61   // PF7 / A7
+#define X_DIR_PIN          62   // PK0 / A8
+#define X_ENABLE_PIN       60   // PF6 / A6
 
-#define Y_STEP_PIN         64
-#define Y_DIR_PIN          65
-#define Y_ENABLE_PIN       63
+#define Y_STEP_PIN         64   // PK2 / A10
+#define Y_DIR_PIN          65   // PK3 / A11
+#define Y_ENABLE_PIN       63   // PK1 / A9
 
-#define Z_STEP_PIN         67
-#define Z_DIR_PIN          69
-#define Z_ENABLE_PIN       66
-#define Z_MIN_PROBE_PIN    25
+#define Z_STEP_PIN         67   // PK5 / A13
+#define Z_DIR_PIN          69   // PK7 / A15
+#define Z_ENABLE_PIN       66   // PK4 / A12
+#define Z_MIN_PROBE_PIN    25   // PA3 / AD3
 
-#define E0_STEP_PIN        58
-#define E0_DIR_PIN         59
-#define E0_ENABLE_PIN      57
+#define E0_STEP_PIN        58   // PF4 / A4
+#define E0_DIR_PIN         59   // PF5 / A5
+#define E0_ENABLE_PIN      57   // PF3 / A3
 
 //
 // Temperature Sensors
 //
-#define TEMP_0_PIN         1	// A1  (PF1)
-#define TEMP_BED_PIN       14	// A14 (PK6)
+#define TEMP_0_PIN         1	// PF1 / A1
+#define TEMP_BED_PIN       14	// PK6 / A14
 
 //
 // Heaters / Fans
 //
-#define HEATER_0_PIN       4
-#define HEATER_BED_PIN     3
+#define HEATER_0_PIN       4    // PG5 / PWM4
+#define HEATER_BED_PIN     3    // PE5 / PWM3
 
-#define FAN_PIN            5
+#define FAN_PIN            5    // PE3 / PWM5
 
 //
 // Misc. Functions
 //
-#define SDSS               53
-#define LED_PIN            13
+#define SDSS               53   // PB0 / SS
+#define LED_PIN            13   // PB7 / PWM13
