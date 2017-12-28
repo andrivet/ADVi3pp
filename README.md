@@ -4,13 +4,13 @@
 
 ## Introduction
 
-**ADVi3++** is a fork of the Marlin Firmware for the Wanhao Duplicator i3 Plus (and its clones: Monoprice Maker Select Plus, Coccon Create). It includes both Marlin itself and customizations of the LCD screens.
+**ADVi3++** is a fork of the Marlin Firmware for the Wanhao Duplicator i3 Plus (and its clones: Monoprice Maker Select Plus, Cocoon Create). It includes both Marlin itself and customizations of the LCD screens.
 
 ## Objectives
 
 The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
 
-* Based on the latest version of Marlin available (currently: 1.1.6)
+* Based on the latest version of Marlin available (currently: 1.1.8)
 * As few modifications of the Marlin code as possible. The goal is to be able to port **ADVi3++** to new versions of Marlin with only a few effort.
 * Fully open source code. Unfortunately, even if it is required by the GPL, Wanhao has not released the source code of their latest Marlin-based firmwares.
 * Object-oriented code with as few hard-coded values as possible. For example, instead of constructing a frame by hand, use instances of classes that know how to construct themselves.
@@ -39,6 +39,8 @@ This manual is also available as a [standalone PDF file](https://github.com/andr
 * ADVi3pp-Mainboard: this project, a fork of Marlin firmware
 * [ADVi3pp-LCD](https://github.com/andrivet/ADVi3pp-LCD): the LCD resources
 
+I have also published an article ["Wanhao Duplicator i3 Plus 3D Printer - Everything I know about the Wanhao Duplicator i3 Plus 3D printer and its clones"](http://sebastien.andrivet.com/en/posts/wanhao-duplicator-i3-plus-3d-printer/).
+
 # Wanhao Duplicator i3 Plus
 
 ## LCD display
@@ -52,7 +54,7 @@ It is build around the proprietary K600+ kernel and simplifies the development o
 The LDC panel has thus two distinct software components:
 
 - A [firmware](https://en.wikipedia.org/wiki/Firmware), made by DWIN Technologies.
-- A set of resources, made by the manufacturer of the 3D printer (Wanhao, Monoprice, Coccon) or yourself. This component is often called "LCD firmware" even if it is wrong.
+- A set of resources, made by the manufacturer of the 3D printer (Wanhao, Monoprice, Cocoon) or yourself. This component is often called "LCD firmware" even if it is wrong.
 
 ### LCD firmware
 

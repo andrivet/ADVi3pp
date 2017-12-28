@@ -1,5 +1,12 @@
 # ADVi3++ Changelog
 
+## 2.1.0 (2017-12-28)
+
+### New features
+
+* Align with Marlin 1.1.8
+* Change maximum temperatures to 270 C and 150 C. Be careful.
+
 ## 2.0.1 (2017-11-26)
 
 ### Bug fixes

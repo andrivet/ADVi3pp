@@ -26,7 +26,7 @@
 #include "MarlinConfig.h"
 
 #if defined(USBCON) || defined(ARDUINO_SERIAL)
-  #include "HardwareSerial.h"
+  #include <HardwareSerial.h>
   #if ENABLED(BLUETOOTH)
     #define MYSERIAL bluetoothSerial
   #else
