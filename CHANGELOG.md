@@ -1,11 +1,16 @@
 # ADVi3++ Changelog
 
-## 2.1.0 (2017-12-28)
+## 2.1.0 (2018-01-12)
 
 ### New features
 
-* Align with Marlin 1.1.8
-* Change maximum temperatures to 270 C and 150 C. Be careful.
+* Align with Marlin `1.1.8`
+* Upgrade `atmelavr` to `1.8.1`
+* Upgrade PlatformIO to `3.5.0`
+* [#34](https://github.com/andrivet/ADVi3pp-Marlin/issues/34): Change maximum temperatures to **280°C** and **150°C**. **Be careful if you use high temperatures, it is at your own risk**.
+* [#40](https://github.com/andrivet/ADVi3pp-Marlin/issues/40): Change default acceleration speeds to `1000` and default jerk to `8`
+
+### Bug fixes
 
 ## 2.0.1 (2017-11-26)
 

@@ -111,8 +111,8 @@ Thank to [Marlin](http://marlinfw.org) for their great work.
 
 # Copyright
 
-* Copyright &copy; 2017 Sebastien Andrivet [https://github.com/andrivet/advi3pp-Marlin]
-* Copyright &copy; 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+* Copyright &copy; 2017-2018 Sebastien Andrivet [https://github.com/andrivet/advi3pp-Marlin]
+* Copyright &copy; 2016-2018 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
 * Based on Sprinter and grbl.
 * Copyright &copy; 2011 Camiel Gubbels / Erik van der Zalm
 
