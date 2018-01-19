@@ -12,6 +12,9 @@
 
 ### Bug fixes
 
+* Increment values (XYZ Calibaration cube, ...) by 0.1 (was 0.5)
+
+
 ## 2.0.1 (2017-11-26)
 
 ### Bug fixes
