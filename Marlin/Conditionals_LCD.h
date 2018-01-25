@@ -173,6 +173,10 @@
     #define ULTIPANEL
   #endif
 
+#if ENABLED(I3PLUS_LCD)
+#define NEWPANEL
+#endif
+
   #if ENABLED(REPRAPWORLD_KEYPAD)
     #define NEWPANEL
     #if ENABLED(ULTIPANEL) && !defined(REPRAPWORLD_KEYPAD_MOVE_STEP)
