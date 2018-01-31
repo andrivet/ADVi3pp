@@ -35,10 +35,6 @@
 #pragma message "This is a DEBUG build"
 #endif
 
-#ifdef SIMULATOR
-#pragma message "This is a SIMULATOR build"
-#endif
-
 namespace
 {
     const uint16_t advi3_pp_version = 0x0210;                       // 2.1.0
@@ -123,9 +119,6 @@ void PrinterImpl::setup()
 {
 #ifdef DEBUG
     Log::log() << F("This is a DEBUG build");
-#endif
-#ifdef SIMULATOR
-    Log::log() << F("This is a SIMULATOR build");
 #endif
 
     Serial2.begin(advi3_pp_baudrate);
