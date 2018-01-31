@@ -145,3 +145,4 @@ CMakeListsPrivate.txt
 cmake-build-*
 .pioenvs
 .piolibdeps
+ArduinoCore

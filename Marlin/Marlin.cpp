@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Marlin 3D Printer Firmware
  * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
@@ -28,6 +28,7 @@
  *  - https://github.com/simen/grbl/tree
  */
 
+#include <Arduino.h>
 #include "MarlinConfig.h"
 
 #if ENABLED(ULTRA_LCD)
@@ -69,4 +70,8 @@
 #if ENABLED(HAVE_L6470DRIVER)
   #include <SPI.h>
   #include <L6470.h>
+//Beginning of Auto generated function prototypes by Atmel Studio
+//End of Auto generated function prototypes by Atmel Studio
+
+
 #endif
