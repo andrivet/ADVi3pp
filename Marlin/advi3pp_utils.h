@@ -153,7 +153,7 @@ bool Stack<T, S>::contains(T e) const
 //! An unsigned 8 bits value.
 struct Uint8
 {
-    uint8_t byte; //!< The actual value
+    uint8_t byte{}; //!< The actual value
     constexpr explicit Uint8(uint8_t value = 0) : byte{value} {}
     constexpr explicit Uint8(Register reg) : byte{static_cast<uint8_t>(reg)} {}
     constexpr explicit Uint8(Page page) : byte{static_cast<uint8_t>(page)} {}

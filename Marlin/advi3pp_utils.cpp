@@ -209,7 +209,7 @@ Frame::Frame(Command command)
 //! @return         Itself
 Frame& operator<<(Frame& frame, const Uint8 &data)
 {
-    if(frame.position_ < frame.FRAME_BUFFER_SIZE)
+    if(frame.position_ < Frame::FRAME_BUFFER_SIZE)
     {
         frame.buffer_[frame.position_++] = data.byte;
         frame.buffer_[Frame::Position::Length] += 1;
@@ -225,7 +225,7 @@ Frame& operator<<(Frame& frame, const Uint8 &data)
 //! @return         Itself
 Frame& operator<<(Frame& frame, const Uint16 &data)
 {
-    if(frame.position_ < frame.FRAME_BUFFER_SIZE - 1)
+    if(frame.position_ < Frame::FRAME_BUFFER_SIZE - 1)
     {
         frame.buffer_[frame.position_++] = highByte(data.word);
         frame.buffer_[frame.position_++] = lowByte(data.word);
@@ -281,7 +281,7 @@ Frame& operator<<(Frame& frame, const FixedSizeString& data)
 //! @return         Itself
 Frame& operator<<(Frame& frame, const String& data)
 {
-    size_t length = frame.position_ + data.length() < frame.FRAME_BUFFER_SIZE ? data.length() : frame.FRAME_BUFFER_SIZE - frame.position_;
+    size_t length = frame.position_ + data.length() < Frame::FRAME_BUFFER_SIZE ? data.length() : Frame::FRAME_BUFFER_SIZE - frame.position_;
     memcpy(frame.buffer_ + frame.position_, data.c_str(), length);
     frame.position_ += length;
     frame.buffer_[Frame::Position::Length] += length;

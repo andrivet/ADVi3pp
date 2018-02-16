@@ -337,10 +337,10 @@ void PrinterImpl::send_full_status()
     set_next_update_time();
 
     WriteRamDataRequest frame{Variable::TargetBed};
-    frame << Uint16(thermalManager.target_temperature_bed)
-          << Uint16(thermalManager.degBed())
-          << Uint16(thermalManager.target_temperature[0])
-          << Uint16(thermalManager.degHotend(0))
+    frame << Uint16(Temperature::target_temperature_bed)
+          << Uint16(Temperature::degBed())
+          << Uint16(Temperature::target_temperature[0])
+          << Uint16(Temperature::degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
           << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
           << FixedSizeString(LCDImpl::instance().get_message(), 48)
@@ -558,7 +558,7 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
     card.startFileprint();
     print_job_timer.start();
 
-    stepper.finish_and_disable(); // To circumvent homing problems
+    Stepper::finish_and_disable(); // To circumvent homing problems
 
     show_page(Page::SdPrint);
     set_update_graphs();
@@ -632,7 +632,7 @@ void PrinterImpl::sd_print_stop()
     clear_command_queue();
     quickstop_stepper();
     print_job_timer.stop();
-    thermalManager.disable_all_heaters();
+    Temperature::disable_all_heaters();
 
     show_back_page();
 }
@@ -698,7 +698,7 @@ void PrinterImpl::usb_print_stop()
     clear_command_queue();
     quickstop_stepper();
     print_job_timer.stop();
-    thermalManager.disable_all_heaters();
+    Temperature::disable_all_heaters();
 
     show_back_page();
 }
@@ -801,7 +801,7 @@ void PrinterImpl::load_unload_start(bool load)
     if(hotend <= 0)
         return;
 
-    thermalManager.setTargetHotend(hotend, 0);
+    Temperature::setTargetHotend(hotend, 0);
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
     set_background_task(load ? BackgroundTask::LoadFilament : BackgroundTask::UnloadFilament);
@@ -816,7 +816,7 @@ void PrinterImpl::load_unload_stop()
     clear_background_task();
     clear_command_queue();
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
-    thermalManager.setTargetHotend(0, 0);
+    Temperature::setTargetHotend(0, 0);
 
     show_back_page();
 }
@@ -824,7 +824,7 @@ void PrinterImpl::load_unload_stop()
 //! Load the filament if the temperature is high enough.
 void PrinterImpl::load_filament_task()
 {
-    if(thermalManager.current_temperature[0] >= thermalManager.target_temperature[0] - 10)
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
     {
         Log::log() << F("Load Filament") << Log::endl();
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
@@ -835,7 +835,7 @@ void PrinterImpl::load_filament_task()
 //! Unload the filament if the temperature is high enough.
 void PrinterImpl::unload_filament_task()
 {
-    if(thermalManager.current_temperature[0] >= thermalManager.target_temperature[0] - 10)
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
     {
         Log::log() << F("Unload Filament") << Log::endl();
         enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
@@ -932,7 +932,7 @@ void PrinterImpl::cooldown()
 {
     Log::log() << F("Cooldown") << Log::endl();
     LCD::reset_message();
-    thermalManager.disable_all_heaters();
+    Temperature::disable_all_heaters();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -965,7 +965,7 @@ void PrinterImpl::move(KeyValue key_value)
 
 void PrinterImpl::show_move()
 {
-    stepper.finish_and_disable(); // To circumvent homing problems
+    Stepper::finish_and_disable(); // To circumvent homing problems
     show_page(Page::Move);
 }
 
@@ -1031,7 +1031,7 @@ void PrinterImpl::move_z_minus()
 //! Extrude some filament.
 void PrinterImpl::move_e_plus()
 {
-    if(thermalManager.degHotend(0) < 180)
+    if(Temperature::degHotend(0) < 180)
         return;
 
     clear_command_queue();
@@ -1043,7 +1043,7 @@ void PrinterImpl::move_e_plus()
 //! Unextrude.
 void PrinterImpl::move_e_minus()
 {
-    if(thermalManager.degHotend(0) < 180)
+    if(Temperature::degHotend(0) < 180)
         return;
 
     clear_command_queue();
@@ -1159,8 +1159,8 @@ void PrinterImpl::print_settings_show()
 {
     WriteRamDataRequest frame{Variable::PrintSettingsSpeed};
     frame << Uint16(feedrate_percentage)
-          << Uint16(thermalManager.degTargetHotend(0))
-          << Uint16(thermalManager.degTargetBed())
+          << Uint16(Temperature::degTargetHotend(0))
+          << Uint16(Temperature::degTargetBed())
           << Uint16(scale(fanSpeeds[0], 255, 100));
     frame.send();
 
@@ -1185,8 +1185,8 @@ void PrinterImpl::print_settings_save()
     response >> speed >> hotend >> bed >> fan;
 
     feedrate_percentage = speed.word;
-    thermalManager.setTargetHotend(hotend.word, 0);
-    thermalManager.setTargetBed(bed.word);
+    Temperature::setTargetHotend(hotend.word, 0);
+    Temperature::setTargetBed(bed.word);
     fanSpeeds[0] = scale(fan.word, 100, 255);
 
     show_forward_page();
@@ -1442,10 +1442,10 @@ void PrinterImpl::jerk_settings_save()
     Uint16 x, y, z, e;
     response >> x >> y >> z >> e;
 
-    jerks_.max_jerk[X_AXIS] = static_cast<uint32_t>(x.word) / 10;
-    jerks_.max_jerk[Y_AXIS] = static_cast<uint32_t>(y.word) / 10;
-    jerks_.max_jerk[Z_AXIS] = static_cast<uint32_t>(z.word) / 10;
-    jerks_.max_jerk[E_AXIS] = static_cast<uint32_t>(e.word) / 10;
+    jerks_.max_jerk[X_AXIS] = static_cast<uint32_t>(x.word / 10);
+    jerks_.max_jerk[Y_AXIS] = static_cast<uint32_t>(y.word / 10);
+    jerks_.max_jerk[Z_AXIS] = static_cast<uint32_t>(z.word / 10);
+    jerks_.max_jerk[E_AXIS] = static_cast<uint32_t>(e.word / 10);
     jerks_.save();
 
     show_forward_page();
@@ -1793,7 +1793,7 @@ void PrinterImpl::start_extruder_calibration()
     if(hotend <= 0)
         return;
 
-    thermalManager.setTargetHotend(hotend, 0);
+    Temperature::setTargetHotend(hotend, 0);
     set_background_task(BackgroundTask::ExtruderCalibration);
     enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
@@ -1810,7 +1810,7 @@ void PrinterImpl::extruder_calibration_task()
         return;
     }
 
-    if(thermalManager.current_temperature[0] < thermalManager.target_temperature[0] - 10)
+    if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
     {
         set_next_background_task_time();
         return;
@@ -1849,11 +1849,11 @@ void PrinterImpl::extruder_calibrartion_settings()
     e.word /= 10;
 
     // Fill all values because all 4 axis are displayed by  show_steps_settings
-    steps_.axis_steps_per_mm[X_AXIS] = planner.axis_steps_per_mm[X_AXIS];
-    steps_.axis_steps_per_mm[Y_AXIS] = planner.axis_steps_per_mm[Y_AXIS];
-    steps_.axis_steps_per_mm[Z_AXIS] = planner.axis_steps_per_mm[Z_AXIS];
-	steps_.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
-    Log::log() << F("Adjust: old = ") << planner.axis_steps_per_mm[E_AXIS] << F(", expected = ") << extruded_ << F(", measured = ") << (extruded_ + calibration_extruder_delta - e.word) << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
+    steps_.axis_steps_per_mm[X_AXIS] = Planner::axis_steps_per_mm[X_AXIS];
+    steps_.axis_steps_per_mm[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
+    steps_.axis_steps_per_mm[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
+	steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
+    Log::log() << F("Adjust: old = ") << Planner::axis_steps_per_mm[E_AXIS] << F(", expected = ") << extruded_ << F(", measured = ") << (extruded_ + calibration_extruder_delta - e.word) << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
 
     steps_settings_show(false);
 }
@@ -1863,8 +1863,8 @@ void PrinterImpl::cancel_extruder_calibration()
 {
     clear_background_task();
 
-    thermalManager.setTargetHotend(0, 0);
-    thermalManager.setTargetBed(0);
+    Temperature::setTargetHotend(0, 0);
+    Temperature::setTargetBed(0);
 
     enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
@@ -1918,11 +1918,11 @@ void PrinterImpl::xyz_motors_calibration_settings()
     Uint16 x, y, z;
     response >> x >> y >> z;
 
-    steps_.axis_steps_per_mm[X_AXIS] = adjust_value(planner.axis_steps_per_mm[X_AXIS], calibration_cube_size * 10, x.word);
-    steps_.axis_steps_per_mm[Y_AXIS] = adjust_value(planner.axis_steps_per_mm[Y_AXIS], calibration_cube_size * 10, y.word);
-    steps_.axis_steps_per_mm[Z_AXIS] = adjust_value(planner.axis_steps_per_mm[Z_AXIS], calibration_cube_size * 10, z.word);
+    steps_.axis_steps_per_mm[X_AXIS] = adjust_value(Planner::axis_steps_per_mm[X_AXIS], calibration_cube_size * 10, x.word);
+    steps_.axis_steps_per_mm[Y_AXIS] = adjust_value(Planner::axis_steps_per_mm[Y_AXIS], calibration_cube_size * 10, y.word);
+    steps_.axis_steps_per_mm[Z_AXIS] = adjust_value(Planner::axis_steps_per_mm[Z_AXIS], calibration_cube_size * 10, z.word);
     // Fill all values because all 4 axis are displayed by  show_steps_settings
-    steps_.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS];
+    steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS];
 
     steps_settings_show(false);
 }
@@ -2130,10 +2130,10 @@ void PrinterImpl::update_graphs()
 void PrinterImpl::send_graphs_data()
 {
     WriteCurveDataRequest frame{0b00001111};
-    frame << Uint16{thermalManager.degHotend(0)}
-          << Uint16{thermalManager.degHotend(0)}
-          << Uint16{thermalManager.degBed()}
-          << Uint16{thermalManager.degBed()};
+    frame << Uint16{Temperature::degHotend(0)}
+          << Uint16{Temperature::degHotend(0)}
+          << Uint16{Temperature::degBed()}
+          << Uint16{Temperature::degBed()};
     frame.send(false);
 }
 
@@ -2186,19 +2186,19 @@ void PidSettings::save()
 //! Initialize temporary Step settings.
 void StepSettings::init()
 {
-    axis_steps_per_mm[X_AXIS] = planner.axis_steps_per_mm[X_AXIS];
-    axis_steps_per_mm[Y_AXIS] = planner.axis_steps_per_mm[Y_AXIS];
-    axis_steps_per_mm[Z_AXIS] = planner.axis_steps_per_mm[Z_AXIS];
-    axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS];
+    axis_steps_per_mm[X_AXIS] = Planner::axis_steps_per_mm[X_AXIS];
+    axis_steps_per_mm[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
+    axis_steps_per_mm[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
+    axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS];
 }
 
 //! Save temporary Step settings.
 void StepSettings::save()
 {
-    planner.axis_steps_per_mm[X_AXIS] = axis_steps_per_mm[X_AXIS];
-    planner.axis_steps_per_mm[Y_AXIS] = axis_steps_per_mm[Y_AXIS];
-    planner.axis_steps_per_mm[Z_AXIS] = axis_steps_per_mm[Z_AXIS];
-    planner.axis_steps_per_mm[E_AXIS] = axis_steps_per_mm[E_AXIS];
+    Planner::axis_steps_per_mm[X_AXIS] = axis_steps_per_mm[X_AXIS];
+    Planner::axis_steps_per_mm[Y_AXIS] = axis_steps_per_mm[Y_AXIS];
+    Planner::axis_steps_per_mm[Z_AXIS] = axis_steps_per_mm[Z_AXIS];
+    Planner::axis_steps_per_mm[E_AXIS] = axis_steps_per_mm[E_AXIS];
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
@@ -2210,23 +2210,23 @@ void StepSettings::save()
 //! Initialize temporary Feedrate settings.
 void FeedrateSettings::init()
 {
-    max_feedrate_mm_s[X_AXIS] = planner.max_feedrate_mm_s[X_AXIS];
-    max_feedrate_mm_s[Y_AXIS] = planner.max_feedrate_mm_s[Y_AXIS];
-    max_feedrate_mm_s[Z_AXIS] = planner.max_feedrate_mm_s[Z_AXIS];
-    max_feedrate_mm_s[E_AXIS] = planner.max_feedrate_mm_s[E_AXIS];
-    min_feedrate_mm_s = planner.min_feedrate_mm_s;
-    min_travel_feedrate_mm_s = planner.min_travel_feedrate_mm_s;
+    max_feedrate_mm_s[X_AXIS] = Planner::max_feedrate_mm_s[X_AXIS];
+    max_feedrate_mm_s[Y_AXIS] = Planner::max_feedrate_mm_s[Y_AXIS];
+    max_feedrate_mm_s[Z_AXIS] = Planner::max_feedrate_mm_s[Z_AXIS];
+    max_feedrate_mm_s[E_AXIS] = Planner::max_feedrate_mm_s[E_AXIS];
+    min_feedrate_mm_s = Planner::min_feedrate_mm_s;
+    min_travel_feedrate_mm_s = Planner::min_travel_feedrate_mm_s;
 }
 
 //! Save temporary Feedrate settings.
 void FeedrateSettings::save()
 {
-    planner.max_feedrate_mm_s[X_AXIS] = max_feedrate_mm_s[X_AXIS];
-    planner.max_feedrate_mm_s[Y_AXIS] = max_feedrate_mm_s[Y_AXIS];
-    planner.max_feedrate_mm_s[Z_AXIS] = max_feedrate_mm_s[Z_AXIS];
-    planner.max_feedrate_mm_s[E_AXIS] = max_feedrate_mm_s[E_AXIS];
-    planner.min_feedrate_mm_s = min_feedrate_mm_s;
-    planner.min_travel_feedrate_mm_s = min_travel_feedrate_mm_s;
+    Planner::max_feedrate_mm_s[X_AXIS] = max_feedrate_mm_s[X_AXIS];
+    Planner::max_feedrate_mm_s[Y_AXIS] = max_feedrate_mm_s[Y_AXIS];
+    Planner::max_feedrate_mm_s[Z_AXIS] = max_feedrate_mm_s[Z_AXIS];
+    Planner::max_feedrate_mm_s[E_AXIS] = max_feedrate_mm_s[E_AXIS];
+    Planner::min_feedrate_mm_s = min_feedrate_mm_s;
+    Planner::min_travel_feedrate_mm_s = min_travel_feedrate_mm_s;
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
@@ -2238,25 +2238,25 @@ void FeedrateSettings::save()
 //! Initialize temporary Acceleration settings.
 void AccelerationSettings::init()
 {
-    max_acceleration_mm_per_s2[X_AXIS] = planner.max_acceleration_mm_per_s2[X_AXIS];
-    max_acceleration_mm_per_s2[Y_AXIS] = planner.max_acceleration_mm_per_s2[Y_AXIS];
-    max_acceleration_mm_per_s2[Z_AXIS] = planner.max_acceleration_mm_per_s2[Z_AXIS];
-    max_acceleration_mm_per_s2[E_AXIS] = planner.max_acceleration_mm_per_s2[E_AXIS];
-    acceleration = planner.acceleration;
-    retract_acceleration = planner.retract_acceleration;
-    travel_acceleration = planner.travel_acceleration;
+    max_acceleration_mm_per_s2[X_AXIS] = Planner::max_acceleration_mm_per_s2[X_AXIS];
+    max_acceleration_mm_per_s2[Y_AXIS] = Planner::max_acceleration_mm_per_s2[Y_AXIS];
+    max_acceleration_mm_per_s2[Z_AXIS] = Planner::max_acceleration_mm_per_s2[Z_AXIS];
+    max_acceleration_mm_per_s2[E_AXIS] = Planner::max_acceleration_mm_per_s2[E_AXIS];
+    acceleration = Planner::acceleration;
+    retract_acceleration = Planner::retract_acceleration;
+    travel_acceleration = Planner::travel_acceleration;
 }
 
 //! Save temporary Acceleration settings.
 void AccelerationSettings::save()
 {
-    planner.max_acceleration_mm_per_s2[X_AXIS] = max_acceleration_mm_per_s2[X_AXIS];
-    planner.max_acceleration_mm_per_s2[Y_AXIS] = max_acceleration_mm_per_s2[Y_AXIS];
-    planner.max_acceleration_mm_per_s2[Z_AXIS] = max_acceleration_mm_per_s2[Z_AXIS];
-    planner.max_acceleration_mm_per_s2[E_AXIS] = max_acceleration_mm_per_s2[E_AXIS];
-    planner.acceleration = acceleration;
-    planner.retract_acceleration = retract_acceleration;
-    planner.travel_acceleration =  travel_acceleration;
+    Planner::max_acceleration_mm_per_s2[X_AXIS] = max_acceleration_mm_per_s2[X_AXIS];
+    Planner::max_acceleration_mm_per_s2[Y_AXIS] = max_acceleration_mm_per_s2[Y_AXIS];
+    Planner::max_acceleration_mm_per_s2[Z_AXIS] = max_acceleration_mm_per_s2[Z_AXIS];
+    Planner::max_acceleration_mm_per_s2[E_AXIS] = max_acceleration_mm_per_s2[E_AXIS];
+    Planner::acceleration = acceleration;
+    Planner::retract_acceleration = retract_acceleration;
+    Planner::travel_acceleration =  travel_acceleration;
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
@@ -2268,19 +2268,19 @@ void AccelerationSettings::save()
 //! Initialize temporary Jerk settings.
 void JerkSettings::init()
 {
-    max_jerk[X_AXIS] = planner.max_jerk[X_AXIS];
-    max_jerk[Y_AXIS] = planner.max_jerk[Y_AXIS];
-    max_jerk[Z_AXIS] = planner.max_jerk[Z_AXIS];
-    max_jerk[E_AXIS] = planner.max_jerk[E_AXIS];
+    max_jerk[X_AXIS] = Planner::max_jerk[X_AXIS];
+    max_jerk[Y_AXIS] = Planner::max_jerk[Y_AXIS];
+    max_jerk[Z_AXIS] = Planner::max_jerk[Z_AXIS];
+    max_jerk[E_AXIS] = Planner::max_jerk[E_AXIS];
 }
 
 //! Save temporary Jerk settings.
 void JerkSettings::save()
 {
-    planner.max_jerk[X_AXIS] = max_jerk[X_AXIS];
-    planner.max_jerk[Y_AXIS] = max_jerk[Y_AXIS];
-    planner.max_jerk[Z_AXIS] = max_jerk[Z_AXIS];
-    planner.max_jerk[E_AXIS] = max_jerk[E_AXIS];
+    Planner::max_jerk[X_AXIS] = max_jerk[X_AXIS];
+    Planner::max_jerk[Y_AXIS] = max_jerk[Y_AXIS];
+    Planner::max_jerk[Z_AXIS] = max_jerk[Z_AXIS];
+    Planner::max_jerk[E_AXIS] = max_jerk[E_AXIS];
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
