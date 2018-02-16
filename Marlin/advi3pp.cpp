@@ -37,9 +37,9 @@
 
 namespace
 {
-    const uint16_t advi3_pp_version = 0x0210;                       // 2.1.0
-    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x0210; // 2.1.0
-    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x0210; // 2.1.0
+    const uint16_t advi3_pp_version = 0x300;
+    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x210;
+    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x300;
     // Modify also DETAILED_BUILD_VERSION in Version.h
 
     const unsigned long advi3_pp_baudrate = 115200;

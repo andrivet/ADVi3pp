@@ -41,14 +41,14 @@
    * Verbose version identifier which should contain a reference to the location
    * from where the binary was downloaded or the source code was compiled.
    */
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3++ 2.1.0)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3++ 3.0.0-dev)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
    * here we define this default string as the date where the latest release
    * version was tagged.
    */
-  #define STRING_DISTRIBUTION_DATE "2018-01-12 12:00"
+  #define STRING_DISTRIBUTION_DATE "2018-02-16 12:00"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
