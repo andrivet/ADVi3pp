@@ -549,7 +549,7 @@ int Temperature::getHeaterPower(int heater) {
 //
 void Temperature::_temp_error(const int8_t e, const char * const serial_msg, const char * const lcd_msg) {
   static bool killed = false;
-  advi3pp::Printer::temperature_error();
+  advi3pp::Printer::temperature_error(lcd_msg);
   if (IsRunning()) {
     SERIAL_ERROR_START();
     serialprintPGM(serial_msg);

@@ -211,21 +211,6 @@ void LCDImpl::reset_progress()
     percent_ = -1;
 }
 
-void LCDImpl::set_error(const String& error)
-{
-    error_ = error;
-}
-
-const String& LCDImpl::get_error() const
-{
-    return error_;
-}
-
-void LCDImpl::reset_error()
-{
-    error_ = "";
-}
-
 }
 
 void lcd_status_printf_P(const uint8_t /*level*/, const char * const fmt, ...)

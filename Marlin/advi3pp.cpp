@@ -100,9 +100,9 @@ void Printer::reset_presets()
 }
 
 //! Called when a temperature error occurred and display the error on the LCD.
-void Printer::temperature_error()
+void Printer::temperature_error(const char* message)
 {
-    printer.temperature_error();
+    printer.temperature_error(message);
 }
 
 void Printer::send_status_data()
@@ -344,8 +344,7 @@ void PrinterImpl::send_full_status()
           << Uint16(scale(fanSpeeds[0], 255, 100))
           << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
           << FixedSizeString(LCDImpl::instance().get_message(), 48)
-          << FixedSizeString(LCDImpl::instance().get_progress(), 48)
-          << FixedSizeString(LCDImpl::instance().get_error(), 48);
+          << FixedSizeString(LCDImpl::instance().get_progress(), 48);
     frame.send(false);
 }
 
@@ -2150,8 +2149,11 @@ void PrinterImpl::clear_graphs()
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 //! Display the Thermal Runaway Error screen.
-void PrinterImpl::temperature_error()
+void PrinterImpl::temperature_error(const char* message)
 {
+    WriteRamDataRequest frame{Variable::CurrentFileName};
+    frame << message;
+    frame.send(true);
     show_page(advi3pp::Page::ThermalRunawayError);
 }
 

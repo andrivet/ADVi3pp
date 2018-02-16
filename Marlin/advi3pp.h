@@ -88,7 +88,7 @@ struct Printer
     static void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     static void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     static void reset_presets();
-    static void temperature_error();
+    static void temperature_error(const char* message);
     static void send_status_data();
 };
 

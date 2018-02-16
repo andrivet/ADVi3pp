@@ -131,7 +131,7 @@ struct PrinterImpl
     void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_presets();
-    void temperature_error();
+    void temperature_error(const char* message);
     void send_full_status();
 
 private:
@@ -363,14 +363,9 @@ struct LCDImpl
     const String& get_progress() const;
     void reset_progress();
 
-    void set_error(const String& error);
-    const String& get_error() const;
-    void reset_error();
-
 private:
     String message_;
     String progress_name_;
-    String error_;
     mutable String progress_percent_;
     mutable int percent_ = -1;
 };
