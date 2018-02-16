@@ -41,7 +41,7 @@ enum class Page: uint8_t
     Boot                    = 1,
     Main                    = 22,
     Controls                = 24,
-    Calibration             = 26,
+    Tuning                  = 26,
     Settings                = 28,
     LoadUnload              = 30,
     Load2                   = 32,
@@ -71,7 +71,12 @@ enum class Page: uint8_t
     PrintSettings           = 80,
     ThermalRunawayError     = 82,
     Mismatch                = 84,
-    Temperature             = 86
+    Temperature             = 86,
+    Infos                   = 88,
+    Firmware                = 90,
+    USB                     = 92,
+    Sensor                  = 94,
+    LCD                     = 96
 };
 
 //! The Duplicator i3 Plus printer.
@@ -84,7 +89,7 @@ struct Printer
     static void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     static void reset_presets();
     static void temperature_error();
-    static void send_temperatures_data();
+    static void send_status_data();
 };
 
 //! The Duplicator i3 Plus LCD Screen

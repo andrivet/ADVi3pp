@@ -93,7 +93,7 @@ void LCD::queue_message(const String &message)
 
 void LCD::reset_message()
 {
-    lcd.reset_messaage();
+    lcd.reset_message();
 }
 
 // --------------------------------------------------------------------
@@ -178,7 +178,7 @@ void LCDImpl::queue_message(const String &message)
     enqueue_and_echo_command(msg.c_str());
 }
 
-void LCDImpl::reset_messaage()
+void LCDImpl::reset_message()
 {
      enqueue_and_echo_commands_P(PSTR("M117"));
 }
@@ -209,6 +209,21 @@ void LCDImpl::reset_progress()
     progress_name_ = "";
     progress_percent_ = "";
     percent_ = -1;
+}
+
+void LCDImpl::set_error(const String& error)
+{
+    error_ = error;
+}
+
+const String& LCDImpl::get_error() const
+{
+    return error_;
+}
+
+void LCDImpl::reset_error()
+{
+    error_ = "";
 }
 
 }

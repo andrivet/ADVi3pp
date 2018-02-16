@@ -105,9 +105,9 @@ void Printer::temperature_error()
     printer.temperature_error();
 }
 
-void Printer::send_temperatures_data()
+void Printer::send_status_data()
 {
-    printer.send_temperatures_data();
+    printer.send_full_status();
 }
 
 // --------------------------------------------------------------------
@@ -124,7 +124,12 @@ void PrinterImpl::setup()
     Serial2.begin(advi3_pp_baudrate);
     send_versions();
     clear_graphs();
-    show_page(Page::Boot, false);
+
+    get_lcd_version();
+    if(is_lcd_version_valid())
+        show_page(Page::Boot, false);
+    else
+        show_page(Page::Mismatch, false);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -314,17 +319,17 @@ void PrinterImpl::show_forward_page()
 // Incoming LCD commands and status update
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-//! Read data from the LCD and act accordingly
+//! Background tasks
 void PrinterImpl::task()
 {
     read_lcd_serial();
     execute_background_task();
-    send_status();
+    send_full_status();
     update_graphs();
 }
 
 //! Update the status of the printer on the LCD.
-void PrinterImpl::send_status()
+void PrinterImpl::send_full_status()
 {
     auto current_time = millis();
     if(!ELAPSED(current_time, next_update_time_))
@@ -337,22 +342,11 @@ void PrinterImpl::send_status()
           << Uint16(thermalManager.target_temperature[0])
           << Uint16(thermalManager.degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
-          << FixedSizeString(LCDImpl::instance().get_message(), 26)
-          << FixedSizeString(LCDImpl::instance().get_progress(), 26);
+          << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
+          << FixedSizeString(LCDImpl::instance().get_message(), 48)
+          << FixedSizeString(LCDImpl::instance().get_progress(), 48)
+          << FixedSizeString(LCDImpl::instance().get_error(), 48);
     frame.send(false);
-}
-
-void PrinterImpl::send_temperatures_data()
-{
-    WriteRamDataRequest frame{Variable::TargetBed};
-    frame << Uint16(thermalManager.target_temperature_bed)
-          << Uint16(thermalManager.degBed())
-          << Uint16(thermalManager.target_temperature[0])
-          << Uint16(thermalManager.degHotend(0))
-          << Uint16(scale(fanSpeeds[0], 255, 100));
-    frame.send(false);
-
-    send_graphs_data();
 }
 
 //! Read a frame from the LCD and act accordingly.
@@ -383,33 +377,30 @@ void PrinterImpl::read_lcd_serial()
 
     switch(action)
     {
-        case Action::Main:                  main(key_value); break;
+        case Action::Screen:                screen(key_value); break;
         case Action::SdPrintCommand:        sd_print_command(key_value); break;
         case Action::UsbPrintCommand:       usb_print_command(key_value); break;
         case Action::LoadUnload:            load_unload(key_value); break;
         case Action::Preheat:               preheat(key_value); break;
-        case Action::Cooldown:              cooldown(); break;
         case Action::Move:                  move(key_value); break;
-        case Action::MoveXplus:             move_x_plus(); break;
-        case Action::MoveXminus:            move_x_minus(); break;
-        case Action::MoveYplus:             move_y_plus(); break;
-        case Action::MoveYminus:            move_y_minus(); break;
-        case Action::MoveZplus:             move_z_plus(); break;
-        case Action::MoveZminus:            move_z_minus(); break;
-        case Action::MoveEplus:             move_e_plus(); break;
-        case Action::MoveEminus:            move_e_minus(); break;
         case Action::SdCard:                sd_card(key_value); break;
-        case Action::SdCardSelectFile:      sd_card_select_file(key_value); break;
-        case Action::ShowSettings:          show_settings(key_value); break;
-        case Action::SaveSettings:          save_settings(key_value); break;
-        case Action::CancelSettings:        cancel_settings(key_value); break;
         case Action::FactoryReset:          factory_reset(key_value); break;
         case Action::Leveling:              leveling(key_value); break;
         case Action::ExtruderCalibration:   extruder_calibration(key_value); break;
         case Action::XYZMotorsCalibration:  xyz_motors_calibration(key_value); break;
         case Action::PidTuning:             pid_tuning(key_value); break;
+        case Action::Sensor:                sensor(key_value); break;
+        case Action::Firmware:              firmware(key_value); break;
+        case Action::USB:                   usb(key_value); break;
+        case Action::LCD:                   lcd(key_value); break;
         case Action::Statistics:            statistics(key_value); break;
         case Action::About:                 about(key_value); break;
+        case Action::PrintSettings:         print_settings(key_value); break;
+        case Action::PIDSettings:           pid_settings(key_value); break;
+        case Action::StepsSettings:         steps_settings(key_value); break;
+        case Action::FeedrateSettings:      feedrate_settings(key_value); break;
+        case Action::AccelerationSettings:  acceleration_settings(key_value); break;
+        case Action::JerkSettings:          jerk_settings(key_value); break;
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
 }
@@ -418,24 +409,25 @@ void PrinterImpl::read_lcd_serial()
 // Main
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void PrinterImpl::main(KeyValue key_value)
+void PrinterImpl::screen(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::MainTemps:           main_temps(); break;
-        case KeyValue::MainSD:              main_sd(); break;
-        case KeyValue::MainControls:        main_controls(); break;
-        case KeyValue::MainCalibrations:    main_calibrations(); break;
-        case KeyValue::MainSettings:        main_settings(); break;
-        case KeyValue::MainMotors:          main_motors(); break;
-        case KeyValue::Back:                back(); break;
-        default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Temps:           show_temps(); break;
+        case KeyValue::Print:           show_print(); break;
+        case KeyValue::Controls:        show_controls(); break;
+        case KeyValue::Tuning:          show_tuning(); break;
+        case KeyValue::Settings:        show_settings(); break;
+        case KeyValue::Infos:           show_infos(); break;
+        case KeyValue::Motors:          show_motors(); break;
+        case KeyValue::Back:            back(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
 //! Show one of the temperature graph screens depending of the context: either the SD printing screen,
 //! the printing screen or the temperature screen.
-void PrinterImpl::main_temps()
+void PrinterImpl::show_temps()
 {
     set_update_graphs();
 
@@ -450,9 +442,9 @@ void PrinterImpl::main_temps()
     show_page(print_job_timer.isRunning() ? Page::UsbPrint : Page::Temperature);
 }
 
-//! Show one of the SD card screens depending of the context: either the SD screen or the SD printing screen.
+//! Show one of the Printing screens depending of the context: either the SD screen or the SD printing screen.
 //! Fallback to the USB printing if the SD card is not accessible.
-void PrinterImpl::main_sd()
+void PrinterImpl::show_print()
 {
     // If there is a SD card print running, display the SD print screen
     if(card.cardOK && card.sdprinting)
@@ -483,22 +475,27 @@ void PrinterImpl::main_sd()
     show_page(Page::SdCard);
 }
 
-void PrinterImpl::main_controls()
+void PrinterImpl::show_controls()
 {
     show_page(Page::Controls);
 }
 
-void PrinterImpl::main_calibrations()
+void PrinterImpl::show_tuning()
 {
-    show_page(Page::Calibration);
+    show_page(Page::Tuning);
 }
 
-void PrinterImpl::main_settings()
+void PrinterImpl::show_settings()
 {
     show_page(Page::Settings);
 }
 
-void PrinterImpl::main_motors()
+void PrinterImpl::show_infos()
+{
+    show_page(Page::Infos);
+}
+
+void PrinterImpl::show_motors()
 {
     show_page(Page::MotorsSettings);
 }
@@ -554,7 +551,7 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
 
     LCDImpl::instance().set_progress_name(card.longFilename);
 
-    WriteRamDataRequest frame{Variable::SelectedFileName};
+    WriteRamDataRequest frame{Variable::CurrentFileName};
     frame << name;
     frame.send(true);
 
@@ -582,12 +579,20 @@ void PrinterImpl::sd_card(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::SdUp:
+        case KeyValue::SDLine1:
+        case KeyValue::SDLine2:
+        case KeyValue::SDLine3:
+        case KeyValue::SDLine4:
+        case KeyValue::SDLine5:
+            sd_card_select_file(key_value);
+            break;
+
+        case KeyValue::SDUp:
             if((last_file_index + nb_visible_sd_files) < nb_files)
                 last_file_index += nb_visible_sd_files;
             break;
 
-        case KeyValue::SdDown:
+        case KeyValue::SDDown:
             if(last_file_index >= nb_visible_sd_files)
                 last_file_index -= nb_visible_sd_files;
             break;
@@ -774,7 +779,7 @@ void PrinterImpl::load_unload(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::LoadUnload:          load_unload_show(); break;
+        case KeyValue::Show:                load_unload_show(); break;
         case KeyValue::Load:                load_unload_start(true); break;
         case KeyValue::Unload:              load_unload_start(false); break;
         case KeyValue::Back:                load_unload_stop(); break;
@@ -849,9 +854,13 @@ void PrinterImpl::preheat(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::PreheatShow:     preheat_show(); break;
+        case KeyValue::Show:            preheat_show(); break;
         case KeyValue::Back:            preheat_back(); break;
-        default:                        preheat_preset(static_cast<uint16_t>(key_value)); break;
+        case KeyValue::Preset1:
+        case KeyValue::Preset2:
+        case KeyValue::Preset3:         preheat_preset(static_cast<uint16_t>(key_value)); break;
+        case KeyValue::Cooldown:        cooldown(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
@@ -936,12 +945,20 @@ void PrinterImpl::move(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::MoveShow:            show_move(); break;
-        case KeyValue::HomeX:               home_x(); break;
-        case KeyValue::HomeY:               home_y(); break;
-        case KeyValue::HomeZ:               home_z(); break;
-        case KeyValue::HomeAll:             home_all(); break;
-        case KeyValue::DisableMotors:       disable_motors(); break;
+        case KeyValue::Show:                show_move(); break;
+        case KeyValue::MoveXPlus:           move_x_plus(); break;
+        case KeyValue::MoveXMinus:          move_x_minus(); break;
+        case KeyValue::MoveXHome:           move_x_home(); break;
+        case KeyValue::MoveYPlus:           move_y_plus(); break;
+        case KeyValue::MoveYMinus:          move_y_minus(); break;
+        case KeyValue::MoveYHome:           move_y_home(); break;
+        case KeyValue::MoveZPlus:           move_z_plus(); break;
+        case KeyValue::MoveZMinus:          move_z_minus(); break;
+        case KeyValue::MoveZHome:           move_z_home(); break;
+        case KeyValue::MoveEPlus:           move_e_plus(); break;
+        case KeyValue::MoveEMinus:          move_e_minus(); break;
+        case KeyValue::MoveAllHome:         move_all_home(); break;
+        case KeyValue::MoveAllDisable:      disable_motors(); break;
         case KeyValue::Back:                move_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -1045,25 +1062,25 @@ void PrinterImpl::disable_motors()
 }
 
 //! Go to home on the X axis.
-void PrinterImpl::home_x()
+void PrinterImpl::move_x_home()
 {
     enqueue_and_echo_commands_P(PSTR("G28 X0"));
 }
 
 //! Go to home on the Y axis.
-void PrinterImpl::home_y()
+void PrinterImpl::move_y_home()
 {
     enqueue_and_echo_commands_P(PSTR("G28 Y0"));
 }
 
 //! Go to home on the Z axis.
-void PrinterImpl::home_z()
+void PrinterImpl::move_z_home()
 {
     enqueue_and_echo_commands_P(PSTR("G28 Z0"));
 }
 
 //! Go to home on all axis.
-void PrinterImpl::home_all()
+void PrinterImpl::move_all_home()
 {
     enqueue_and_echo_commands_P(PSTR("G28"));
 }
@@ -1072,48 +1089,74 @@ void PrinterImpl::home_all()
 // Settings
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-//! Show a set of settings
-//! @param key_value    The set to display
-void PrinterImpl::show_settings(KeyValue key_value)
+void PrinterImpl::print_settings(advi3pp::KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::SettingsPrint:           show_print_settings(); break;
-        case KeyValue::SettingsPID:             show_pid_settings(true); break;
-        case KeyValue::SettingsSteps:           show_steps_settings(); break;
-        case KeyValue::SettingsFeedrate:        show_feedrate_settings(); break;
-        case KeyValue::SettingsAcceleration:    show_acceleration_settings(); break;
-        case KeyValue::SettingsJerk:            show_jerk_settings(); break;
-        default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Show: print_settings_show(); break;
+        case KeyValue::Save: print_settings_save(); break;
+        case KeyValue::Back: print_settings_cancel(); break;
+        default:                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
-//! Save a set of settings
-//! @param key_value    The set to save
-void PrinterImpl::save_settings(KeyValue key_value)
+void PrinterImpl::pid_settings(advi3pp::KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::SettingsPrint:           save_print_settings(); break;
-        case KeyValue::SettingsPID:             save_pid_settings(); break;
-        case KeyValue::SettingsSteps:           save_steps_settings(); break;
-        case KeyValue::SettingsFeedrate:        save_feedrate_settings(); break;
-        case KeyValue::SettingsAcceleration:    save_acceleration_settings(); break;
-        case KeyValue::SettingsJerk:            save_jerk_settings(); break;
-        default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Show: pid_settings_show(true); break;
+        case KeyValue::Save: pid_settings_save(); break;
+        case KeyValue::Back: pid_settings_cancel(); break;
+        default:                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
-//! Cancel settings
-void PrinterImpl::cancel_settings(KeyValue key_value)
+void PrinterImpl::steps_settings(advi3pp::KeyValue key_value)
 {
-    if(key_value == KeyValue::SettingsPID)
-        old_pid_.save(); // Restore old values
-    show_back_page();
+    switch(key_value)
+    {
+        case KeyValue::Show: steps_settings_show(); break;
+        case KeyValue::Save: steps_settings_save(); break;
+        case KeyValue::Back: steps_settings_cancel(); break;
+        default:                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::feedrate_settings(advi3pp::KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show: feedrate_settings_show(); break;
+        case KeyValue::Save: feedrate_settings_save(); break;
+        case KeyValue::Back: feedrate_settings_cancel(); break;
+        default:                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::acceleration_settings(advi3pp::KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show: acceleration_settings_show(); break;
+        case KeyValue::Save: acceleration_settings_save(); break;
+        case KeyValue::Back: acceleration_settings_cancel(); break;
+        default:                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::jerk_settings(advi3pp::KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show: jerk_settings_show(); break;
+        case KeyValue::Save: jerk_settings_save(); break;
+        case KeyValue::Back: jerk_settings_cancel(); break;
+        default:                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
 }
 
 //! Display on the LCD screen the printing settings.
-void PrinterImpl::show_print_settings()
+void PrinterImpl::print_settings_show()
 {
     WriteRamDataRequest frame{Variable::PrintSettingsSpeed};
     frame << Uint16(feedrate_percentage)
@@ -1127,7 +1170,7 @@ void PrinterImpl::show_print_settings()
 }
 
 //! Save the printing settings.
-void PrinterImpl::save_print_settings()
+void PrinterImpl::print_settings_save()
 {
     ReadRamDataRequest frame{Variable::PrintSettingsSpeed, 4};
     frame.send();
@@ -1150,8 +1193,13 @@ void PrinterImpl::save_print_settings()
     show_forward_page();
 }
 
+void PrinterImpl::print_settings_cancel()
+{
+    show_back_page();
+}
+
 //! Show the PID settings
-void PrinterImpl::show_pid_settings(bool back, bool init)
+void PrinterImpl::pid_settings_show(bool back, bool init)
 {
     if(init)
     {
@@ -1169,7 +1217,7 @@ void PrinterImpl::show_pid_settings(bool back, bool init)
 }
 
 //! Save the PID settings
-void PrinterImpl::save_pid_settings()
+void PrinterImpl::pid_settings_save()
 {
     ReadRamDataRequest frame{Variable::PidP, 3};
     frame.send();
@@ -1193,9 +1241,15 @@ void PrinterImpl::save_pid_settings()
     show_forward_page();
 }
 
+void PrinterImpl::pid_settings_cancel()
+{
+    old_pid_.save(); // Restore old values
+    show_back_page();
+}
+
 //! Show the Steps settings
 //! @param init     Initialize the settings are use those already set
-void PrinterImpl::show_steps_settings(bool init)
+void PrinterImpl::steps_settings_show(bool init)
 {
     if(init)
     {
@@ -1214,7 +1268,7 @@ void PrinterImpl::show_steps_settings(bool init)
 }
 
 //! Save the Steps settings
-void PrinterImpl::save_steps_settings()
+void PrinterImpl::steps_settings_save()
 {
     ReadRamDataRequest frame{Variable::StepSettingsX, 4};
     frame.send();
@@ -1238,9 +1292,14 @@ void PrinterImpl::save_steps_settings()
     show_forward_page();
 }
 
+void PrinterImpl::steps_settings_cancel()
+{
+    show_back_page();
+}
+
 //! Show the Feedrate settings
 //! @param init     Initialize the settings are use those already set
-void PrinterImpl::show_feedrate_settings(bool init)
+void PrinterImpl::feedrate_settings_show(bool init)
 {
     if(init)
     {    
@@ -1261,7 +1320,7 @@ void PrinterImpl::show_feedrate_settings(bool init)
 }
 
 //! Save the Feedrate settings
-void PrinterImpl::save_feedrate_settings()
+void PrinterImpl::feedrate_settings_save()
 {
     ReadRamDataRequest frame{Variable::FeedrateMaxX, 6};
     frame.send();
@@ -1287,9 +1346,14 @@ void PrinterImpl::save_feedrate_settings()
     show_forward_page();
 }
 
+void PrinterImpl::feedrate_settings_cancel()
+{
+    show_back_page();
+}
+
 //! Show the Acceleration settings
 //! @param init     Initialize the settings are use those already set
-void PrinterImpl::show_acceleration_settings(bool init)
+void PrinterImpl::acceleration_settings_show(bool init)
 {
     if(init)
     {
@@ -1311,7 +1375,7 @@ void PrinterImpl::show_acceleration_settings(bool init)
 }
 
 //! Save the Acceleration settings
-void PrinterImpl::save_acceleration_settings()
+void PrinterImpl::acceleration_settings_save()
 {
     ReadRamDataRequest frame{Variable::AccelerationMaxX, 7};
     frame.send();
@@ -1338,9 +1402,14 @@ void PrinterImpl::save_acceleration_settings()
     show_forward_page();
 }
 
+void PrinterImpl::acceleration_settings_cancel()
+{
+    show_back_page();
+}
+
 //! Show the Jerk settings
 //! @param init     Initialize the settings are use those already set
-void PrinterImpl::show_jerk_settings(bool init)
+void PrinterImpl::jerk_settings_show(bool init)
 {
     if(init)
     {
@@ -1359,7 +1428,7 @@ void PrinterImpl::show_jerk_settings(bool init)
 }
 
 //! Save the Jerk settings
-void PrinterImpl::save_jerk_settings()
+void PrinterImpl::jerk_settings_save()
 {
     ReadRamDataRequest frame{Variable::JerkX, 4};
     frame.send();
@@ -1383,15 +1452,20 @@ void PrinterImpl::save_jerk_settings()
     show_forward_page();
 }
 
+void PrinterImpl::jerk_settings_cancel()
+{
+    show_back_page();
+}
+
 //! Reset all settings of the printer to factory ones.
 void PrinterImpl::factory_reset(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::ResetShow:               show_factory_reset_warning(); break;
-        case KeyValue::ResetConfirm:            do_factory_reset(); break;
-        case KeyValue::Cancel:                  cancel_factory_reset(); break;
-        default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Show:               show_factory_reset_warning(); break;
+        case KeyValue::ResetConfirm:       do_factory_reset(); break;
+        case KeyValue::Back:               cancel_factory_reset(); break;
+        default:                           Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
@@ -1421,9 +1495,9 @@ void PrinterImpl::statistics(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::StatisticsShow:          show_stats(); break;
-        case KeyValue::Back:                    stats_back(); break;
-        default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Show:    show_stats(); break;
+        case KeyValue::Back:    stats_back(); break;
+        default:                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
@@ -1462,6 +1536,22 @@ String PrinterImpl::get_lcd_firmware_version()
     return lcd_version;
 }
 
+//! Get the current LCD (screens) version.
+void PrinterImpl::get_lcd_version()
+{
+    ReadRamDataRequest frame{Variable::LcdVersionINT, 1};
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        Log::error() << F("Receiving Frame (LCD screens version)") << Log::endl();
+        return;
+    }
+
+    Uint16 version; response >> version;
+    adv_i3_pp_lcd_version_ = version.word;
+}
+
 //! Convert a version from its hexadecimal representation.
 //! @param hex_version  Hexadecimal representation of the version
 //! @return             Version as a string
@@ -1488,7 +1578,7 @@ void PrinterImpl::send_versions()
     frame.send();
 }
 
-bool PrinterImpl::is_version_valid() const
+bool PrinterImpl::is_lcd_version_valid() const
 {
     return adv_i3_pp_lcd_version_ >= advi3_pp_oldest_lcd_compatible_version  && adv_i3_pp_lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
 }
@@ -1500,7 +1590,7 @@ void PrinterImpl::about(KeyValue key_value)
     {
         case KeyValue::AboutForward:            about_forward(); break;
         case KeyValue::Back:                    about_back(); break;
-        default:                                show_about(static_cast<uint16_t>(key_value)); break;
+        default:                                show_about(); break;
     }
 }
 
@@ -1514,11 +1604,10 @@ void PrinterImpl::about_back()
     show_back_page();
 }
 
-void PrinterImpl::show_about(uint16_t version)
+void PrinterImpl::show_about()
 {
-    adv_i3_pp_lcd_version_ = version;
     send_versions();
-    show_page(is_version_valid() ? Page::About : Page::Mismatch);    
+    show_page(Page::About);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1533,7 +1622,7 @@ void PrinterImpl::pid_tuning(KeyValue key_value)
     {
         case KeyValue::PidTuningStep1:   pid_tuning_step1(); break;
         case KeyValue::PidTuningStep2:   pid_tuning_step2(); break;
-        case KeyValue::Cancel:           pid_tuning_cancel(); break;
+        case KeyValue::Back:             pid_tuning_cancel(); break;
         default:                         Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
@@ -1566,7 +1655,7 @@ void PrinterImpl::auto_pid_finished()
 {
     Log::log() << F("Auto PID finished") << Log::endl();
     enqueue_and_echo_commands_P(PSTR("M106 S0"));
-    show_pid_settings(false, false);
+    pid_settings_show(false, false);
 }
 
 void PrinterImpl::pid_tuning_cancel()
@@ -1582,7 +1671,7 @@ void PrinterImpl::leveling(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::LevelingHome:    leveling_home(); break;
+        case KeyValue::Show:            leveling_home(); break;
         case KeyValue::LevelingPoint1:  leveling_point1(); break;
         case KeyValue::LevelingPoint2:  leveling_point2(); break;
         case KeyValue::LevelingPoint3:  leveling_point3(); break;
@@ -1677,10 +1766,10 @@ void PrinterImpl::extruder_calibration(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::CalibrationShow:         show_extruder_calibration(); break;
+        case KeyValue::Show:                    show_extruder_calibration(); break;
         case KeyValue::CalibrationStart:        start_extruder_calibration(); break;
         case KeyValue::CalibrationSettings:     extruder_calibrartion_settings(); break;
-        case KeyValue::Cancel:                  cancel_extruder_calibration(); break;
+        case KeyValue::Back:                    cancel_extruder_calibration(); break;
         default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
@@ -1767,7 +1856,7 @@ void PrinterImpl::extruder_calibrartion_settings()
 	steps_.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
     Log::log() << F("Adjust: old = ") << planner.axis_steps_per_mm[E_AXIS] << F(", expected = ") << extruded_ << F(", measured = ") << (extruded_ + calibration_extruder_delta - e.word) << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
 
-    show_steps_settings(false);
+    steps_settings_show(false);
 }
 
 //! Cancel the extruder calibration.
@@ -1792,9 +1881,9 @@ void PrinterImpl::xyz_motors_calibration(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::CalibrationShow:         show_xyz_motors_calibration(); break;
+        case KeyValue::Show:                    show_xyz_motors_calibration(); break;
         case KeyValue::CalibrationSettings:     xyz_motors_calibration_settings(); break;
-        case KeyValue::Cancel:                  cancel_xyz_motors_calibration(); break;
+        case KeyValue::Back:                    cancel_xyz_motors_calibration(); break;
         default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
@@ -1836,11 +1925,157 @@ void PrinterImpl::xyz_motors_calibration_settings()
     // Fill all values because all 4 axis are displayed by  show_steps_settings
     steps_.axis_steps_per_mm[E_AXIS] = planner.axis_steps_per_mm[E_AXIS];
 
-    show_steps_settings(false);
+    steps_settings_show(false);
 }
 
 //! Cancel the extruder calibration.
 void PrinterImpl::cancel_xyz_motors_calibration()
+{
+    show_back_page();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Sensor Settings
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void PrinterImpl::sensor(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:            sensor_show(); break;
+        case KeyValue::SensorNone:      sensor_none(); break;
+        case KeyValue::SensorBLTouch:   sensor_bl_touch(); break;
+        case KeyValue::Sensor3Wires:    sensor_3_wires(); break;
+        case KeyValue::Save:            sensor_save(); break;
+        case KeyValue::Back:            sensor_cancel(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::sensor_show()
+{
+    // TODO
+    save_forward_page();
+    show_page(Page::Sensor);
+}
+
+void PrinterImpl::sensor_none()
+{
+    // TODO
+}
+
+void PrinterImpl::sensor_bl_touch()
+{
+    // TODO
+}
+
+void PrinterImpl::sensor_3_wires()
+{
+    // TODO
+}
+
+void PrinterImpl::sensor_save()
+{
+    // TODO
+}
+
+void PrinterImpl::sensor_cancel()
+{
+    show_back_page();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Firmware Settings
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void PrinterImpl::firmware(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:            firmware_settings_show(); break;
+        case KeyValue::Save:            firmware_settings_save(); break;
+        case KeyValue::Back:            firmware_settings_cancel(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::firmware_settings_show()
+{
+    // TODO
+    save_forward_page();
+    show_page(Page::Firmware);
+}
+
+void PrinterImpl::firmware_settings_save()
+{
+    // TODO
+}
+
+void PrinterImpl::firmware_settings_cancel()
+{
+    show_back_page();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// USB Settings
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void PrinterImpl::usb(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:            usb_settings_show(); break;
+        case KeyValue::Save:            usb_settings_save(); break;
+        case KeyValue::Back:            usb_settings_cancel(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::usb_settings_show()
+{
+    // TODO
+    save_forward_page();
+    show_page(Page::USB);
+}
+
+void PrinterImpl::usb_settings_save()
+{
+    // TODO
+}
+
+void PrinterImpl::usb_settings_cancel()
+{
+    show_back_page();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// LCD Settings
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void PrinterImpl::lcd(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:            lcd_settings_show(); break;
+        case KeyValue::Save:            lcd_settings_save(); break;
+        case KeyValue::Back:            lcd_settings_cancel(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::lcd_settings_show()
+{
+    // TODO
+    save_forward_page();
+    show_page(Page::LCD);
+}
+
+void PrinterImpl::lcd_settings_save()
+{
+    // TODO
+}
+
+void PrinterImpl::lcd_settings_cancel()
 {
     show_back_page();
 }
