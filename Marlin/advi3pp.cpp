@@ -110,6 +110,11 @@ void Printer::send_status_data()
     printer.send_full_status();
 }
 
+bool Printer::is_thermal_protection_enabled()
+{
+    return printer.is_thermal_protection_enabled();
+}
+
 // --------------------------------------------------------------------
 // PrinterImpl
 // --------------------------------------------------------------------
@@ -122,10 +127,10 @@ void PrinterImpl::setup()
 #endif
 
     Serial2.begin(advi3_pp_baudrate);
+    get_lcd_version();
     send_versions();
     clear_graphs();
 
-    get_lcd_version();
     if(is_lcd_version_valid())
         show_page(Page::Boot, false);
     else
@@ -172,6 +177,12 @@ void PrinterImpl::reset_presets()
     presets_[0].bed = DEFAULT_PREHEAT_PRESET1_BED;
     presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
     presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
+}
+
+bool PrinterImpl::is_thermal_protection_enabled() const
+{
+    // TODO
+    return true;
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

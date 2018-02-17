@@ -90,6 +90,7 @@ struct Printer
     static void reset_presets();
     static void temperature_error(const char* message);
     static void send_status_data();
+    static bool is_thermal_protection_enabled();
 };
 
 //! The Duplicator i3 Plus LCD Screen

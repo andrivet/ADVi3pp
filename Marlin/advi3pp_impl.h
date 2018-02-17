@@ -133,6 +133,7 @@ struct PrinterImpl
     void reset_presets();
     void temperature_error(const char* message);
     void send_full_status();
+    bool is_thermal_protection_enabled() const;
 
 private:
     void clear_graphs();

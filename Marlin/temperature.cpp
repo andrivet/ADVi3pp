@@ -269,8 +269,8 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
     #endif
 
     #if ENABLED(PIDTEMP)
-      #define _TOP_HOTEND HOTENDS - 1
-    #else
+      #define _TOP_HOTEND (HOTENDS - 1)
+#else
       #define _TOP_HOTEND -1
     #endif
     #if ENABLED(PIDTEMPBED)
@@ -432,6 +432,8 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
         next_temp_ms = ms + 2000UL;
 
         #if WATCH_THE_BED || WATCH_HOTENDS
+        if(advi3pp::Printer::is_thermal_protection_enabled())
+        {
           if (!heated && input > next_watch_temp) {
             if (input > watch_temp_target) heated = true;
             next_watch_temp = input + watch_temp_increase;
@@ -441,6 +443,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS],
             _temp_error(hotend, PSTR(MSG_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
           else if (heated && input < temp - MAX_OVERSHOOT_PID_AUTOTUNE)
             _temp_error(hotend, PSTR(MSG_T_THERMAL_RUNAWAY), PSTR(MSG_THERMAL_RUNAWAY));
+        }
         #endif
       } // every 2 seconds
       // Timeout after 20 minutes since the last undershoot/overshoot cycle
@@ -763,13 +766,18 @@ void Temperature::manage_heater() {
     #endif
 
     #if ENABLED(THERMAL_PROTECTION_HOTENDS)
+    if(advi3pp::Printer::is_thermal_protection_enabled())
+    {
       // Check for thermal runaway
       thermal_runaway_protection(&thermal_runaway_state_machine[e], &thermal_runaway_timer[e], current_temperature[e], target_temperature[e], e, THERMAL_PROTECTION_PERIOD, THERMAL_PROTECTION_HYSTERESIS);
+    }
     #endif
 
     soft_pwm_amount[e] = (current_temperature[e] > minttemp[e] || is_preheating(e)) && current_temperature[e] < maxttemp[e] ? (int)get_pid_output(e) >> 1 : 0;
 
     #if WATCH_HOTENDS
+    if(advi3pp::Printer::is_thermal_protection_enabled())
+    {
       // Make sure temperature is increasing
       if (watch_heater_next_ms[e] && ELAPSED(ms, watch_heater_next_ms[e])) { // Time to check this extruder?
         if (degHotend(e) < watch_target_temp[e])                             // Failed to increase enough?
@@ -777,6 +785,7 @@ void Temperature::manage_heater() {
         else                                                                 // Start again if the target is still far off
           start_watching_heater(e);
       }
+    }
     #endif
 
     #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
@@ -830,7 +839,10 @@ void Temperature::manage_heater() {
     #endif
 
     #if HAS_THERMALLY_PROTECTED_BED
+    if(advi3pp::Printer::is_thermal_protection_enabled())
+    {
       thermal_runaway_protection(&thermal_runaway_bed_state_machine, &thermal_runaway_bed_timer, current_temperature_bed, target_temperature_bed, -1, THERMAL_PROTECTION_BED_PERIOD, THERMAL_PROTECTION_BED_HYSTERESIS);
+    }
     #endif
 
     #if HEATER_IDLE_HANDLER
@@ -1094,7 +1106,7 @@ void Temperature::init() {
   #endif // HEATER_0_USES_MAX6675
 
   #ifdef DIDR2
-    #define ANALOG_SELECT(pin) do{ if (pin < 8) SBI(DIDR0, pin); else SBI(DIDR2, pin - 8); }while(0)
+    #define ANALOG_SELECT(pin) do{ if ((pin) < 8) SBI(DIDR0, pin); else SBI(DIDR2, pin - 8); }while(0)
   #else
     #define ANALOG_SELECT(pin) do{ SBI(DIDR0, pin); }while(0)
   #endif
@@ -1318,6 +1330,9 @@ void Temperature::init() {
   void Temperature::thermal_runaway_protection(Temperature::TRState * const state, millis_t * const timer, const float current, const float target, const int8_t heater_id, const uint16_t period_seconds, const uint16_t hysteresis_degc) {
 
     static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
+
+    if(!advi3pp::Printer::is_thermal_protection_enabled())
+      return;
 
     /**
         SERIAL_ECHO_START();
