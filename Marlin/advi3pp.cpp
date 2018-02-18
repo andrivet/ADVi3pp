@@ -127,14 +127,11 @@ void PrinterImpl::setup()
 #endif
 
     Serial2.begin(advi3_pp_baudrate);
-    get_lcd_version();
     send_versions();
     clear_graphs();
 
-    if(is_lcd_version_valid())
-        show_page(Page::Boot, false);
-    else
-        show_page(Page::Mismatch, false);
+    show_page(Page::Boot, false);
+	animate_logo(true);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -411,6 +408,14 @@ void PrinterImpl::read_lcd_serial()
         case Action::FeedrateSettings:      feedrate_settings(key_value); break;
         case Action::AccelerationSettings:  acceleration_settings(key_value); break;
         case Action::JerkSettings:          jerk_settings(key_value); break;
+        case Action::MoveXPlus:             move_x_plus(); break;
+        case Action::MoveXMinus:            move_x_minus(); break;
+        case Action::MoveYPlus:             move_y_plus(); break;
+        case Action::MoveYMinus:            move_y_minus(); break;
+        case Action::MoveZPlus:             move_z_plus(); break;
+        case Action::MoveZMinus:            move_z_minus(); break;
+        case Action::MoveEPlus:             move_e_plus(); break;
+        case Action::MoveEMinus:            move_e_minus(); break;
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
 }
@@ -530,7 +535,7 @@ void PrinterImpl::show_sd_files(uint16_t last_index)
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
-        frame << FixedSizeString(name, 26); // Important to truncate, there is only space for 26 chars
+        frame << FixedSizeString(name, 48); // Important to truncate, there is only space for 48 chars
     }
     frame.send(true);
 }
@@ -606,6 +611,10 @@ void PrinterImpl::sd_card(KeyValue key_value)
             if(last_file_index >= nb_visible_sd_files)
                 last_file_index -= nb_visible_sd_files;
             break;
+			
+		case KeyValue::Back:
+			show_back_page();
+			break;
 
         default:
             break;
@@ -956,17 +965,9 @@ void PrinterImpl::move(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::Show:                show_move(); break;
-        case KeyValue::MoveXPlus:           move_x_plus(); break;
-        case KeyValue::MoveXMinus:          move_x_minus(); break;
         case KeyValue::MoveXHome:           move_x_home(); break;
-        case KeyValue::MoveYPlus:           move_y_plus(); break;
-        case KeyValue::MoveYMinus:          move_y_minus(); break;
         case KeyValue::MoveYHome:           move_y_home(); break;
-        case KeyValue::MoveZPlus:           move_z_plus(); break;
-        case KeyValue::MoveZMinus:          move_z_minus(); break;
         case KeyValue::MoveZHome:           move_z_home(); break;
-        case KeyValue::MoveEPlus:           move_e_plus(); break;
-        case KeyValue::MoveEMinus:          move_e_minus(); break;
         case KeyValue::MoveAllHome:         move_all_home(); break;
         case KeyValue::MoveAllDisable:      disable_motors(); break;
         case KeyValue::Back:                move_back(); break;
@@ -1546,21 +1547,13 @@ String PrinterImpl::get_lcd_firmware_version()
     return lcd_version;
 }
 
-//! Get the current LCD (screens) version.
-void PrinterImpl::get_lcd_version()
+void PrinterImpl::animate_logo(bool start)
 {
-    ReadRamDataRequest frame{Variable::LcdVersionINT, 1};
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
-    {
-        Log::error() << F("Receiving Frame (LCD screens version)") << Log::endl();
-        return;
-    }
-
-    Uint16 version; response >> version;
-    adv_i3_pp_lcd_version_ = version.word;
+	WriteRamDataRequest frame{Variable::LogoAnimation};
+	frame << 0x5_u16;
+	frame.send();
 }
+
 
 //! Convert a version from its hexadecimal representation.
 //! @param hex_version  Hexadecimal representation of the version
@@ -1580,17 +1573,17 @@ void PrinterImpl::send_versions()
     String advi3pp_lcd_version = convert_version(adv_i3_pp_lcd_version_);
     String lcd_firmware_version = get_lcd_firmware_version();
 
-    WriteRamDataRequest frame{Variable::MarlinVersion};
-    frame << FixedSizeString(marlin_version, 16)
-          << FixedSizeString(motherboard_version, 16)
+    WriteRamDataRequest frame{Variable::MotherboardVersion};
+    frame << FixedSizeString(motherboard_version, 16)
           << FixedSizeString(advi3pp_lcd_version, 16)
-          << FixedSizeString(lcd_firmware_version, 16);
+          << FixedSizeString(lcd_firmware_version, 16)
+		  << FixedSizeString(marlin_version, 16);
     frame.send();
 }
 
 bool PrinterImpl::is_lcd_version_valid() const
 {
-    return adv_i3_pp_lcd_version_ >= advi3_pp_oldest_lcd_compatible_version  && adv_i3_pp_lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
+    return adv_i3_pp_lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && adv_i3_pp_lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
 }
 
 //! Display the About screen,
@@ -1600,7 +1593,7 @@ void PrinterImpl::about(KeyValue key_value)
     {
         case KeyValue::AboutForward:            about_forward(); break;
         case KeyValue::Back:                    about_back(); break;
-        default:                                show_about(); break;
+        default:                                show_about(static_cast<uint16_t>(key_value)); break;
     }
 }
 
@@ -1614,10 +1607,11 @@ void PrinterImpl::about_back()
     show_back_page();
 }
 
-void PrinterImpl::show_about()
+void PrinterImpl::show_about(uint16_t version)
 {
+    adv_i3_pp_lcd_version_ = version;
     send_versions();
-    show_page(Page::About);
+    show_page(is_lcd_version_valid() ? Page::About : Page::Mismatch);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
