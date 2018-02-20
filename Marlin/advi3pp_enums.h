@@ -151,6 +151,7 @@ enum class Variable: uint16_t
     Measure1                = 0x0501,
     Measure2                = 0x0502,
     Measure3                = 0x0503,
+    ADVi3ppLCDversion       = 0x0504
 };
 
 //! List of actions sent by the LCD.
@@ -246,9 +247,7 @@ enum class KeyValue: uint16_t
     PidTuningStep1          = 0x0000,
     PidTuningStep2          = 0x0001,
 
-    SensorNone              = 0x0001,
-    SensorBLTouch           = 0x0002,
-    Sensor3Wires            = 0x0003,
+    SensorSwitch            = 0x0001,
 
     FirmwareProtection      = 0x0001,
     FirmwareHeadParking     = 0x0002,

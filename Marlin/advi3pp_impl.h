@@ -149,6 +149,7 @@ private:
     void show_sd_files(uint16_t last_index);
     void get_file_name(uint8_t index, String& name);
     String get_lcd_firmware_version();
+    void get_advi3pp_lcd_version();
     bool is_lcd_version_valid() const;
     void set_next_background_task_time(unsigned int delta = 500);
     void set_next_update_time(unsigned int delta = 500);
@@ -278,9 +279,7 @@ private:
 
     void sensor(KeyValue key_value);
     void sensor_show();
-    void sensor_none();
-    void sensor_bl_touch();
-    void sensor_3_wires();
+    void sensor_switch();
     void sensor_save();
     void sensor_cancel();
 
@@ -305,7 +304,7 @@ private:
     void cancel_factory_reset();
 
     void about(KeyValue key_value);
-    void show_about(uint16_t version);
+    void show_about();
     void about_forward();
     void about_back();
 

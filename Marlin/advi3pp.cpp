@@ -127,10 +127,11 @@ void PrinterImpl::setup()
 #endif
 
     Serial2.begin(advi3_pp_baudrate);
+    get_advi3pp_lcd_version();
     send_versions();
     clear_graphs();
 
-    show_page(Page::Boot, false);
+    show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
 	animate_logo(true);
 }
 
@@ -1527,6 +1528,22 @@ void PrinterImpl::stats_back()
 // About & Versions
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+void PrinterImpl::get_advi3pp_lcd_version()
+{
+    ReadRamDataRequest frame{Variable::ADVi3ppLCDversion, 1};
+    frame.send();
+
+    ReadRamDataResponse response;
+    if(!response.receive(frame))
+    {
+        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
+        return;
+    }
+
+    Uint16 version; frame >> version;
+    adv_i3_pp_lcd_version_= version.word;
+}
+
 //! Get the current LCD firmware version.
 //! @return     The version as a string.
 String PrinterImpl::get_lcd_firmware_version()
@@ -1593,7 +1610,7 @@ void PrinterImpl::about(KeyValue key_value)
     {
         case KeyValue::AboutForward:            about_forward(); break;
         case KeyValue::Back:                    about_back(); break;
-        default:                                show_about(static_cast<uint16_t>(key_value)); break;
+        default:                                show_about(); break;
     }
 }
 
@@ -1607,11 +1624,9 @@ void PrinterImpl::about_back()
     show_back_page();
 }
 
-void PrinterImpl::show_about(uint16_t version)
+void PrinterImpl::show_about()
 {
-    adv_i3_pp_lcd_version_ = version;
-    send_versions();
-    show_page(is_lcd_version_valid() ? Page::About : Page::Mismatch);
+    show_page(Page::About);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1947,9 +1962,7 @@ void PrinterImpl::sensor(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::Show:            sensor_show(); break;
-        case KeyValue::SensorNone:      sensor_none(); break;
-        case KeyValue::SensorBLTouch:   sensor_bl_touch(); break;
-        case KeyValue::Sensor3Wires:    sensor_3_wires(); break;
+        case KeyValue::SensorSwitch:    sensor_switch(); break;
         case KeyValue::Save:            sensor_save(); break;
         case KeyValue::Back:            sensor_cancel(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
@@ -1963,17 +1976,7 @@ void PrinterImpl::sensor_show()
     show_page(Page::Sensor);
 }
 
-void PrinterImpl::sensor_none()
-{
-    // TODO
-}
-
-void PrinterImpl::sensor_bl_touch()
-{
-    // TODO
-}
-
-void PrinterImpl::sensor_3_wires()
+void PrinterImpl::sensor_switch()
 {
     // TODO
 }
