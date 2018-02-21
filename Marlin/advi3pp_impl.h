@@ -136,7 +136,6 @@ struct PrinterImpl
     bool is_thermal_protection_enabled() const;
 
 private:
-	void animate_logo(bool start);
     void clear_graphs();
     void send_versions();
     void execute_background_task();
@@ -295,8 +294,10 @@ private:
 
     void lcd(KeyValue key_value);
     void lcd_settings_show();
-    void lcd_settings_save();
-    void lcd_settings_cancel();
+    void lcd_settings_buzzer();
+    void lcd_settings_dimming();
+    void lcd_settings_back();
+    void lcd_brightness(KeyValue key_value);
 
     void factory_reset(KeyValue key_value);
     void show_factory_reset_warning();
@@ -304,8 +305,8 @@ private:
     void cancel_factory_reset();
 
     void about(KeyValue key_value);
-    void show_about();
-    void about_forward();
+    void about_show();
+    void about_mismatch_forward();
     void about_back();
 
     // Background tasks

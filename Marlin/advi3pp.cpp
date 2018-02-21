@@ -132,7 +132,6 @@ void PrinterImpl::setup()
     clear_graphs();
 
     show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
-	animate_logo(true);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -401,6 +400,7 @@ void PrinterImpl::read_lcd_serial()
         case Action::Firmware:              firmware(key_value); break;
         case Action::USB:                   usb(key_value); break;
         case Action::LCD:                   lcd(key_value); break;
+        case Action::LCDBrightness:         lcd_brightness(key_value); break;
         case Action::Statistics:            statistics(key_value); break;
         case Action::About:                 about(key_value); break;
         case Action::PrintSettings:         print_settings(key_value); break;
@@ -1530,18 +1530,19 @@ void PrinterImpl::stats_back()
 
 void PrinterImpl::get_advi3pp_lcd_version()
 {
-    ReadRamDataRequest frame{Variable::ADVi3ppLCDversion, 1};
-    frame.send();
+    ReadRamDataRequest request{Variable::ADVi3ppLCDversion, 1};
+    request.send();
 
     ReadRamDataResponse response;
-    if(!response.receive(frame))
+    if(!response.receive(request))
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;
     }
 
-    Uint16 version; frame >> version;
+    Uint16 version; response >> version;
     adv_i3_pp_lcd_version_= version.word;
+	Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
 }
 
 //! Get the current LCD firmware version.
@@ -1563,14 +1564,6 @@ String PrinterImpl::get_lcd_firmware_version()
     Log::log() << F("LCD Firmware raw version = ") << version.byte << Log::endl();
     return lcd_version;
 }
-
-void PrinterImpl::animate_logo(bool start)
-{
-	WriteRamDataRequest frame{Variable::LogoAnimation};
-	frame << 0x5_u16;
-	frame.send();
-}
-
 
 //! Convert a version from its hexadecimal representation.
 //! @param hex_version  Hexadecimal representation of the version
@@ -1608,15 +1601,16 @@ void PrinterImpl::about(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::AboutForward:            about_forward(); break;
+		case KeyValue::Show:					about_show(); break;
+        case KeyValue::MismatchForward:         about_mismatch_forward(); break;
         case KeyValue::Back:                    about_back(); break;
-        default:                                show_about(); break;
+        default:								Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
-void PrinterImpl::about_forward()
+void PrinterImpl::about_mismatch_forward()
 {
-    show_page(Page::About, false);
+    show_page(Page::Main, false);
 }
 
 void PrinterImpl::about_back()
@@ -1624,7 +1618,7 @@ void PrinterImpl::about_back()
     show_back_page();
 }
 
-void PrinterImpl::show_about()
+void PrinterImpl::about_show()
 {
     show_page(Page::About);
 }
@@ -2064,8 +2058,9 @@ void PrinterImpl::lcd(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::Show:            lcd_settings_show(); break;
-        case KeyValue::Save:            lcd_settings_save(); break;
-        case KeyValue::Back:            lcd_settings_cancel(); break;
+        case KeyValue::LCDBuzzer:       lcd_settings_buzzer(); break;
+        case KeyValue::LCDDimming:      lcd_settings_dimming(); break;
+        case KeyValue::Back:            lcd_settings_back(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
@@ -2077,14 +2072,30 @@ void PrinterImpl::lcd_settings_show()
     show_page(Page::LCD);
 }
 
-void PrinterImpl::lcd_settings_save()
+void PrinterImpl::lcd_settings_buzzer()
 {
     // TODO
 }
 
-void PrinterImpl::lcd_settings_cancel()
+void PrinterImpl::lcd_settings_dimming()
+{
+    // TODO
+}
+
+void PrinterImpl::lcd_settings_back()
 {
     show_back_page();
+}
+
+void PrinterImpl::lcd_brightness(KeyValue key_value)
+{
+    static const uint8_t LCD_MIN = 0x01;
+    static const uint8_t LCD_MAX = 0x40;
+    uint8_t brightness = static_cast<uint8_t>(key_value);
+
+    WriteRegisterDataRequest frame{Register::Brightness};
+    frame << Uint8(brightness < LCD_MIN ? LCD_MIN : (brightness > LCD_MAX ? LCD_MAX : brightness));
+    frame.send(true);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

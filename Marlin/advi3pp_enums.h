@@ -146,6 +146,7 @@ enum class Variable: uint16_t
     Preset2Hotend           = 0x0322,
     Preset3Bed              = 0x0323,
     Preset4Hotend           = 0x0324,
+    LCDBrightness           = 0x0325, // Also an action
 
     TargetTemperature       = 0x0500,
     Measure1                = 0x0501,
@@ -190,6 +191,8 @@ enum class Action: uint16_t
     MoveZPlus               = 0x0425,
     MoveEMinus              = 0x0426,
     MoveEPlus               = 0x0427,
+
+    LCDBrightness           = 0x0325, // Also a Variable
 
     Undefined               = 0xFFFF
 };
@@ -258,7 +261,7 @@ enum class KeyValue: uint16_t
     LCDBuzzer               = 0x0001,
     LCDDimming              = 0x0002,
 
-    AboutForward            = 0x0001,
+    MismatchForward         = 0x0001,
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF
