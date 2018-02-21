@@ -318,7 +318,7 @@ void Frame::reset(Command command)
 }
 
 //! Wait for the given amount of bytes from the LCD display.
-//! @param length       Number of bvtes to be available before returning
+//! @param length       Number of bytes to be available before returning
 void Frame::wait_for_data(uint8_t length)
 {
     while (Serial2.available() < length)
@@ -418,7 +418,7 @@ Frame& operator>>(Frame& frame, Uint8& data)
 //! @return         Itself
 Frame& operator>>(Frame& frame, Uint16& data)
 {
-    if(frame.position_ >= 3 + frame.get_length() - 1)
+    if(frame.position_ >= 3 + frame.get_length() + 1)
     {
         Log::log() << F("Try to read a word after the end of data") << Log::endl();
         return frame;
@@ -546,12 +546,16 @@ void WriteRamDataRequest::reset(Variable var)
 ReadRamDataRequest::ReadRamDataRequest(Variable var, uint8_t nb_words)
 : Frame{Command::ReadRamData}
 {
-    *this << var << Uint8{nb_words};
+    auto h = static_cast<uint16_t>(var) / 256;
+    auto l = static_cast<uint16_t>(var) % 256;
+    *this << Uint8{h} << Uint8{l} << Uint8{nb_words};
 }
 
 Variable ReadRamDataRequest::get_variable() const
 {
-    return static_cast<Variable>(buffer_[Position::Variable] * 256 + buffer_[Position::Variable + 1]);
+    auto h = buffer_[Position::Variable];
+    auto l = buffer_[Position::Variable + 1];
+    return static_cast<Variable>(h * 256 + l);
 }
 
 uint8_t ReadRamDataRequest::get_nb_words() const
