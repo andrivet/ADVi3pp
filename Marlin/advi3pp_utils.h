@@ -296,6 +296,19 @@ struct ReadRegisterDataResponse: Frame
 };
 
 // --------------------------------------------------------------------
+// ReadRegister (Request and Response)
+// --------------------------------------------------------------------
+
+struct ReadRegister: ReadRegisterDataResponse
+{
+    ReadRegister(Register reg, uint8_t nb_bytes);
+    bool send_and_receive();
+
+private:
+    ReadRegisterDataRequest request;
+};
+
+// --------------------------------------------------------------------
 // WriteRamDataRequest
 // --------------------------------------------------------------------
 
@@ -326,6 +339,20 @@ struct ReadRamDataResponse: Frame
     bool receive(Variable var, uint8_t nb_words);
     bool receive(const ReadRamDataRequest& request);
 };
+
+// --------------------------------------------------------------------
+// ReadRamData (Request and Response)
+// --------------------------------------------------------------------
+
+struct ReadRamData: ReadRamDataResponse
+{
+    ReadRamData(Variable var, uint8_t nb_words);
+    bool send_and_receive();
+
+private:
+    ReadRamDataRequest request;
+};
+
 
 // --------------------------------------------------------------------
 // WriteCurveDataRequest

@@ -276,17 +276,14 @@ void PrinterImpl::show_page(Page page, bool save_back)
 //! Retrieve the current page on the LCD screen
 Page PrinterImpl::get_current_page()
 {
-    ReadRegisterDataRequest frame{Register::PictureID, 2};
-    frame.send();
-
-    ReadRegisterDataResponse response;
-    if(!response.receive(frame))
+    ReadRegister frame{Register::PictureID, 2};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Reading PictureID") << Log::endl();
         return Page::None;
     }
 
-    Uint16 page; response >> page;
+    Uint16 page; frame >> page;
     Log::log() << F("Current page index = ") << page.word << Log::endl();
     return static_cast<Page>(page.word);
 }
@@ -786,18 +783,14 @@ void PrinterImpl::set_target_temperature(uint16_t temperature)
 //! @return     The temperature
 uint16_t PrinterImpl::PrinterImpl::get_target_temperature()
 {
-    ReadRamDataRequest frame{Variable::TargetTemperature, 1};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData frame{Variable::TargetTemperature, 1};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return 0;
     }
 
-    Uint16 hotend;
-    response >> hotend;
+    Uint16 hotend; frame >> hotend;
     return hotend.word;
 }
 
@@ -925,11 +918,8 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
         return;
     }
 
-    ReadRamDataRequest frame{Variable::Preset1Bed, 6};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData frame{Variable::Preset1Bed, 6};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Presets)") << Log::endl();
         return;
@@ -938,7 +928,7 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
     Uint16 hotend, bed;
     for(auto& preset : presets_)
     {
-        response >> hotend >> bed;
+        frame >> hotend >> bed;
         preset.hotend = hotend.word;
         preset.bed = bed.word;
     }
@@ -1196,11 +1186,8 @@ void PrinterImpl::print_settings_show()
 //! Save the printing settings.
 void PrinterImpl::print_settings_save()
 {
-    ReadRamDataRequest frame{Variable::PrintSettingsSpeed, 4};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData response{Variable::PrintSettingsSpeed, 4};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Print Settings)") << Log::endl();
         return;
@@ -1243,11 +1230,8 @@ void PrinterImpl::pid_settings_show(bool back, bool init)
 //! Save the PID settings
 void PrinterImpl::pid_settings_save()
 {
-    ReadRamDataRequest frame{Variable::PidP, 3};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData response{Variable::PidP, 3};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (PID Settings)") << Log::endl();
         return;
@@ -1294,11 +1278,8 @@ void PrinterImpl::steps_settings_show(bool init)
 //! Save the Steps settings
 void PrinterImpl::steps_settings_save()
 {
-    ReadRamDataRequest frame{Variable::StepSettingsX, 4};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData response{Variable::StepSettingsX, 4};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Steps Settings)") << Log::endl();
         return;
@@ -1346,11 +1327,8 @@ void PrinterImpl::feedrate_settings_show(bool init)
 //! Save the Feedrate settings
 void PrinterImpl::feedrate_settings_save()
 {
-    ReadRamDataRequest frame{Variable::FeedrateMaxX, 6};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData response{Variable::FeedrateMaxX, 6};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Feedrate Settings)") << Log::endl();
         return;
@@ -1401,11 +1379,8 @@ void PrinterImpl::acceleration_settings_show(bool init)
 //! Save the Acceleration settings
 void PrinterImpl::acceleration_settings_save()
 {
-    ReadRamDataRequest frame{Variable::AccelerationMaxX, 7};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData response{Variable::AccelerationMaxX, 7};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
         return;
@@ -1454,11 +1429,8 @@ void PrinterImpl::jerk_settings_show(bool init)
 //! Save the Jerk settings
 void PrinterImpl::jerk_settings_save()
 {
-    ReadRamDataRequest frame{Variable::JerkX, 4};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData response{Variable::JerkX, 4};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
         return;
@@ -1542,11 +1514,8 @@ void PrinterImpl::stats_back()
 
 void PrinterImpl::get_advi3pp_lcd_version()
 {
-    ReadRamDataRequest request{Variable::ADVi3ppLCDversion, 1};
-    request.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(request))
+    ReadRamData response{Variable::ADVi3ppLCDversion, 1};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;
@@ -1561,11 +1530,8 @@ void PrinterImpl::get_advi3pp_lcd_version()
 //! @return     The version as a string.
 String PrinterImpl::get_lcd_firmware_version()
 {
-    ReadRegisterDataRequest frame{Register::Version, 1};
-    frame.send();
-
-    ReadRegisterDataResponse response;
-    if(!response.receive(frame))
+    ReadRegister response{Register::Version, 1};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Version)") << Log::endl();
         return F("Unknown");
@@ -1861,11 +1827,8 @@ void PrinterImpl::extruder_calibration_finished()
 //! Compute the extruder (E axis) new value and show the steps settings.
 void PrinterImpl::extruder_calibrartion_settings()
 {
-    ReadRamDataRequest frame{Variable::Measure1, 1};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData response{Variable::Measure1, 1};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;
@@ -1931,11 +1894,8 @@ float adjust_value(float old, double expected, double measured)
 
 void PrinterImpl::xyz_motors_calibration_settings()
 {
-    ReadRamDataRequest frame{Variable::Measure1, 3};
-    frame.send();
-
-    ReadRamDataResponse response;
-    if(!response.receive(frame))
+    ReadRamData response{Variable::Measure1, 3};
+    if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;

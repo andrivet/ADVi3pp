@@ -532,6 +532,18 @@ bool ReadRegisterDataResponse::receive(const ReadRegisterDataRequest& request)
     return receive(request.get_register(), request.get_nb_bytes());
 }
 
+ReadRegister::ReadRegister(Register reg, uint8_t nb_bytes)
+: request{reg, nb_bytes}
+{
+}
+
+bool ReadRegister::send_and_receive()
+{
+    request.send();
+    return receive(request);
+}
+
+
 WriteRamDataRequest::WriteRamDataRequest(Variable var)
 : Frame{Command::WriteRamData}
 {
@@ -600,6 +612,18 @@ bool ReadRamDataResponse::receive(const ReadRamDataRequest& request)
 {
     return receive(request.get_variable(), request.get_nb_words());
 }
+
+ReadRamData::ReadRamData(Variable var, uint8_t nb_words)
+: request{var, nb_words}
+{
+}
+
+bool ReadRamData::send_and_receive()
+{
+    request.send();
+    return receive(request);
+}
+
 
 WriteCurveDataRequest::WriteCurveDataRequest(uint8_t channels)
 : Frame{Command::WriteCurveData}
