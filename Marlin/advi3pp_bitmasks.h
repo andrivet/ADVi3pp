@@ -104,6 +104,45 @@ operator ^=(E &lhs, E rhs)
     return lhs;
 }
 
+template<typename E>
+typename enable_if<enable_bitmask_operators<E>::enable, bool>::type
+test_all_bits(E lhs, E rhs)
+{
+    return (lhs & rhs) == rhs;
+}
+
+template<typename E>
+typename enable_if<enable_bitmask_operators<E>::enable, bool>::type
+test_one_bit_of(E lhs, E rhs)
+{
+    return (lhs & rhs) != 0;
+}
+
+template<typename E>
+typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
+flip_bits(E& lhs, E rhs)
+{
+    lhs ^= rhs;
+    return lhs;
+}
+
+template<typename E>
+typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
+set_bits(E& lhs, E rhs)
+{
+    lhs |= rhs;
+    return lhs;
+}
+
+template<typename E>
+typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
+clear_bits(E& lhs, E rhs)
+{
+    lhs &= ~rhs;
+    return lhs;
+}
+
+
 #define ENABLE_BITMASK_OPERATOR(E) \
 template<> struct enable_bitmask_operators<E> { static const bool enable = true; }
 
