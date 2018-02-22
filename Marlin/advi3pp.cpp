@@ -149,6 +149,10 @@ void PrinterImpl::store_presets(eeprom_write write, int& eeprom_index, uint16_t&
         write(eeprom_index, reinterpret_cast<uint8_t*>(&preset.hotend), sizeof(preset.hotend), &working_crc);
         write(eeprom_index, reinterpret_cast<uint8_t*>(&preset.bed), sizeof(preset.hotend), &working_crc);
     }
+
+    write(eeprom_index, reinterpret_cast<uint8_t*>(&brightness), sizeof(brightness), &working_crc);
+    write(eeprom_index, reinterpret_cast<uint8_t*>(&current_sensor), sizeof(current_sensor), &working_crc);
+    write(eeprom_index, reinterpret_cast<uint8_t*>(&features), sizeof(features), &working_crc);
 }
 
 //! Restore presets from permanent memory.
@@ -162,6 +166,10 @@ void PrinterImpl::restore_presets(eeprom_read read, int& eeprom_index, uint16_t&
         read(eeprom_index, reinterpret_cast<uint8_t*>(&preset.hotend), sizeof(preset.hotend), &working_crc);
         read(eeprom_index, reinterpret_cast<uint8_t*>(&preset.bed), sizeof(preset.hotend), &working_crc);
     }
+
+    read(eeprom_index, reinterpret_cast<uint8_t*>(&brightness), sizeof(brightness), &working_crc);
+    read(eeprom_index, reinterpret_cast<uint8_t*>(&current_sensor), sizeof(current_sensor), &working_crc);
+    read(eeprom_index, reinterpret_cast<uint8_t*>(&features), sizeof(features), &working_crc);
 }
 
 //! Reset presets.
@@ -174,12 +182,15 @@ void PrinterImpl::reset_presets()
     presets_[0].bed = DEFAULT_PREHEAT_PRESET1_BED;
     presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
     presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
+
+    brightness = DEFAULT_BRIGHTNESS;
+    current_sensor = DEFAULT_SENSOR;
+    features = DEFAULT_FEATURES;
 }
 
 bool PrinterImpl::is_thermal_protection_enabled() const
 {
-    // TODO
-    return true;
+    return (features & Feature::ThermalProtection) == Feature::ThermalProtection;
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -398,7 +409,6 @@ void PrinterImpl::read_lcd_serial()
         case Action::PidTuning:             pid_tuning(key_value); break;
         case Action::Sensor:                sensor(key_value); break;
         case Action::Firmware:              firmware(key_value); break;
-        case Action::USB:                   usb(key_value); break;
         case Action::LCD:                   lcd(key_value); break;
         case Action::LCDBrightness:         lcd_brightness(key_value); break;
         case Action::Statistics:            statistics(key_value); break;
@@ -2017,37 +2027,6 @@ void PrinterImpl::firmware_settings_cancel()
     show_back_page();
 }
 
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// USB Settings
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-void PrinterImpl::usb(KeyValue key_value)
-{
-    switch(key_value)
-    {
-        case KeyValue::Show:            usb_settings_show(); break;
-        case KeyValue::Save:            usb_settings_save(); break;
-        case KeyValue::Back:            usb_settings_cancel(); break;
-        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
-    }
-}
-
-void PrinterImpl::usb_settings_show()
-{
-    // TODO
-    save_forward_page();
-    show_page(Page::USB);
-}
-
-void PrinterImpl::usb_settings_save()
-{
-    // TODO
-}
-
-void PrinterImpl::usb_settings_cancel()
-{
-    show_back_page();
-}
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // LCD Settings

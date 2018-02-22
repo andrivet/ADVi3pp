@@ -137,7 +137,7 @@ enum class Variable: uint16_t
     JerkY                   = 0x0319,
     JerkZ                   = 0x031A,
     JerkE                   = 0x031B,
-    USBBaudrate             = 0x031C,
+    LCDBrightness           = 0x031C,  // Also an action
     CurrentSensor           = 0x031D,
     Features                = 0x031E,
     Preset1Bed              = 0x031F,
@@ -146,7 +146,6 @@ enum class Variable: uint16_t
     Preset2Hotend           = 0x0322,
     Preset3Bed              = 0x0323,
     Preset4Hotend           = 0x0324,
-    LCDBrightness           = 0x0325, // Also an action
 
     TargetTemperature       = 0x0500,
     Measure1                = 0x0501,
@@ -192,7 +191,7 @@ enum class Action: uint16_t
     MoveEMinus              = 0x0426,
     MoveEPlus               = 0x0427,
 
-    LCDBrightness           = 0x0325, // Also a Variable
+    LCDBrightness           = 0x031C, // Also a Variable
 
     Undefined               = 0xFFFF
 };
@@ -262,6 +261,28 @@ enum class KeyValue: uint16_t
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF
+};
+
+enum class Sensor
+{
+    None        = 0x0000,
+    BLTouch     = 0x0001,
+    ThreeWires  = 0x0002
+};
+
+enum class Feature
+{
+    ThermalProtection   = 0b0000000000000001,
+    HeadParking         = 0b0000000000000010,
+    Buzzer              = 0b0000000000000100,
+    Dimming             = 0b0000000000001000
+};
+ENABLE_BITMASK_OPERATOR(Feature);
+
+enum class Brightness
+{
+    Min = 0x00,
+    Max = 0x40
 };
 
 }}

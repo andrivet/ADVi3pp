@@ -25,11 +25,16 @@
 #ifndef ADV_I3_PLUS_PLUS_PRIVATE_H
 #define ADV_I3_PLUS_PLUS_PRIVATE_H
 
+#include "advi3pp_bitmasks.h"
 #include "advi3pp_enums.h"
 #include "advi3pp.h"
 #include "advi3pp_utils.h"
 
 namespace advi3pp { inline namespace internals {
+
+static const Sensor DEFAULT_SENSOR = Sensor::None;
+static const Feature DEFAULT_FEATURES = Feature::ThermalProtection | Feature::HeadParking | Feature::Dimming;
+static const Brightness DEFAULT_BRIGHTNESS = Brightness::Max;
 
 enum class BackgroundTask: uint8_t
 {
@@ -287,11 +292,6 @@ private:
     void firmware_settings_save();
     void firmware_settings_cancel();
 
-    void usb(KeyValue key_value);
-    void usb_settings_show();
-    void usb_settings_save();
-    void usb_settings_cancel();
-
     void lcd(KeyValue key_value);
     void lcd_settings_show();
     void lcd_settings_buzzer();
@@ -334,6 +334,9 @@ private:
     JerkSettings jerks_{};
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
     double extruded_ = 0.0;
+    Sensor current_sensor = DEFAULT_SENSOR;
+    Feature features =  DEFAULT_FEATURES;
+    Brightness brightness = DEFAULT_BRIGHTNESS;
 };
 
 // --------------------------------------------------------------------
