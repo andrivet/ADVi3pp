@@ -74,7 +74,6 @@ enum class Page: uint8_t
     Temperature             = 86,
     Infos                   = 88,
     Firmware                = 90,
-    USB                     = 92,
     Sensor                  = 94,
     LCD                     = 96
 };

@@ -344,9 +344,10 @@ bool Frame::receive()
 
     wait_for_data(3);
 
-    if(Serial2.read() != HEADER_BYTE_0 || Serial2.read() != HEADER_BYTE_1)
+	uint8_t header0 = Serial2.read(), header1 = Serial2.read();
+    if(header0 != HEADER_BYTE_0 || header1 != HEADER_BYTE_1)
     {
-        Log::error() << F("Invalid header when receiving a Frame") << Log::endl();
+        Log::error() << F("Invalid header when receiving a Frame: ") << header0 << ", " << header1 << Log::endl();
         return false;
     }
 

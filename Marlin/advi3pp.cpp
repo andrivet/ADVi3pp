@@ -42,7 +42,7 @@ namespace
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x300;
     // Modify also DETAILED_BUILD_VERSION in Version.h
 
-    const unsigned long advi3_pp_baudrate = 115200;
+    const unsigned long advi3_pp_baudrate = 250000;
     const uint16_t nb_visible_sd_files = 5;
     const uint16_t calibration_cube_size = 20; // 20 mm
     const uint16_t calibration_extruder_filament = 100; // 10 cm
@@ -2091,7 +2091,7 @@ void PrinterImpl::lcd_brightness(KeyValue key_value)
 {
     static const uint8_t LCD_MIN = 0x01;
     static const uint8_t LCD_MAX = 0x40;
-    uint8_t brightness = static_cast<uint8_t>(key_value);
+    auto brightness = static_cast<uint8_t>(key_value);
 
     WriteRegisterDataRequest frame{Register::Brightness};
     frame << Uint8(brightness < LCD_MIN ? LCD_MIN : (brightness > LCD_MAX ? LCD_MAX : brightness));

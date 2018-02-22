@@ -172,7 +172,7 @@ enum class Action: uint16_t
     PidTuning               = 0x040B,
     Sensor                  = 0x040C,
     Firmware                = 0x040D,
-    USB                     = 0x040E,
+    //unused                = 0x040E,
     LCD                     = 0x040F,
     Statistics              = 0x0410,
     About                   = 0x0411,
@@ -254,9 +254,6 @@ enum class KeyValue: uint16_t
 
     FirmwareProtection      = 0x0001,
     FirmwareHeadParking     = 0x0002,
-
-    USBBaudrateMinus        = 0x0001,
-    USBBaudratePlus         = 0x0002,
 
     LCDBuzzer               = 0x0001,
     LCDDimming              = 0x0002,
