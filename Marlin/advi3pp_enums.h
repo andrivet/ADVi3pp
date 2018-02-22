@@ -272,10 +272,10 @@ enum class Sensor
 
 enum class Feature
 {
-    ThermalProtection   = 0b0000000000000001,
-    HeadParking         = 0b0000000000000010,
-    Buzzer              = 0b0000000000000100,
-    Dimming             = 0b0000000000001000
+    HeadParking         = 0b0000000000000001,
+    ThermalProtection   = 0b0000000000000010,
+    Dimming             = 0b0000000000000100,
+    Buzzer              = 0b0000000000001000,
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 
