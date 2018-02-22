@@ -131,6 +131,8 @@ void PrinterImpl::setup()
     send_versions();
     clear_graphs();
 
+
+
     show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
 }
 
@@ -2003,26 +2005,36 @@ void PrinterImpl::firmware(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::Show:            firmware_settings_show(); break;
-        case KeyValue::Save:            firmware_settings_save(); break;
-        case KeyValue::Back:            firmware_settings_cancel(); break;
-        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Show:                firmware_settings_show(); break;
+        case KeyValue::FirmwareProtection:  firmware_settings_thermal_protection(); break;
+        case KeyValue::FirmwareHeadParking: firmware_settings_head_parking(); break;
+        case KeyValue::Back:                firmware_settings_back(); break;
+        default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
 void PrinterImpl::firmware_settings_show()
 {
-    // TODO
+    send_features();
     save_forward_page();
     show_page(Page::Firmware);
 }
 
-void PrinterImpl::firmware_settings_save()
+void PrinterImpl::firmware_settings_thermal_protection()
 {
+    flip_bits(features, Feature::ThermalProtection);
+    send_features();
     // TODO
 }
 
-void PrinterImpl::firmware_settings_cancel()
+void PrinterImpl::firmware_settings_head_parking()
+{
+    flip_bits(features, Feature::HeadParking);
+    send_features();
+    // TODO
+}
+
+void PrinterImpl::firmware_settings_back()
 {
     show_back_page();
 }
@@ -2044,20 +2056,31 @@ void PrinterImpl::lcd(KeyValue key_value)
     }
 }
 
+void PrinterImpl::send_features()
+{
+    WriteRamDataRequest frame{Variable::Features};
+    frame << Uint16(static_cast<uint16_t>(features));
+    frame.send();
+}
+
 void PrinterImpl::lcd_settings_show()
 {
-    // TODO
+    send_features();
     save_forward_page();
     show_page(Page::LCD);
 }
 
 void PrinterImpl::lcd_settings_buzzer()
 {
+    flip_bits(features, Feature::Buzzer);
+    send_features();
     // TODO
 }
 
 void PrinterImpl::lcd_settings_dimming()
 {
+    flip_bits(features, Feature::Dimming);
+    send_features();
     // TODO
 }
 

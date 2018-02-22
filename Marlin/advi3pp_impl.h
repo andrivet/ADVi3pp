@@ -164,6 +164,7 @@ private:
     void update_graphs();
     void set_target_temperature(uint16_t temperature);
     uint16_t get_target_temperature();
+    void send_features();
 
 private:
     // Actions
@@ -289,8 +290,9 @@ private:
 
     void firmware(KeyValue key_value);
     void firmware_settings_show();
-    void firmware_settings_save();
-    void firmware_settings_cancel();
+    void firmware_settings_thermal_protection();
+    void firmware_settings_head_parking();
+    void firmware_settings_back();
 
     void lcd(KeyValue key_value);
     void lcd_settings_show();
