@@ -547,8 +547,8 @@ void WriteRamDataRequest::reset(Variable var)
 ReadRamDataRequest::ReadRamDataRequest(Variable var, uint8_t nb_words)
 : Frame{Command::ReadRamData}
 {
-    auto h = static_cast<uint16_t>(var) / 256;
-    auto l = static_cast<uint16_t>(var) % 256;
+    auto h = static_cast<uint8_t>(static_cast<uint16_t>(var) / 256);
+    auto l = static_cast<uint8_t>(static_cast<uint16_t>(var) % 256);
     *this << Uint8{h} << Uint8{l} << Uint8{nb_words};
 }
 
