@@ -47,6 +47,13 @@ namespace
     const uint16_t calibration_cube_size = 20; // 20 mm
     const uint16_t calibration_extruder_filament = 100; // 10 cm
 	const uint16_t calibration_extruder_delta = 20; // 2 cm
+
+    const uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
+
+    const uint8_t BRIGHTNESS_MIN = 0x01;
+    const uint8_t BRIGHTNESS_MAX = 0x40;
+    const uint8_t DIMMING_RATIO = 25; // in percent
+    const uint16_t DIMMING_DELAY = 1 * 60;
 }
 
 namespace advi3pp {
@@ -81,7 +88,7 @@ void Printer::auto_pid_finished()
 //! @param working_crc
 void Printer::store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
-    printer.store_presets(write, eeprom_index, working_crc);
+    printer.store_eeprom_data(write, eeprom_index, working_crc);
 }
 
 //! Restore presets from permanent memory.
@@ -90,13 +97,13 @@ void Printer::store_presets(eeprom_write write, int& eeprom_index, uint16_t& wor
 //! @param working_crc
 void Printer::restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
-    printer.restore_presets(read, eeprom_index, working_crc);
+    printer.restore_eeprom_data(read, eeprom_index, working_crc);
 }
 
 //! Reset presets.
 void Printer::reset_presets()
 {
-    printer.reset_presets();
+    printer.reset_eeprom_data();
 }
 
 //! Called when a temperature error occurred and display the error on the LCD.
@@ -130,8 +137,7 @@ void PrinterImpl::setup()
     get_advi3pp_lcd_version();
     send_versions();
     clear_graphs();
-
-
+    dimming_.reset();
 
     show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
 }
@@ -144,7 +150,7 @@ void PrinterImpl::setup()
 //! @param write Function to use for the actual writing
 //! @param eeprom_index
 //! @param working_crc
-void PrinterImpl::store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+void PrinterImpl::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
     for(auto& preset: presets_)
     {
@@ -152,16 +158,17 @@ void PrinterImpl::store_presets(eeprom_write write, int& eeprom_index, uint16_t&
         write(eeprom_index, reinterpret_cast<uint8_t*>(&preset.bed), sizeof(preset.hotend), &working_crc);
     }
 
-    write(eeprom_index, reinterpret_cast<uint8_t*>(&brightness), sizeof(brightness), &working_crc);
-    write(eeprom_index, reinterpret_cast<uint8_t*>(&current_sensor), sizeof(current_sensor), &working_crc);
-    write(eeprom_index, reinterpret_cast<uint8_t*>(&features), sizeof(features), &working_crc);
+    write(eeprom_index, reinterpret_cast<uint8_t*>(&current_sensor_), sizeof(current_sensor_), &working_crc);
+    write(eeprom_index, reinterpret_cast<uint8_t*>(&features_), sizeof(features_), &working_crc);
+    
+    dimming_.store_eeprom_data(write, eeprom_index, working_crc);
 }
 
 //! Restore presets from permanent memory.
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void PrinterImpl::restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+void PrinterImpl::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
     for(auto& preset: presets_)
     {
@@ -169,13 +176,14 @@ void PrinterImpl::restore_presets(eeprom_read read, int& eeprom_index, uint16_t&
         read(eeprom_index, reinterpret_cast<uint8_t*>(&preset.bed), sizeof(preset.hotend), &working_crc);
     }
 
-    read(eeprom_index, reinterpret_cast<uint8_t*>(&brightness), sizeof(brightness), &working_crc);
-    read(eeprom_index, reinterpret_cast<uint8_t*>(&current_sensor), sizeof(current_sensor), &working_crc);
-    read(eeprom_index, reinterpret_cast<uint8_t*>(&features), sizeof(features), &working_crc);
+    read(eeprom_index, reinterpret_cast<uint8_t*>(&current_sensor_), sizeof(current_sensor_), &working_crc);
+    read(eeprom_index, reinterpret_cast<uint8_t*>(&features_), sizeof(features_), &working_crc);
+
+    dimming_.restore_eeprom_data(read, eeprom_index, working_crc);
 }
 
 //! Reset presets.
-void PrinterImpl::reset_presets()
+void PrinterImpl::reset_eeprom_data()
 {
     presets_[0].hotend = DEFAULT_PREHEAT_PRESET1_HOTEND;
     presets_[1].hotend = DEFAULT_PREHEAT_PRESET2_HOTEND;
@@ -185,14 +193,15 @@ void PrinterImpl::reset_presets()
     presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
     presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
 
-    brightness = DEFAULT_BRIGHTNESS;
-    current_sensor = DEFAULT_SENSOR;
-    features = DEFAULT_FEATURES;
+    current_sensor_ = DEFAULT_SENSOR;
+    features_ = DEFAULT_FEATURES;
+
+    dimming_.reset_eeprom_data();
 }
 
 bool PrinterImpl::is_thermal_protection_enabled() const
 {
-    return (features & Feature::ThermalProtection) == Feature::ThermalProtection;
+    return (features_ & Feature::ThermalProtection) == Feature::ThermalProtection;
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -340,6 +349,7 @@ void PrinterImpl::show_forward_page()
 //! Background tasks
 void PrinterImpl::task()
 {
+    dimming_.check();
     read_lcd_serial();
     execute_background_task();
     send_full_status();
@@ -408,8 +418,9 @@ void PrinterImpl::read_lcd_serial()
         case Action::PidTuning:             pid_tuning(key_value); break;
         case Action::Sensor:                sensor(key_value); break;
         case Action::Firmware:              firmware(key_value); break;
+        case Action::USB:                   usb_settings(key_value); break;
         case Action::LCD:                   lcd(key_value); break;
-        case Action::LCDBrightness:         lcd_brightness(key_value); break;
+        case Action::LCDBrightness:         dimming_.change_brightness(key_value); break;
         case Action::Statistics:            statistics(key_value); break;
         case Action::About:                 about(key_value); break;
         case Action::PrintSettings:         print_settings(key_value); break;
@@ -1982,14 +1993,14 @@ void PrinterImpl::firmware_settings_show()
 
 void PrinterImpl::firmware_settings_thermal_protection()
 {
-    flip_bits(features, Feature::ThermalProtection);
+    flip_bits(features_, Feature::ThermalProtection);
     send_features();
     // TODO
 }
 
 void PrinterImpl::firmware_settings_head_parking()
 {
-    flip_bits(features, Feature::HeadParking);
+    flip_bits(features_, Feature::HeadParking);
     send_features();
     // TODO
 }
@@ -2009,7 +2020,6 @@ void PrinterImpl::lcd(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::Show:            lcd_settings_show(); break;
-        case KeyValue::LCDBuzzer:       lcd_settings_buzzer(); break;
         case KeyValue::LCDDimming:      lcd_settings_dimming(); break;
         case KeyValue::Back:            lcd_settings_back(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
@@ -2019,7 +2029,7 @@ void PrinterImpl::lcd(KeyValue key_value)
 void PrinterImpl::send_features()
 {
     WriteRamDataRequest frame{Variable::Features};
-    frame << Uint16(static_cast<uint16_t>(features));
+    frame << Uint16(static_cast<uint16_t>(features_));
     frame.send();
 }
 
@@ -2030,18 +2040,11 @@ void PrinterImpl::lcd_settings_show()
     show_page(Page::LCD);
 }
 
-void PrinterImpl::lcd_settings_buzzer()
-{
-    flip_bits(features, Feature::Buzzer);
-    send_features();
-    // TODO
-}
-
 void PrinterImpl::lcd_settings_dimming()
 {
-    flip_bits(features, Feature::Dimming);
+    flip_bits(features_, Feature::Dimming);
+    dimming_.enable(test_one_bit(features_, Feature::Dimming));
     send_features();
-    // TODO
 }
 
 void PrinterImpl::lcd_settings_back()
@@ -2049,15 +2052,80 @@ void PrinterImpl::lcd_settings_back()
     show_back_page();
 }
 
-void PrinterImpl::lcd_brightness(KeyValue key_value)
-{
-    static const uint8_t LCD_MIN = 0x01;
-    static const uint8_t LCD_MAX = 0x40;
-    auto brightness = static_cast<uint8_t>(key_value);
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// USB Settings
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    WriteRegisterDataRequest frame{Register::Brightness};
-    frame << Uint8(brightness < LCD_MIN ? LCD_MIN : (brightness > LCD_MAX ? LCD_MAX : brightness));
-    frame.send(true);
+void PrinterImpl::usb_settings(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:                usb_settings_show(); break;
+        case KeyValue::USBBaudrateMinus:    usb_settings_baudrate_minus(); break;
+        case KeyValue::USBBaudratePlus:     usb_settings_baudrate_plus(); break;
+        case KeyValue::Save:                usb_settings_save(); break;
+        case KeyValue::Cancel:              usb_settings_cancel(); break;
+        default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::send_usb_baudrate()
+{
+    String value; value << usb_baudrate_;
+
+    WriteRamDataRequest frame{Variable::Value};
+    frame << FixedSizeString{value, 6};
+    frame.send();
+}
+
+void PrinterImpl::usb_settings_show()
+{
+    usb_old_baudrate_ = usb_baudrate_;
+    send_usb_baudrate();
+    show_page(Page::USB);
+}
+
+static size_t UsbBaudrateIndex(uint32_t baudrate)
+{
+	size_t nb = countof(usb_baudrates);
+    for(size_t i = 0; i < nb; ++i)
+        if(baudrate == usb_baudrates[i])
+            return i;
+    return 0;
+}
+
+void PrinterImpl::usb_settings_baudrate_minus()
+{
+    auto index = UsbBaudrateIndex(usb_baudrate_);
+    usb_baudrate_ = index > 0 ? usb_baudrates[index - 1] : usb_baudrates[0];
+    send_usb_baudrate();
+}
+
+void PrinterImpl::usb_settings_baudrate_plus()
+{
+    auto index = UsbBaudrateIndex(usb_baudrate_);
+    static const auto max = countof(usb_baudrates) - 1;
+    usb_baudrate_ = index < max ? usb_baudrates[index + 1] : usb_baudrates[max];
+    send_usb_baudrate();
+}
+
+void PrinterImpl::usb_settings_save()
+{
+    enqueue_and_echo_commands_P(PSTR("M500"));
+    show_back_page();
+
+    // wait for last transmitted data to be sent
+    Serial.flush();
+    Serial.begin(usb_baudrate_);
+    // empty out possible garbage from input buffer
+    while(Serial.available())
+        Serial.read();
+}
+
+void PrinterImpl::usb_settings_cancel()
+{
+    usb_baudrate_ = usb_old_baudrate_;
+    show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2137,6 +2205,7 @@ void PrinterImpl::temperature_error(const char* message)
     frame.send(true);
     show_page(advi3pp::Page::ThermalRunawayError);
 }
+
 
 // --------------------------------------------------------------------
 // PidSettings
@@ -2264,6 +2333,110 @@ void JerkSettings::save()
     Planner::max_jerk[E_AXIS] = max_jerk[E_AXIS];
 
     enqueue_and_echo_commands_P(PSTR("M500"));
+}
+
+// --------------------------------------------------------------------
+// Dimming
+// --------------------------------------------------------------------
+
+Dimming::Dimming()
+{
+    set_next_checking_time();
+    set_next_dimmming_time();
+}
+
+void Dimming::enable(bool enable)
+{
+    enabled_ = enable;
+    reset();
+}
+
+void Dimming::set_next_checking_time()
+{
+    next_check_time_ = millis() + 200;
+}
+
+void Dimming::set_next_dimmming_time()
+{
+    next_dimming_time_ = millis() + 1000 * DIMMING_DELAY;
+}
+
+uint8_t Dimming::get_adjusted_brithness()
+{
+    auto brightness = static_cast<uint16_t>(brightness_);
+    if(dimming_)
+        brightness = brightness * DIMMING_RATIO / 100;
+    if(brightness < BRIGHTNESS_MIN)
+        brightness = BRIGHTNESS_MIN;
+    if(brightness > BRIGHTNESS_MAX)
+        brightness = BRIGHTNESS_MAX;
+    return static_cast<uint8_t>(brightness);
+}
+
+void Dimming::check()
+{
+    if(!enabled_ || !ELAPSED(millis(), next_check_time_))
+        return;
+    set_next_checking_time();
+
+    ReadRegister read{Register::TouchPanelFlag, 1};
+    if(!read.send_and_receive(false))
+    {
+        Log::error() << F("Reading TouchPanelFlag") << Log::endl();
+        return;
+    }
+
+    Uint8 value; read >> value;
+    if(value.byte == 0x5A)
+	{
+		WriteRegisterDataRequest request{Register::TouchPanelFlag};
+		request << 00_u8;
+		request.send();
+        reset();
+	}
+    else if(!dimming_ && ELAPSED(millis(), next_dimming_time_))
+    {
+        dimming_ = true;
+        send_brightness();
+    }
+}
+
+void Dimming::reset()
+{
+    dimming_ = false;
+    set_next_dimmming_time();
+    send_brightness();
+}
+
+void Dimming::send_brightness()
+{
+    auto brightness = get_adjusted_brithness();
+
+    WriteRegisterDataRequest frame{Register::Brightness};
+    frame << Uint8{brightness};
+    frame.send(true);
+}
+
+void Dimming::change_brightness(KeyValue brightness)
+{
+    reset();
+    brightness_ = static_cast<Brightness>(brightness);
+    send_brightness();
+}
+
+void Dimming::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+{
+    write(eeprom_index, reinterpret_cast<uint8_t*>(&brightness_), sizeof(brightness_), &working_crc);
+}
+
+void Dimming::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+{
+    read(eeprom_index, reinterpret_cast<uint8_t*>(&brightness_), sizeof(brightness_), &working_crc);
+}
+
+void Dimming::reset_eeprom_data()
+{
+    brightness_ = DEFAULT_BRIGHTNESS;
 }
 
 }

@@ -113,9 +113,9 @@ test_all_bits(E lhs, E rhs)
 
 template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, bool>::type
-test_one_bit_of(E lhs, E rhs)
+test_one_bit(E lhs, E rhs)
 {
-    return (lhs & rhs) != 0;
+    return static_cast<uint16_t>(lhs & rhs) != 0;
 }
 
 template<typename E>

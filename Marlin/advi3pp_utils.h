@@ -35,6 +35,9 @@
 
 namespace advi3pp { inline namespace internals {
 
+template <typename T, size_t N>
+constexpr size_t countof(T const (&)[N]) noexcept { return N; }
+
 enum class Register: uint8_t;
 enum class Variable: uint16_t;
 enum class Command: uint8_t;
@@ -52,6 +55,7 @@ struct Log
     Log& operator<<(const String& data);
     Log& operator<<(uint8_t data);
     Log& operator<<(uint16_t data);
+    Log& operator<<(uint32_t data);
     Log& operator<<(double data);
     void operator<<(EndOfLine eol);
 
@@ -75,6 +79,7 @@ struct Log
     inline Log& operator<<(const String& data) { return log(); }
     inline Log& operator<<(uint8_t data) { return log(); }
     inline Log& operator<<(uint16_t data) { return log(); }
+    inline Log& operator<<(uint32_t data) { return log(); }
     inline Log& operator<<(double data) { return log(); }
     inline void operator<<(EndOfLine eol) {};
 
@@ -94,7 +99,7 @@ private:
 inline String& operator<<(String& rhs, const __FlashStringHelper* lhs) { rhs += lhs; return rhs; }
 inline String& operator<<(String& rhs, const String& lhs) { rhs += lhs; return rhs; }
 
-String& operator<<(String& rhs, uint16_t lhs);
+String& operator<<(String& rhs, uint32_t lhs);
 String& operator<<(String& rhs, Command lhs);
 String& operator<<(String& rhs, Register lhs);
 String& operator<<(String& rhs, Variable lhs);
@@ -159,11 +164,14 @@ struct Uint8
     constexpr explicit Uint8(Page page) : byte{static_cast<uint8_t>(page)} {}
 };
 
+//! An unsigned 8 bits literal such as: 0_u8.
+constexpr Uint8  operator "" _u8(unsigned long long int byte)  { return Uint8(static_cast<uint8_t>(byte)); }
+
 // --------------------------------------------------------------------
 // Uint16
 // --------------------------------------------------------------------
 
-//! An unsigned 16 bit. value.
+//! An unsigned 16 bits value.
 struct Uint16
 {
     uint16_t word; //!< The actual value
@@ -174,10 +182,25 @@ struct Uint16
     constexpr explicit Uint16(Variable var) : word{static_cast<uint16_t>(var)} {}
 };
 
-//! An unsigned 8 bits literal such as: 0_u8.
-constexpr Uint8  operator "" _u8(unsigned long long int byte)  { return Uint8(static_cast<uint8_t>(byte)); }
-//! An unsigned 8 bits literal such as: 0_u8.
+//! An unsigned 16 bits literal such as: 0_u16.
 constexpr Uint16 operator "" _u16(unsigned long long int word) { return Uint16(static_cast<uint16_t>(word)); }
+
+// --------------------------------------------------------------------
+// Uint32
+// --------------------------------------------------------------------
+
+//! An unsigned 32 bits value.
+struct Uint32
+{
+    uint32_t dword; //!< The actual value
+    constexpr explicit Uint32(uint32_t value = 0) : dword{value} {}
+    constexpr explicit Uint32(int32_t value) : dword{static_cast<uint32_t>(value)} {}
+    constexpr explicit Uint32(double value) : dword{static_cast<uint32_t>(value)} {}
+};
+
+//! An unsigned 32 bits literal such as: 0_u32.
+constexpr Uint32 operator "" _u32(unsigned long long int dword) { return Uint32(static_cast<uint32_t>(dword)); }
+
 
 // --------------------------------------------------------------------
 // FixedSizeString
@@ -209,22 +232,24 @@ private:
 //! A frame to be send to the LCD or received from the LCD
 struct Frame
 {
-    void send(bool logging = true); // Logging is only used in DEBUG builds
+    bool send(bool logging = true); // Logging is only used in DEBUG builds
 
     bool available(uint8_t bytes = 3);
-    bool receive();
+    bool receive(bool logging = true); // Logging is only used in DEBUG builds
     Command get_command() const;
     size_t get_length() const;
     void reset();
 
     friend Frame& operator<<(Frame& frame, const Uint8& data);
     friend Frame& operator<<(Frame& frame, const Uint16& data);
+    friend Frame& operator<<(Frame& frame, const Uint32& data);
     friend Frame& operator<<(Frame& frame, const String& data);
     friend Frame& operator<<(Frame& frame, const FixedSizeString& data);
     friend Frame& operator<<(Frame& frame, Page page);
 
     friend Frame& operator>>(Frame& frame, Uint8& data);
     friend Frame& operator>>(Frame& frame, Uint16& data);
+    friend Frame& operator>>(Frame& frame, Uint32& data);
     friend Frame& operator>>(Frame& frame, Action& action);
     friend Frame& operator>>(Frame& frame, Command& command);
     friend Frame& operator>>(Frame& frame, Register& reg);
@@ -291,8 +316,8 @@ struct ReadRegisterDataRequest: Frame
 struct ReadRegisterDataResponse: Frame
 {
     ReadRegisterDataResponse() = default;
-    bool receive(Register reg, uint8_t nb_bytes);
-    bool receive(const ReadRegisterDataRequest& request);
+    bool receive(Register reg, uint8_t nb_bytes, bool log = true);  // Logging is only used in DEBUG builds
+    bool receive(const ReadRegisterDataRequest& request, bool log = true);  // Logging is only used in DEBUG builds
 };
 
 // --------------------------------------------------------------------
@@ -302,7 +327,7 @@ struct ReadRegisterDataResponse: Frame
 struct ReadRegister: ReadRegisterDataResponse
 {
     ReadRegister(Register reg, uint8_t nb_bytes);
-    bool send_and_receive();
+    bool send_and_receive(bool log = true); // Logging is only used in DEBUG builds
 
 private:
     ReadRegisterDataRequest request;

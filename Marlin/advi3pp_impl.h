@@ -35,6 +35,7 @@ namespace advi3pp { inline namespace internals {
 static const Sensor DEFAULT_SENSOR = Sensor::None;
 static const Feature DEFAULT_FEATURES = Feature::ThermalProtection | Feature::HeadParking | Feature::Dimming;
 static const Brightness DEFAULT_BRIGHTNESS = Brightness::Max;
+static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
 
 enum class BackgroundTask: uint8_t
 {
@@ -122,6 +123,32 @@ struct JerkSettings
     float max_jerk[XYZE];
 };
 
+struct Dimming
+{
+    Dimming();
+
+    void enable(bool enable);
+    void check();
+    void reset();
+    void change_brightness(KeyValue brightness);
+    void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    void reset_eeprom_data();
+
+private:
+    void set_next_checking_time();
+    void set_next_dimmming_time();
+    void send_brightness();
+    uint8_t get_adjusted_brithness();
+
+private:
+    bool enabled_ = true;
+    bool dimming_ = false;
+    Brightness brightness_ = DEFAULT_BRIGHTNESS;
+    millis_t next_check_time_ = 0;
+    millis_t next_dimming_time_ = 0;
+};
+
 // --------------------------------------------------------------------
 // PrinterImpl
 // --------------------------------------------------------------------
@@ -133,9 +160,9 @@ struct PrinterImpl
     void task();
     void show_page(Page page, bool save_back = true);
     void auto_pid_finished();
-    void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
-    void reset_presets();
+    void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    void reset_eeprom_data();
     void temperature_error(const char* message);
     void send_full_status();
     bool is_thermal_protection_enabled() const;
@@ -143,7 +170,6 @@ struct PrinterImpl
 private:
     void clear_graphs();
     void send_versions();
-    void execute_background_task();
     Page get_current_page();
     void show_back_page();
     void save_forward_page();
@@ -155,16 +181,21 @@ private:
     String get_lcd_firmware_version();
     void get_advi3pp_lcd_version();
     bool is_lcd_version_valid() const;
-    void set_next_background_task_time(unsigned int delta = 500);
+
     void set_next_update_time(unsigned int delta = 500);
+
+    void execute_background_task();
+    void set_next_background_task_time(unsigned int delta = 500);
     void set_background_task(BackgroundTask task, unsigned int delta = 500);
     void clear_background_task();
+
     void send_graphs_data();
     void set_update_graphs();
     void update_graphs();
     void set_target_temperature(uint16_t temperature);
     uint16_t get_target_temperature();
     void send_features();
+    void send_usb_baudrate();
 
 private:
     // Actions
@@ -296,10 +327,15 @@ private:
 
     void lcd(KeyValue key_value);
     void lcd_settings_show();
-    void lcd_settings_buzzer();
     void lcd_settings_dimming();
     void lcd_settings_back();
-    void lcd_brightness(KeyValue key_value);
+
+    void usb_settings(KeyValue key_value);
+    void usb_settings_show();
+    void usb_settings_baudrate_minus();
+    void usb_settings_baudrate_plus();
+    void usb_settings_save();
+    void usb_settings_cancel();
 
     void factory_reset(KeyValue key_value);
     void show_factory_reset_warning();
@@ -336,9 +372,11 @@ private:
     JerkSettings jerks_{};
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
     double extruded_ = 0.0;
-    Sensor current_sensor = DEFAULT_SENSOR;
-    Feature features =  DEFAULT_FEATURES;
-    Brightness brightness = DEFAULT_BRIGHTNESS;
+    Sensor current_sensor_ = DEFAULT_SENSOR;
+    Feature features_ =  DEFAULT_FEATURES;
+    uint32_t usb_baudrate_ = DEFAULT_USB_BAUDRATE;
+    uint32_t usb_old_baudrate_ = DEFAULT_USB_BAUDRATE;
+    Dimming dimming_{};
 };
 
 // --------------------------------------------------------------------

@@ -74,6 +74,8 @@ enum class Register: uint8_t
     Timer2                  = 0x4D,
     Timer3                  = 0x4E,
     KeyCode                 = 0x4F,
+    PlayMusicSet            = 0x50,
+    VolumeAdj               = 0x53,
     TrendlineClear          = 0xEB,
     ResetTriger             = 0xEE
 };
@@ -102,6 +104,7 @@ enum class Variable: uint16_t
     TotalPrintTime          = 0x0182,
     LongestPrintTime        = 0x018A,
     TotalFilament           = 0x0192,
+    Value                   = 0x019A,
 
     FileName1               = 0x0200,
     FileName2               = 0x0218,
@@ -146,6 +149,7 @@ enum class Variable: uint16_t
     Preset2Hotend           = 0x0322,
     Preset3Bed              = 0x0323,
     Preset4Hotend           = 0x0324,
+    USBBaudrate             = 0x0325,
 
     TargetTemperature       = 0x0500,
     Measure1                = 0x0501,
@@ -171,7 +175,7 @@ enum class Action: uint16_t
     PidTuning               = 0x040B,
     Sensor                  = 0x040C,
     Firmware                = 0x040D,
-    //unused                = 0x040E,
+    USB                     = 0x040E,
     LCD                     = 0x040F,
     Statistics              = 0x0410,
     About                   = 0x0411,
@@ -254,13 +258,16 @@ enum class KeyValue: uint16_t
     FirmwareProtection      = 0x0001,
     FirmwareHeadParking     = 0x0002,
 
-    LCDBuzzer               = 0x0001,
-    LCDDimming              = 0x0002,
+    LCDDimming              = 0x0001,
+
+    USBBaudrateMinus        = 0x0001,
+    USBBaudratePlus         = 0x0002,
 
     MismatchForward         = 0x0001,
 
     Save                    = 0xFFFE,
-    Back                    = 0xFFFF
+    Back                    = 0xFFFF,
+    Cancel                  = 0xFFFF
 };
 
 enum class Sensor
@@ -274,8 +281,7 @@ enum class Feature
 {
     HeadParking         = 0b0000000000000001,
     ThermalProtection   = 0b0000000000000010,
-    Dimming             = 0b0000000000000100,
-    Buzzer              = 0b0000000000001000,
+    Dimming             = 0b0000000000000100
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 
