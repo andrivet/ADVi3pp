@@ -130,8 +130,11 @@ bool Printer::is_thermal_protection_enabled()
 void PrinterImpl::setup()
 {
 #ifdef DEBUG
-    Log::log() << F("This is a DEBUG build");
+    Log::log() << F("This is a DEBUG build") << Log::endl();
 #endif
+
+    if(usb_baudrate_ != BAUDRATE)
+        change_usb_baudrate();
 
     Serial2.begin(advi3_pp_baudrate);
     get_advi3pp_lcd_version();
@@ -2115,10 +2118,10 @@ void PrinterImpl::usb_settings_baudrate_plus()
     send_usb_baudrate();
 }
 
-void PrinterImpl::usb_settings_save()
+void PrinterImpl::change_usb_baudrate()
 {
-    enqueue_and_echo_commands_P(PSTR("M500"));
-    show_back_page();
+    // We do not use Log because this message is always output (Log is only active in DEBUG
+    Serial.print(F("Switch USB baudrate to ")); Serial.print(usb_baudrate_); Serial.print("\r\n");
 
     // wait for last transmitted data to be sent
     Serial.flush();
@@ -2126,6 +2129,17 @@ void PrinterImpl::usb_settings_save()
     // empty out possible garbage from input buffer
     while(Serial.available())
         Serial.read();
+
+    // We do not use Log because this message is always output (Log is only active in DEBUG
+    Serial.print(F("USB baudrate switched to ")); Serial.print(usb_baudrate_); Serial.print("\r\n");
+}
+
+void PrinterImpl::usb_settings_save()
+{
+    enqueue_and_echo_commands_P(PSTR("M500"));
+    show_back_page();
+
+    change_usb_baudrate();
 }
 
 void PrinterImpl::usb_settings_cancel()

@@ -249,6 +249,7 @@ private:
     uint16_t get_target_temperature();
     void send_features();
     void send_usb_baudrate();
+    void change_usb_baudrate();
 
 private:
     // Actions
