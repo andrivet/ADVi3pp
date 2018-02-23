@@ -152,16 +152,19 @@ void PrinterImpl::setup()
 //! @param working_crc
 void PrinterImpl::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
+    EepromWrite eeprom{write, eeprom_index, working_crc};
+
     for(auto& preset: presets_)
     {
-        write(eeprom_index, reinterpret_cast<uint8_t*>(&preset.hotend), sizeof(preset.hotend), &working_crc);
-        write(eeprom_index, reinterpret_cast<uint8_t*>(&preset.bed), sizeof(preset.hotend), &working_crc);
+        eeprom.write(preset.hotend);
+        eeprom.write(preset.bed);
     }
 
-    write(eeprom_index, reinterpret_cast<uint8_t*>(&current_sensor_), sizeof(current_sensor_), &working_crc);
-    write(eeprom_index, reinterpret_cast<uint8_t*>(&features_), sizeof(features_), &working_crc);
-    
-    dimming_.store_eeprom_data(write, eeprom_index, working_crc);
+    eeprom.write(current_sensor_);
+    eeprom.write(features_);
+    eeprom.write(usb_baudrate_);
+
+    dimming_.store_eeprom_data(eeprom);
 }
 
 //! Restore presets from permanent memory.
@@ -170,16 +173,19 @@ void PrinterImpl::store_eeprom_data(eeprom_write write, int& eeprom_index, uint1
 //! @param working_crc
 void PrinterImpl::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
+    EepromRead eeprom{read, eeprom_index, working_crc};
+
     for(auto& preset: presets_)
     {
-        read(eeprom_index, reinterpret_cast<uint8_t*>(&preset.hotend), sizeof(preset.hotend), &working_crc);
-        read(eeprom_index, reinterpret_cast<uint8_t*>(&preset.bed), sizeof(preset.hotend), &working_crc);
+        eeprom.read(preset.hotend);
+        eeprom.read(preset.bed);
     }
 
-    read(eeprom_index, reinterpret_cast<uint8_t*>(&current_sensor_), sizeof(current_sensor_), &working_crc);
-    read(eeprom_index, reinterpret_cast<uint8_t*>(&features_), sizeof(features_), &working_crc);
+    eeprom.read(current_sensor_);
+    eeprom.read(features_);
+    eeprom.read(usb_baudrate_);
 
-    dimming_.restore_eeprom_data(read, eeprom_index, working_crc);
+    dimming_.restore_eeprom_data(eeprom);
 }
 
 //! Reset presets.
@@ -2424,14 +2430,14 @@ void Dimming::change_brightness(KeyValue brightness)
     send_brightness();
 }
 
-void Dimming::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+void Dimming::store_eeprom_data(EepromWrite& eeprom)
 {
-    write(eeprom_index, reinterpret_cast<uint8_t*>(&brightness_), sizeof(brightness_), &working_crc);
+    eeprom.write(brightness_);
 }
 
-void Dimming::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+void Dimming::restore_eeprom_data(EepromRead& eeprom)
 {
-    read(eeprom_index, reinterpret_cast<uint8_t*>(&brightness_), sizeof(brightness_), &working_crc);
+    eeprom.read(brightness_);
 }
 
 void Dimming::reset_eeprom_data()

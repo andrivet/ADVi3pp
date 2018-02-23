@@ -123,6 +123,58 @@ struct JerkSettings
     float max_jerk[XYZE];
 };
 
+// --------------------------------------------------------------------
+// EEPROM Data Read & Write
+// --------------------------------------------------------------------
+
+struct EepromWrite
+{
+    EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    template <typename T> void write(T& data);
+
+private:
+    eeprom_write write_;
+    int& eeprom_index_;
+    uint16_t& working_crc_;
+};
+
+struct EepromRead
+{
+    EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    template <typename T> inline void read(T& data);
+
+private:
+    eeprom_read read_;
+    int& eeprom_index_;
+    uint16_t& working_crc_;
+};
+
+inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+        : write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc)
+{
+}
+
+template <typename T>
+inline void EepromWrite::write(T& data)
+{
+    write_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
+}
+
+inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+        : read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc)
+{
+}
+
+template <typename T>
+inline void EepromRead::read(T& data)
+{
+    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
+}
+
+// --------------------------------------------------------------------
+// LCD screen brightness and dimming
+// --------------------------------------------------------------------
+
 struct Dimming
 {
     Dimming();
@@ -131,8 +183,8 @@ struct Dimming
     void check();
     void reset();
     void change_brightness(KeyValue brightness);
-    void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    void store_eeprom_data(EepromWrite& eeprom);
+    void restore_eeprom_data(EepromRead& eeprom);
     void reset_eeprom_data();
 
 private:
@@ -148,6 +200,7 @@ private:
     millis_t next_check_time_ = 0;
     millis_t next_dimming_time_ = 0;
 };
+
 
 // --------------------------------------------------------------------
 // PrinterImpl
