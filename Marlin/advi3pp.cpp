@@ -44,6 +44,7 @@ namespace
 
     const unsigned long advi3_pp_baudrate = 250000;
     const uint16_t nb_visible_sd_files = 5;
+	const uint8_t  nb_visible_sd_file_chars = 48;
     const uint16_t calibration_cube_size = 20; // 20 mm
     const uint16_t calibration_extruder_filament = 100; // 10 cm
 	const uint16_t calibration_extruder_delta = 20; // 2 cm
@@ -515,9 +516,8 @@ void PrinterImpl::show_print()
         set_update_graphs();
         return;
     }
-
-    show_sd_files(card.getnrfilenames() - 1);
-    show_page(Page::SdCard);
+	
+	sd_card_show();
 }
 
 void PrinterImpl::show_controls()
@@ -554,18 +554,72 @@ void PrinterImpl::back()
 // SD Card
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+void PrinterImpl::sd_card(KeyValue key_value)
+{
+	switch(key_value)
+	{
+		case KeyValue::Show:				sd_card_show(); break;
+		case KeyValue::SDUp:				sd_card_up(); break;
+		case KeyValue::SDDown:				sd_card_down(); break;
+		case KeyValue::SDLine1:
+		case KeyValue::SDLine2:
+		case KeyValue::SDLine3:
+		case KeyValue::SDLine4:
+		case KeyValue::SDLine5:				sd_card_select_file(static_cast<uint16_t>(key_value)); break;
+		case KeyValue::Back:                sd_card_back(); break;
+		default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+	}
+}
+
+void PrinterImpl::sd_card_show()
+{
+	if(!card.cardOK)
+		return;
+
+	nb_files_ = card.getnrfilenames();
+	last_file_index_ = nb_files_ - 1;
+	
+	show_sd_files();
+	show_page(Page::SdCard);
+}
+
+void PrinterImpl::sd_card_back()
+{
+	show_back_page();
+}
+
+void PrinterImpl::sd_card_down()
+{
+	if(!card.cardOK)
+		return;
+		
+	if(last_file_index_ >= nb_visible_sd_files)
+		last_file_index_ -= nb_visible_sd_files;
+
+	show_sd_files();
+}
+
+void PrinterImpl::sd_card_up()
+{
+	if(!card.cardOK)
+		return;
+	
+	if(last_file_index_ + nb_visible_sd_files < nb_files_)
+		last_file_index_ += nb_visible_sd_files;
+
+	show_sd_files();
+}
+
 //! Show the list of files on SD.
-//! @param last_index   Index of the last file to display
-void PrinterImpl::show_sd_files(uint16_t last_index)
+void PrinterImpl::show_sd_files()
 {
     WriteRamDataRequest frame{Variable::FileName1};
 
-    last_file_index_ = last_index;
     String name;
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
-        frame << FixedSizeString(name, 48); // Important to truncate, there is only space for 48 chars
+        frame << FixedSizeString(name, nb_visible_sd_file_chars); // Important to truncate, there is only limited space
     }
     frame.send(true);
 }
@@ -573,20 +627,24 @@ void PrinterImpl::show_sd_files(uint16_t last_index)
 //! Get a filename with a given index.
 //! @param index    Index of the filename
 //! @param name     Copy the filename into this Chars
-void PrinterImpl::get_file_name(uint8_t index, String& name)
+void PrinterImpl::get_file_name(uint8_t index_in_page, String& name)
 {
-    card.getfilename(last_file_index_ - index);
-    name = card.longFilename;
+	if(last_file_index_ >= index_in_page)
+	{
+		card.getfilename(last_file_index_ - index_in_page);
+		name = (card.longFilename[0] == 0) ? card.filename : card.longFilename;
+	}
+	else
+		name = "";
 };
 
 //! Select a filename as sent by the LCD screen.
-//! @param key_value    The index of the filename to select
-void PrinterImpl::sd_card_select_file(KeyValue key_value)
+//! @param file_index    The index of the filename to select
+void PrinterImpl::sd_card_select_file(uint16_t file_index)
 {
     if(!card.cardOK)
         return;
 
-    auto file_index = static_cast<uint16_t>(key_value);
     if(file_index > last_file_index_)
         return;
     card.getfilename(last_file_index_ - file_index);
@@ -609,49 +667,6 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
     show_page(Page::SdPrint);
     set_update_graphs();
 }
-
-//! LCD SD card menu
-void PrinterImpl::sd_card(KeyValue key_value)
-{
-    if(!card.cardOK)
-        return;
-
-    uint16_t nb_files = card.getnrfilenames();
-    if(nb_files <= nb_visible_sd_files)
-        return;
-
-    auto last_file_index = last_file_index_;
-
-    switch(key_value)
-    {
-        case KeyValue::SDLine1:
-        case KeyValue::SDLine2:
-        case KeyValue::SDLine3:
-        case KeyValue::SDLine4:
-        case KeyValue::SDLine5:
-            sd_card_select_file(key_value);
-            break;
-
-        case KeyValue::SDUp:
-            if((last_file_index + nb_visible_sd_files) < nb_files)
-                last_file_index += nb_visible_sd_files;
-            break;
-
-        case KeyValue::SDDown:
-            if(last_file_index >= nb_visible_sd_files)
-                last_file_index -= nb_visible_sd_files;
-            break;
-			
-		case KeyValue::Back:
-			show_back_page();
-			break;
-
-        default:
-            break;
-    }
-
-    show_sd_files(last_file_index);
-};
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // SD card printing commands
@@ -2131,7 +2146,7 @@ void PrinterImpl::change_usb_baudrate()
         Serial.read();
 
     // We do not use Log because this message is always output (Log is only active in DEBUG
-    Serial.print(F("USB baudrate switched to ")); Serial.print(usb_baudrate_); Serial.print("\r\n");
+    Serial.print(F("\r\nUSB baudrate switched to ")); Serial.print(usb_baudrate_); Serial.print("\r\n");
 }
 
 void PrinterImpl::usb_settings_save()

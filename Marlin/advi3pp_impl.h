@@ -229,7 +229,7 @@ private:
     void show_forward_page();
     void read_lcd_serial();
     void send_stats();
-    void show_sd_files(uint16_t last_index);
+    void show_sd_files();
     void get_file_name(uint8_t index, String& name);
     String get_lcd_firmware_version();
     void get_advi3pp_lcd_version();
@@ -254,6 +254,11 @@ private:
 private:
     // Actions
     void sd_card(KeyValue key_value);
+	void sd_card_show();
+	void sd_card_up();
+	void sd_card_down();
+	void sd_card_select_file(uint16_t index);
+	void sd_card_back();
 
     void screen(KeyValue key_value);
     void show_temps();
@@ -267,7 +272,6 @@ private:
     void back();
 
     void sd_print_command(KeyValue key_value);
-    void sd_card_select_file(KeyValue key_value);
     void sd_print_stop();
     void sd_print_pause();
     void sd_print_resume();
@@ -410,6 +414,7 @@ private:
 private:
     static const size_t NB_PRESETS = 3;
 
+	uint16_t nb_files_ = 0;
     uint16_t last_file_index_ = 0;
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
