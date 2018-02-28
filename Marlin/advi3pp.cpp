@@ -1843,7 +1843,7 @@ void PrinterImpl::extruder_calibration_task()
         return;
     }
 
-    enqueue_and_echo_commands_P(PSTR("G1 E1 F100")); // Extrude 1mm slowly
+    enqueue_and_echo_commands_P(PSTR("G1 E10 F50")); // Extrude 10mm slowly
     set_next_background_task_time();
 }
 
