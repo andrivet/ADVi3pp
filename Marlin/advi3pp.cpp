@@ -138,7 +138,7 @@ void PrinterImpl::setup()
         change_usb_baudrate();
 
     Serial2.begin(advi3_pp_baudrate);
-    get_advi3pp_lcd_versions();
+    get_advi3pp_lcd_version();
     send_versions();
     clear_graphs();
     dimming_.reset();
@@ -1548,38 +1548,18 @@ void PrinterImpl::stats_back()
 // Versions
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-uint16_t PrinterImpl::get_advi3pp_lcd_version()
+void PrinterImpl::get_advi3pp_lcd_version()
 {
     ReadRamData response{Variable::ADVi3ppLCDversion, 1};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
-        return 0;
+        return;
     }
 
     Uint16 version; response >> version;
     Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
-    return version.word;
-}
-
-uint8_t PrinterImpl::get_advi3pp_lcd_model()
-{
-    ReadRegister response{Register::R0, 1};
-    if(!response.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Model)") << Log::endl();
-        return 0;
-    }
-
-    Uint8 model; response >> model;
-    Log::log() << F("LCD Firmware raw version = ") << model.byte << Log::endl();
-    return model.byte;
-}
-
-void PrinterImpl::get_advi3pp_lcd_versions()
-{
-    lcd_version_ = get_advi3pp_lcd_version();
-    lcd_model_ = get_advi3pp_lcd_model();
+    lcd_version_ = version.word;
 }
 
 //! Get the current LCD firmware version.

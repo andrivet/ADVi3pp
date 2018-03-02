@@ -93,7 +93,6 @@ enum class Variable: uint16_t
     LcdVersion              = 0x0108,
     LcdFirmwareVersion      = 0x0110,
     MarlinVersion           = 0x0118,
-    LCDModel                = 0x0120,
     Message                 = 0x0121,
     Progress                = 0x0139,
     Error                   = 0x0151,

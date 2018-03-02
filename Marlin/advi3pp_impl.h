@@ -233,9 +233,7 @@ private:
     void get_file_name(uint8_t index, String& name);
 
     String get_lcd_firmware_version();
-    uint16_t get_advi3pp_lcd_version();
-    uint8_t get_advi3pp_lcd_model();
-    void get_advi3pp_lcd_versions();
+    void get_advi3pp_lcd_version();
     bool is_lcd_version_valid() const;
 
     void set_next_update_time(unsigned int delta = 500);
@@ -437,7 +435,6 @@ private:
     AccelerationSettings accelerations_{};
     JerkSettings jerks_{};
     uint16_t lcd_version_ = 0x0000;
-    uint8_t lcd_model_ = 0x00;
     double extruded_ = 0.0;
     Sensor current_sensor_ = DEFAULT_SENSOR;
     Feature features_ =  DEFAULT_FEATURES;
