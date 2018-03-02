@@ -115,7 +115,7 @@ void Printer::temperature_error(const char* message)
 
 void Printer::send_status_data()
 {
-    printer.send_full_status();
+    printer.send_status_status();
 }
 
 bool Printer::is_thermal_protection_enabled()
@@ -138,7 +138,7 @@ void PrinterImpl::setup()
         change_usb_baudrate();
 
     Serial2.begin(advi3_pp_baudrate);
-    get_advi3pp_lcd_version();
+    get_advi3pp_lcd_versions();
     send_versions();
     clear_graphs();
     dimming_.reset();
@@ -362,12 +362,12 @@ void PrinterImpl::task()
     dimming_.check();
     read_lcd_serial();
     execute_background_task();
-    send_full_status();
+    send_status_status();
     update_graphs();
 }
 
 //! Update the status of the printer on the LCD.
-void PrinterImpl::send_full_status()
+void PrinterImpl::send_status_status()
 {
     auto current_time = millis();
     if(!ELAPSED(current_time, next_update_time_))
@@ -380,7 +380,7 @@ void PrinterImpl::send_full_status()
           << Uint16(Temperature::target_temperature[0])
           << Uint16(Temperature::degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
-          << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
+          << Uint16(current_position[Z_AXIS])
           << FixedSizeString(LCDImpl::instance().get_message(), 48)
           << FixedSizeString(LCDImpl::instance().get_progress(), 48);
     frame.send(false);
@@ -432,13 +432,14 @@ void PrinterImpl::read_lcd_serial()
         case Action::LCD:                   lcd(key_value); break;
         case Action::LCDBrightness:         dimming_.change_brightness(key_value); break;
         case Action::Statistics:            statistics(key_value); break;
-        case Action::About:                 about(key_value); break;
+        case Action::Versions:              versions(key_value); break;
         case Action::PrintSettings:         print_settings(key_value); break;
         case Action::PIDSettings:           pid_settings(key_value); break;
         case Action::StepsSettings:         steps_settings(key_value); break;
         case Action::FeedrateSettings:      feedrate_settings(key_value); break;
         case Action::AccelerationSettings:  acceleration_settings(key_value); break;
         case Action::JerkSettings:          jerk_settings(key_value); break;
+        case Action::Copyrights:            copyrights(key_value); break;
         case Action::MoveXPlus:             move_x_plus(); break;
         case Action::MoveXMinus:            move_x_minus(); break;
         case Action::MoveYPlus:             move_y_plus(); break;
@@ -1544,21 +1545,41 @@ void PrinterImpl::stats_back()
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// About & Versions
+// Versions
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void PrinterImpl::get_advi3pp_lcd_version()
+uint16_t PrinterImpl::get_advi3pp_lcd_version()
 {
     ReadRamData response{Variable::ADVi3ppLCDversion, 1};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
-        return;
+        return 0;
     }
 
     Uint16 version; response >> version;
-    adv_i3_pp_lcd_version_= version.word;
-	Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
+    Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
+    return version.word;
+}
+
+uint8_t PrinterImpl::get_advi3pp_lcd_model()
+{
+    ReadRegister response{Register::R0, 1};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Model)") << Log::endl();
+        return 0;
+    }
+
+    Uint8 model; response >> model;
+    Log::log() << F("LCD Firmware raw version = ") << model.byte << Log::endl();
+    return model.byte;
+}
+
+void PrinterImpl::get_advi3pp_lcd_versions()
+{
+    lcd_version_ = get_advi3pp_lcd_version();
+    lcd_model_ = get_advi3pp_lcd_model();
 }
 
 //! Get the current LCD firmware version.
@@ -1593,7 +1614,7 @@ void PrinterImpl::send_versions()
 {
     String marlin_version{SHORT_BUILD_VERSION};
     String motherboard_version = convert_version(advi3_pp_version);
-    String advi3pp_lcd_version = convert_version(adv_i3_pp_lcd_version_);
+    String advi3pp_lcd_version = convert_version(lcd_version_);
     String lcd_firmware_version = get_lcd_firmware_version();
 
     WriteRamDataRequest frame{Variable::MotherboardVersion};
@@ -1606,35 +1627,61 @@ void PrinterImpl::send_versions()
 
 bool PrinterImpl::is_lcd_version_valid() const
 {
-    return adv_i3_pp_lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && adv_i3_pp_lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
+    return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
 }
 
-//! Display the About screen,
-void PrinterImpl::about(KeyValue key_value)
+//! Display the Versions screen,
+void PrinterImpl::versions(KeyValue key_value)
 {
     switch(key_value)
     {
-		case KeyValue::Show:					about_show(); break;
-        case KeyValue::MismatchForward:         about_mismatch_forward(); break;
-        case KeyValue::Back:                    about_back(); break;
+		case KeyValue::Show:					versions_show(); break;
+        case KeyValue::MismatchForward:         versions_mismatch_forward(); break;
+        case KeyValue::Back:                    versions_back(); break;
         default:								Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
-void PrinterImpl::about_mismatch_forward()
+void PrinterImpl::versions_mismatch_forward()
 {
     show_page(Page::Main, false);
 }
 
-void PrinterImpl::about_back()
+void PrinterImpl::versions_back()
 {
     show_back_page();
 }
 
-void PrinterImpl::about_show()
+void PrinterImpl::versions_show()
 {
-    show_page(Page::About);
+    show_page(Page::Versions);
 }
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Copyrights
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+//! Display the Copyrights screen,
+void PrinterImpl::copyrights(advi3pp::KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:					copyrights_show(); break;
+        case KeyValue::Back:                    copyrights_back(); break;
+        default:								Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::copyrights_show()
+{
+    show_page(Page::Copyrights);
+}
+
+void PrinterImpl::copyrights_back()
+{
+    show_back_page();
+}
+
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // PID Tuning
@@ -2223,7 +2270,7 @@ void PrinterImpl::send_graphs_data()
 
 void PrinterImpl::clear_graphs()
 {
-    WriteRegisterDataRequest request{Register::TrendlineClear};
+    WriteRegisterDataRequest request{Register::TrendlineClear}; // TODO: Fix this (Mini DGUS)
     request << 0x55_u8;
     request.send();
 }

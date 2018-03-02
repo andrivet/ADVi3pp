@@ -63,7 +63,7 @@ enum class Page: uint8_t
     PidSettings             = 64,
     FactoryReset            = 66,
     Statistics              = 68,
-    About                   = 70,
+    Versions                = 70,
     StepsSettings           = 72,
     FeedrateSettings        = 74,
     AccelerationSettings    = 76,
@@ -76,7 +76,8 @@ enum class Page: uint8_t
     Firmware                = 90,
     USB                     = 92,
     Sensor                  = 94,
-    LCD                     = 96
+    LCD                     = 96,
+    Copyrights              = 98
 };
 
 //! The Duplicator i3 Plus printer.

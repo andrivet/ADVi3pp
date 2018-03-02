@@ -217,7 +217,7 @@ struct PrinterImpl
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_eeprom_data();
     void temperature_error(const char* message);
-    void send_full_status();
+    void send_status_status();
     bool is_thermal_protection_enabled() const;
 
 private:
@@ -231,8 +231,11 @@ private:
     void send_stats();
     void show_sd_files();
     void get_file_name(uint8_t index, String& name);
+
     String get_lcd_firmware_version();
-    void get_advi3pp_lcd_version();
+    uint16_t get_advi3pp_lcd_version();
+    uint8_t get_advi3pp_lcd_model();
+    void get_advi3pp_lcd_versions();
     bool is_lcd_version_valid() const;
 
     void set_next_update_time(unsigned int delta = 500);
@@ -400,10 +403,14 @@ private:
     void do_factory_reset();
     void cancel_factory_reset();
 
-    void about(KeyValue key_value);
-    void about_show();
-    void about_mismatch_forward();
-    void about_back();
+    void versions(KeyValue key_value);
+    void versions_show();
+    void versions_mismatch_forward();
+    void versions_back();
+
+    void copyrights(KeyValue key_value);
+    void copyrights_show();
+    void copyrights_back();
 
     // Background tasks
     void load_filament_task();
@@ -429,7 +436,8 @@ private:
     FeedrateSettings feedrates_{};
     AccelerationSettings accelerations_{};
     JerkSettings jerks_{};
-    uint16_t adv_i3_pp_lcd_version_ = 0x0000;
+    uint16_t lcd_version_ = 0x0000;
+    uint8_t lcd_model_ = 0x00;
     double extruded_ = 0.0;
     Sensor current_sensor_ = DEFAULT_SENSOR;
     Feature features_ =  DEFAULT_FEATURES;
