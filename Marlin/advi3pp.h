@@ -102,6 +102,7 @@ struct LCD
     static void refresh();
     static void queue_message(const String& message);
     static void reset_message();
+    static void buzz(long duration, uint16_t freq);
 };
 
 }

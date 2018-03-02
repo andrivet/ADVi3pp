@@ -96,6 +96,11 @@ void LCD::reset_message()
     lcd.reset_messaage();
 }
 
+void LCD::buzz(long duration, uint16_t freq)
+{
+    lcd.buzz(duration, freq);
+}
+
 // --------------------------------------------------------------------
 // LCDImpl
 // --------------------------------------------------------------------
@@ -209,6 +214,14 @@ void LCDImpl::reset_progress()
     progress_name_ = "";
     progress_percent_ = "";
     percent_ = -1;
+}
+
+void LCDImpl::buzz(long duration, uint16_t freq)
+{
+    UNUSED(freq);
+    WriteRegisterDataRequest request{Register::BuzzerBeepingTime};
+    request << static_cast<Uint8>(min(CEILING(duration, 10), UINT8_MAX));
+    request.send();
 }
 
 }
