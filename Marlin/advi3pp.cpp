@@ -931,7 +931,7 @@ void PrinterImpl::preheat_show()
     Log::log() << F("Preheat page") << Log::endl();
     WriteRamDataRequest frame{Variable::Preset1Bed};
     for(auto& preset : presets_)
-        frame << Uint16(preset.hotend) << Uint16(preset.bed);
+        frame << Uint16(preset.bed) << Uint16(preset.hotend);
     frame.send();
     show_page(Page::Preheat);
 }
@@ -2240,10 +2240,8 @@ void PrinterImpl::update_graphs()
 //! Update the graphics (two channels: the bed and the hotend).
 void PrinterImpl::send_graphs_data()
 {
-    WriteCurveDataRequest frame{0b00001111};
+    WriteCurveDataRequest frame{0b00000011};
     frame << Uint16{Temperature::degHotend(0)}
-          << Uint16{Temperature::degHotend(0)}
-          << Uint16{Temperature::degBed()}
           << Uint16{Temperature::degBed()};
     frame.send(false);
 }
