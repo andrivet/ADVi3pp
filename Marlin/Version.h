@@ -32,6 +32,12 @@
 
 #else
 
+  #ifdef ADVi3PP_BLTOUCH
+  #define ADVi3PP_NAME "ADVi3++BLTouch"
+  #else
+  #define ADVi3PP_NAME "ADVi3++"
+  #endif
+
   /**
    * Marlin release version identifier
    */
@@ -41,7 +47,7 @@
    * Verbose version identifier which should contain a reference to the location
    * from where the binary was downloaded or the source code was compiled.
    */
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3++ 3.0.0-dev)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (ADVi3PP_NAME 3.0.0-dev)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
