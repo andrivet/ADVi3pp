@@ -148,3 +148,4 @@ cmake-build-*
 ArduinoCore
 
 .python-version
+Marlin/BLTouch-Debug
