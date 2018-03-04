@@ -21,11 +21,11 @@
  */
 
 #include "MarlinConfig.h"
+#include "ultralcd.h"
+#include "Marlin.h"
 
 #if ENABLED(ULTRA_LCD)
 
-#include "ultralcd.h"
-#include "Marlin.h"
 #include "language.h"
 #include "cardreader.h"
 #include "temperature.h"
@@ -5156,3 +5156,63 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
 #endif
 
 #endif // ULTRA_LCD
+
+#if ENABLED(ADVANCED_PAUSE_FEATURE)
+
+/* LCD implementations can override this to change to a screen which will
+ * display messages */
+void __attribute__((weak)) lcd_advanced_pause_message_init()
+{
+}
+
+#if ADVANCED_PAUSE_EXTRUDE_LENGTH > 0
+void __attribute__((weak)) lcd_advanced_pause_message_option()
+{
+  advanced_pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT;
+}
+#endif
+
+void __attribute__((weak)) lcd_advanced_pause_show_message(const AdvancedPauseMessage message)
+{
+  const char *msg = NULL;
+
+  switch (message) {
+  case ADVANCED_PAUSE_MESSAGE_INIT:
+    lcd_advanced_pause_message_init();
+    msg = PSTR("Pausing...");
+    break;
+  case ADVANCED_PAUSE_MESSAGE_UNLOAD:
+    msg = PSTR("Unloading filament...");
+    break;
+  case ADVANCED_PAUSE_MESSAGE_INSERT:
+    msg = PSTR("Insert filament and click");
+    break;
+  case ADVANCED_PAUSE_MESSAGE_LOAD:
+    msg = PSTR("Loading filament...");
+    break;
+  case ADVANCED_PAUSE_MESSAGE_EXTRUDE:
+    msg = PSTR("Extruding...");
+    break;
+  case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:
+    msg = PSTR("Click to heat");
+    break;
+#if ADVANCED_PAUSE_EXTRUDE_LENGTH > 0
+  case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:
+    msg = PSTR("Waiting for heat...");
+    break;
+  case ADVANCED_PAUSE_MESSAGE_OPTION:
+    lcd_advanced_pause_message_option();
+    break;
+#endif
+  case ADVANCED_PAUSE_MESSAGE_RESUME:
+    msg = PSTR("Resuming print...");
+    break;
+  case ADVANCED_PAUSE_MESSAGE_STATUS:
+    msg = PSTR("Printing");
+    break;
+  }
+
+  if (msg)
+    lcd_setstatusPGM(msg);
+}
+#endif // ADVANCED_PAUSE_FEATURE

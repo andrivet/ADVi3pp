@@ -6458,9 +6458,7 @@ inline void gcode_M17() {
       HOTEND_LOOP() {
         if (thermalManager.degTargetHotend(e) && abs(thermalManager.degHotend(e) - thermalManager.degTargetHotend(e)) > TEMP_HYSTERESIS) {
           heaters_heating = true;
-          #if ENABLED(ULTIPANEL)
-            lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT);
-          #endif
+          lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT);
           break;
         }
       }
@@ -6516,9 +6514,7 @@ inline void gcode_M17() {
 
     // Show initial message and wait for synchronize steppers
     if (show_lcd) {
-      #if ENABLED(ULTIPANEL)
-        lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INIT);
-      #endif
+      lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INIT);
     }
 
     // Save current position
@@ -6534,10 +6530,8 @@ inline void gcode_M17() {
 
     if (unload_length != 0) {
       if (show_lcd) {
-        #if ENABLED(ULTIPANEL)
-          lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_UNLOAD);
-          idle();
-        #endif
+        lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_UNLOAD);
+        idle();
       }
 
       // Unload filament
@@ -6545,9 +6539,7 @@ inline void gcode_M17() {
     }
 
     if (show_lcd) {
-      #if ENABLED(ULTIPANEL)
-        lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
-      #endif
+      lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
     }
 
     #if HAS_BUZZER
@@ -6589,9 +6581,7 @@ inline void gcode_M17() {
           nozzle_timed_out |= thermalManager.is_heater_idle(e);
 
       if (nozzle_timed_out) {
-        #if ENABLED(ULTIPANEL)
-          lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE);
-        #endif
+        lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE);
 
         // Wait for LCD click or M108
         while (wait_for_user) idle(true);
@@ -6602,9 +6592,7 @@ inline void gcode_M17() {
         // Wait for the heaters to reach the target temperatures
         ensure_safe_temperature();
 
-        #if ENABLED(ULTIPANEL)
-          lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
-        #endif
+        lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
 
         // Start the heater idle timers
         const millis_t nozzle_timeout = (millis_t)(PAUSE_PARK_NOZZLE_TIMEOUT) * 1000UL;
@@ -6645,11 +6633,9 @@ inline void gcode_M17() {
     set_destination_from_current();
 
     if (load_length != 0) {
-      #if ENABLED(ULTIPANEL)
-        // Show "insert filament"
-        if (nozzle_timed_out)
-          lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
-      #endif
+      // Show "insert filament"
+      if (nozzle_timed_out)
+        lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
 
       KEEPALIVE_STATE(PAUSED_FOR_USER);
       wait_for_user = true;    // LCD click or M108 will clear this
@@ -6661,16 +6647,14 @@ inline void gcode_M17() {
       }
       KEEPALIVE_STATE(IN_HANDLER);
 
-      #if ENABLED(ULTIPANEL)
-        // Show "load" message
-        lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_LOAD);
-      #endif
+      // Show "load" message
+      lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_LOAD);
 
       // Load filament
       do_pause_e_move(load_length, FILAMENT_CHANGE_LOAD_FEEDRATE);
     }
 
-    #if ENABLED(ULTIPANEL) && ADVANCED_PAUSE_EXTRUDE_LENGTH > 0
+    #if ADVANCED_PAUSE_EXTRUDE_LENGTH > 0
 
       if (!thermalManager.tooColdToExtrude(active_extruder)) {
         float extrude_length = initial_extrude_length;
@@ -6699,10 +6683,8 @@ inline void gcode_M17() {
 
     #endif
 
-    #if ENABLED(ULTIPANEL)
-      // "Wait for print to resume"
-      lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_RESUME);
-    #endif
+    // "Wait for print to resume"
+    lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_RESUME);
 
     // Set extruder to saved position
     destination[E_AXIS] = current_position[E_AXIS] = resume_position[E_AXIS];
@@ -6716,10 +6698,8 @@ inline void gcode_M17() {
       filament_ran_out = false;
     #endif
 
-    #if ENABLED(ULTIPANEL)
-      // Show status screen
-      lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_STATUS);
-    #endif
+    // Show status screen
+    lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_STATUS);
 
     #ifdef ACTION_ON_RESUME
       SERIAL_ECHOLNPGM("//action:" ACTION_ON_RESUME);

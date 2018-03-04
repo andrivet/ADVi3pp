@@ -25,10 +25,9 @@
 
 #include "MarlinConfig.h"
 #include "advi3pp.h"
+#include "Marlin.h"
 
 #if ENABLED(ULTRA_LCD)
-
-  #include "Marlin.h"
 
   #if ENABLED(AUTO_BED_LEVELING_UBL) || ENABLED(G26_MESH_VALIDATION)
     extern bool lcd_external_control;
@@ -98,10 +97,6 @@
     void lcd_buttons_update();
     void lcd_quick_feedback();        // Audible feedback for a button click - could also be visual
     void lcd_completion_feedback(const bool good=true);
-
-    #if ENABLED(ADVANCED_PAUSE_FEATURE)
-      void lcd_advanced_pause_show_message(const AdvancedPauseMessage message);
-    #endif // ADVANCED_PAUSE_FEATURE
 
   #else
 
@@ -199,6 +194,7 @@
   inline void lcd_reset_alert_level() { advi3pp::LCD::reset_alert_level(); }
   inline bool lcd_detected() { return advi3pp::LCD::detected(); }
   inline void lcd_refresh() { advi3pp::LCD::refresh(); }
+  inline void lcd_buzz(const long duration, const uint16_t freq) { advi3pp::LCD::buzz(duration, freq); }
 
 #else // no LCD
 
@@ -215,6 +211,12 @@
   inline void lcd_refresh() {}
 
 #endif // ULTRA_LCD
+
+#if ENABLED(ADVANCED_PAUSE_FEATURE)
+  void lcd_advanced_pause_message_init();
+  void lcd_advanced_pause_message_option();
+  void lcd_advanced_pause_show_message(const AdvancedPauseMessage message);
+#endif // ADVANCED_PAUSE_FEATURE
 
 #define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(PSTR(x))
 #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatusPGM(PSTR(x))

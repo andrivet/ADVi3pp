@@ -131,6 +131,7 @@ void PrinterImpl::setup()
     Serial2.begin(advi3_pp_baudrate);
     send_versions();
     clear_graphs();
+    set_update_graphs();
     show_page(Page::Boot, false);
 }
 
@@ -288,6 +289,7 @@ void PrinterImpl::show_back_page()
     }
 
     show_page(back_pages_.pop(), false);
+    graph_page_ = Page::None;
 }
 
 //! Show the "Next" page on the LCD display.
@@ -328,6 +330,11 @@ void PrinterImpl::task()
     execute_background_task();
     send_status();
     update_graphs();
+    if (wait_for_user)
+    {
+        //show the user the status message and buttons to continue
+        show_page_print_or_temps(Page::Print);
+    }
 }
 
 //! Update the status of the printer on the LCD.
@@ -388,11 +395,17 @@ void PrinterImpl::read_lcd_serial()
     // TODO: Check that length == 1, that Hi(action) == 0x04
     Log::log() << F(">>> ") << nb_words.byte << F(" words, Action = ") << static_cast<uint16_t>(action) << F(", KeyValue = ") << value.word << Log::endl();
 
+    // Similar to ultralcd, any click when wait_for_user is set is ignored and clears wait_for_user
+    if (wait_for_user)
+    {
+        wait_for_user = false;
+        return;
+    }
+
     switch(action)
     {
         case Action::Main:                  main(key_value); break;
-        case Action::SdPrintCommand:        sd_print_command(key_value); break;
-        case Action::UsbPrintCommand:       usb_print_command(key_value); break;
+        case Action::PrintCommand:          print_command(key_value); break;
         case Action::LoadUnload:            load_unload(key_value); break;
         case Action::Preheat:               preheat(key_value); break;
         case Action::Cooldown:              cooldown(); break;
@@ -440,39 +453,43 @@ void PrinterImpl::main(KeyValue key_value)
     }
 }
 
+void PrinterImpl::show_page_print_or_temps(Page page)
+{
+    // autodetect which page to display
+    if(page == Page::None) {
+        // If there is a print running, display the print screen
+        if(print_job_timer.isRunning() || print_job_timer.isPaused() || wait_for_user)
+        {
+            page = Page::Print;
+        }
+        else
+        {
+            page = Page::Temperature;
+        }
+    }
+
+    if(graph_page_ == page)
+       return;
+
+    show_page(page, graph_page_ == Page::None);
+    graph_page_ = page;
+}
+
 //! Show one of the temperature graph screens depending of the context: either the SD printing screen,
 //! the printing screen or the temperature screen.
 void PrinterImpl::main_temps()
 {
-    set_update_graphs();
-
-    // If there is a SD card print running, display the SD print screen
-    if(card.cardOK && card.sdprinting)
-    {
-        show_page(Page::SdPrint);
-        return;
-    }
-
-    // If there is an USB print running, display the USB Print page. Otherwise, the temperature graph page
-    show_page(print_job_timer.isRunning() ? Page::UsbPrint : Page::Temperature);
+    show_page_print_or_temps();
 }
 
 //! Show one of the SD card screens depending of the context: either the SD screen or the SD printing screen.
 //! Fallback to the USB printing if the SD card is not accessible.
 void PrinterImpl::main_sd()
 {
-    // If there is a SD card print running, display the SD print screen
-    if(card.cardOK && card.sdprinting)
+    // If there is a print running, display the print screen
+    if(print_job_timer.isRunning() || print_job_timer.isPaused())
     {
-        show_page(Page::SdPrint);
-        set_update_graphs();
-        return;
-    }
-
-    if(print_job_timer.isRunning())
-    {
-        show_page(Page::UsbPrint);
-        set_update_graphs();
+        show_page_print_or_temps(Page::Print);
         return;
     }        
 
@@ -481,8 +498,7 @@ void PrinterImpl::main_sd()
     if(!card.cardOK)
     {
         // SD card not accessible so fall back to Temperatures
-        show_page(Page::Temperature);
-        set_update_graphs();
+        show_page_print_or_temps(Page::Temperature);
         return;
     }
 
@@ -571,8 +587,7 @@ void PrinterImpl::sd_card_select_file(KeyValue key_value)
 
     stepper.finish_and_disable(); // To circumvent homing problems
 
-    show_page(Page::SdPrint);
-    set_update_graphs();
+    show_page_print_or_temps(Page::Print);
 }
 
 //! LCD SD card menu
@@ -612,26 +627,35 @@ void PrinterImpl::sd_card(KeyValue key_value)
 
 //! Handle print commands.
 //! @param key_value    The sub-action to handle
-void PrinterImpl::sd_print_command(KeyValue key_value)
+void PrinterImpl::print_command(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::PrintStop:           sd_print_stop(); break;
-        case KeyValue::PrintPause:          sd_print_pause(); break;
-        case KeyValue::PrintResume:         sd_print_resume(); break;
-        case KeyValue::Back:                sd_print_back(); break;
+        case KeyValue::PrintStop:           print_stop(); break;
+        case KeyValue::PrintPause:          print_pause(); break;
+        case KeyValue::PrintResume:         print_resume(); break;
+        case KeyValue::Back:                print_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
 //! Stop SD printing
-void PrinterImpl::sd_print_stop()
+void PrinterImpl::print_stop()
 {
     Log::log() << F("Stop Print") << Log::endl();
 
-    LCDImpl::instance().reset_progress();
+    if(IS_SD_FILE_OPEN)
+    {
+        LCDImpl::instance().reset_progress();
 
-    card.stopSDPrint();
+        card.stopSDPrint();
+    }
+    else
+    {
+        //USB: "disconnect" is the only standard command to stop a print
+        SERIAL_ECHOLNPGM("//action:disconnect");
+    }
+
     clear_command_queue();
     quickstop_stepper();
     print_job_timer.stop();
@@ -641,100 +665,50 @@ void PrinterImpl::sd_print_stop()
 }
 
 //! Pause SD printing
-void PrinterImpl::sd_print_pause()
+void PrinterImpl::print_pause()
 {
     Log::log() << F("Pause Print") << Log::endl();
 
     LCD::queue_message(F("Pause printing..."));
-    card.pauseSDPrint();
-    print_job_timer.pause();
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-    enqueue_and_echo_commands_P(PSTR("M125"));
-#endif
-}
 
-//! Resume the current SD printing
-void PrinterImpl::sd_print_resume()
-{
-    Log::log() << F("Resume Print") << Log::endl();
-
-    LCD::queue_message(F("Resume printing"));
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-    enqueue_and_echo_commands_P(PSTR("M24"));
-#else
-    card.startFileprint();
-    print_job_timer.start();
-#endif
-}
-
-//! Handle the Back button
-void PrinterImpl::sd_print_back()
-{
-    show_back_page();
-}
-
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// USB printing commands
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-//! Handle print commands.
-//! @param key_value    The sub-action to handle
-void PrinterImpl::usb_print_command(KeyValue key_value)
-{
-    switch(key_value)
+    if(IS_SD_FILE_OPEN)
     {
-        case KeyValue::PrintStop:           usb_print_stop(); break;
-        case KeyValue::PrintPause:          usb_print_pause(); break;
-        case KeyValue::PrintResume:         usb_print_resume(); break;
-        case KeyValue::Back:                usb_print_back(); break;
-        default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        card.pauseSDPrint();
+        print_job_timer.pause();
+#if ENABLED(PARK_HEAD_ON_PAUSE)
+        enqueue_and_echo_commands_P(PSTR("M125"));
+#endif
+    }
+    else
+    {
+        SERIAL_ECHOLNPGM("//action:pause");
     }
 }
 
-//! Stop SD printing
-void PrinterImpl::usb_print_stop()
-{
-    Log::log() << F("Stop Print") << Log::endl();
-
-    LCDImpl::instance().reset_progress();
-
-    clear_command_queue();
-    quickstop_stepper();
-    print_job_timer.stop();
-    thermalManager.disable_all_heaters();
-
-    show_back_page();
-}
-
-//! Pause SD printing
-void PrinterImpl::usb_print_pause()
-{
-    Log::log() << F("Pause Print") << Log::endl();
-
-    LCD::queue_message(F("Pause printing"));
-
-    print_job_timer.pause();
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-    enqueue_and_echo_commands_P(PSTR("M125"));
-#endif
-}
-
 //! Resume the current SD printing
-void PrinterImpl::usb_print_resume()
+void PrinterImpl::print_resume()
 {
     Log::log() << F("Resume Print") << Log::endl();
 
     LCD::queue_message(F("Resume printing"));
 
+    if(IS_SD_FILE_OPEN)
+    {
 #if ENABLED(PARK_HEAD_ON_PAUSE)
-    enqueue_and_echo_commands_P(PSTR("M24"));
+        enqueue_and_echo_commands_P(PSTR("M24"));
 #else
-    print_job_timer.start();
+        card.startFileprint();
+        print_job_timer.start();
 #endif
+    }
+    else
+    {
+        SERIAL_ECHOLNPGM("//action:resume");
+    }
 }
 
 //! Handle the Back button
-void PrinterImpl::usb_print_back()
+void PrinterImpl::print_back()
 {
     show_back_page();
 }
@@ -792,7 +766,19 @@ void PrinterImpl::load_unload(KeyValue key_value)
 //! Show the Load & Unload screen on the LCD display.
 void PrinterImpl::load_unload_show()
 {
-    set_target_temperature(200);
+    int16_t target = thermalManager.degTargetHotend(0);
+
+    if (target <= 0)
+    {
+        target = 200;
+        load_unload_temp_was_0_ = true;
+    }
+    else
+    {
+        load_unload_temp_was_0_ = false;
+    }
+
+    set_target_temperature(target);
     show_page(Page::LoadUnload);
 }
 
@@ -819,7 +805,9 @@ void PrinterImpl::load_unload_stop()
     clear_background_task();
     clear_command_queue();
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
-    thermalManager.setTargetHotend(0, 0);
+
+    if (load_unload_temp_was_0_ && !(print_job_timer.isRunning() || print_job_timer.isPaused()))
+        thermalManager.setTargetHotend(0, 0);
 
     show_back_page();
 }
@@ -922,8 +910,8 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
     command = F("M140 S"); command << preset.bed;
     enqueue_and_echo_command(command.c_str());
 
+    // Do not auto-switch to Print page
     show_page(Page::Temperature);
-    set_update_graphs();
 }
 
 //! Cooldown the bed and the nozzle
@@ -1886,17 +1874,20 @@ void PrinterImpl::send_stats()
 
 void PrinterImpl::set_update_graphs()
 {
-    update_graphs_ = true;
     next_update_graph_time_ = millis() + 2000;
 }
 
 void PrinterImpl::update_graphs()
 {
-    if(!update_graphs_ || !ELAPSED(millis(), next_update_graph_time_))
+    if(!ELAPSED(millis(), next_update_graph_time_))
         return;
 
     send_graphs_data();
     next_update_graph_time_ = millis() + 500;
+
+    // auto-switch between Print/Temperature if enabled
+    if(graph_page_ != Page::None)
+        show_page_print_or_temps();
 }
     
 //! Update the graphics (two channels: the bed and the hotend).
@@ -2055,4 +2046,9 @@ void JerkSettings::save()
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
 
+}
+
+void lcd_advanced_pause_message_init()
+{
+    advi3pp::printer.show_page_print_or_temps();
 }

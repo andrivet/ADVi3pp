@@ -127,6 +127,7 @@ struct PrinterImpl
     void setup();
     void task();
     void show_page(Page page, bool save_back = true);
+    void show_page_print_or_temps(Page page = Page::None);
     void auto_pid_finished();
     void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
@@ -162,8 +163,7 @@ private:
 private:
     // Actions
     void main(KeyValue key_value);
-    void sd_print_command(KeyValue key_value);
-    void usb_print_command(KeyValue key_value);
+    void print_command(KeyValue key_value);
     void load_unload(KeyValue key_value);
     void preheat(KeyValue key_value);
     void cooldown();
@@ -190,14 +190,10 @@ private:
     void main_settings();
     void main_motors();
     void back();
-    void sd_print_stop();
-    void sd_print_pause();
-    void sd_print_resume();
-    void sd_print_back();
-    void usb_print_stop();
-    void usb_print_pause();
-    void usb_print_resume();
-    void usb_print_back();
+    void print_stop();
+    void print_pause();
+    void print_resume();
+    void print_back();
     void load_unload_show();
     void load_unload_start(bool load);
     void load_unload_stop();
@@ -270,7 +266,6 @@ private:
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
     BackgroundTask background_task_ = BackgroundTask::None;
-    bool update_graphs_ = false;
     millis_t next_update_graph_time_ = 0;
     Stack<Page, 8> back_pages_;
     Page forward_page_ = Page::None;
@@ -282,6 +277,8 @@ private:
     JerkSettings jerks_;
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
     double extruded_ = 0.0;
+    Page graph_page_ = Page::None;
+    bool load_unload_temp_was_0_;
 };
 
 // --------------------------------------------------------------------
@@ -311,6 +308,8 @@ struct LCDImpl
     void set_progress_name(const String& name);
     const String& get_progress() const;
     void reset_progress();
+
+    void buzz(long duration, uint16_t freq);
 
 private:
     String message_;

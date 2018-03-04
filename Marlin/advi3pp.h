@@ -49,8 +49,7 @@ enum class Page: uint8_t
     Preheat                 = 36,
     Move                    = 38,
     SdCard                  = 40,
-    SdPrint                 = 42,
-    UsbPrint                = 44,
+    Print                   = 42,
     Leveling1               = 46,
     Leveling2               = 48,
     ExtruderCalibration1    = 50,
@@ -102,6 +101,7 @@ struct LCD
     static void refresh();
     static void queue_message(const String& message);
     static void reset_message();
+    static void buzz(long duration, uint16_t freq);
 };
 
 }
