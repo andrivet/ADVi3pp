@@ -330,6 +330,11 @@ void PrinterImpl::task()
     execute_background_task();
     send_status();
     update_graphs();
+    if (wait_for_user)
+    {
+        //show the user the status message and buttons to continue
+        show_page_print_or_temps(Page::Print);
+    }
 }
 
 //! Update the status of the printer on the LCD.
@@ -2027,4 +2032,9 @@ void JerkSettings::save()
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
 
+}
+
+void lcd_advanced_pause_message_init()
+{
+    advi3pp::printer.show_page_print_or_temps();
 }
