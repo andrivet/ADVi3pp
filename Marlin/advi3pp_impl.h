@@ -269,6 +269,7 @@ private:
     void show_settings();
     void show_infos();
     void show_motors();
+    void show_sensor_settings();
 
     void back();
 
@@ -372,29 +373,32 @@ private:
     void cancel_xyz_motors_calibration();
     void xyz_motors_calibration_settings();
 
-    void sensor(KeyValue key_value);
-    void sensor_show();
-    void sensor_switch();
-    void sensor_save();
-    void sensor_cancel();
+    void sensor_settings(KeyValue key_value);
+    void sensor_settings_show();
+    void sensor_settings_save();
+    void sensor_settings_cancel();
+
+    void sensor_tuning(KeyValue key_value);
+    void sensor_tuning_show();
+    void sensor_tuning_back();
+    void sensor_leveling();
+    void sensor_self_test();
+    void sensor_reset();
+    void sensor_deploy();
+    void sensor_stow();
 
     void firmware(KeyValue key_value);
     void firmware_settings_show();
     void firmware_settings_thermal_protection();
-    void firmware_settings_head_parking();
+    void firmware_settings_baudrate_minus();
+    void firmware_settings_baudrate_plus();
+    void firmware_settings_save();
     void firmware_settings_back();
 
     void lcd(KeyValue key_value);
     void lcd_settings_show();
     void lcd_settings_dimming();
     void lcd_settings_back();
-
-    void usb_settings(KeyValue key_value);
-    void usb_settings_show();
-    void usb_settings_baudrate_minus();
-    void usb_settings_baudrate_plus();
-    void usb_settings_save();
-    void usb_settings_cancel();
 
     void factory_reset(KeyValue key_value);
     void show_factory_reset_warning();

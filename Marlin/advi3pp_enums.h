@@ -75,7 +75,7 @@ enum class Register: uint8_t
     Timer3                  = 0x4E,
     KeyCode                 = 0x4F,
     TrendlineClear          = 0xEB,
-    ResetTriger             = 0xEE
+    ResetTrigger            = 0xEE
 };
 
 //! List of variables and their addresses.
@@ -87,7 +87,6 @@ enum class Variable: uint16_t
     HotEnd                  = 0x0003,
     FanSpeed                = 0x0004,
     ZHeight                 = 0x0005,
-    LogoAnimation           = 0x0006,
 
     MotherboardVersion      = 0x0100,
     LcdVersion              = 0x0108,
@@ -172,9 +171,9 @@ enum class Action: uint16_t
     ExtruderCalibration     = 0x0409,
     XYZMotorsCalibration    = 0x040A,
     PidTuning               = 0x040B,
-    Sensor                  = 0x040C,
+    SensorSettings          = 0x040C,
     Firmware                = 0x040D,
-    USB                     = 0x040E,
+    NoSensor                = 0x040E,
     LCD                     = 0x040F,
     Statistics              = 0x0410,
     Versions                = 0x0411,
@@ -185,6 +184,7 @@ enum class Action: uint16_t
     AccelerationSettings    = 0x0416,
     JerkSettings            = 0x0417,
     Copyrights              = 0x0418,
+    SensorTuning            = 0x0419,
 
     MoveXMinus              = 0x0420,
     MoveXPlus               = 0x0421,
@@ -212,6 +212,7 @@ enum class KeyValue: uint16_t
     Settings                = 0x0004,
     Infos                   = 0x0005,
     Motors                  = 0x0006,
+    SensorSettings          = 0x0007,
 
     PrintStop               = 0x0000,
     PrintPause              = 0x0001,
@@ -253,17 +254,20 @@ enum class KeyValue: uint16_t
     PidTuningStep1          = 0x0000,
     PidTuningStep2          = 0x0001,
 
-    SensorSwitch            = 0x0001,
-
-    FirmwareProtection      = 0x0001,
-    FirmwareHeadParking     = 0x0002,
+    ThermalProtection       = 0x0001,
+    USBBaudrateMinus        = 0x0002,
+    USBBaudratePlus         = 0x0003,
 
     LCDDimming              = 0x0001,
-
-    USBBaudrateMinus        = 0x0001,
-    USBBaudratePlus         = 0x0002,
+    Buzzer                  = 0x0002,
 
     MismatchForward         = 0x0001,
+
+    SensorLeveling          = 0x0001,
+    SensorSelfTest          = 0x0002,
+    SensorReset             = 0x0003,
+    SensorDeploy            = 0x0004,
+    SensorStow              = 0x0005,
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF,
@@ -281,7 +285,8 @@ enum class Feature
 {
     HeadParking         = 0b0000000000000001,
     ThermalProtection   = 0b0000000000000010,
-    Dimming             = 0b0000000000000100
+    Dimming             = 0b0000000000000100,
+    Buzzer              = 0b0000000000001000
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 

@@ -74,10 +74,11 @@ enum class Page: uint8_t
     Temperature             = 86,
     Infos                   = 88,
     Firmware                = 90,
-    USB                     = 92,
-    Sensor                  = 94,
+    NoSensor                = 92,
+    SensorSettings          = 94,
     LCD                     = 96,
-    Copyrights              = 98
+    Copyrights              = 98,
+    SensorTuning            = 100
 };
 
 //! The Duplicator i3 Plus printer.

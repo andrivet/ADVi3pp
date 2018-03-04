@@ -35,6 +35,10 @@
 #pragma message "This is a DEBUG build"
 #endif
 
+#ifdef ADVi3PP_BLTOUCH
+#pragma message "This is a BLTouch build"
+#endif
+
 namespace
 {
     const uint16_t advi3_pp_version = 0x300;
@@ -42,7 +46,7 @@ namespace
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x300;
     // Modify also DETAILED_BUILD_VERSION in Version.h
 
-    const unsigned long advi3_pp_baudrate = 250000;
+    const unsigned long advi3_pp_baudrate = 115200; // Between the LCD panel and the mainboard
     const uint16_t nb_visible_sd_files = 5;
 	const uint8_t  nb_visible_sd_file_chars = 48;
     const uint16_t calibration_cube_size = 20; // 20 mm
@@ -426,9 +430,8 @@ void PrinterImpl::read_lcd_serial()
         case Action::ExtruderCalibration:   extruder_calibration(key_value); break;
         case Action::XYZMotorsCalibration:  xyz_motors_calibration(key_value); break;
         case Action::PidTuning:             pid_tuning(key_value); break;
-        case Action::Sensor:                sensor(key_value); break;
+        case Action::SensorSettings:        sensor_settings(key_value); break;
         case Action::Firmware:              firmware(key_value); break;
-        case Action::USB:                   usb_settings(key_value); break;
         case Action::LCD:                   lcd(key_value); break;
         case Action::LCDBrightness:         dimming_.change_brightness(key_value); break;
         case Action::Statistics:            statistics(key_value); break;
@@ -440,6 +443,7 @@ void PrinterImpl::read_lcd_serial()
         case Action::AccelerationSettings:  acceleration_settings(key_value); break;
         case Action::JerkSettings:          jerk_settings(key_value); break;
         case Action::Copyrights:            copyrights(key_value); break;
+        case Action::SensorTuning:          sensor_tuning(key_value); break;
         case Action::MoveXPlus:             move_x_plus(); break;
         case Action::MoveXMinus:            move_x_minus(); break;
         case Action::MoveYPlus:             move_y_plus(); break;
@@ -467,6 +471,7 @@ void PrinterImpl::screen(KeyValue key_value)
         case KeyValue::Settings:        show_settings(); break;
         case KeyValue::Infos:           show_infos(); break;
         case KeyValue::Motors:          show_motors(); break;
+        case KeyValue::SensorSettings:  show_sensor_settings(); break;
         case KeyValue::Back:            back(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -544,6 +549,11 @@ void PrinterImpl::show_infos()
 void PrinterImpl::show_motors()
 {
     show_page(Page::MotorsSettings);
+}
+
+void PrinterImpl::show_sensor_settings()
+{
+    show_page(Page::SensorSettings);
 }
 
 void PrinterImpl::back()
@@ -1985,38 +1995,95 @@ void PrinterImpl::cancel_xyz_motors_calibration()
 // Sensor Settings
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void PrinterImpl::sensor(KeyValue key_value)
+void PrinterImpl::sensor_settings(advi3pp::KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::Show:            sensor_show(); break;
-        case KeyValue::SensorSwitch:    sensor_switch(); break;
-        case KeyValue::Save:            sensor_save(); break;
-        case KeyValue::Back:            sensor_cancel(); break;
+        case KeyValue::Show:            sensor_settings_show(); break;
+        case KeyValue::Save:            sensor_settings_save(); break;
+        case KeyValue::Back:            sensor_settings_cancel(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
-void PrinterImpl::sensor_show()
+void PrinterImpl::sensor_settings_show()
 {
     // TODO
     save_forward_page();
-    show_page(Page::Sensor);
+    show_page(Page::SensorSettings);
 }
 
-void PrinterImpl::sensor_switch()
+void PrinterImpl::sensor_settings_save()
 {
     // TODO
 }
 
-void PrinterImpl::sensor_save()
-{
-    // TODO
-}
-
-void PrinterImpl::sensor_cancel()
+void PrinterImpl::sensor_settings_cancel()
 {
     show_back_page();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Sensor Tuning
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void PrinterImpl::sensor_tuning(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:            sensor_tuning_show(); break;
+        case KeyValue::SensorLeveling:  sensor_leveling(); break;
+        case KeyValue::SensorSelfTest:  sensor_self_test(); break;
+        case KeyValue::SensorReset:     sensor_reset(); break;
+        case KeyValue::SensorDeploy:    sensor_deploy(); break;
+        case KeyValue::SensorStow:      sensor_stow(); break;
+        case KeyValue::Back:            sensor_tuning_back(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PrinterImpl::sensor_tuning_show()
+{
+#ifdef ADVi3PP_BLTOUCH
+    show_page(Page::SensorTuning);
+#else
+    show_page(Page::NoSensor);
+#endif
+}
+
+void PrinterImpl::sensor_tuning_back()
+{
+    show_back_page();
+}
+
+void PrinterImpl::sensor_leveling()
+{
+#ifdef ADVi3PP_BLTOUCH
+    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
+    enqueue_and_echo_commands_P((PSTR("G29"))); // leveling
+#else
+    show_page(Page::NoSensor);
+#endif
+}
+
+void PrinterImpl::sensor_self_test()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
+}
+
+void PrinterImpl::sensor_reset()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
+}
+
+void PrinterImpl::sensor_deploy()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
+}
+
+void PrinterImpl::sensor_stow()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2028,8 +2095,10 @@ void PrinterImpl::firmware(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::Show:                firmware_settings_show(); break;
-        case KeyValue::FirmwareProtection:  firmware_settings_thermal_protection(); break;
-        case KeyValue::FirmwareHeadParking: firmware_settings_head_parking(); break;
+        case KeyValue::ThermalProtection:   firmware_settings_thermal_protection(); break;
+        case KeyValue::USBBaudrateMinus:    firmware_settings_baudrate_minus(); break;
+        case KeyValue::USBBaudratePlus:     firmware_settings_baudrate_plus(); break;
+        case KeyValue::Save:                firmware_settings_save(); break;
         case KeyValue::Back:                firmware_settings_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -2037,7 +2106,10 @@ void PrinterImpl::firmware(KeyValue key_value)
 
 void PrinterImpl::firmware_settings_show()
 {
+    usb_old_baudrate_ = usb_baudrate_;
+    send_usb_baudrate();
     send_features();
+
     save_forward_page();
     show_page(Page::Firmware);
 }
@@ -2049,18 +2121,68 @@ void PrinterImpl::firmware_settings_thermal_protection()
     // TODO
 }
 
-void PrinterImpl::firmware_settings_head_parking()
+void PrinterImpl::firmware_settings_save()
 {
-    flip_bits(features_, Feature::HeadParking);
-    send_features();
-    // TODO
+    enqueue_and_echo_commands_P(PSTR("M500"));
+    show_back_page();
+
+    change_usb_baudrate();
 }
 
 void PrinterImpl::firmware_settings_back()
 {
+    usb_baudrate_ = usb_old_baudrate_;
     show_back_page();
 }
 
+void PrinterImpl::send_usb_baudrate()
+{
+    String value; value << usb_baudrate_;
+
+    WriteRamDataRequest frame{Variable::Value};
+    frame << FixedSizeString{value, 6};
+    frame.send();
+}
+
+static size_t UsbBaudrateIndex(uint32_t baudrate)
+{
+    size_t nb = countof(usb_baudrates);
+    for(size_t i = 0; i < nb; ++i)
+        if(baudrate == usb_baudrates[i])
+            return i;
+    return 0;
+}
+
+void PrinterImpl::firmware_settings_baudrate_minus()
+{
+    auto index = UsbBaudrateIndex(usb_baudrate_);
+    usb_baudrate_ = index > 0 ? usb_baudrates[index - 1] : usb_baudrates[0];
+    send_usb_baudrate();
+}
+
+void PrinterImpl::firmware_settings_baudrate_plus()
+{
+    auto index = UsbBaudrateIndex(usb_baudrate_);
+    static const auto max = countof(usb_baudrates) - 1;
+    usb_baudrate_ = index < max ? usb_baudrates[index + 1] : usb_baudrates[max];
+    send_usb_baudrate();
+}
+
+void PrinterImpl::change_usb_baudrate()
+{
+    // We do not use Log because this message is always output (Log is only active in DEBUG
+    Serial.print(F("Switch USB baudrate to ")); Serial.print(usb_baudrate_); Serial.print("\r\n");
+
+    // wait for last transmitted data to be sent
+    Serial.flush();
+    Serial.begin(usb_baudrate_);
+    // empty out possible garbage from input buffer
+    while(Serial.available())
+        Serial.read();
+
+    // We do not use Log because this message is always output (Log is only active in DEBUG
+    Serial.print(F("\r\nUSB baudrate switched to ")); Serial.print(usb_baudrate_); Serial.print("\r\n");
+}
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // LCD Settings
@@ -2070,10 +2192,10 @@ void PrinterImpl::lcd(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::Show:            lcd_settings_show(); break;
-        case KeyValue::LCDDimming:      lcd_settings_dimming(); break;
-        case KeyValue::Back:            lcd_settings_back(); break;
-        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Show:                lcd_settings_show(); break;
+        case KeyValue::LCDDimming:          lcd_settings_dimming(); break;
+        case KeyValue::Back:                lcd_settings_back(); break;
+        default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
@@ -2100,93 +2222,6 @@ void PrinterImpl::lcd_settings_dimming()
 
 void PrinterImpl::lcd_settings_back()
 {
-    show_back_page();
-}
-
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// USB Settings
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-void PrinterImpl::usb_settings(KeyValue key_value)
-{
-    switch(key_value)
-    {
-        case KeyValue::Show:                usb_settings_show(); break;
-        case KeyValue::USBBaudrateMinus:    usb_settings_baudrate_minus(); break;
-        case KeyValue::USBBaudratePlus:     usb_settings_baudrate_plus(); break;
-        case KeyValue::Save:                usb_settings_save(); break;
-        case KeyValue::Cancel:              usb_settings_cancel(); break;
-        default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
-    }
-}
-
-void PrinterImpl::send_usb_baudrate()
-{
-    String value; value << usb_baudrate_;
-
-    WriteRamDataRequest frame{Variable::Value};
-    frame << FixedSizeString{value, 6};
-    frame.send();
-}
-
-void PrinterImpl::usb_settings_show()
-{
-    usb_old_baudrate_ = usb_baudrate_;
-    send_usb_baudrate();
-    show_page(Page::USB);
-}
-
-static size_t UsbBaudrateIndex(uint32_t baudrate)
-{
-	size_t nb = countof(usb_baudrates);
-    for(size_t i = 0; i < nb; ++i)
-        if(baudrate == usb_baudrates[i])
-            return i;
-    return 0;
-}
-
-void PrinterImpl::usb_settings_baudrate_minus()
-{
-    auto index = UsbBaudrateIndex(usb_baudrate_);
-    usb_baudrate_ = index > 0 ? usb_baudrates[index - 1] : usb_baudrates[0];
-    send_usb_baudrate();
-}
-
-void PrinterImpl::usb_settings_baudrate_plus()
-{
-    auto index = UsbBaudrateIndex(usb_baudrate_);
-    static const auto max = countof(usb_baudrates) - 1;
-    usb_baudrate_ = index < max ? usb_baudrates[index + 1] : usb_baudrates[max];
-    send_usb_baudrate();
-}
-
-void PrinterImpl::change_usb_baudrate()
-{
-    // We do not use Log because this message is always output (Log is only active in DEBUG
-    Serial.print(F("Switch USB baudrate to ")); Serial.print(usb_baudrate_); Serial.print("\r\n");
-
-    // wait for last transmitted data to be sent
-    Serial.flush();
-    Serial.begin(usb_baudrate_);
-    // empty out possible garbage from input buffer
-    while(Serial.available())
-        Serial.read();
-
-    // We do not use Log because this message is always output (Log is only active in DEBUG
-    Serial.print(F("\r\nUSB baudrate switched to ")); Serial.print(usb_baudrate_); Serial.print("\r\n");
-}
-
-void PrinterImpl::usb_settings_save()
-{
-    enqueue_and_echo_commands_P(PSTR("M500"));
-    show_back_page();
-
-    change_usb_baudrate();
-}
-
-void PrinterImpl::usb_settings_cancel()
-{
-    usb_baudrate_ = usb_old_baudrate_;
     show_back_page();
 }
 
