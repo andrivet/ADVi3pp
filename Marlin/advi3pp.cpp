@@ -388,6 +388,13 @@ void PrinterImpl::read_lcd_serial()
     // TODO: Check that length == 1, that Hi(action) == 0x04
     Log::log() << F(">>> ") << nb_words.byte << F(" words, Action = ") << static_cast<uint16_t>(action) << F(", KeyValue = ") << value.word << Log::endl();
 
+    // Similar to ultralcd, any click when wait_for_user is set is ignored and clears wait_for_user
+    if (wait_for_user)
+    {
+        wait_for_user = false;
+        return;
+    }
+
     switch(action)
     {
         case Action::Main:                  main(key_value); break;
