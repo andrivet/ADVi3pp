@@ -278,6 +278,7 @@ private:
     uint16_t adv_i3_pp_lcd_version_ = 0x0000;
     double extruded_ = 0.0;
     Page graph_page_ = Page::None;
+    bool load_unload_temp_was_0_;
 };
 
 // --------------------------------------------------------------------

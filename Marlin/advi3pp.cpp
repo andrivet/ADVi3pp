@@ -766,7 +766,19 @@ void PrinterImpl::load_unload(KeyValue key_value)
 //! Show the Load & Unload screen on the LCD display.
 void PrinterImpl::load_unload_show()
 {
-    set_target_temperature(200);
+    int16_t target = thermalManager.degTargetHotend(0);
+
+    if (target <= 0)
+    {
+        target = 200;
+        load_unload_temp_was_0_ = true;
+    }
+    else
+    {
+        load_unload_temp_was_0_ = false;
+    }
+
+    set_target_temperature(target);
     show_page(Page::LoadUnload);
 }
 
@@ -793,7 +805,9 @@ void PrinterImpl::load_unload_stop()
     clear_background_task();
     clear_command_queue();
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
-    thermalManager.setTargetHotend(0, 0);
+
+    if (load_unload_temp_was_0_ && !(print_job_timer.isRunning() || print_job_timer.isPaused()))
+        thermalManager.setTargetHotend(0, 0);
 
     show_back_page();
 }
