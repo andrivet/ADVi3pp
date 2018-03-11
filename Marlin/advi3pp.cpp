@@ -138,6 +138,10 @@ void PrinterImpl::setup()
     Log::log() << F("This is a DEBUG build") << Log::endl();
 #endif
 
+#ifdef ADVi3PP_BLTOUCH
+	 Log::log() << F("This is a BLTouch build") << Log::endl();
+#endif
+
     if(usb_baudrate_ != BAUDRATE)
         change_usb_baudrate();
 
