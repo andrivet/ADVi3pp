@@ -172,11 +172,12 @@ void PrinterImpl::store_eeprom_data(eeprom_write write, int& eeprom_index, uint1
         eeprom.write(preset.bed);
     }
 
-    eeprom.write(current_sensor_);
+    uint16_t dummy = 0; eeprom.write(dummy);
     eeprom.write(features_);
     eeprom.write(usb_baudrate_);
 
     dimming_.store_eeprom_data(eeprom);
+    sensor_.store_eeprom_data(eeprom);
 }
 
 //! Restore presets from permanent memory.
@@ -193,11 +194,12 @@ void PrinterImpl::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint1
         eeprom.read(preset.bed);
     }
 
-    eeprom.read(current_sensor_);
+    uint16_t dummy = 0; eeprom.read(dummy);
     eeprom.read(features_);
     eeprom.read(usb_baudrate_);
 
     dimming_.restore_eeprom_data(eeprom);
+    sensor_.restore_eeprom_data(eeprom);
 }
 
 //! Reset presets.
@@ -211,10 +213,10 @@ void PrinterImpl::reset_eeprom_data()
     presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
     presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
 
-    current_sensor_ = DEFAULT_SENSOR;
     features_ = DEFAULT_FEATURES;
 
     dimming_.reset_eeprom_data();
+    sensor_.reset_eeprom_data();
 }
 
 bool PrinterImpl::is_thermal_protection_enabled() const
@@ -2012,14 +2014,15 @@ void PrinterImpl::sensor_settings(advi3pp::KeyValue key_value)
 
 void PrinterImpl::sensor_settings_show()
 {
-    // TODO
+    sensor_.send_values_to_lcd();
     save_forward_page();
     show_page(Page::SensorSettings);
 }
 
 void PrinterImpl::sensor_settings_save()
 {
-    // TODO
+    sensor_.get_value_From_lcd();
+    show_forward_page();
 }
 
 void PrinterImpl::sensor_settings_cancel()
@@ -2037,10 +2040,10 @@ void PrinterImpl::sensor_tuning(KeyValue key_value)
     {
         case KeyValue::Show:            sensor_tuning_show(); break;
         case KeyValue::SensorLeveling:  sensor_leveling(); break;
-        case KeyValue::SensorSelfTest:  sensor_self_test(); break;
-        case KeyValue::SensorReset:     sensor_reset(); break;
-        case KeyValue::SensorDeploy:    sensor_deploy(); break;
-        case KeyValue::SensorStow:      sensor_stow(); break;
+        case KeyValue::SensorSelfTest:  sensor_.self_test(); break;
+        case KeyValue::SensorReset:     sensor_.reset(); break;
+        case KeyValue::SensorDeploy:    sensor_.deploy(); break;
+        case KeyValue::SensorStow:      sensor_.stow(); break;
         case KeyValue::Back:            sensor_tuning_back(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -2063,31 +2066,10 @@ void PrinterImpl::sensor_tuning_back()
 void PrinterImpl::sensor_leveling()
 {
 #ifdef ADVi3PP_BLTOUCH
-    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    enqueue_and_echo_commands_P((PSTR("G29"))); // leveling
+    sensor_.leveling();
 #else
     show_page(Page::NoSensor);
 #endif
-}
-
-void PrinterImpl::sensor_self_test()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
-}
-
-void PrinterImpl::sensor_reset()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
-}
-
-void PrinterImpl::sensor_deploy()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
-}
-
-void PrinterImpl::sensor_stow()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2536,6 +2518,104 @@ void Dimming::restore_eeprom_data(EepromRead& eeprom)
 void Dimming::reset_eeprom_data()
 {
     brightness_ = DEFAULT_BRIGHTNESS;
+}
+
+// --------------------------------------------------------------------
+// BLTouch
+// --------------------------------------------------------------------
+
+void BLTouch::store_eeprom_data(EepromWrite& eeprom)
+{
+    eeprom.write(offsetX_);
+    eeprom.write(offsetY_);
+    eeprom.write(offsetZ_);
+    eeprom.write(left_);
+    eeprom.write(right_);
+    eeprom.write(back_);
+    eeprom.write(front_);
+}
+
+void BLTouch::restore_eeprom_data(EepromRead& eeprom)
+{
+    eeprom.read(offsetX_);
+    eeprom.read(offsetY_);
+    eeprom.read(offsetZ_);
+    eeprom.read(left_);
+    eeprom.read(right_);
+    eeprom.read(back_);
+    eeprom.read(front_);
+}
+
+void BLTouch::reset_eeprom_data()
+{
+    offsetX_ = DEFAULT_SENSOR_OFFSET_X;
+    offsetY_ = DEFAULT_SENSOR_OFFSET_Y;
+    offsetZ_ = DEFAULT_SENSOR_OFFSET_Z;
+    left_  = DEFAULT_SENSOR_LEFT;
+    right_ = DEFAULT_SENSOR_RIGHT;
+    back_  = DEFAULT_SENSOR_BACK;
+    front_ = DEFAULT_SENSOR_FRONT;
+}
+
+void BLTouch::send_values_to_lcd()
+{
+    WriteRamDataRequest frame{Variable::SensorOffsetX};
+    frame << Uint16(offsetX_ * 10)
+          << Uint16(offsetY_ * 10)
+          << Uint16(offsetZ_ * 10)
+          << Uint16(left_)
+          << Uint16(right_)
+          << Uint16(back_)
+          << Uint16(front_);
+    frame.send();
+}
+
+void BLTouch::get_value_From_lcd()
+{
+    ReadRamData response{Variable::SensorOffsetX, 7};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
+        return;
+    }
+
+    Uint16 offsetX, offsetY, offsetZ, left, right, back, front;
+    response >> offsetX >> offsetY >> offsetZ >> left >> right >> back >> front;
+
+    offsetX_ = offsetX.word / 10;
+    offsetY_ = offsetY.word / 10;
+    offsetZ_ = offsetZ.word / 10;
+    left_  = left.word;
+    right_ = right.word;
+    back_  = back.word;
+    front_ = front.word;
+}
+
+void BLTouch::leveling()
+{
+    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
+    enqueue_and_echo_commands_P((PSTR("G29"))); // leveling
+    enqueue_and_echo_commands_P((PSTR("M420 S1"))); // Set Bed Leveling State
+}
+
+void BLTouch::self_test()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
+}
+
+void BLTouch::reset()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
+}
+
+void BLTouch::deploy()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
+}
+
+void BLTouch::stow()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
 
 }

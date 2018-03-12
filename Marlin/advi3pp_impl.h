@@ -32,10 +32,16 @@
 
 namespace advi3pp { inline namespace internals {
 
-static const Sensor DEFAULT_SENSOR = Sensor::None;
 static const Feature DEFAULT_FEATURES = Feature::ThermalProtection | Feature::HeadParking | Feature::Dimming;
 static const Brightness DEFAULT_BRIGHTNESS = Brightness::Max;
 static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
+static const float DEFAULT_SENSOR_OFFSET_X = -32.0;
+static const float DEFAULT_SENSOR_OFFSET_Y = -60.0;
+static const float DEFAULT_SENSOR_OFFSET_Z = -1.4;
+static const uint16_t DEFAULT_SENSOR_LEFT  = 40;
+static const uint16_t DEFAULT_SENSOR_RIGHT = 160;
+static const uint16_t DEFAULT_SENSOR_BACK  = 60;
+static const uint16_t DEFAULT_SENSOR_FRONT = 140;
 
 enum class BackgroundTask: uint8_t
 {
@@ -201,6 +207,32 @@ private:
     millis_t next_dimming_time_ = 0;
 };
 
+// --------------------------------------------------------------------
+// Sensor
+// --------------------------------------------------------------------
+
+struct BLTouch
+{
+    BLTouch() = default;
+
+    void store_eeprom_data(EepromWrite& eeprom);
+    void restore_eeprom_data(EepromRead& eeprom);
+    void reset_eeprom_data();
+
+    void send_values_to_lcd();
+    void get_value_From_lcd();
+
+    void leveling();
+    void self_test();
+    void reset();
+    void deploy();
+    void stow();
+
+private:
+    float offsetX_ = DEFAULT_SENSOR_OFFSET_X, offsetY_ = DEFAULT_SENSOR_OFFSET_Y, offsetZ_ = DEFAULT_SENSOR_OFFSET_Z;
+    uint16_t left_ = DEFAULT_SENSOR_LEFT, right_ = DEFAULT_SENSOR_RIGHT;
+    uint16_t back_ = DEFAULT_SENSOR_BACK, front_ = DEFAULT_SENSOR_FRONT;
+};
 
 // --------------------------------------------------------------------
 // PrinterImpl
@@ -440,11 +472,11 @@ private:
     JerkSettings jerks_{};
     uint16_t lcd_version_ = 0x0000;
     double extruded_ = 0.0;
-    Sensor current_sensor_ = DEFAULT_SENSOR;
     Feature features_ =  DEFAULT_FEATURES;
     uint32_t usb_baudrate_ = DEFAULT_USB_BAUDRATE;
     uint32_t usb_old_baudrate_ = DEFAULT_USB_BAUDRATE;
     Dimming dimming_{};
+    BLTouch sensor_{};
 };
 
 // --------------------------------------------------------------------

@@ -148,6 +148,13 @@ enum class Variable: uint16_t
     Preset3Bed              = 0x0323,
     Preset4Hotend           = 0x0324,
     USBBaudrate             = 0x0325,
+    SensorOffsetX           = 0x0327,
+    SensorOffsetY           = 0x0328,
+    SensorOffsetZ           = 0x0329,
+    SensorLeft              = 0x032A,
+    SensorRight             = 0x032B,
+    SensorBack              = 0x032C,
+    SensorFront             = 0x032D,
 
     TargetTemperature       = 0x0500,
     Measure1                = 0x0501,
@@ -272,13 +279,6 @@ enum class KeyValue: uint16_t
     Save                    = 0xFFFE,
     Back                    = 0xFFFF,
     Cancel                  = 0xFFFF
-};
-
-enum class Sensor
-{
-    None        = 0x0000,
-    BLTouch     = 0x0001,
-    ThreeWires  = 0x0002
 };
 
 enum class Feature
