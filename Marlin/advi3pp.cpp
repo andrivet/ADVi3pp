@@ -1752,7 +1752,7 @@ void PrinterImpl::leveling(KeyValue key_value)
 //! Home the printer for bed leveling.
 void PrinterImpl::leveling_home()
 {
-    show_page(Page::Leveling1);
+    show_page(Page::Waiting);
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
@@ -1767,7 +1767,7 @@ void PrinterImpl::leveling_task()
     {
         Log::log() << F("Leveling Homed, start process") << Log::endl();
         clear_background_task();
-        show_page(Page::Leveling2, false);
+        show_page(Page::ManualLeveling, false);
     }
     else
         set_next_background_task_time(200);
