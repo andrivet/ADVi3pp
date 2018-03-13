@@ -177,7 +177,6 @@ void PrinterImpl::store_eeprom_data(eeprom_write write, int& eeprom_index, uint1
     eeprom.write(usb_baudrate_);
 
     dimming_.store_eeprom_data(eeprom);
-    sensor_.store_eeprom_data(eeprom);
 }
 
 //! Restore presets from permanent memory.
@@ -199,7 +198,6 @@ void PrinterImpl::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint1
     eeprom.read(usb_baudrate_);
 
     dimming_.restore_eeprom_data(eeprom);
-    sensor_.restore_eeprom_data(eeprom);
 }
 
 //! Reset presets.
@@ -216,7 +214,6 @@ void PrinterImpl::reset_eeprom_data()
     features_ = DEFAULT_FEATURES;
 
     dimming_.reset_eeprom_data();
-    sensor_.reset_eeprom_data();
 }
 
 bool PrinterImpl::is_thermal_protection_enabled() const
@@ -266,13 +263,15 @@ void PrinterImpl::execute_background_task()
     switch(background_task_)
     {
         case BackgroundTask::None:                  break;
-        case BackgroundTask::Leveling:              leveling_task(); break;
+        case BackgroundTask::ManualLeveling:        manual_leveling_task(); break;
         case BackgroundTask::LoadFilament:          load_filament_task(); break;
         case BackgroundTask::UnloadFilament:        unload_filament_task(); break;
         case BackgroundTask::ExtruderCalibration:   extruder_calibration_task(); break;
+        case BackgroundTask::SensorZHeight:         sensor_z_height_task(); break;
         default:                                    Log::error() << F("Invalid background task ") << static_cast<uint16_t>(background_task_) << Log::endl(); break;
     }
 }
+
 
 namespace
 {
@@ -390,7 +389,7 @@ void PrinterImpl::send_status_status()
           << Uint16(Temperature::target_temperature[0])
           << Uint16(Temperature::degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
-          << Uint16(current_position[Z_AXIS])
+          << Uint16(Stepper::position(Z_AXIS))
           << FixedSizeString(LCDImpl::instance().get_message(), 48)
           << FixedSizeString(LCDImpl::instance().get_progress(), 48);
     frame.send(false);
@@ -1759,11 +1758,11 @@ void PrinterImpl::leveling_home()
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    set_background_task(BackgroundTask::Leveling);
+    set_background_task(BackgroundTask::ManualLeveling);
 }
 
 //! Leveling Background task.
-void PrinterImpl::leveling_task()
+void PrinterImpl::manual_leveling_task()
 {
     if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
     {
@@ -2014,20 +2013,37 @@ void PrinterImpl::sensor_settings(advi3pp::KeyValue key_value)
 
 void PrinterImpl::sensor_settings_show()
 {
-    sensor_.send_values_to_lcd();
+#ifdef ADVi3PP_BLTOUCH
+    sensor_.send_z_height_to_lcd(zprobe_zoffset);
     save_forward_page();
     show_page(Page::SensorSettings);
+#else
+    show_page(Page::NoSensor);
+#endif
 }
 
 void PrinterImpl::sensor_settings_save()
 {
-    sensor_.get_value_From_lcd();
+#ifdef ADVi3PP_BLTOUCH
+    sensor_.save_lcd_z_height();
     show_forward_page();
+#endif
 }
 
 void PrinterImpl::sensor_settings_cancel()
 {
     show_back_page();
+}
+
+void PrinterImpl::sensor_z_height_task()
+{
+#ifdef ADVi3PP_BLTOUCH
+    if(sensor_.z_height_task())
+    {
+        save_forward_page();
+        show_page(Page::SensorSettings);
+    }
+#endif
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2040,10 +2056,12 @@ void PrinterImpl::sensor_tuning(KeyValue key_value)
     {
         case KeyValue::Show:            sensor_tuning_show(); break;
         case KeyValue::SensorLeveling:  sensor_leveling(); break;
+#ifdef ADVi3PP_BLTOUCH
         case KeyValue::SensorSelfTest:  sensor_.self_test(); break;
         case KeyValue::SensorReset:     sensor_.reset(); break;
         case KeyValue::SensorDeploy:    sensor_.deploy(); break;
         case KeyValue::SensorStow:      sensor_.stow(); break;
+#endif
         case KeyValue::Back:            sensor_tuning_back(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -2066,6 +2084,7 @@ void PrinterImpl::sensor_tuning_back()
 void PrinterImpl::sensor_leveling()
 {
 #ifdef ADVi3PP_BLTOUCH
+    set_background_task(BackgroundTask::SensorZHeight);
     sensor_.leveling();
 #else
     show_page(Page::NoSensor);
@@ -2524,71 +2543,26 @@ void Dimming::reset_eeprom_data()
 // BLTouch
 // --------------------------------------------------------------------
 
-void BLTouch::store_eeprom_data(EepromWrite& eeprom)
-{
-    eeprom.write(offsetX_);
-    eeprom.write(offsetY_);
-    eeprom.write(offsetZ_);
-    eeprom.write(left_);
-    eeprom.write(right_);
-    eeprom.write(back_);
-    eeprom.write(front_);
-}
+#ifdef ADVi3PP_BLTOUCH
 
-void BLTouch::restore_eeprom_data(EepromRead& eeprom)
+void BLTouch::send_z_height_to_lcd(double value)
 {
-    eeprom.read(offsetX_);
-    eeprom.read(offsetY_);
-    eeprom.read(offsetZ_);
-    eeprom.read(left_);
-    eeprom.read(right_);
-    eeprom.read(back_);
-    eeprom.read(front_);
-}
-
-void BLTouch::reset_eeprom_data()
-{
-    offsetX_ = DEFAULT_SENSOR_OFFSET_X;
-    offsetY_ = DEFAULT_SENSOR_OFFSET_Y;
-    offsetZ_ = DEFAULT_SENSOR_OFFSET_Z;
-    left_  = DEFAULT_SENSOR_LEFT;
-    right_ = DEFAULT_SENSOR_RIGHT;
-    back_  = DEFAULT_SENSOR_BACK;
-    front_ = DEFAULT_SENSOR_FRONT;
-}
-
-void BLTouch::send_values_to_lcd()
-{
-    WriteRamDataRequest frame{Variable::SensorOffsetX};
-    frame << Uint16(offsetX_ * 10)
-          << Uint16(offsetY_ * 10)
-          << Uint16(offsetZ_ * 10)
-          << Uint16(left_)
-          << Uint16(right_)
-          << Uint16(back_)
-          << Uint16(front_);
+    WriteRamDataRequest frame{Variable::SensorOffsetZ};
+    frame << Uint16(value * 10);
     frame.send();
 }
 
-void BLTouch::get_value_From_lcd()
+void BLTouch::save_lcd_z_height()
 {
-    ReadRamData response{Variable::SensorOffsetX, 7};
+    ReadRamData response{Variable::SensorOffsetZ, 1};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
         return;
     }
 
-    Uint16 offsetX, offsetY, offsetZ, left, right, back, front;
-    response >> offsetX >> offsetY >> offsetZ >> left >> right >> back >> front;
-
-    offsetX_ = offsetX.word / 10;
-    offsetY_ = offsetY.word / 10;
-    offsetZ_ = offsetZ.word / 10;
-    left_  = left.word;
-    right_ = right.word;
-    back_  = back.word;
-    front_ = front.word;
+    Uint16 offsetZ; response >> offsetZ;
+    save_z_height(offsetZ.word / 10);
 }
 
 void BLTouch::leveling()
@@ -2617,5 +2591,63 @@ void BLTouch::stow()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
+
+bool BLTouch::z_height_task()
+{
+    if(Planner::blocks_queued)
+        return false;
+
+    switch(sensor_z_height_step_)
+    {
+        case Step::None: break;
+        case Step::Step1: sensor_z_height_step1(); break;
+        case Step::Step2: sensor_z_height_step2(); break;
+        case Step::Step3: return sensor_z_height_step3();
+    }
+
+    return false;
+}
+
+void BLTouch::sensor_z_height_step1()
+{
+    sensor_z_heights_index_ = 0;
+    sensor_z_heights_ = 0;
+    sensor_z_height_step_ = Step::Step2;
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 Z7"));
+}
+
+void BLTouch::sensor_z_height_step2()
+{
+    sensor_z_height_step_ = Step::Step3;
+    deploy();
+    enqueue_and_echo_commands_P(PSTR("G1 Z0"));
+}
+
+bool BLTouch::sensor_z_height_step3()
+{
+    sensor_z_heights_ += Stepper::position(Z_AXIS);
+    enqueue_and_echo_commands_P(PSTR("G1 Z7"));
+
+    if(sensor_z_heights_index_ < NB_SENSOR_Z_HEIGHT_MEASURES)
+    {
+        deploy();
+        enqueue_and_echo_commands_P(PSTR("G1 Z0"));
+        return false;
+    }
+    else
+    {
+        double offsetZ = -(sensor_z_heights_ / sensor_z_heights_index_);
+        send_z_height_to_lcd(offsetZ);
+        return true;
+    }
+}
+
+void BLTouch::save_z_height(double value)
+{
+    String command; command << F("M851 Z") << value;
+    enqueue_and_echo_command(command.c_str());
+}
+
+#endif
 
 }

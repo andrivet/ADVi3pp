@@ -35,22 +35,24 @@ namespace advi3pp { inline namespace internals {
 static const Feature DEFAULT_FEATURES = Feature::ThermalProtection | Feature::HeadParking | Feature::Dimming;
 static const Brightness DEFAULT_BRIGHTNESS = Brightness::Max;
 static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
-static const float DEFAULT_SENSOR_OFFSET_X = -32.0;
-static const float DEFAULT_SENSOR_OFFSET_Y = -60.0;
-static const float DEFAULT_SENSOR_OFFSET_Z = -1.4;
-static const uint16_t DEFAULT_SENSOR_LEFT  = 40;
-static const uint16_t DEFAULT_SENSOR_RIGHT = 160;
-static const uint16_t DEFAULT_SENSOR_BACK  = 60;
-static const uint16_t DEFAULT_SENSOR_FRONT = 140;
+
 
 enum class BackgroundTask: uint8_t
 {
     None                = 0,
-    Leveling            = 1,
+    ManualLeveling      = 1,
     LoadFilament        = 2,
     UnloadFilament      = 3,
     ExtruderCalibration = 4,
+    SensorZHeight       = 5,
     Undefined           = 0xFF
+};
+
+enum class SensorZHeightTask: uint8_t
+{
+    None            = 0,
+    MiddleRaise     = 1,
+
 };
 
 // --------------------------------------------------------------------
@@ -211,16 +213,13 @@ private:
 // Sensor
 // --------------------------------------------------------------------
 
+#ifdef ADVi3PP_BLTOUCH
 struct BLTouch
 {
     BLTouch() = default;
 
-    void store_eeprom_data(EepromWrite& eeprom);
-    void restore_eeprom_data(EepromRead& eeprom);
-    void reset_eeprom_data();
-
-    void send_values_to_lcd();
-    void get_value_From_lcd();
+    void send_z_height_to_lcd(double value);
+	void save_lcd_z_height();
 
     void leveling();
     void self_test();
@@ -228,11 +227,24 @@ struct BLTouch
     void deploy();
     void stow();
 
+    bool z_height_task();
+
 private:
-    float offsetX_ = DEFAULT_SENSOR_OFFSET_X, offsetY_ = DEFAULT_SENSOR_OFFSET_Y, offsetZ_ = DEFAULT_SENSOR_OFFSET_Z;
-    uint16_t left_ = DEFAULT_SENSOR_LEFT, right_ = DEFAULT_SENSOR_RIGHT;
-    uint16_t back_ = DEFAULT_SENSOR_BACK, front_ = DEFAULT_SENSOR_FRONT;
+    void sensor_z_height_step1();
+    void sensor_z_height_step2();
+    bool sensor_z_height_step3();
+    void save_z_height(double value);
+
+private:
+    enum class Step { None, Step1, Step2, Step3 };
+    static const size_t NB_SENSOR_Z_HEIGHT_MEASURES = 3;
+
+private:
+    Step sensor_z_height_step_ = Step::None;
+    uint16_t sensor_z_heights_index_ = 0;
+    double sensor_z_heights_ = 0;
 };
+#endif
 
 // --------------------------------------------------------------------
 // PrinterImpl
@@ -414,10 +426,6 @@ private:
     void sensor_tuning_show();
     void sensor_tuning_back();
     void sensor_leveling();
-    void sensor_self_test();
-    void sensor_reset();
-    void sensor_deploy();
-    void sensor_stow();
 
     void firmware(KeyValue key_value);
     void firmware_settings_show();
@@ -449,8 +457,9 @@ private:
     // Background tasks
     void load_filament_task();
     void unload_filament_task();
-    void leveling_task();
+    void manual_leveling_task();
     void extruder_calibration_task();
+    void sensor_z_height_task();
 
 private:
     static const size_t NB_PRESETS = 3;
@@ -476,7 +485,9 @@ private:
     uint32_t usb_baudrate_ = DEFAULT_USB_BAUDRATE;
     uint32_t usb_old_baudrate_ = DEFAULT_USB_BAUDRATE;
     Dimming dimming_{};
+#ifdef ADVi3PP_BLTOUCH
     BLTouch sensor_{};
+#endif
 };
 
 // --------------------------------------------------------------------
