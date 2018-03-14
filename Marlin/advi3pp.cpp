@@ -2267,7 +2267,8 @@ void PrinterImpl::send_stats()
     String filament_used;
     filament_used << static_cast<unsigned int>(stats.filamentUsed / 1000)
                   << "."
-                  << static_cast<unsigned int>(stats.filamentUsed / 100) % 10;
+                  << static_cast<unsigned int>(stats.filamentUsed / 100) % 10
+                  << "m";
     frame.reset(Variable::TotalFilament);
     frame << FixedSizeString{filament_used, 16};
     frame.send();
