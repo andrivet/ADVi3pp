@@ -99,7 +99,9 @@ private:
 inline String& operator<<(String& rhs, const __FlashStringHelper* lhs) { rhs += lhs; return rhs; }
 inline String& operator<<(String& rhs, const String& lhs) { rhs += lhs; return rhs; }
 
-String& operator<<(String& rhs, uint32_t lhs);
+template<typename T>
+inline String& operator<<(String& rhs, T lhs) { rhs += lhs; return rhs; }
+
 String& operator<<(String& rhs, Command lhs);
 String& operator<<(String& rhs, Register lhs);
 String& operator<<(String& rhs, Variable lhs);

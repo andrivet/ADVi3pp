@@ -44,7 +44,6 @@ enum class BackgroundTask: uint8_t
     LoadFilament        = 2,
     UnloadFilament      = 3,
     ExtruderCalibration = 4,
-    SensorZHeight       = 5,
     Undefined           = 0xFF
 };
 
@@ -218,8 +217,9 @@ struct BLTouch
 {
     BLTouch() = default;
 
-    void send_z_height_to_lcd(double value);
+    void send_z_height_to_lcd(double height);
 	void save_lcd_z_height();
+    void set_M48_result(double z_height);
 
     void leveling();
     void self_test();
@@ -227,22 +227,10 @@ struct BLTouch
     void deploy();
     void stow();
 
-    bool z_height_task();
+    void start_z_height();
 
 private:
-    void sensor_z_height_step1();
-    void sensor_z_height_step2();
-    bool sensor_z_height_step3();
-    void save_z_height(double value);
-
-private:
-    enum class Step { None, Step1, Step2, Step3 };
-    static const size_t NB_SENSOR_Z_HEIGHT_MEASURES = 3;
-
-private:
-    Step sensor_z_height_step_ = Step::None;
-    uint16_t sensor_z_heights_index_ = 0;
-    double sensor_z_heights_ = 0;
+    void save_z_height(double height);
 };
 #endif
 
@@ -263,6 +251,7 @@ struct PrinterImpl
     void temperature_error(const char* message);
     void send_status_status();
     bool is_thermal_protection_enabled() const;
+    void set_M48_result(bool success, double z_height);
 
 private:
     void clear_graphs();
@@ -313,7 +302,6 @@ private:
     void show_settings();
     void show_infos();
     void show_motors();
-    void show_sensor_settings();
 
     void back();
 
@@ -426,6 +414,7 @@ private:
     void sensor_tuning_show();
     void sensor_tuning_back();
     void sensor_leveling();
+    void sensor_z_height();
 
     void firmware(KeyValue key_value);
     void firmware_settings_show();
@@ -459,7 +448,6 @@ private:
     void unload_filament_task();
     void manual_leveling_task();
     void extruder_calibration_task();
-    void sensor_z_height_task();
 
 private:
     static const size_t NB_PRESETS = 3;

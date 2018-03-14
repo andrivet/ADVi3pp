@@ -7476,6 +7476,8 @@ inline void gcode_M42() {
     if (probing_good) {
       SERIAL_PROTOCOLLNPGM("Finished!");
 
+      advi3pp::Printer::set_M48_result(true, mean);
+
       if (verbose_level > 0) {
         SERIAL_PROTOCOLPGM("Mean: ");
         SERIAL_PROTOCOL_F(mean, 6);
@@ -7493,6 +7495,8 @@ inline void gcode_M42() {
       SERIAL_EOL();
       SERIAL_EOL();
     }
+    else
+      advi3pp::Printer::set_M48_result(false, mean);
 
     clean_up_after_endstop_or_probe_move();
 

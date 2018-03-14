@@ -146,24 +146,6 @@ void FixedSizeString::assign(const char* str, size_t size)
 // String
 // --------------------------------------------------------------------
 
-//! Append a string of character to this String.
-//! @param value        The value to be append to this String
-//! @return             Itself
-String& operator<<(String& str, const char* value)
-{
-    str += value;
-    return str;
-}
-
-//! Append a value to this String.
-//! @param value        The value to be append to this String
-//! @return             Itself
-String& operator<<(String& str, uint32_t value)
-{
-    str += value;
-    return str;
-}
-
 //! Append a Command to this String..
 //! @param command      The command to be append to this String (after transformation into a string)
 //! @return             Itself

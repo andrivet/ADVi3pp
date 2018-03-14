@@ -213,7 +213,6 @@ enum class KeyValue: uint16_t
     Settings                = 0x0004,
     Infos                   = 0x0005,
     Motors                  = 0x0006,
-    SensorSettings          = 0x0007,
 
     PrintStop               = 0x0000,
     PrintPause              = 0x0001,
@@ -269,6 +268,7 @@ enum class KeyValue: uint16_t
     SensorReset             = 0x0003,
     SensorDeploy            = 0x0004,
     SensorStow              = 0x0005,
+    SensorZHeight           = 0x0006,
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF,

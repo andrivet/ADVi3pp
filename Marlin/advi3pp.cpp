@@ -127,6 +127,11 @@ bool Printer::is_thermal_protection_enabled()
     return printer.is_thermal_protection_enabled();
 }
 
+void Printer::set_M48_result(bool success, double z_height)
+{
+    printer.set_M48_result(success, z_height);
+}
+
 // --------------------------------------------------------------------
 // PrinterImpl
 // --------------------------------------------------------------------
@@ -267,7 +272,6 @@ void PrinterImpl::execute_background_task()
         case BackgroundTask::LoadFilament:          load_filament_task(); break;
         case BackgroundTask::UnloadFilament:        unload_filament_task(); break;
         case BackgroundTask::ExtruderCalibration:   extruder_calibration_task(); break;
-        case BackgroundTask::SensorZHeight:         sensor_z_height_task(); break;
         default:                                    Log::error() << F("Invalid background task ") << static_cast<uint16_t>(background_task_) << Log::endl(); break;
     }
 }
@@ -476,7 +480,6 @@ void PrinterImpl::screen(KeyValue key_value)
         case KeyValue::Settings:        show_settings(); break;
         case KeyValue::Infos:           show_infos(); break;
         case KeyValue::Motors:          show_motors(); break;
-        case KeyValue::SensorSettings:  show_sensor_settings(); break;
         case KeyValue::Back:            back(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -554,11 +557,6 @@ void PrinterImpl::show_infos()
 void PrinterImpl::show_motors()
 {
     show_page(Page::MotorsSettings);
-}
-
-void PrinterImpl::show_sensor_settings()
-{
-    show_page(Page::SensorSettings);
 }
 
 void PrinterImpl::back()
@@ -1753,7 +1751,7 @@ void PrinterImpl::leveling(KeyValue key_value)
 //! Home the printer for bed leveling.
 void PrinterImpl::leveling_home()
 {
-    show_page(Page::Waiting);
+    show_page(Page::Waiting, false);
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
@@ -2035,17 +2033,6 @@ void PrinterImpl::sensor_settings_cancel()
     show_back_page();
 }
 
-void PrinterImpl::sensor_z_height_task()
-{
-#ifdef ADVi3PP_BLTOUCH
-    if(sensor_.z_height_task())
-    {
-        save_forward_page();
-        show_page(Page::SensorSettings);
-    }
-#endif
-}
-
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Sensor Tuning
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2061,6 +2048,7 @@ void PrinterImpl::sensor_tuning(KeyValue key_value)
         case KeyValue::SensorReset:     sensor_.reset(); break;
         case KeyValue::SensorDeploy:    sensor_.deploy(); break;
         case KeyValue::SensorStow:      sensor_.stow(); break;
+        case KeyValue::SensorZHeight:   sensor_z_height(); break;
 #endif
         case KeyValue::Back:            sensor_tuning_back(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
@@ -2084,10 +2072,33 @@ void PrinterImpl::sensor_tuning_back()
 void PrinterImpl::sensor_leveling()
 {
 #ifdef ADVi3PP_BLTOUCH
-    set_background_task(BackgroundTask::SensorZHeight);
     sensor_.leveling();
 #else
     show_page(Page::NoSensor);
+#endif
+}
+
+void PrinterImpl::sensor_z_height()
+{
+#ifdef ADVi3PP_BLTOUCH
+    sensor_.start_z_height();
+    save_forward_page();
+    show_page(Page::Waiting);
+#else
+    show_page(Page::NoSensor);
+#endif
+}
+
+void PrinterImpl::set_M48_result(bool success, double z_height)
+{
+#ifdef ADVi3PP_BLTOUCH
+    if(success)
+    {
+        sensor_.set_M48_result(z_height);
+        show_page(Page::SensorSettings, false);
+    }
+    else
+        show_back_page();
 #endif
 }
 
@@ -2545,10 +2556,10 @@ void Dimming::reset_eeprom_data()
 
 #ifdef ADVi3PP_BLTOUCH
 
-void BLTouch::send_z_height_to_lcd(double value)
+void BLTouch::send_z_height_to_lcd(double z_height)
 {
     WriteRamDataRequest frame{Variable::SensorOffsetZ};
-    frame << Uint16(value * 10);
+    frame << Uint16(z_height * 10);
     frame.send();
 }
 
@@ -2562,7 +2573,7 @@ void BLTouch::save_lcd_z_height()
     }
 
     Uint16 offsetZ; response >> offsetZ;
-    save_z_height(offsetZ.word / 10);
+    save_z_height(static_cast<int16_t>(offsetZ.word) / 10.0);
 }
 
 void BLTouch::leveling()
@@ -2592,59 +2603,20 @@ void BLTouch::stow()
     enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
 
-bool BLTouch::z_height_task()
+void BLTouch::start_z_height()
 {
-    if(Planner::blocks_queued)
-        return false;
-
-    switch(sensor_z_height_step_)
-    {
-        case Step::None: break;
-        case Step::Step1: sensor_z_height_step1(); break;
-        case Step::Step2: sensor_z_height_step2(); break;
-        case Step::Step3: return sensor_z_height_step3();
-    }
-
-    return false;
+	enqueue_and_echo_commands_P((PSTR("G28"))); // homing
+    enqueue_and_echo_commands_P(PSTR("M48 P4"));
 }
 
-void BLTouch::sensor_z_height_step1()
+void BLTouch::set_M48_result(double z_height)
 {
-    sensor_z_heights_index_ = 0;
-    sensor_z_heights_ = 0;
-    sensor_z_height_step_ = Step::Step2;
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 Z7"));
+    send_z_height_to_lcd(-z_height);
 }
 
-void BLTouch::sensor_z_height_step2()
+void BLTouch::save_z_height(double height)
 {
-    sensor_z_height_step_ = Step::Step3;
-    deploy();
-    enqueue_and_echo_commands_P(PSTR("G1 Z0"));
-}
-
-bool BLTouch::sensor_z_height_step3()
-{
-    sensor_z_heights_ += Stepper::position(Z_AXIS);
-    enqueue_and_echo_commands_P(PSTR("G1 Z7"));
-
-    if(sensor_z_heights_index_ < NB_SENSOR_Z_HEIGHT_MEASURES)
-    {
-        deploy();
-        enqueue_and_echo_commands_P(PSTR("G1 Z0"));
-        return false;
-    }
-    else
-    {
-        double offsetZ = -(sensor_z_heights_ / sensor_z_heights_index_);
-        send_z_height_to_lcd(offsetZ);
-        return true;
-    }
-}
-
-void BLTouch::save_z_height(double value)
-{
-    String command; command << F("M851 Z") << value;
+    String command; command << F("M851 Z") << height;
     enqueue_and_echo_command(command.c_str());
 }
 
