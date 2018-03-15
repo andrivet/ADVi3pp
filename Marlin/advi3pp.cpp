@@ -136,6 +136,11 @@ void Printer::set_M48_result(bool success, double z_height)
 // PrinterImpl
 // --------------------------------------------------------------------
 
+PrinterImpl::PrinterImpl()
+: sd_files_{pages_}
+{
+}
+
 //! Initialize the printer and its LCD
 void PrinterImpl::setup()
 {
@@ -156,7 +161,7 @@ void PrinterImpl::setup()
     clear_graphs();
     dimming_.reset();
 
-    show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
+    pages_.show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -293,7 +298,7 @@ namespace
 
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
-void PrinterImpl::show_page(Page page, bool save_back)
+void PagesManager::show_page(Page page, bool save_back)
 {
     Log::log() << F("Show page ") << static_cast<uint8_t>(page) << Log::endl();
 
@@ -306,7 +311,7 @@ void PrinterImpl::show_page(Page page, bool save_back)
 }
 
 //! Retrieve the current page on the LCD screen
-Page PrinterImpl::get_current_page()
+Page PagesManager::get_current_page()
 {
     ReadRegister frame{Register::PictureID, 2};
     if(!frame.send_and_receive())
@@ -321,13 +326,13 @@ Page PrinterImpl::get_current_page()
 }
 
 //! Set page to display after the completion of an operation.
-void PrinterImpl::save_forward_page()
+void PagesManager::save_forward_page()
 {
     forward_page_ = get_current_page();
 }
 
 //! Show the "Back" page on the LCD display.
-void PrinterImpl::show_back_page()
+void PagesManager::show_back_page()
 {
     if(back_pages_.is_empty())
     {
@@ -339,7 +344,7 @@ void PrinterImpl::show_back_page()
 }
 
 //! Show the "Next" page on the LCD display.
-void PrinterImpl::show_forward_page()
+void PagesManager::show_forward_page()
 {
     if(forward_page_ == Page::None)
     {
@@ -494,12 +499,12 @@ void PrinterImpl::show_temps()
     // If there is a SD card print running, display the SD print screen
     if(card.cardOK && card.sdprinting)
     {
-        show_page(Page::SdPrint);
+        pages_.show_page(Page::SdPrint);
         return;
     }
 
     // If there is an USB print running, display the USB Print page. Otherwise, the temperature graph page
-    show_page(print_job_timer.isRunning() ? Page::UsbPrint : Page::Temperature);
+    pages_.show_page(print_job_timer.isRunning() ? Page::UsbPrint : Page::Temperature);
 }
 
 //! Show one of the Printing screens depending of the context: either the SD screen or the SD printing screen.
@@ -509,14 +514,14 @@ void PrinterImpl::show_print()
     // If there is a SD card print running, display the SD print screen
     if(card.cardOK && card.sdprinting)
     {
-        show_page(Page::SdPrint);
+        pages_.show_page(Page::SdPrint);
         set_update_graphs();
         return;
     }
 
     if(print_job_timer.isRunning())
     {
-        show_page(Page::UsbPrint);
+        pages_.show_page(Page::UsbPrint);
         set_update_graphs();
         return;
     }        
@@ -526,42 +531,42 @@ void PrinterImpl::show_print()
     if(!card.cardOK)
     {
         // SD card not accessible so fall back to Temperatures
-        show_page(Page::Temperature);
+        pages_.show_page(Page::Temperature);
         set_update_graphs();
         return;
     }
-	
-	sd_card_show();
+
+    sd_files_.show();
 }
 
 void PrinterImpl::show_controls()
 {
-    show_page(Page::Controls);
+    pages_.show_page(Page::Controls);
 }
 
 void PrinterImpl::show_tuning()
 {
-    show_page(Page::Tuning);
+    pages_.show_page(Page::Tuning);
 }
 
 void PrinterImpl::show_settings()
 {
-    show_page(Page::Settings);
+    pages_.show_page(Page::Settings);
 }
 
 void PrinterImpl::show_infos()
 {
-    show_page(Page::Infos);
+    pages_.show_page(Page::Infos);
 }
 
 void PrinterImpl::show_motors()
 {
-    show_page(Page::MotorsSettings);
+    pages_.show_page(Page::MotorsSettings);
 }
 
 void PrinterImpl::back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -572,60 +577,65 @@ void PrinterImpl::sd_card(KeyValue key_value)
 {
 	switch(key_value)
 	{
-		case KeyValue::Show:				sd_card_show(); break;
-		case KeyValue::SDUp:				sd_card_up(); break;
-		case KeyValue::SDDown:				sd_card_down(); break;
+		case KeyValue::Show:				sd_files_.show(); break;
+		case KeyValue::SDUp:				sd_files_.up(); break;
+		case KeyValue::SDDown:				sd_files_.down(); break;
 		case KeyValue::SDLine1:
 		case KeyValue::SDLine2:
 		case KeyValue::SDLine3:
 		case KeyValue::SDLine4:
-		case KeyValue::SDLine5:				sd_card_select_file(static_cast<uint16_t>(key_value)); break;
-		case KeyValue::Back:                sd_card_back(); break;
+		case KeyValue::SDLine5:				sd_files_.select_file(static_cast<uint16_t>(key_value)); break;
+		case KeyValue::Back:                sd_files_.back(); break;
 		default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
 	}
 }
 
-void PrinterImpl::sd_card_show()
+SDFilesManager::SDFilesManager(PagesManager& mgr)
+: pages_{mgr}
+{
+}
+
+void SDFilesManager::show()
 {
 	if(!card.cardOK)
 		return;
 
 	nb_files_ = card.getnrfilenames();
 	last_file_index_ = nb_files_ - 1;
-	
-	show_sd_files();
-	show_page(Page::SdCard);
+
+	show_files();
+	pages_.show_page(Page::SdCard);
 }
 
-void PrinterImpl::sd_card_back()
+void SDFilesManager::back()
 {
-	show_back_page();
+    pages_.show_back_page();
 }
 
-void PrinterImpl::sd_card_down()
+void SDFilesManager::down()
 {
 	if(!card.cardOK)
 		return;
-		
+
 	if(last_file_index_ >= nb_visible_sd_files)
 		last_file_index_ -= nb_visible_sd_files;
 
-	show_sd_files();
+	show_files();
 }
 
-void PrinterImpl::sd_card_up()
+void SDFilesManager::up()
 {
 	if(!card.cardOK)
 		return;
-	
+
 	if(last_file_index_ + nb_visible_sd_files < nb_files_)
 		last_file_index_ += nb_visible_sd_files;
 
-	show_sd_files();
+	show_files();
 }
 
 //! Show the list of files on SD.
-void PrinterImpl::show_sd_files()
+void SDFilesManager::show_files()
 {
     WriteRamDataRequest frame{Variable::FileName1};
 
@@ -641,7 +651,7 @@ void PrinterImpl::show_sd_files()
 //! Get a filename with a given index.
 //! @param index    Index of the filename
 //! @param name     Copy the filename into this Chars
-void PrinterImpl::get_file_name(uint8_t index_in_page, String& name)
+void SDFilesManager::get_file_name(uint8_t index_in_page, String& name)
 {
 	if(last_file_index_ >= index_in_page)
 	{
@@ -654,7 +664,7 @@ void PrinterImpl::get_file_name(uint8_t index_in_page, String& name)
 
 //! Select a filename as sent by the LCD screen.
 //! @param file_index    The index of the filename to select
-void PrinterImpl::sd_card_select_file(uint16_t file_index)
+void SDFilesManager::select_file(uint16_t file_index)
 {
     if(!card.cardOK)
         return;
@@ -678,8 +688,8 @@ void PrinterImpl::sd_card_select_file(uint16_t file_index)
 
     Stepper::finish_and_disable(); // To circumvent homing problems
 
-    show_page(Page::SdPrint);
-    set_update_graphs();
+    pages_.show_page(Page::SdPrint);
+    //set_update_graphs();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -713,7 +723,7 @@ void PrinterImpl::sd_print_stop()
     print_job_timer.stop();
     Temperature::disable_all_heaters();
 
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Pause SD printing
@@ -746,7 +756,7 @@ void PrinterImpl::sd_print_resume()
 //! Handle the Back button
 void PrinterImpl::sd_print_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -779,7 +789,7 @@ void PrinterImpl::usb_print_stop()
     print_job_timer.stop();
     Temperature::disable_all_heaters();
 
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Pause SD printing
@@ -812,7 +822,7 @@ void PrinterImpl::usb_print_resume()
 //! Handle the Back button
 void PrinterImpl::usb_print_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -865,7 +875,7 @@ void PrinterImpl::load_unload(KeyValue key_value)
 void PrinterImpl::load_unload_show()
 {
     set_target_temperature(200);
-    show_page(Page::LoadUnload);
+    pages_.show_page(Page::LoadUnload);
 }
 
 //! Start Load or Unload action.
@@ -880,7 +890,7 @@ void PrinterImpl::load_unload_start(bool load)
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
     set_background_task(load ? BackgroundTask::LoadFilament : BackgroundTask::UnloadFilament);
-    show_page(load ? Page::Load2 : Page::Unload2);
+    pages_.show_page(load ? Page::Load2 : Page::Unload2);
 }
 
 //! Handle back from the Load on Unload LCD screen.
@@ -893,7 +903,7 @@ void PrinterImpl::load_unload_stop()
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     Temperature::setTargetHotend(0, 0);
 
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Load the filament if the temperature is high enough.
@@ -946,12 +956,12 @@ void PrinterImpl::preheat_show()
     for(auto& preset : presets_)
         frame << Uint16(preset.bed) << Uint16(preset.hotend);
     frame.send();
-    show_page(Page::Preheat);
+    pages_.show_page(Page::Preheat);
 }
 
 void PrinterImpl::preheat_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Preheat the nozzle and save the presets.
@@ -995,7 +1005,7 @@ void PrinterImpl::preheat_preset(uint16_t presetIndex)
     command = F("M140 S"); command << preset.bed;
     enqueue_and_echo_command(command.c_str());
 
-    show_page(Page::Temperature);
+    pages_.show_page(Page::Temperature);
     set_update_graphs();
 }
 
@@ -1030,12 +1040,12 @@ void PrinterImpl::move(KeyValue key_value)
 void PrinterImpl::show_move()
 {
     Stepper::finish_and_disable(); // To circumvent homing problems
-    show_page(Page::Move);
+    pages_.show_page(Page::Move);
 }
 
 void PrinterImpl::move_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Move the nozzle.
@@ -1228,8 +1238,8 @@ void PrinterImpl::print_settings_show()
           << Uint16(scale(fanSpeeds[0], 255, 100));
     frame.send();
 
-    save_forward_page();
-    show_page(Page::PrintSettings);
+    pages_.save_forward_page();
+    pages_.show_page(Page::PrintSettings);
 }
 
 //! Save the printing settings.
@@ -1250,12 +1260,12 @@ void PrinterImpl::print_settings_save()
     Temperature::setTargetBed(bed.word);
     fanSpeeds[0] = scale(fan.word, 100, 255);
 
-    show_forward_page();
+    pages_.show_forward_page();
 }
 
 void PrinterImpl::print_settings_cancel()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Show the PID settings
@@ -1264,7 +1274,7 @@ void PrinterImpl::pid_settings_show(bool back, bool init)
     if(init)
     {
         old_pid_.init();
-        save_forward_page();
+        pages_.save_forward_page();
     }        
 
     WriteRamDataRequest frame{Variable::PidP};
@@ -1273,7 +1283,7 @@ void PrinterImpl::pid_settings_show(bool back, bool init)
           << Uint16(unscalePID_d(Temperature::Kd) * 100);
     frame.send();
 
-    show_page(Page::PidSettings, back);
+    pages_.show_page(Page::PidSettings, back);
 }
 
 //! Save the PID settings
@@ -1295,13 +1305,13 @@ void PrinterImpl::pid_settings_save()
 
     enqueue_and_echo_commands_P(PSTR("M500"));
 
-    show_forward_page();
+    pages_.show_forward_page();
 }
 
 void PrinterImpl::pid_settings_cancel()
 {
     old_pid_.save(); // Restore old values
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Show the Steps settings
@@ -1311,7 +1321,7 @@ void PrinterImpl::steps_settings_show(bool init)
     if(init)
     {
         steps_.init();
-        save_forward_page();
+        pages_.save_forward_page();
     }        
 
     WriteRamDataRequest frame{Variable::StepSettingsX};
@@ -1321,7 +1331,7 @@ void PrinterImpl::steps_settings_show(bool init)
           << Uint16(steps_.axis_steps_per_mm[E_AXIS] * 10);
     frame.send();
 
-    show_page(Page::StepsSettings);
+    pages_.show_page(Page::StepsSettings);
 }
 
 //! Save the Steps settings
@@ -1343,12 +1353,12 @@ void PrinterImpl::steps_settings_save()
     steps_.axis_steps_per_mm[E_AXIS] = static_cast<float>(e.word) / 10;
     steps_.save();
 
-    show_forward_page();
+    pages_.show_forward_page();
 }
 
 void PrinterImpl::steps_settings_cancel()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Show the Feedrate settings
@@ -1358,7 +1368,7 @@ void PrinterImpl::feedrate_settings_show(bool init)
     if(init)
     {    
         feedrates_.init();
-        save_forward_page();
+        pages_.save_forward_page();
     }        
 
     WriteRamDataRequest frame{Variable::FeedrateMaxX};
@@ -1370,7 +1380,7 @@ void PrinterImpl::feedrate_settings_show(bool init)
           << Uint16(feedrates_.min_travel_feedrate_mm_s);
     frame.send();
 
-    show_page(Page::FeedrateSettings);
+    pages_.show_page(Page::FeedrateSettings);
 }
 
 //! Save the Feedrate settings
@@ -1394,12 +1404,12 @@ void PrinterImpl::feedrate_settings_save()
     feedrates_.min_travel_feedrate_mm_s  = static_cast<float>(travel.word);
     feedrates_.save();
 
-    show_forward_page();
+    pages_.show_forward_page();
 }
 
 void PrinterImpl::feedrate_settings_cancel()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Show the Acceleration settings
@@ -1409,7 +1419,7 @@ void PrinterImpl::acceleration_settings_show(bool init)
     if(init)
     {
         accelerations_.init();
-        save_forward_page();
+        pages_.save_forward_page();
     }        
 
     WriteRamDataRequest frame{Variable::AccelerationMaxX};
@@ -1422,7 +1432,7 @@ void PrinterImpl::acceleration_settings_show(bool init)
           << Uint16(static_cast<uint16_t>(accelerations_.travel_acceleration));
     frame.send();
 
-    show_page(Page::AccelerationSettings);
+    pages_.show_page(Page::AccelerationSettings);
 }
 
 //! Save the Acceleration settings
@@ -1447,12 +1457,12 @@ void PrinterImpl::acceleration_settings_save()
     accelerations_.travel_acceleration                = static_cast<float>(travel.word);
     accelerations_.save();
 
-    show_forward_page();
+    pages_.show_forward_page();
 }
 
 void PrinterImpl::acceleration_settings_cancel()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Show the Jerk settings
@@ -1462,7 +1472,7 @@ void PrinterImpl::jerk_settings_show(bool init)
     if(init)
     {
         jerks_.init();
-        save_forward_page();
+        pages_.save_forward_page();
     }        
 
     WriteRamDataRequest frame{Variable::JerkX};
@@ -1472,7 +1482,7 @@ void PrinterImpl::jerk_settings_show(bool init)
           << Uint16(jerks_.max_jerk[E_AXIS] * 10);
     frame.send();
 
-    show_page(Page::JerkSettings);
+    pages_.show_page(Page::JerkSettings);
 }
 
 //! Save the Jerk settings
@@ -1494,12 +1504,12 @@ void PrinterImpl::jerk_settings_save()
     jerks_.max_jerk[E_AXIS] = static_cast<uint32_t>(e.word / 10);
     jerks_.save();
 
-    show_forward_page();
+    pages_.show_forward_page();
 }
 
 void PrinterImpl::jerk_settings_cancel()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 //! Reset all settings of the printer to factory ones.
@@ -1516,19 +1526,19 @@ void PrinterImpl::factory_reset(KeyValue key_value)
 
 void PrinterImpl::show_factory_reset_warning()
 {
-    show_page(Page::FactoryReset);
+    pages_.show_page(Page::FactoryReset);
 }
 
 void PrinterImpl::do_factory_reset()
 {
     enqueue_and_echo_commands_P(PSTR("M502"));
     enqueue_and_echo_commands_P(PSTR("M500"));
-    show_back_page();
+    pages_.show_back_page();
 }
 
 void PrinterImpl::cancel_factory_reset()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1549,12 +1559,12 @@ void PrinterImpl::statistics(KeyValue key_value)
 void PrinterImpl::show_stats()
 {
     send_stats();
-    show_page(Page::Statistics);
+    pages_.show_page(Page::Statistics);
 }
 
 void PrinterImpl::stats_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1637,17 +1647,17 @@ void PrinterImpl::versions(KeyValue key_value)
 
 void PrinterImpl::versions_mismatch_forward()
 {
-    show_page(Page::Main, false);
+    pages_.show_page(Page::Main, false);
 }
 
 void PrinterImpl::versions_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 void PrinterImpl::versions_show()
 {
-    show_page(Page::Versions);
+    pages_.show_page(Page::Versions);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1667,12 +1677,12 @@ void PrinterImpl::copyrights(advi3pp::KeyValue key_value)
 
 void PrinterImpl::copyrights_show()
 {
-    show_page(Page::Copyrights);
+    pages_.show_page(Page::Copyrights);
 }
 
 void PrinterImpl::copyrights_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 
@@ -1698,8 +1708,8 @@ void PrinterImpl::pid_tuning_step1()
 {
     old_pid_.init();
     set_target_temperature(200);
-    save_forward_page();
-    show_page(Page::PidTuning1);
+    pages_.save_forward_page();
+    pages_.show_page(Page::PidTuning1);
 }
 
 //! Show step #2 of PID tuning
@@ -1713,7 +1723,7 @@ void PrinterImpl::pid_tuning_step2()
     String auto_pid_command; auto_pid_command << F("M303 S") << hotend << F("E0 C8 U1");
     enqueue_and_echo_command(auto_pid_command.c_str());
 
-    show_page(Page::PidTuning2);
+    pages_.show_page(Page::PidTuning2);
 };
 
 //! PID automatic tuning is finished.
@@ -1726,7 +1736,7 @@ void PrinterImpl::auto_pid_finished()
 
 void PrinterImpl::pid_tuning_cancel()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1751,7 +1761,7 @@ void PrinterImpl::leveling(KeyValue key_value)
 //! Home the printer for bed leveling.
 void PrinterImpl::leveling_home()
 {
-    show_page(Page::Waiting, false);
+    pages_.show_page(Page::Waiting, false);
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
@@ -1766,7 +1776,7 @@ void PrinterImpl::manual_leveling_task()
     {
         Log::log() << F("Leveling Homed, start process") << Log::endl();
         clear_background_task();
-        show_page(Page::ManualLeveling, false);
+        pages_.show_page(Page::ManualLeveling, false);
     }
     else
         set_next_background_task_time(200);
@@ -1821,7 +1831,7 @@ void PrinterImpl::leveling_point5()
 void PrinterImpl::leveling_finish()
 {
     enqueue_and_echo_commands_P(PSTR("G1 Z30 F2000"));
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1849,8 +1859,8 @@ void PrinterImpl::show_extruder_calibration()
     frame << 200_u16;
     frame.send();
 
-    save_forward_page();
-    show_page(Page::ExtruderCalibration1);
+    pages_.save_forward_page();
+    pages_.show_page(Page::ExtruderCalibration1);
 }
 
 //! Start extruder calibration.
@@ -1865,7 +1875,7 @@ void PrinterImpl::start_extruder_calibration()
     enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
-    show_page(Page::ExtruderCalibration2, false);
+    pages_.show_page(Page::ExtruderCalibration2, false);
 }
 
 //! Extruder calibration background task.
@@ -1896,7 +1906,7 @@ void PrinterImpl::extruder_calibration_finished()
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
     clear_background_task();
-    show_page(Page::ExtruderCalibration3);
+    pages_.show_page(Page::ExtruderCalibration3);
 }
 
 //! Compute the extruder (E axis) new value and show the steps settings.
@@ -1933,7 +1943,7 @@ void PrinterImpl::cancel_extruder_calibration()
     enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1956,8 +1966,8 @@ void PrinterImpl::show_xyz_motors_calibration()
     WriteRamDataRequest frame{Variable::Measure1};
     frame << 200_u16 << 200_u16 << 200_u16;
     frame.send();
-    save_forward_page();
-    show_page(Page::XYZMotorsCalibration);
+    pages_.save_forward_page();
+    pages_.show_page(Page::XYZMotorsCalibration);
 }
 
 float adjust_value(float old, double expected, double measured)
@@ -1991,7 +2001,7 @@ void PrinterImpl::xyz_motors_calibration_settings()
 //! Cancel the extruder calibration.
 void PrinterImpl::cancel_xyz_motors_calibration()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2013,10 +2023,10 @@ void PrinterImpl::sensor_settings_show()
 {
 #ifdef ADVi3PP_BLTOUCH
     sensor_.send_z_height_to_lcd(zprobe_zoffset);
-    save_forward_page();
-    show_page(Page::SensorSettings);
+    pages_.save_forward_page();
+    pages_.show_page(Page::SensorSettings);
 #else
-    show_page(Page::NoSensor);
+    pages_.show_page(Page::NoSensor);
 #endif
 }
 
@@ -2024,13 +2034,13 @@ void PrinterImpl::sensor_settings_save()
 {
 #ifdef ADVi3PP_BLTOUCH
     sensor_.save_lcd_z_height();
-    show_forward_page();
+    pages_.show_forward_page();
 #endif
 }
 
 void PrinterImpl::sensor_settings_cancel()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2058,15 +2068,15 @@ void PrinterImpl::sensor_tuning(KeyValue key_value)
 void PrinterImpl::sensor_tuning_show()
 {
 #ifdef ADVi3PP_BLTOUCH
-    show_page(Page::SensorTuning);
+    pages_.show_page(Page::SensorTuning);
 #else
-    show_page(Page::NoSensor);
+    pages_.show_page(Page::NoSensor);
 #endif
 }
 
 void PrinterImpl::sensor_tuning_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 void PrinterImpl::sensor_leveling()
@@ -2074,7 +2084,7 @@ void PrinterImpl::sensor_leveling()
 #ifdef ADVi3PP_BLTOUCH
     sensor_.leveling();
 #else
-    show_page(Page::NoSensor);
+    pages_.show_page(Page::NoSensor);
 #endif
 }
 
@@ -2082,10 +2092,10 @@ void PrinterImpl::sensor_z_height()
 {
 #ifdef ADVi3PP_BLTOUCH
     sensor_.start_z_height();
-    save_forward_page();
-    show_page(Page::Waiting);
+    pages_.save_forward_page();
+    pages_.show_page(Page::Waiting);
 #else
-    show_page(Page::NoSensor);
+    pages_.show_page(Page::NoSensor);
 #endif
 }
 
@@ -2095,10 +2105,10 @@ void PrinterImpl::set_M48_result(bool success, double z_height)
     if(success)
     {
         sensor_.set_M48_result(z_height);
-        show_page(Page::SensorSettings, false);
+        pages_.show_page(Page::SensorSettings, false);
     }
     else
-        show_back_page();
+        pages_.show_back_page();
 #endif
 }
 
@@ -2126,8 +2136,8 @@ void PrinterImpl::firmware_settings_show()
     send_usb_baudrate();
     send_features();
 
-    save_forward_page();
-    show_page(Page::Firmware);
+    pages_.save_forward_page();
+    pages_.show_page(Page::Firmware);
 }
 
 void PrinterImpl::firmware_settings_thermal_protection()
@@ -2140,7 +2150,7 @@ void PrinterImpl::firmware_settings_thermal_protection()
 void PrinterImpl::firmware_settings_save()
 {
     enqueue_and_echo_commands_P(PSTR("M500"));
-    show_back_page();
+    pages_.show_back_page();
 
     change_usb_baudrate();
 }
@@ -2148,7 +2158,7 @@ void PrinterImpl::firmware_settings_save()
 void PrinterImpl::firmware_settings_back()
 {
     usb_baudrate_ = usb_old_baudrate_;
-    show_back_page();
+    pages_.show_back_page();
 }
 
 void PrinterImpl::send_usb_baudrate()
@@ -2225,8 +2235,8 @@ void PrinterImpl::send_features()
 void PrinterImpl::lcd_settings_show()
 {
     send_features();
-    save_forward_page();
-    show_page(Page::LCD);
+    pages_.save_forward_page();
+    pages_.show_page(Page::LCD);
 }
 
 void PrinterImpl::lcd_settings_dimming()
@@ -2238,7 +2248,7 @@ void PrinterImpl::lcd_settings_dimming()
 
 void PrinterImpl::lcd_settings_back()
 {
-    show_back_page();
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2315,7 +2325,7 @@ void PrinterImpl::temperature_error(const char* message)
     WriteRamDataRequest frame{Variable::CurrentFileName};
     frame << message;
     frame.send(true);
-    show_page(advi3pp::Page::ThermalRunawayError);
+    pages_.show_page(advi3pp::Page::ThermalRunawayError);
 }
 
 

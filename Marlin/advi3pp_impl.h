@@ -47,13 +47,6 @@ enum class BackgroundTask: uint8_t
     Undefined           = 0xFF
 };
 
-enum class SensorZHeightTask: uint8_t
-{
-    None            = 0,
-    MiddleRaise     = 1,
-
-};
-
 // --------------------------------------------------------------------
 // Preset
 // --------------------------------------------------------------------
@@ -235,15 +228,60 @@ private:
 #endif
 
 // --------------------------------------------------------------------
+// PagesManager
+// --------------------------------------------------------------------
+
+struct PagesManager
+{
+    PagesManager() = default;
+
+    void show_page(Page page, bool save_back = true);
+    Page get_current_page();
+    void show_back_page();
+    void save_forward_page();
+    void show_forward_page();
+
+private:
+    Stack<Page, 8> back_pages_{};
+    Page forward_page_ = Page::None;
+};
+
+// --------------------------------------------------------------------
+// FilesManager
+// --------------------------------------------------------------------
+
+struct SDFilesManager
+{
+    explicit SDFilesManager(PagesManager& mgr);
+
+    void show();
+    void back();
+    void up();
+    void down();
+    void select_file(uint16_t file_index);
+
+private:
+    void show_files();
+    void get_file_name(uint8_t index_in_page, String& name);
+
+private:
+    uint16_t nb_files_ = 0;
+    uint16_t last_file_index_ = 0;
+    PagesManager& pages_;
+};
+
+// --------------------------------------------------------------------
 // PrinterImpl
 // --------------------------------------------------------------------
 
 //! Implementation of the Duplicator i3 Plus printer
 struct PrinterImpl
 {
+    PrinterImpl();
+
     void setup();
     void task();
-    void show_page(Page page, bool save_back = true);
+    //void show_page(Page page, bool save_back = true);
     void auto_pid_finished();
     void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
@@ -256,14 +294,8 @@ struct PrinterImpl
 private:
     void clear_graphs();
     void send_versions();
-    Page get_current_page();
-    void show_back_page();
-    void save_forward_page();
-    void show_forward_page();
     void read_lcd_serial();
     void send_stats();
-    void show_sd_files();
-    void get_file_name(uint8_t index, String& name);
 
     String get_lcd_firmware_version();
     void get_advi3pp_lcd_version();
@@ -288,11 +320,6 @@ private:
 private:
     // Actions
     void sd_card(KeyValue key_value);
-	void sd_card_show();
-	void sd_card_up();
-	void sd_card_down();
-	void sd_card_select_file(uint16_t index);
-	void sd_card_back();
 
     void screen(KeyValue key_value);
     void show_temps();
@@ -452,15 +479,13 @@ private:
 private:
     static const size_t NB_PRESETS = 3;
 
-	uint16_t nb_files_ = 0;
-    uint16_t last_file_index_ = 0;
+    PagesManager pages_;
+    SDFilesManager sd_files_;
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
     BackgroundTask background_task_ = BackgroundTask::None;
     bool update_graphs_ = false;
     millis_t next_update_graph_time_ = 0;
-    Stack<Page, 8> back_pages_{};
-    Page forward_page_ = Page::None;
     Preset presets_[NB_PRESETS] = { {0, 0}, {0, 0}, {0, 0} };
     PidSettings old_pid_{};
     StepSettings steps_{};
