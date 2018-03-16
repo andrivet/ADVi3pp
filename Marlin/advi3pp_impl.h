@@ -48,6 +48,25 @@ enum class BackgroundTask: uint8_t
 };
 
 // --------------------------------------------------------------------
+// PagesManager
+// --------------------------------------------------------------------
+
+struct PagesManager
+{
+    PagesManager() = default;
+
+    void show_page(Page page, bool save_back = true);
+    Page get_current_page();
+    void show_back_page();
+    void save_forward_page();
+    void show_forward_page();
+
+private:
+    Stack<Page, 8> back_pages_{};
+    Page forward_page_ = Page::None;
+};
+
+// --------------------------------------------------------------------
 // Preset
 // --------------------------------------------------------------------
 
@@ -56,6 +75,28 @@ struct Preset
 {
     uint16_t hotend;
     uint16_t bed;
+};
+
+// --------------------------------------------------------------------
+// Preheat
+// --------------------------------------------------------------------
+
+struct Preheat
+{
+    explicit Preheat(PagesManager& mgr): pages_{mgr} {}
+
+    void store_eeprom_data(EepromWrite& eeprom);
+    void restore_eeprom_data(EepromRead& eeprom);
+    void reset_eeprom_data();
+
+    void show();
+    void back();
+    void preset(uint16_t presetIndex);
+
+private:
+    static const size_t NB_PRESETS = 3;
+    Preset presets_[NB_PRESETS] = {};
+    PagesManager& pages_;
 };
 
 // --------------------------------------------------------------------
@@ -123,53 +164,6 @@ struct JerkSettings
     float max_jerk[XYZE];
 };
 
-// --------------------------------------------------------------------
-// EEPROM Data Read & Write
-// --------------------------------------------------------------------
-
-struct EepromWrite
-{
-    EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    template <typename T> void write(T& data);
-
-private:
-    eeprom_write write_;
-    int& eeprom_index_;
-    uint16_t& working_crc_;
-};
-
-struct EepromRead
-{
-    EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
-    template <typename T> inline void read(T& data);
-
-private:
-    eeprom_read read_;
-    int& eeprom_index_;
-    uint16_t& working_crc_;
-};
-
-inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
-        : write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc)
-{
-}
-
-template <typename T>
-inline void EepromWrite::write(T& data)
-{
-    write_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
-}
-
-inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
-        : read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc)
-{
-}
-
-template <typename T>
-inline void EepromRead::read(T& data)
-{
-    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
-}
 
 // --------------------------------------------------------------------
 // LCD screen brightness and dimming
@@ -228,25 +222,6 @@ private:
 #endif
 
 // --------------------------------------------------------------------
-// PagesManager
-// --------------------------------------------------------------------
-
-struct PagesManager
-{
-    PagesManager() = default;
-
-    void show_page(Page page, bool save_back = true);
-    Page get_current_page();
-    void show_back_page();
-    void save_forward_page();
-    void show_forward_page();
-
-private:
-    Stack<Page, 8> back_pages_{};
-    Page forward_page_ = Page::None;
-};
-
-// --------------------------------------------------------------------
 // FilesManager
 // --------------------------------------------------------------------
 
@@ -281,7 +256,6 @@ struct PrinterImpl
 
     void setup();
     void task();
-    //void show_page(Page page, bool save_back = true);
     void auto_pid_finished();
     void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
@@ -350,9 +324,6 @@ private:
     void load_unload_stop();
 
     void preheat(KeyValue key_value);
-    void preheat_show();
-    void preheat_back();
-    void preheat_preset(uint16_t presetIndex);
     void cooldown();
 
     void move(KeyValue key_value);
@@ -477,8 +448,6 @@ private:
     void extruder_calibration_task();
 
 private:
-    static const size_t NB_PRESETS = 3;
-
     PagesManager pages_;
     SDFilesManager sd_files_;
     millis_t next_op_time_ = 0;
@@ -486,7 +455,7 @@ private:
     BackgroundTask background_task_ = BackgroundTask::None;
     bool update_graphs_ = false;
     millis_t next_update_graph_time_ = 0;
-    Preset presets_[NB_PRESETS] = { {0, 0}, {0, 0}, {0, 0} };
+    Preheat preheat_;
     PidSettings old_pid_{};
     StepSettings steps_{};
     FeedrateSettings feedrates_{};

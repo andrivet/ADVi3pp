@@ -137,7 +137,7 @@ void Printer::set_M48_result(bool success, double z_height)
 // --------------------------------------------------------------------
 
 PrinterImpl::PrinterImpl()
-: sd_files_{pages_}
+: sd_files_{pages_}, preheat_{pages_}
 {
 }
 
@@ -164,9 +164,6 @@ void PrinterImpl::setup()
     pages_.show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
 }
 
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// Presets
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 //! Store presets in permanent memory.
 //! @param write Function to use for the actual writing
@@ -176,12 +173,7 @@ void PrinterImpl::store_eeprom_data(eeprom_write write, int& eeprom_index, uint1
 {
     EepromWrite eeprom{write, eeprom_index, working_crc};
 
-    for(auto& preset: presets_)
-    {
-        eeprom.write(preset.hotend);
-        eeprom.write(preset.bed);
-    }
-
+    preheat_.store_eeprom_data(eeprom);
     uint16_t dummy = 0; eeprom.write(dummy);
     eeprom.write(features_);
     eeprom.write(usb_baudrate_);
@@ -197,12 +189,7 @@ void PrinterImpl::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint1
 {
     EepromRead eeprom{read, eeprom_index, working_crc};
 
-    for(auto& preset: presets_)
-    {
-        eeprom.read(preset.hotend);
-        eeprom.read(preset.bed);
-    }
-
+    preheat_.restore_eeprom_data(eeprom);
     uint16_t dummy = 0; eeprom.read(dummy);
     eeprom.read(features_);
     eeprom.read(usb_baudrate_);
@@ -213,16 +200,8 @@ void PrinterImpl::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint1
 //! Reset presets.
 void PrinterImpl::reset_eeprom_data()
 {
-    presets_[0].hotend = DEFAULT_PREHEAT_PRESET1_HOTEND;
-    presets_[1].hotend = DEFAULT_PREHEAT_PRESET2_HOTEND;
-    presets_[2].hotend = DEFAULT_PREHEAT_PRESET3_HOTEND;
-
-    presets_[0].bed = DEFAULT_PREHEAT_PRESET1_BED;
-    presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
-    presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
-
+    preheat_.reset_eeprom_data();
     features_ = DEFAULT_FEATURES;
-
     dimming_.reset_eeprom_data();
 }
 
@@ -938,75 +917,14 @@ void PrinterImpl::preheat(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::Show:            preheat_show(); break;
-        case KeyValue::Back:            preheat_back(); break;
+        case KeyValue::Show:            preheat_.show(); break;
+        case KeyValue::Back:            preheat_.back(); break;
         case KeyValue::Preset1:
         case KeyValue::Preset2:
-        case KeyValue::Preset3:         preheat_preset(static_cast<uint16_t>(key_value)); break;
+        case KeyValue::Preset3:         preheat_.preset(static_cast<uint16_t>(key_value)); break;
         case KeyValue::Cooldown:        cooldown(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
-}
-
-//! Show the preheat screen
-void PrinterImpl::preheat_show()
-{
-    Log::log() << F("Preheat page") << Log::endl();
-    WriteRamDataRequest frame{Variable::Preset1Bed};
-    for(auto& preset : presets_)
-        frame << Uint16(preset.bed) << Uint16(preset.hotend);
-    frame.send();
-    pages_.show_page(Page::Preheat);
-}
-
-void PrinterImpl::preheat_back()
-{
-    pages_.show_back_page();
-}
-
-//! Preheat the nozzle and save the presets.
-//! @param key_value    The index (starting from 1) of the preset to use
-void PrinterImpl::preheat_preset(uint16_t presetIndex)
-{
-    Log::log() << F("Preheat Start") << Log::endl();
-
-    presetIndex -= 1;
-    if(presetIndex >= NB_PRESETS)
-    {
-        Log::error() << F("Invalid preset # ") << presetIndex << Log::endl();
-        return;
-    }
-
-    ReadRamData frame{Variable::Preset1Bed, 6};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Presets)") << Log::endl();
-        return;
-    }
-
-    Uint16 hotend, bed;
-    for(auto& preset : presets_)
-    {
-        frame >> hotend >> bed;
-        preset.hotend = hotend.word;
-        preset.bed = bed.word;
-    }
-
-    // Save presets
-    enqueue_and_echo_commands_P(PSTR("M500"));
-
-    const Preset& preset = presets_[presetIndex];
-
-    String command;
-
-    command = F("M104 S"); command << preset.hotend;
-    enqueue_and_echo_command(command.c_str());
-
-    command = F("M140 S"); command << preset.bed;
-    enqueue_and_echo_command(command.c_str());
-
-    pages_.show_page(Page::Temperature);
-    set_update_graphs();
 }
 
 //! Cooldown the bed and the nozzle
@@ -2632,5 +2550,105 @@ void BLTouch::save_z_height(double height)
 }
 
 #endif
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Preheat
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+//! Store presets in permanent memory.
+void Preheat::store_eeprom_data(EepromWrite& eeprom)
+{
+    for(auto& preset: presets_)
+    {
+        eeprom.write(preset.hotend);
+        eeprom.write(preset.bed);
+    }
+}
+
+//! Restore presets from permanent memory.
+//! @param read Function to use for the actual reading
+//! @param eeprom_index
+//! @param working_crc
+void Preheat::restore_eeprom_data(EepromRead& eeprom)
+{
+    for(auto& preset: presets_)
+    {
+        eeprom.read(preset.hotend);
+        eeprom.read(preset.bed);
+    }
+}
+
+//! Reset presets.
+void Preheat::reset_eeprom_data()
+{
+    presets_[0].hotend = DEFAULT_PREHEAT_PRESET1_HOTEND;
+    presets_[1].hotend = DEFAULT_PREHEAT_PRESET2_HOTEND;
+    presets_[2].hotend = DEFAULT_PREHEAT_PRESET3_HOTEND;
+
+    presets_[0].bed = DEFAULT_PREHEAT_PRESET1_BED;
+    presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
+    presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
+}
+
+//! Show the preheat screen
+void Preheat::show()
+{
+    Log::log() << F("Preheat page") << Log::endl();
+    WriteRamDataRequest frame{Variable::Preset1Bed};
+    for(auto& preset : presets_)
+        frame << Uint16(preset.bed) << Uint16(preset.hotend);
+    frame.send();
+    pages_.show_page(Page::Preheat);
+}
+
+void Preheat::back()
+{
+    pages_.show_back_page();
+}
+
+//! Preheat the nozzle and save the presets.
+//! @param key_value    The index (starting from 1) of the preset to use
+void Preheat::preset(uint16_t presetIndex)
+{
+    Log::log() << F("Preheat Start") << Log::endl();
+
+    presetIndex -= 1;
+    if(presetIndex >= NB_PRESETS)
+    {
+        Log::error() << F("Invalid preset # ") << presetIndex << Log::endl();
+        return;
+    }
+
+    ReadRamData frame{Variable::Preset1Bed, 6};
+    if(!frame.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Presets)") << Log::endl();
+        return;
+    }
+
+    Uint16 hotend, bed;
+    for(auto& preset : presets_)
+    {
+        frame >> hotend >> bed;
+        preset.hotend = hotend.word;
+        preset.bed = bed.word;
+    }
+
+    // Save presets
+    enqueue_and_echo_commands_P(PSTR("M500"));
+
+    const Preset& preset = presets_[presetIndex];
+
+    String command;
+
+    command = F("M104 S"); command << preset.hotend;
+    enqueue_and_echo_command(command.c_str());
+
+    command = F("M140 S"); command << preset.bed;
+    enqueue_and_echo_command(command.c_str());
+
+    pages_.show_page(Page::Temperature);
+    //set_update_graphs();
+}
 
 }
