@@ -2534,7 +2534,7 @@ void BLTouch::stow()
 void BLTouch::start_z_height()
 {
 	enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    enqueue_and_echo_commands_P(PSTR("M48 P4"));
+    enqueue_and_echo_commands_P(PSTR("M48 P4 V4"));
 }
 
 void BLTouch::set_M48_result(double z_height)
