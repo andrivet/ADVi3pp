@@ -157,11 +157,10 @@ void PrinterImpl::setup()
 
     Serial2.begin(advi3_pp_baudrate);
     get_advi3pp_lcd_version();
+	pages_.show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
     send_versions();
     clear_graphs();
     dimming_.reset();
-
-    pages_.show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
 }
 
 
@@ -377,7 +376,7 @@ void PrinterImpl::send_status_status()
           << Uint16(Temperature::target_temperature[0])
           << Uint16(Temperature::degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
-          << Uint16(Stepper::position(Z_AXIS))
+          << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
           << FixedSizeString(LCDImpl::instance().get_message(), 48)
           << FixedSizeString(LCDImpl::instance().get_progress(), 48);
     frame.send(false);
