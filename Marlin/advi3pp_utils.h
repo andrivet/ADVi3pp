@@ -390,6 +390,53 @@ struct WriteCurveDataRequest: Frame
     explicit WriteCurveDataRequest(uint8_t channels);
 };
 
+// --------------------------------------------------------------------
+// EEPROM Data Read & Write
+// --------------------------------------------------------------------
+
+struct EepromWrite
+{
+    EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    template <typename T> void write(T& data);
+
+private:
+    eeprom_write write_;
+    int& eeprom_index_;
+    uint16_t& working_crc_;
+};
+
+struct EepromRead
+{
+    EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    template <typename T> inline void read(T& data);
+
+private:
+    eeprom_read read_;
+    int& eeprom_index_;
+    uint16_t& working_crc_;
+};
+
+inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+        : write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc)
+{
+}
+
+template <typename T>
+inline void EepromWrite::write(T& data)
+{
+    write_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
+}
+
+inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+        : read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc)
+{
+}
+
+template <typename T>
+inline void EepromRead::read(T& data)
+{
+    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
+}
 
 }}
 
