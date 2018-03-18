@@ -29,7 +29,10 @@
 #include <stdarg.h>
 
 class MarlinSettings;
+class GCodeParser;
 class String;
+class __FlashStringHelper;
+
 using eeprom_write = void (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
 using eeprom_read  = void (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc);
 
@@ -93,7 +96,7 @@ struct Printer
     static void temperature_error(const char* message);
     static void send_status_data();
     static bool is_thermal_protection_enabled();
-    static void set_M48_result(bool success, double z_height);
+    static void process_command(const GCodeParser& parser);
 };
 
 //! The Duplicator i3 Plus LCD Screen
@@ -103,7 +106,8 @@ struct LCD
     static void init();
     static bool has_status();
     static void set_status(const char* message, bool persist);
-    static void set_status_PGM(const char* message, int8_t level);
+    static void set_status_PGM(const char* message, int8_t level = 0);
+    static void set_status(const __FlashStringHelper* fmt, ...);
     static void set_alert_status_PGM(const char* message);
     static void buttons_update();
     static void reset_alert_level();

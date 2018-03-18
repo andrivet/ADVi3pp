@@ -143,6 +143,28 @@ void FixedSizeString::assign(const char* str, size_t size)
 }
 
 // --------------------------------------------------------------------
+// FixedSizeRollingString
+// --------------------------------------------------------------------
+
+//! Construct a fixed-size string from a string and a size
+//! @param str      The string
+//! @param size     The size
+FixedSizeRollingString::FixedSizeRollingString(const String& str, size_t size)
+{
+    string_.reserve(size);
+    string_ = "   ";
+
+    if(str.length() + 4 <= size)
+    {
+        string_ += str;
+        while(string_.length() < size - 1)
+            string_ += 0;
+    }
+    else
+        string_ += str.substring(0, size - 4);
+}
+
+// --------------------------------------------------------------------
 // String
 // --------------------------------------------------------------------
 
@@ -281,6 +303,12 @@ Frame& operator<<(Frame& frame, const FixedSizeString& data)
 {
     return frame << data.string_;
 }
+
+Frame& operator<<(Frame& frame, const FixedSizeRollingString& data)
+{
+    return frame << data.string_;
+}
+
 
 //! Append a String to this frame.
 //! @param frame    The frame

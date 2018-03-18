@@ -39,6 +39,12 @@
 #define CONFIGURATION_H
 #define CONFIGURATION_H_VERSION 010107
 
+// This is only to ensure that CLion is parsing code properly inside the IDE
+#ifdef __CLION_IDE__
+#define DEBUG
+#define ADVi3PP_BLTOUCH
+#endif
+
 //===========================================================================
 //============================= Getting Started =============================
 //===========================================================================

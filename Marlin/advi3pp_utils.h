@@ -226,6 +226,26 @@ private:
     String string_;
 };
 
+// --------------------------------------------------------------------
+// FixedSizeRollingString
+// --------------------------------------------------------------------
+
+struct FixedSizeRollingString
+{
+    FixedSizeRollingString(const String& str, size_t size);
+
+    inline size_t length() const { return string_.length(); }
+
+    friend Frame& operator<<(Frame& frame, const FixedSizeRollingString& data);
+
+private:
+    void assign(const char* str, size_t size);
+
+private:
+    String string_;
+};
+
+
 
 // --------------------------------------------------------------------
 // Frame

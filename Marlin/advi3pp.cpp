@@ -26,6 +26,7 @@
 #include "temperature.h"
 #include "cardreader.h"
 #include "stepper.h"
+#include "gcode.h"
 
 #include "advi3pp.h"
 #include "advi3pp_utils.h"
@@ -60,6 +61,11 @@ namespace
     const uint8_t DIMMING_RATIO = 25; // in percent
     const uint16_t DIMMING_DELAY = 1 * 60;
 }
+
+#ifdef ADVi3PP_BLTOUCH
+bool set_probe_deployed(bool);
+float run_z_probe();
+#endif
 
 namespace advi3pp {
 
@@ -119,7 +125,7 @@ void Printer::temperature_error(const char* message)
 
 void Printer::send_status_data()
 {
-    printer.send_status_status();
+    printer.send_status();
 }
 
 bool Printer::is_thermal_protection_enabled()
@@ -127,9 +133,9 @@ bool Printer::is_thermal_protection_enabled()
     return printer.is_thermal_protection_enabled();
 }
 
-void Printer::set_M48_result(bool success, double z_height)
+void Printer::process_command(const GCodeParser& parser)
 {
-    printer.set_M48_result(success, z_height);
+    printer.process_command(parser);
 }
 
 // --------------------------------------------------------------------
@@ -137,7 +143,7 @@ void Printer::set_M48_result(bool success, double z_height)
 // --------------------------------------------------------------------
 
 PrinterImpl::PrinterImpl()
-: sd_files_{pages_}, preheat_{pages_}
+: sd_files_{pages_}, preheat_{pages_}, processor_{pages_, sensor_}
 {
 }
 
@@ -163,6 +169,11 @@ void PrinterImpl::setup()
     dimming_.reset();
 }
 
+//! Process command specific to this printer (I)
+void PrinterImpl::process_command(const GCodeParser& parser)
+{
+    processor_.process(parser);
+}
 
 //! Store presets in permanent memory.
 //! @param write Function to use for the actual writing
@@ -288,6 +299,12 @@ void PagesManager::show_page(Page page, bool save_back)
     frame.send(true);
 }
 
+void PagesManager::show_waiting_page(const char* message)
+{
+    LCD::set_status_PGM(message);
+    show_page(Page::Waiting, true);
+}
+
 //! Retrieve the current page on the LCD screen
 Page PagesManager::get_current_page()
 {
@@ -358,12 +375,12 @@ void PrinterImpl::task()
     dimming_.check();
     read_lcd_serial();
     execute_background_task();
-    send_status_status();
+    send_status();
     update_graphs();
 }
 
 //! Update the status of the printer on the LCD.
-void PrinterImpl::send_status_status()
+void PrinterImpl::send_status()
 {
     auto current_time = millis();
     if(!ELAPSED(current_time, next_update_time_))
@@ -378,6 +395,7 @@ void PrinterImpl::send_status_status()
           << Uint16(scale(fanSpeeds[0], 255, 100))
           << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
           << FixedSizeString(LCDImpl::instance().get_message(), 48)
+          << FixedSizeRollingString(LCDImpl::instance().get_message(), 52)
           << FixedSizeString(LCDImpl::instance().get_progress(), 48);
     frame.send(false);
 }
@@ -1678,7 +1696,7 @@ void PrinterImpl::leveling(KeyValue key_value)
 //! Home the printer for bed leveling.
 void PrinterImpl::leveling_home()
 {
-    pages_.show_page(Page::Waiting, false);
+    pages_.show_waiting_page(PSTR("Homing..."));
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
@@ -2010,22 +2028,9 @@ void PrinterImpl::sensor_z_height()
 #ifdef ADVi3PP_BLTOUCH
     sensor_.start_z_height();
     pages_.save_forward_page();
-    pages_.show_page(Page::Waiting);
+    pages_.show_waiting_page(PSTR("Homing..."));
 #else
     pages_.show_page(Page::NoSensor);
-#endif
-}
-
-void PrinterImpl::set_M48_result(bool success, double z_height)
-{
-#ifdef ADVi3PP_BLTOUCH
-    if(success)
-    {
-        sensor_.set_M48_result(z_height);
-        pages_.show_page(Page::SensorSettings, false);
-    }
-    else
-        pages_.show_back_page();
 #endif
 }
 
@@ -2534,12 +2539,7 @@ void BLTouch::stow()
 void BLTouch::start_z_height()
 {
 	enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    enqueue_and_echo_commands_P(PSTR("M48 P4 V4"));
-}
-
-void BLTouch::set_M48_result(double z_height)
-{
-    send_z_height_to_lcd(-z_height);
+    enqueue_and_echo_commands_P(PSTR("I0"));
 }
 
 void BLTouch::save_z_height(double height)
@@ -2648,6 +2648,56 @@ void Preheat::preset(uint16_t presetIndex)
 
     pages_.show_page(Page::Temperature);
     //set_update_graphs();
+}
+
+// --------------------------------------------------------------------
+// CommandProcessor
+// --------------------------------------------------------------------
+
+CommandProcessor::CommandProcessor(PagesManager& pages, BLTouch& sensor)
+: pages_{pages}, sensor_{sensor}
+{
+}
+
+//! Process command specific to this printer (I)
+void CommandProcessor::process(const GCodeParser& parser)
+{
+    switch(parser.codenum)
+    {
+        case 0: icode_0(parser); break;
+        default: Log::error() << F("Invalid I-code number ") << static_cast<uint16_t>(parser.codenum) << Log::endl(); break;
+    }
+}
+
+void CommandProcessor::icode_0(const GCodeParser& parser)
+{
+    static const uint16_t NB_SAMPLES = 3;
+
+    if(axis_unhomed_error())
+    {
+        pages_.show_back_page();
+        return;
+    }
+
+    const float old_feedrate_mm_s = feedrate_mm_s;
+    feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
+
+    do_blocking_move_to(100, 100, current_position[Z_AXIS]);
+
+    double sum = 0.0;
+    for(uint16_t i = 0; i < NB_SAMPLES; i++)
+    {
+        LCD::set_status(F("Measuring Z-height: %i of %i..."), i + 1, NB_SAMPLES);
+        DEPLOY_PROBE();
+        run_z_probe();
+        sum += current_position[Z_AXIS];
+        do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
+    }
+
+    feedrate_mm_s = old_feedrate_mm_s;
+
+    sensor_.send_z_height_to_lcd(-sum / NB_SAMPLES);
+    pages_.show_page(Page::SensorSettings, false);
 }
 
 }

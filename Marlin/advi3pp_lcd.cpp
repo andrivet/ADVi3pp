@@ -96,6 +96,14 @@ void LCD::reset_message()
     lcd.reset_message();
 }
 
+void LCD::set_status(const __FlashStringHelper* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    lcd.set_status(fmt, args);
+    va_end(args);
+}
+
 // --------------------------------------------------------------------
 // LCDImpl
 // --------------------------------------------------------------------
@@ -143,6 +151,16 @@ void LCDImpl::status_printf_P(const char * fmt, va_list args)
     static char buffer[MAX_SIZE + 1];
 
     vsnprintf_P(buffer, MAX_SIZE, fmt, args);
+    message_ = String{buffer};
+    Log::log() << F("STATUS V: ") << message_ << Log::endl();
+}
+
+void LCDImpl::set_status(const __FlashStringHelper* fmt, va_list args)
+{
+    static const size_t MAX_SIZE = 100;
+    static char buffer[MAX_SIZE + 1];
+
+    vsnprintf_P(buffer, MAX_SIZE, reinterpret_cast<const char*>(fmt), args);
     message_ = String{buffer};
     Log::log() << F("STATUS V: ") << message_ << Log::endl();
 }

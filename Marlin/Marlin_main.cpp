@@ -2209,7 +2209,7 @@ static void clean_up_after_endstop_or_probe_move() {
    *
    * @return The raw Z position where the probe was triggered
    */
-  static float run_z_probe() {
+  float run_z_probe() {
 
     #if ENABLED(DEBUG_LEVELING_FEATURE)
       if (DEBUGGING(LEVELING)) DEBUG_POS(">>> run_z_probe", current_position);
@@ -7476,8 +7476,6 @@ inline void gcode_M42() {
     if (probing_good) {
       SERIAL_PROTOCOLLNPGM("Finished!");
 
-      advi3pp::Printer::set_M48_result(true, mean);
-
       if (verbose_level > 0) {
         SERIAL_PROTOCOLPGM("Mean: ");
         SERIAL_PROTOCOL_F(mean, 6);
@@ -7495,8 +7493,6 @@ inline void gcode_M42() {
       SERIAL_EOL();
       SERIAL_EOL();
     }
-    else
-      advi3pp::Printer::set_M48_result(false, mean);
 
     clean_up_after_endstop_or_probe_move();
 
@@ -11597,6 +11593,9 @@ void process_parsed_command() {
 
   // Handle a known G, M, or T
   switch (parser.command_letter) {
+    case 'I': // Process command specific to i3++
+        advi3pp::Printer::process_command(parser);
+        break;
     case 'G': switch (parser.codenum) {
 
       // G0, G1

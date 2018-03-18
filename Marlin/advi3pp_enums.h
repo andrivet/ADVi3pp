@@ -87,14 +87,15 @@ enum class Variable: uint16_t
     HotEnd                  = 0x0003,
     FanSpeed                = 0x0004,
     ZHeight                 = 0x0005,
+    Message                 = 0x0006,
+    RollingMessage          = 0x001E,
+    Progress                = 0x0038,
 
     MotherboardVersion      = 0x0100,
     LcdVersion              = 0x0108,
     LcdFirmwareVersion      = 0x0110,
     MarlinVersion           = 0x0118,
-    Message                 = 0x0121,
-    Progress                = 0x0139,
-    Error                   = 0x0151,
+
     CurrentFileName         = 0x0169,
     TotalPrints             = 0x0181,
     CompletedPrints         = 0x0182,
@@ -102,7 +103,6 @@ enum class Variable: uint16_t
     LongestPrintTime        = 0x018B,
     TotalFilament           = 0x0193,
     Value                   = 0x019B,
-    RollingMessage          = 0x01A3,
 
     FileName1               = 0x0200,
     FileName2               = 0x0218,

@@ -56,6 +56,7 @@ struct PagesManager
     PagesManager() = default;
 
     void show_page(Page page, bool save_back = true);
+    void show_waiting_page(const char* message);
     Page get_current_page();
     void show_back_page();
     void save_forward_page();
@@ -206,7 +207,6 @@ struct BLTouch
 
     void send_z_height_to_lcd(double height);
 	void save_lcd_z_height();
-    void set_M48_result(double z_height);
 
     void leveling();
     void self_test();
@@ -246,6 +246,24 @@ private:
 };
 
 // --------------------------------------------------------------------
+// CommandProcessor
+// --------------------------------------------------------------------
+
+struct CommandProcessor
+{
+    CommandProcessor(PagesManager& pages, BLTouch& sensor);
+
+    void process(const GCodeParser& parser);
+
+private:
+    void icode_0(const GCodeParser& parser);
+
+private:
+    PagesManager& pages_;
+    BLTouch& sensor_;
+};
+
+// --------------------------------------------------------------------
 // PrinterImpl
 // --------------------------------------------------------------------
 
@@ -261,9 +279,9 @@ struct PrinterImpl
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_eeprom_data();
     void temperature_error(const char* message);
-    void send_status_status();
+    void send_status();
     bool is_thermal_protection_enabled() const;
-    void set_M48_result(bool success, double z_height);
+    void process_command(const GCodeParser& parser);
 
 private:
     void clear_graphs();
@@ -467,6 +485,7 @@ private:
     uint32_t usb_baudrate_ = DEFAULT_USB_BAUDRATE;
     uint32_t usb_old_baudrate_ = DEFAULT_USB_BAUDRATE;
     Dimming dimming_{};
+    CommandProcessor processor_;
 #ifdef ADVi3PP_BLTOUCH
     BLTouch sensor_{};
 #endif
@@ -488,6 +507,7 @@ struct LCDImpl
     void set_status_PGM(const char* message);
     void set_alert_status_PGM(const char* message);
     void status_printf_P(const char* fmt, va_list argp);
+    void set_status(const __FlashStringHelper* fmt, va_list argp);
     void buttons_update();
     void reset_alert_level();
     bool detected();
