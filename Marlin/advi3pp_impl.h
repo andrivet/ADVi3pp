@@ -56,7 +56,7 @@ struct PagesManager
     PagesManager() = default;
 
     void show_page(Page page, bool save_back = true);
-    void show_waiting_page(const char* message);
+    void show_waiting_page(const __FlashStringHelper* message);
     Page get_current_page();
     void show_back_page();
     void save_forward_page();
@@ -201,9 +201,10 @@ private:
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_BLTOUCH
-struct BLTouch
+
+struct Sensor
 {
-    BLTouch() = default;
+    Sensor(PagesManager& pages);
 
     void send_z_height_to_lcd(double height);
 	void save_lcd_z_height();
@@ -218,7 +219,29 @@ struct BLTouch
 
 private:
     void save_z_height(double height);
+
+private:
+    PagesManager& pages_;
 };
+
+#else
+
+struct Sensor
+{
+    Sensor(PagesManager& pages) {}
+
+    void send_z_height_to_lcd(double height) {}
+	void save_lcd_z_height() {}
+
+    void leveling() {}
+    void self_test() {}
+    void reset() {}
+    void deploy() {}
+    void stow() {}
+
+    void start_z_height() {}
+};
+
 #endif
 
 // --------------------------------------------------------------------
@@ -251,7 +274,7 @@ private:
 
 struct CommandProcessor
 {
-    CommandProcessor(PagesManager& pages, BLTouch& sensor);
+    CommandProcessor(PagesManager& pages, Sensor& sensor);
 
     void process(const GCodeParser& parser);
 
@@ -260,7 +283,7 @@ private:
 
 private:
     PagesManager& pages_;
-    BLTouch& sensor_;
+    Sensor& sensor_;
 };
 
 // --------------------------------------------------------------------
@@ -486,9 +509,7 @@ private:
     uint32_t usb_old_baudrate_ = DEFAULT_USB_BAUDRATE;
     Dimming dimming_{};
     CommandProcessor processor_;
-#ifdef ADVi3PP_BLTOUCH
-    BLTouch sensor_{};
-#endif
+    Sensor sensor_;
 };
 
 // --------------------------------------------------------------------

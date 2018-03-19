@@ -65,6 +65,7 @@ namespace
 #ifdef ADVi3PP_BLTOUCH
 bool set_probe_deployed(bool);
 float run_z_probe();
+extern float zprobe_zoffset;
 #endif
 
 namespace advi3pp {
@@ -143,7 +144,7 @@ void Printer::process_command(const GCodeParser& parser)
 // --------------------------------------------------------------------
 
 PrinterImpl::PrinterImpl()
-: sd_files_{pages_}, preheat_{pages_}, processor_{pages_, sensor_}
+: sd_files_{pages_}, preheat_{pages_}, processor_{pages_, sensor_}, sensor_{pages_}
 {
 }
 
@@ -299,9 +300,9 @@ void PagesManager::show_page(Page page, bool save_back)
     frame.send(true);
 }
 
-void PagesManager::show_waiting_page(const char* message)
+void PagesManager::show_waiting_page(const __FlashStringHelper* message)
 {
-    LCD::set_status_PGM(message);
+    LCD::set_status_PGM(reinterpret_cast<const char*>(message));
     show_page(Page::Waiting, true);
 }
 
@@ -1696,7 +1697,7 @@ void PrinterImpl::leveling(KeyValue key_value)
 //! Home the printer for bed leveling.
 void PrinterImpl::leveling_home()
 {
-    pages_.show_waiting_page(PSTR("Homing..."));
+    pages_.show_waiting_page(F("Homing..."));
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
@@ -2028,7 +2029,7 @@ void PrinterImpl::sensor_z_height()
 #ifdef ADVi3PP_BLTOUCH
     sensor_.start_z_height();
     pages_.save_forward_page();
-    pages_.show_waiting_page(PSTR("Homing..."));
+    pages_.show_waiting_page(F("Homing..."));
 #else
     pages_.show_page(Page::NoSensor);
 #endif
@@ -2489,14 +2490,19 @@ void Dimming::reset_eeprom_data()
 
 #ifdef ADVi3PP_BLTOUCH
 
-void BLTouch::send_z_height_to_lcd(double z_height)
+Sensor::Sensor(PagesManager& pages)
+: pages_{pages}
+{
+}
+
+void Sensor::send_z_height_to_lcd(double z_height)
 {
     WriteRamDataRequest frame{Variable::SensorOffsetZ};
     frame << Uint16(z_height * 10);
     frame.send();
 }
 
-void BLTouch::save_lcd_z_height()
+void Sensor::save_lcd_z_height()
 {
     ReadRamData response{Variable::SensorOffsetZ, 1};
     if(!response.send_and_receive())
@@ -2509,40 +2515,41 @@ void BLTouch::save_lcd_z_height()
     save_z_height(static_cast<int16_t>(offsetZ.word) / 10.0);
 }
 
-void BLTouch::leveling()
+void Sensor::leveling()
 {
+    pages_.show_waiting_page(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
     enqueue_and_echo_commands_P((PSTR("G29"))); // leveling
     enqueue_and_echo_commands_P((PSTR("M420 S1"))); // Set Bed Leveling State
 }
 
-void BLTouch::self_test()
+void Sensor::self_test()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
 }
 
-void BLTouch::reset()
+void Sensor::reset()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
 }
 
-void BLTouch::deploy()
+void Sensor::deploy()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
 }
 
-void BLTouch::stow()
+void Sensor::stow()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
 
-void BLTouch::start_z_height()
+void Sensor::start_z_height()
 {
 	enqueue_and_echo_commands_P((PSTR("G28"))); // homing
     enqueue_and_echo_commands_P(PSTR("I0"));
 }
 
-void BLTouch::save_z_height(double height)
+void Sensor::save_z_height(double height)
 {
     String command; command << F("M851 Z") << height;
     enqueue_and_echo_command(command.c_str());
@@ -2654,7 +2661,7 @@ void Preheat::preset(uint16_t presetIndex)
 // CommandProcessor
 // --------------------------------------------------------------------
 
-CommandProcessor::CommandProcessor(PagesManager& pages, BLTouch& sensor)
+CommandProcessor::CommandProcessor(PagesManager& pages, Sensor& sensor)
 : pages_{pages}, sensor_{sensor}
 {
 }
@@ -2671,6 +2678,7 @@ void CommandProcessor::process(const GCodeParser& parser)
 
 void CommandProcessor::icode_0(const GCodeParser& parser)
 {
+#ifdef ADVi3PP_BLTOUCH
     static const uint16_t NB_SAMPLES = 3;
 
     if(axis_unhomed_error())
@@ -2698,6 +2706,7 @@ void CommandProcessor::icode_0(const GCodeParser& parser)
 
     sensor_.send_z_height_to_lcd(-sum / NB_SAMPLES);
     pages_.show_page(Page::SensorSettings, false);
+#endif
 }
 
 }
