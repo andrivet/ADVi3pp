@@ -26,7 +26,7 @@
 #include "Marlin.h"
 #include "cardreader.h"
 #include "advi3pp.h"
-#include "advi3pp_impl.h"
+#include "advi3pp_.h"
 
 namespace advi3pp {
 
@@ -34,7 +34,7 @@ namespace advi3pp {
 // LCD
 // --------------------------------------------------------------------
 
-namespace { LCDImpl lcd; }
+namespace { LCD_ lcd; }
 
 void LCD::update()
 {
@@ -108,44 +108,44 @@ void LCD::set_status(const __FlashStringHelper* fmt, ...)
 // LCDImpl
 // --------------------------------------------------------------------
 
-LCDImpl& LCDImpl::instance()
+LCD_& LCD_::instance()
 {
     return lcd;
 }
 
-void LCDImpl::update()
+void LCD_::update()
 {
     /* Do nothing */
 }
 
-void LCDImpl::init()
+void LCD_::init()
 {
     /* Do nothing */
 }
 
-bool LCDImpl::has_status()
+bool LCD_::has_status()
 {
     return message_.length() > 0;
 }
 
-void LCDImpl::set_status(const char* message)
+void LCD_::set_status(const char* message)
 {
 	Log::log() << F("STATUS: ") << message << Log::endl();
     message_ = message;
 }
 
-void LCDImpl::set_status_PGM(const char* message)
+void LCD_::set_status_PGM(const char* message)
 {
     message_ = String{reinterpret_cast<const __FlashStringHelper*>(message)};
     Log::log() << F("STATUS PGM: ") << message_ << Log::endl();
 }
 
-void LCDImpl::set_alert_status_PGM(const char* message)
+void LCD_::set_alert_status_PGM(const char* message)
 {
     set_status_PGM(message);
 }
 
-void LCDImpl::status_printf_P(const char * fmt, va_list args)
+void LCD_::status_printf_P(const char * fmt, va_list args)
 {
     static const size_t MAX_SIZE = 100;
     static char buffer[MAX_SIZE + 1];
@@ -155,7 +155,7 @@ void LCDImpl::status_printf_P(const char * fmt, va_list args)
     Log::log() << F("STATUS V: ") << message_ << Log::endl();
 }
 
-void LCDImpl::set_status(const __FlashStringHelper* fmt, va_list args)
+void LCD_::set_status(const __FlashStringHelper* fmt, va_list args)
 {
     static const size_t MAX_SIZE = 100;
     static char buffer[MAX_SIZE + 1];
@@ -165,50 +165,50 @@ void LCDImpl::set_status(const __FlashStringHelper* fmt, va_list args)
     Log::log() << F("STATUS V: ") << message_ << Log::endl();
 }
 
-void LCDImpl::buttons_update()
+void LCD_::buttons_update()
 {
     /* Do nothing */
 }
 
-void LCDImpl::reset_alert_level()
+void LCD_::reset_alert_level()
 {
     /* Do nothing */
 }
 
-bool LCDImpl::detected()
+bool LCD_::detected()
 {
     return true;
 }
 
-void LCDImpl::refresh()
+void LCD_::refresh()
 {
     /* Do nothing */
 }
 
-const String& LCDImpl::get_message() const
+const String& LCD_::get_message() const
 {
 	return message_;
 }
 
-void LCDImpl::queue_message(const String &message)
+void LCD_::queue_message(const String &message)
 {
     String msg{F("M117 ")}; msg << message;
     enqueue_and_echo_command(msg.c_str());
 }
 
-void LCDImpl::reset_message()
+void LCD_::reset_message()
 {
      enqueue_and_echo_commands_P(PSTR("M117"));
 }
 
-void LCDImpl::set_progress_name(const String& name)
+void LCD_::set_progress_name(const String& name)
 {
     progress_name_ = name;
     progress_percent_ = "";
     percent_ = -1;
 }
 
-const String& LCDImpl::get_progress() const
+const String& LCD_::get_progress() const
 {
     if(progress_name_.length() <= 0)
         return progress_name_; // i.e. empty
@@ -222,7 +222,7 @@ const String& LCDImpl::get_progress() const
     return progress_percent_;
 }
 
-void LCDImpl::reset_progress()
+void LCD_::reset_progress()
 {
     progress_name_ = "";
     progress_percent_ = "";

@@ -24,7 +24,7 @@
  */
 #include "advi3pp.h"
 #include "advi3pp_utils.h"
-#include "advi3pp_impl.h"
+#include "advi3pp_.h"
 
 namespace advi3pp { inline namespace internals {
 

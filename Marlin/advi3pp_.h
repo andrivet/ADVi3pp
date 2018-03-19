@@ -287,13 +287,13 @@ private:
 };
 
 // --------------------------------------------------------------------
-// PrinterImpl
+// Printer implementation
 // --------------------------------------------------------------------
 
 //! Implementation of the Duplicator i3 Plus printer
-struct PrinterImpl
+struct Printer_
 {
-    PrinterImpl();
+    Printer_();
 
     void setup();
     void task();
@@ -513,13 +513,13 @@ private:
 };
 
 // --------------------------------------------------------------------
-// LCDImpl
+// LCD implementation
 // --------------------------------------------------------------------
 
 //! Implementation of the Duplication i3 Plus LCD
-struct LCDImpl
+struct LCD_
 {
-    static LCDImpl& instance();
+    static LCD_& instance();
 
     void update();
     void init();
