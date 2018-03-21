@@ -119,7 +119,7 @@ void Printer::reset_presets()
 }
 
 //! Called when a temperature error occurred and display the error on the LCD.
-void Printer::temperature_error(const char* message)
+void Printer::temperature_error(const __FlashStringHelper* message)
 {
     printer.temperature_error(message);
 }
@@ -166,7 +166,7 @@ void Printer_::setup()
     get_advi3pp_lcd_version();
 	pages_.show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
     send_versions();
-    clear_graphs();
+    graphs_.clear();
     dimming_.reset();
 }
 
@@ -218,7 +218,7 @@ void Printer_::reset_eeprom_data()
 
 bool Printer_::is_thermal_protection_enabled() const
 {
-    return (features_ & Feature::ThermalProtection) == Feature::ThermalProtection;
+    return test_one_bit(features_, Feature::ThermalProtection);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -377,7 +377,7 @@ void Printer_::task()
     read_lcd_serial();
     execute_background_task();
     send_status();
-    update_graphs();
+    graphs_.update();
 }
 
 //! Update the status of the printer on the LCD.
@@ -491,8 +491,6 @@ void Printer_::screen(KeyValue key_value)
 //! the printing screen or the temperature screen.
 void Printer_::show_temps()
 {
-    set_update_graphs();
-
     // If there is a SD card print running, display the SD print screen
     if(card.cardOK && card.sdprinting)
     {
@@ -512,14 +510,12 @@ void Printer_::show_print()
     if(card.cardOK && card.sdprinting)
     {
         pages_.show_page(Page::SdPrint);
-        set_update_graphs();
         return;
     }
 
     if(print_job_timer.isRunning())
     {
         pages_.show_page(Page::UsbPrint);
-        set_update_graphs();
         return;
     }        
 
@@ -529,7 +525,6 @@ void Printer_::show_print()
     {
         // SD card not accessible so fall back to Temperatures
         pages_.show_page(Page::Temperature);
-        set_update_graphs();
         return;
     }
 
@@ -2067,7 +2062,6 @@ void Printer_::firmware_settings_thermal_protection()
 {
     flip_bits(features_, Feature::ThermalProtection);
     send_features();
-    // TODO
 }
 
 void Printer_::firmware_settings_save()
@@ -2207,46 +2201,17 @@ void Printer_::send_stats()
     frame.send();
 }
 
-void Printer_::set_update_graphs()
-{
-    update_graphs_ = true;
-    next_update_graph_time_ = millis() + 2000;
-}
-
-void Printer_::update_graphs()
-{
-    if(!update_graphs_ || !ELAPSED(millis(), next_update_graph_time_))
-        return;
-
-    send_graphs_data();
-    next_update_graph_time_ = millis() + 500;
-}
-    
-//! Update the graphics (two channels: the bed and the hotend).
-void Printer_::send_graphs_data()
-{
-    WriteCurveDataRequest frame{0b00000011};
-    frame << Uint16{Temperature::degBed()}
-          << Uint16{Temperature::degHotend(0)};
-    frame.send(false);
-}
-
-void Printer_::clear_graphs()
-{
-    WriteRegisterDataRequest request{Register::TrendlineClear}; // TODO: Fix this (Mini DGUS)
-    request << 0x55_u8;
-    request.send();
-}
-
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Errors
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 //! Display the Thermal Runaway Error screen.
-void Printer_::temperature_error(const char* message)
+void Printer_::temperature_error(const __FlashStringHelper* message)
 {
-    WriteRamDataRequest frame{Variable::CurrentFileName};
-    frame << message;
+    String lcd_message{message};
+
+    WriteRamDataRequest frame{Variable::Message};
+    frame << lcd_message;
     frame.send(true);
     pages_.show_page(advi3pp::Page::ThermalRunawayError);
 }
@@ -2701,6 +2666,40 @@ void CommandProcessor::icode_0(const GCodeParser& parser)
     sensor_.send_z_height_to_lcd(-zHeight);
     pages_.show_page(Page::SensorSettings, false);
 #endif
+}
+
+// --------------------------------------------------------------------
+// Graphs
+// --------------------------------------------------------------------
+
+Graphs::Graphs()
+{
+    next_update_graph_time_ = millis() + 1000L * 60 + 1; // Wait 1 min before starting updating graphs
+}
+
+void Graphs::update()
+{
+    if(!ELAPSED(millis(), next_update_graph_time_))
+        return;
+
+    send_data();
+    next_update_graph_time_ = millis() + 500;
+}
+
+//! Update the graphics (two channels: the bed and the hotend).
+void Graphs::send_data()
+{
+    WriteCurveDataRequest frame{0b00000011};
+    frame << Uint16{Temperature::degBed()}
+          << Uint16{Temperature::degHotend(0)};
+    frame.send(false);
+}
+
+void Graphs::clear()
+{
+    WriteRegisterDataRequest request{Register::TrendlineClear}; // TODO: Fix this (Mini DGUS)
+    request << 0x55_u8;
+    request.send();
 }
 
 }

@@ -287,6 +287,22 @@ private:
 };
 
 // --------------------------------------------------------------------
+// Graphs
+// --------------------------------------------------------------------
+
+struct Graphs
+{
+    Graphs();
+
+    void clear();
+    void send_data();
+    void update();
+
+private:
+    millis_t next_update_graph_time_;
+};
+
+// --------------------------------------------------------------------
 // Printer implementation
 // --------------------------------------------------------------------
 
@@ -301,13 +317,12 @@ struct Printer_
     void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_eeprom_data();
-    void temperature_error(const char* message);
+    void temperature_error(const __FlashStringHelper* message);
     void send_status();
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
 
 private:
-    void clear_graphs();
     void send_versions();
     void read_lcd_serial();
     void send_stats();
@@ -323,9 +338,6 @@ private:
     void set_background_task(BackgroundTask task, unsigned int delta = 500);
     void clear_background_task();
 
-    void send_graphs_data();
-    void set_update_graphs();
-    void update_graphs();
     void set_target_temperature(uint16_t temperature);
     uint16_t get_target_temperature();
     void send_features();
@@ -494,8 +506,6 @@ private:
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
     BackgroundTask background_task_ = BackgroundTask::None;
-    bool update_graphs_ = false;
-    millis_t next_update_graph_time_ = 0;
     Preheat preheat_;
     PidSettings old_pid_{};
     StepSettings steps_{};
@@ -510,6 +520,7 @@ private:
     Dimming dimming_{};
     CommandProcessor processor_;
     Sensor sensor_;
+    Graphs graphs_;
 };
 
 // --------------------------------------------------------------------
