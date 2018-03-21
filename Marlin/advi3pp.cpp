@@ -2226,8 +2226,8 @@ void Printer_::update_graphs()
 void Printer_::send_graphs_data()
 {
     WriteCurveDataRequest frame{0b00000011};
-    frame << Uint16{Temperature::degHotend(0)}
-          << Uint16{Temperature::degBed()};
+    frame << Uint16{Temperature::degBed()}
+          << Uint16{Temperature::degHotend(0)};
     frame.send(false);
 }
 
@@ -2498,7 +2498,7 @@ Sensor::Sensor(PagesManager& pages)
 void Sensor::send_z_height_to_lcd(double z_height)
 {
     WriteRamDataRequest frame{Variable::SensorOffsetZ};
-    frame << Uint16(z_height * 10);
+    frame << Uint16(z_height * 100);
     frame.send();
 }
 
@@ -2512,7 +2512,7 @@ void Sensor::save_lcd_z_height()
     }
 
     Uint16 offsetZ; response >> offsetZ;
-    save_z_height(static_cast<int16_t>(offsetZ.word) / 10.0);
+    save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
 }
 
 void Sensor::leveling()
@@ -2679,8 +2679,6 @@ void CommandProcessor::process(const GCodeParser& parser)
 void CommandProcessor::icode_0(const GCodeParser& parser)
 {
 #ifdef ADVi3PP_BLTOUCH
-    static const uint16_t NB_SAMPLES = 3;
-
     if(axis_unhomed_error())
     {
         pages_.show_back_page();
@@ -2692,19 +2690,15 @@ void CommandProcessor::icode_0(const GCodeParser& parser)
 
     do_blocking_move_to(100, 100, current_position[Z_AXIS]);
 
-    double sum = 0.0;
-    for(uint16_t i = 0; i < NB_SAMPLES; i++)
-    {
-        LCD::set_status(F("Measuring Z-height: %i of %i..."), i + 1, NB_SAMPLES);
-        DEPLOY_PROBE();
-        run_z_probe();
-        sum += current_position[Z_AXIS];
-        do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
-    }
+    LCD::set_status(F("Measuring Z-height (3 times)..."));
+    DEPLOY_PROBE();
+    double zHeight = run_z_probe();
+
+    do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
 
     feedrate_mm_s = old_feedrate_mm_s;
 
-    sensor_.send_z_height_to_lcd(-sum / NB_SAMPLES);
+    sensor_.send_z_height_to_lcd(-zHeight);
     pages_.show_page(Page::SensorSettings, false);
 #endif
 }

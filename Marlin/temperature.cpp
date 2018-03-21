@@ -817,6 +817,8 @@ void Temperature::manage_heater() {
   #endif // FILAMENT_WIDTH_SENSOR
 
   #if WATCH_THE_BED
+  if(advi3pp::Printer::is_thermal_protection_enabled())
+  {
     // Make sure temperature is increasing
     if (watch_bed_next_ms && ELAPSED(ms, watch_bed_next_ms)) {        // Time to check the bed?
       if (degBed() < watch_target_bed_temp)                           // Failed to increase enough?
@@ -824,6 +826,7 @@ void Temperature::manage_heater() {
       else                                                            // Start again if the target is still far off
         start_watching_bed();
     }
+  }
   #endif // WATCH_THE_BED
 
   #if DISABLED(PIDTEMPBED)
