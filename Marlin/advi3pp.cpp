@@ -126,7 +126,7 @@ void Printer::temperature_error(const __FlashStringHelper* message)
 
 void Printer::send_status_data()
 {
-    printer.send_status();
+    printer.send_status_data();
 }
 
 bool Printer::is_thermal_protection_enabled()
@@ -144,7 +144,7 @@ void Printer::process_command(const GCodeParser& parser)
 // --------------------------------------------------------------------
 
 Printer_::Printer_()
-: sd_files_{pages_}, preheat_{pages_}, processor_{pages_, sensor_}, sensor_{pages_}
+: back_{pages_}, sd_files_{pages_}, preheat_{pages_}, processor_{pages_, sensor_}, sensor_{pages_}
 {
 }
 
@@ -220,57 +220,6 @@ bool Printer_::is_thermal_protection_enabled() const
 {
     return test_one_bit(features_, Feature::ThermalProtection);
 }
-
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// Background tasks
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-//! Set the next (minimal) background task time
-//! @param delta    Duration to be added to the current time to compute the next (minimal) background task time
-void Printer_::set_next_background_task_time(unsigned int delta)
-{
-    next_op_time_ = millis() + delta;
-}
-
-//! Set the next (minimal) update time
-//! @param delta    Duration to be added to the current time to compute the next (minimal) update time
-void Printer_::set_next_update_time(unsigned int delta)
-{
-    next_update_time_ = millis() + delta;
-}
-
-//! Set the next background task and its delay
-//! @param task     The next background task
-//! @param delta    Duration to be added to the current time to execute the background tast
-void Printer_::set_background_task(BackgroundTask task, unsigned int delta)
-{
-    background_task_ = task;
-    set_next_background_task_time(delta);
-}
-
-//! Reset the background task
-void Printer_::clear_background_task()
-{
-    background_task_ = BackgroundTask::None;
-}
-
-//! If there is an operating running, execute its next step
-void Printer_::execute_background_task()
-{
-    if(!ELAPSED(millis(), next_op_time_))
-        return;
-
-    switch(background_task_)
-    {
-        case BackgroundTask::None:                  break;
-        case BackgroundTask::ManualLeveling:        manual_leveling_task(); break;
-        case BackgroundTask::LoadFilament:          load_filament_task(); break;
-        case BackgroundTask::UnloadFilament:        unload_filament_task(); break;
-        case BackgroundTask::ExtruderCalibration:   extruder_calibration_task(); break;
-        default:                                    Log::error() << F("Invalid background task ") << static_cast<uint16_t>(background_task_) << Log::endl(); break;
-    }
-}
-
 
 namespace
 {
@@ -375,30 +324,14 @@ void Printer_::task()
 {
     dimming_.check();
     read_lcd_serial();
-    execute_background_task();
-    send_status();
+    back_.execute_background_task();
+    back_.send_status_data();
     graphs_.update();
 }
 
-//! Update the status of the printer on the LCD.
-void Printer_::send_status()
+void Printer_::send_status_data()
 {
-    auto current_time = millis();
-    if(!ELAPSED(current_time, next_update_time_))
-        return;
-    set_next_update_time();
-
-    WriteRamDataRequest frame{Variable::TargetBed};
-    frame << Uint16(Temperature::target_temperature_bed)
-          << Uint16(Temperature::degBed())
-          << Uint16(Temperature::target_temperature[0])
-          << Uint16(Temperature::degHotend(0))
-          << Uint16(scale(fanSpeeds[0], 255, 100))
-          << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
-          << FixedSizeString(LCD_::instance().get_message(), 48)
-          << FixedSizeRollingString(LCD_::instance().get_message(), 52)
-          << FixedSizeString(LCD_::instance().get_progress(), 48);
-    frame.send(false);
+    back_.send_status_data();
 }
 
 //! Read a frame from the LCD and act accordingly.
@@ -881,7 +814,7 @@ void Printer_::load_unload_start(bool load)
     Temperature::setTargetHotend(hotend, 0);
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
-    set_background_task(load ? BackgroundTask::LoadFilament : BackgroundTask::UnloadFilament);
+    back_.set_background_task(load ? BackgroundTask::LoadFilament : BackgroundTask::UnloadFilament);
     pages_.show_page(load ? Page::Load2 : Page::Unload2);
 }
 
@@ -890,34 +823,12 @@ void Printer_::load_unload_stop()
 {
     Log::log() << F("Load/Unload Stop");
 
-    clear_background_task();
+    back_.clear_background_task();
     clear_command_queue();
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     Temperature::setTargetHotend(0, 0);
 
     pages_.show_back_page();
-}
-
-//! Load the filament if the temperature is high enough.
-void Printer_::load_filament_task()
-{
-    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
-    {
-        Log::log() << F("Load Filament") << Log::endl();
-        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
-    }
-    set_next_background_task_time();
-}
-
-//! Unload the filament if the temperature is high enough.
-void Printer_::unload_filament_task()
-{
-    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
-    {
-        Log::log() << F("Unload Filament") << Log::endl();
-        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
-    }
-    set_next_background_task_time();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1697,20 +1608,7 @@ void Printer_::leveling_home()
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    set_background_task(BackgroundTask::ManualLeveling);
-}
-
-//! Leveling Background task.
-void Printer_::manual_leveling_task()
-{
-    if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
-    {
-        Log::log() << F("Leveling Homed, start process") << Log::endl();
-        clear_background_task();
-        pages_.show_page(Page::ManualLeveling, false);
-    }
-    else
-        set_next_background_task_time(200);
+    back_.set_background_task(BackgroundTask::ManualLeveling);
 }
 
 //! Handle leveling point #1.
@@ -1776,7 +1674,7 @@ void Printer_::extruder_calibration(KeyValue key_value)
         case KeyValue::Show:                    show_extruder_calibration(); break;
         case KeyValue::CalibrationStart:        start_extruder_calibration(); break;
         case KeyValue::CalibrationSettings:     extruder_calibrartion_settings(); break;
-        case KeyValue::Back:                    cancel_extruder_calibration(); break;
+        case KeyValue::Back:                    back_.cancel_extruder_calibration(); break;
         default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
@@ -1802,42 +1700,11 @@ void Printer_::start_extruder_calibration()
         return;
 
     Temperature::setTargetHotend(hotend, 0);
-    set_background_task(BackgroundTask::ExtruderCalibration);
+    back_.set_background_task(BackgroundTask::ExtruderCalibration);
     enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
     pages_.show_page(Page::ExtruderCalibration2, false);
-}
-
-//! Extruder calibration background task.
-void Printer_::extruder_calibration_task()
-{
-    if(current_position[E_AXIS] >= calibration_extruder_filament)
-    {
-        extruder_calibration_finished();
-        return;
-    }
-
-    if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
-    {
-        set_next_background_task_time();
-        return;
-    }
-
-    enqueue_and_echo_commands_P(PSTR("G1 E10 F50")); // Extrude 10mm slowly
-    set_next_background_task_time();
-}
-
-//! Record the amount of filament extruded.
-void Printer_::extruder_calibration_finished()
-{
-    extruded_ = current_position[E_AXIS];
-    Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
-
-    clear_background_task();
-    pages_.show_page(Page::ExtruderCalibration3);
 }
 
 //! Compute the extruder (E axis) new value and show the steps settings.
@@ -1853,28 +1720,22 @@ void Printer_::extruder_calibrartion_settings()
     Uint16 e; response >> e;
     e.word /= 10;
 
+    auto extruded = back_.extruded();
+
     // Fill all values because all 4 axis are displayed by  show_steps_settings
     steps_.axis_steps_per_mm[X_AXIS] = Planner::axis_steps_per_mm[X_AXIS];
     steps_.axis_steps_per_mm[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
     steps_.axis_steps_per_mm[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
-	steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
-    Log::log() << F("Adjust: old = ") << Planner::axis_steps_per_mm[E_AXIS] << F(", expected = ") << extruded_ << F(", measured = ") << (extruded_ + calibration_extruder_delta - e.word) << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
+	steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS]
+                                       * extruded / (extruded + calibration_extruder_delta - e.word);
+
+	Log::log() << F("Adjust: old = ")
+               << Planner::axis_steps_per_mm[E_AXIS]
+               << F(", expected = ") << extruded
+               << F(", measured = ") << (extruded + calibration_extruder_delta - e.word)
+               << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
 
     steps_settings_show(false);
-}
-
-//! Cancel the extruder calibration.
-void Printer_::cancel_extruder_calibration()
-{
-    clear_background_task();
-
-    Temperature::setTargetHotend(0, 0);
-    Temperature::setTargetBed(0);
-
-    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
-
-    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2700,6 +2561,162 @@ void Graphs::clear()
     WriteRegisterDataRequest request{Register::TrendlineClear}; // TODO: Fix this (Mini DGUS)
     request << 0x55_u8;
     request.send();
+}
+
+// --------------------------------------------------------------------
+// Background tasks
+// --------------------------------------------------------------------
+
+BackTask::BackTask(PagesManager& pages)
+: pages_{pages}
+{
+}
+
+//! Update the status of the printer on the LCD.
+void BackTask::send_status_data()
+{
+    auto current_time = millis();
+    if(!ELAPSED(current_time, next_update_time_))
+        return;
+    set_next_update_time();
+
+    WriteRamDataRequest frame{Variable::TargetBed};
+    frame << Uint16(Temperature::target_temperature_bed)
+          << Uint16(Temperature::degBed())
+          << Uint16(Temperature::target_temperature[0])
+          << Uint16(Temperature::degHotend(0))
+          << Uint16(scale(fanSpeeds[0], 255, 100))
+          << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
+          << FixedSizeString(LCD_::instance().get_message(), 48)
+          << FixedSizeRollingString(LCD_::instance().get_message(), 52)
+          << FixedSizeString(LCD_::instance().get_progress(), 48);
+    frame.send(false);
+}
+
+//! Load the filament if the temperature is high enough.
+void BackTask::load_filament_task()
+{
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
+    {
+        Log::log() << F("Load Filament") << Log::endl();
+        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
+    }
+    set_next_background_task_time();
+}
+
+//! Unload the filament if the temperature is high enough.
+void BackTask::unload_filament_task()
+{
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
+    {
+        Log::log() << F("Unload Filament") << Log::endl();
+        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
+    }
+    set_next_background_task_time();
+}
+
+//! Set the next (minimal) background task time
+//! @param delta    Duration to be added to the current time to compute the next (minimal) background task time
+void BackTask::set_next_background_task_time(unsigned int delta)
+{
+    next_op_time_ = millis() + delta;
+}
+
+//! Set the next (minimal) update time
+//! @param delta    Duration to be added to the current time to compute the next (minimal) update time
+void BackTask::set_next_update_time(unsigned int delta)
+{
+    next_update_time_ = millis() + delta;
+}
+
+//! Set the next background task and its delay
+//! @param task     The next background task
+//! @param delta    Duration to be added to the current time to execute the background tast
+void BackTask::set_background_task(BackgroundTask task, unsigned int delta)
+{
+    background_task_ = task;
+    set_next_background_task_time(delta);
+}
+
+//! Reset the background task
+void BackTask::clear_background_task()
+{
+    background_task_ = BackgroundTask::None;
+}
+
+//! If there is an operating running, execute its next step
+void BackTask::execute_background_task()
+{
+    if(!ELAPSED(millis(), next_op_time_))
+        return;
+
+    switch(background_task_)
+    {
+        case BackgroundTask::None:                  break;
+        case BackgroundTask::ManualLeveling:        manual_leveling_task(); break;
+        case BackgroundTask::LoadFilament:          load_filament_task(); break;
+        case BackgroundTask::UnloadFilament:        unload_filament_task(); break;
+        case BackgroundTask::ExtruderCalibration:   extruder_calibration_task(); break;
+        default:                                    Log::error() << F("Invalid background task ") << static_cast<uint16_t>(background_task_) << Log::endl(); break;
+    }
+}
+
+//! Extruder calibration background task.
+void BackTask::extruder_calibration_task()
+{
+    if(current_position[E_AXIS] >= calibration_extruder_filament)
+    {
+        extruder_calibration_finished();
+        return;
+    }
+
+    if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
+    {
+        set_next_background_task_time();
+        return;
+    }
+
+    enqueue_and_echo_commands_P(PSTR("G1 E10 F50")); // Extrude 10mm slowly
+    set_next_background_task_time();
+}
+
+//! Record the amount of filament extruded.
+void BackTask::extruder_calibration_finished()
+{
+    extruded_ = current_position[E_AXIS];
+    Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
+    clear_background_task();
+    pages_.show_page(Page::ExtruderCalibration3);
+}
+
+//! Cancel the extruder calibration.
+void BackTask::cancel_extruder_calibration()
+{
+    clear_background_task();
+
+    Temperature::setTargetHotend(0, 0);
+    Temperature::setTargetBed(0);
+
+    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
+    pages_.show_back_page();
+}
+
+//! Leveling Background task.
+void BackTask::manual_leveling_task()
+{
+    if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
+    {
+        Log::log() << F("Leveling Homed, start process") << Log::endl();
+        clear_background_task();
+        pages_.show_page(Page::ManualLeveling, false);
+    }
+    else
+        set_next_background_task_time(200);
 }
 
 }

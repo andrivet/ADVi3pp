@@ -303,6 +303,41 @@ private:
 };
 
 // --------------------------------------------------------------------
+// BackTask
+// --------------------------------------------------------------------
+
+struct BackTask
+{
+    BackTask(PagesManager& pages);
+
+    void send_status_data();
+
+    void set_next_update_time(unsigned int delta = 500);
+
+    void execute_background_task();
+    void set_next_background_task_time(unsigned int delta = 500);
+    void set_background_task(BackgroundTask task, unsigned int delta = 500);
+    void clear_background_task();
+
+    void load_filament_task();
+    void unload_filament_task();
+    void manual_leveling_task();
+    void extruder_calibration_task();
+    void extruder_calibration_finished();
+    void cancel_extruder_calibration();
+    double extruded() const;
+
+private:
+    PagesManager pages_;
+    millis_t next_op_time_ = 0;
+    millis_t next_update_time_ = 0;
+    BackgroundTask background_task_ = BackgroundTask::None;
+    double extruded_ = 0.0;
+};
+
+inline double BackTask::extruded() const { return extruded_; };
+
+// --------------------------------------------------------------------
 // Printer implementation
 // --------------------------------------------------------------------
 
@@ -318,7 +353,7 @@ struct Printer_
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_eeprom_data();
     void temperature_error(const __FlashStringHelper* message);
-    void send_status();
+    void send_status_data();
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
 
@@ -330,13 +365,6 @@ private:
     String get_lcd_firmware_version();
     void get_advi3pp_lcd_version();
     bool is_lcd_version_valid() const;
-
-    void set_next_update_time(unsigned int delta = 500);
-
-    void execute_background_task();
-    void set_next_background_task_time(unsigned int delta = 500);
-    void set_background_task(BackgroundTask task, unsigned int delta = 500);
-    void clear_background_task();
 
     void set_target_temperature(uint16_t temperature);
     uint16_t get_target_temperature();
@@ -447,9 +475,7 @@ private:
     void extruder_calibration(KeyValue key_value);
     void show_extruder_calibration();
     void start_extruder_calibration();
-    void extruder_calibration_finished();
     void extruder_calibrartion_settings();
-    void cancel_extruder_calibration();
 
     void xyz_motors_calibration(KeyValue key_value);
     void show_xyz_motors_calibration();
@@ -494,18 +520,10 @@ private:
     void copyrights_show();
     void copyrights_back();
 
-    // Background tasks
-    void load_filament_task();
-    void unload_filament_task();
-    void manual_leveling_task();
-    void extruder_calibration_task();
-
 private:
     PagesManager pages_;
+    BackTask back_;
     SDFilesManager sd_files_;
-    millis_t next_op_time_ = 0;
-    millis_t next_update_time_ = 0;
-    BackgroundTask background_task_ = BackgroundTask::None;
     Preheat preheat_;
     PidSettings old_pid_{};
     StepSettings steps_{};
@@ -513,7 +531,6 @@ private:
     AccelerationSettings accelerations_{};
     JerkSettings jerks_{};
     uint16_t lcd_version_ = 0x0000;
-    double extruded_ = 0.0;
     Feature features_ =  DEFAULT_FEATURES;
     uint32_t usb_baudrate_ = DEFAULT_USB_BAUDRATE;
     uint32_t usb_old_baudrate_ = DEFAULT_USB_BAUDRATE;
