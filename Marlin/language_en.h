@@ -748,16 +748,16 @@
   #define MSG_THERMAL_RUNAWAY                 _UxGT("THERMAL RUNAWAY")
 #endif
 #ifndef MSG_ERR_MAXTEMP
-  #define MSG_ERR_MAXTEMP                     _UxGT("Err: MAXTEMP")
+  #define MSG_ERR_MAXTEMP                     _UxGT("Maximum temperature exceeded")
 #endif
 #ifndef MSG_ERR_MINTEMP
-  #define MSG_ERR_MINTEMP                     _UxGT("Err: MINTEMP")
+  #define MSG_ERR_MINTEMP                     _UxGT("Minimum temperature exceeded")
 #endif
 #ifndef MSG_ERR_MAXTEMP_BED
-  #define MSG_ERR_MAXTEMP_BED                 _UxGT("Err: MAXTEMP BED")
+  #define MSG_ERR_MAXTEMP_BED                 _UxGT("Maximum bed temperature exceeded")
 #endif
 #ifndef MSG_ERR_MINTEMP_BED
-  #define MSG_ERR_MINTEMP_BED                 _UxGT("Err: MINTEMP BED")
+  #define MSG_ERR_MINTEMP_BED                 _UxGT("Minimum bed temperature exceeded")
 #endif
 #ifndef MSG_ERR_Z_HOMING
   #define MSG_ERR_Z_HOMING                    _UxGT("G28 Z Forbidden")

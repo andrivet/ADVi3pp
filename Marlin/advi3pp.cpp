@@ -162,12 +162,20 @@ void Printer_::setup()
     if(usb_baudrate_ != BAUDRATE)
         change_usb_baudrate();
 
+    send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     Serial2.begin(advi3_pp_baudrate);
     get_advi3pp_lcd_version();
 	pages_.show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
     send_versions();
     graphs_.clear();
     dimming_.reset();
+}
+
+//! Note to forks author:
+//! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
+void Printer_::send_gplv3_7b_notice()
+{
+    Log::log() << F("Based on ADVi3++, Copyright (C) 2017 Sebastien Andrivet") << Log::endl();
 }
 
 //! Process command specific to this printer (I)

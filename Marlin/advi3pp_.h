@@ -358,6 +358,7 @@ struct Printer_
     void process_command(const GCodeParser& parser);
 
 private:
+    void send_gplv3_7b_notice(); // Forks: you have to keep this notice
     void send_versions();
     void read_lcd_serial();
     void send_stats();
