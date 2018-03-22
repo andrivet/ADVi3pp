@@ -365,7 +365,6 @@ void Printer_::read_lcd_serial()
     frame >> command >> action >> nb_words >> value;
     auto key_value = static_cast<KeyValue>(value.word);
 
-    // TODO: Check that length == 1, that Hi(action) == 0x04
     Log::log() << F(">>> ") << nb_words.byte << F(" words, Action = ") << static_cast<uint16_t>(action) << F(", KeyValue = ") << value.word << Log::endl();
 
     switch(action)
@@ -2469,7 +2468,7 @@ void Preheat::preset(uint16_t presetIndex)
     Uint16 hotend, bed;
     for(auto& preset : presets_)
     {
-        frame >> hotend >> bed;
+        frame >> bed >> hotend;
         preset.hotend = hotend.word;
         preset.bed = bed.word;
     }
@@ -2522,10 +2521,9 @@ void CommandProcessor::icode_0(const GCodeParser& parser)
     const float old_feedrate_mm_s = feedrate_mm_s;
     feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
 
-    do_blocking_move_to(100, 100, current_position[Z_AXIS]);
+    do_blocking_move_to(100, 100, Z_CLEARANCE_DEPLOY_PROBE);
 
-    LCD::set_status(F("Measuring Z-height (3 times)..."));
-    DEPLOY_PROBE();
+    LCD::set_status(F("Measuring Z-height..."));
     double zHeight = run_z_probe();
 
     do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
@@ -2543,7 +2541,7 @@ void CommandProcessor::icode_0(const GCodeParser& parser)
 
 Graphs::Graphs()
 {
-    next_update_graph_time_ = millis() + 1000L * 60 + 1; // Wait 1 min before starting updating graphs
+    next_update_graph_time_ = millis() + 1000L * 10; // Wait 10 sec before starting updating graphs
 }
 
 void Graphs::update()
