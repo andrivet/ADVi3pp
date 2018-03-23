@@ -362,6 +362,7 @@ private:
     void send_versions();
     void read_lcd_serial();
     void send_stats();
+    void show_boot_page();
 
     String get_lcd_firmware_version();
     void get_advi3pp_lcd_version();
