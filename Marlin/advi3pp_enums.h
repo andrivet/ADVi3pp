@@ -88,8 +88,8 @@ enum class Variable: uint16_t
     FanSpeed                = 0x0004,
     ZHeight                 = 0x0005,
     Message                 = 0x0006,
-    RollingMessage          = 0x001E,
-    Progress                = 0x0038,
+    Progress                = 0x001A,
+    CenteredMessage         = 0x002E,
 
     MotherboardVersion      = 0x0100,
     LcdVersion              = 0x0108,

@@ -165,7 +165,8 @@ void Printer_::setup()
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     Serial2.begin(advi3_pp_baudrate);
     get_advi3pp_lcd_version();
-	pages_.show_page(is_lcd_version_valid() ? Page::Boot : Page::Mismatch, false);
+    if(!is_lcd_version_valid())
+	    pages_.show_page(Page::Mismatch, false);
     send_versions();
     graphs_.clear();
     dimming_.reset();
@@ -2593,9 +2594,9 @@ void BackTask::send_status_data()
           << Uint16(Temperature::degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
           << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]))
-          << FixedSizeString(LCD_::instance().get_message(), 48)
-          << FixedSizeRollingString(LCD_::instance().get_message(), 52)
-          << FixedSizeString(LCD_::instance().get_progress(), 48);
+          << FixedSizeString(LCD_::instance().get_message(), 40)
+          << FixedSizeString(LCD_::instance().get_progress(), 40)
+          << FixedSizeString(LCD_::instance().get_message(), 44, true);
     frame.send(false);
 }
 

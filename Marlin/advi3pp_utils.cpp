@@ -113,10 +113,10 @@ void __assert(const char *msg, const char *file, uint16_t line)
 //! Construct a fixed-size string from a string and a size
 //! @param str      The string
 //! @param size     The size
-FixedSizeString::FixedSizeString(const String& str, size_t size)
+FixedSizeString::FixedSizeString(const String& str, size_t size, bool center)
 {
     if(str.length() <= size)
-		assign(str.c_str(), size);
+		assign(str.c_str(), size, center);
     else
         string_ = str.substring(0, size);
 }
@@ -124,44 +124,32 @@ FixedSizeString::FixedSizeString(const String& str, size_t size)
 //! Construct a fixed-size string from a duration and a size
 //! @param duration     The duration
 //! @param size         The size
-FixedSizeString::FixedSizeString(duration_t duration, size_t size)
+FixedSizeString::FixedSizeString(duration_t duration, size_t size, bool center)
 {
     char buffer[21 + 1]; // 21, from the doc
     duration.toString(buffer);
-	assign(buffer, size);
+	assign(buffer, size, center);
 }
 
 //! Assign a fixed-size string from a string and a size
 //! @param str      The string
 //! @param size     The size
-void FixedSizeString::assign(const char* str, size_t size)
+void FixedSizeString::assign(const String& str, size_t size, bool center)
 {
 	string_.reserve(size);
-	string_ = String{str};
+	string_ = "";
+
+	if(center)
+    {
+        size_t pad = (size - str.length()) / 2;
+	    for(size_t i = 0; i < pad; ++i)
+	        string_ += ' ';
+    }
+
+	string_ += str;
+
 	while(string_.length() < size)
 		string_ += ' ';
-}
-
-// --------------------------------------------------------------------
-// FixedSizeRollingString
-// --------------------------------------------------------------------
-
-//! Construct a fixed-size string from a string and a size
-//! @param str      The string
-//! @param size     The size
-FixedSizeRollingString::FixedSizeRollingString(const String& str, size_t size)
-{
-    string_.reserve(size);
-    string_ = "   ";
-
-    if(str.length() + 4 <= size)
-    {
-        string_ += str;
-        while(string_.length() < size - 1)
-            string_ += 0;
-    }
-    else
-        string_ += str.substring(0, size - 4);
 }
 
 // --------------------------------------------------------------------
@@ -303,12 +291,6 @@ Frame& operator<<(Frame& frame, const FixedSizeString& data)
 {
     return frame << data.string_;
 }
-
-Frame& operator<<(Frame& frame, const FixedSizeRollingString& data)
-{
-    return frame << data.string_;
-}
-
 
 //! Append a String to this frame.
 //! @param frame    The frame

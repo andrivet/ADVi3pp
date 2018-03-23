@@ -212,40 +212,19 @@ class Frame;
 
 struct FixedSizeString
 {
-    FixedSizeString(const String& str, size_t size);
-    explicit FixedSizeString(duration_t duration, size_t size);
+    FixedSizeString(const String& str, size_t size, bool center = false);
+    explicit FixedSizeString(duration_t duration, size_t size, bool center = false);
 
     inline size_t length() const { return string_.length(); }
 
     friend Frame& operator<<(Frame& frame, const FixedSizeString& data);
 
 private:
-	void assign(const char* str, size_t size);
+	void assign(const String& str, size_t size, bool center);
 
 private:
     String string_;
 };
-
-// --------------------------------------------------------------------
-// FixedSizeRollingString
-// --------------------------------------------------------------------
-
-struct FixedSizeRollingString
-{
-    FixedSizeRollingString(const String& str, size_t size);
-
-    inline size_t length() const { return string_.length(); }
-
-    friend Frame& operator<<(Frame& frame, const FixedSizeRollingString& data);
-
-private:
-    void assign(const char* str, size_t size);
-
-private:
-    String string_;
-};
-
-
 
 // --------------------------------------------------------------------
 // Frame
