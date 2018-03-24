@@ -2512,14 +2512,19 @@ void Preheat::preset(uint16_t presetIndex)
     }
 
     Uint16 hotend, bed;
+    bool hasChanged = false;
+
     for(auto& preset : presets_)
     {
         frame >> bed >> hotend;
+        if(hotend.word != preset.hotend || bed.word != preset.bed)
+            hasChanged = true;
         preset.hotend = hotend.word;
         preset.bed = bed.word;
     }
 
-    Printer_::save_settings();
+    if(hasChanged)
+        Printer_::save_settings();
 
     const Preset& preset = presets_[presetIndex];
 
@@ -2557,6 +2562,9 @@ void CommandProcessor::process(const GCodeParser& parser)
 void CommandProcessor::icode_0(const GCodeParser& parser)
 {
 #ifdef ADVi3PP_BLTOUCH
+
+    static const size_t NB_MEASURES = 3;
+
     if(axis_unhomed_error())
     {
         pages_.show_back_page();
@@ -2568,11 +2576,16 @@ void CommandProcessor::icode_0(const GCodeParser& parser)
 
     do_blocking_move_to(100, 100, Z_CLEARANCE_DEPLOY_PROBE);
 
-    LCD::set_status(F("Measuring Z-height..."));
-    double zHeight = run_z_probe();
+    double sum = 0;
+    for(size_t i = 0; i < NB_MEASURES; ++i)
+    {
+        LCD::set_status(F("Measuring Z-height. Measure %i of %i..."), i, NB_MEASURES);
+        DEPLOY_PROBE();
+        sum += run_z_probe();
+        do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
+    }
 
-    do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
-
+    double zHeight = sum / NB_MEASURES;
     feedrate_mm_s = old_feedrate_mm_s;
 
     sensor_.send_z_height_to_lcd(-zHeight);
