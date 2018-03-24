@@ -115,6 +115,10 @@ struct LCD
     static void refresh();
     static void queue_message(const String& message);
     static void reset_message();
+    static void enable_buzzer(bool enable);
+    static void enable_buzz_on_press(bool enable);
+    static void buzz(long duration, uint16_t frequency);
+    static void buzz_on_press();
 };
 
 }

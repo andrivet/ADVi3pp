@@ -227,7 +227,13 @@ void Printer_::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t
     eeprom.read(features_);
     eeprom.read(usb_baudrate_);
 
+    Log::log() << F("Features: ") << static_cast<uint16_t>(features_) << Log::endl();
+
     dimming_.restore_eeprom_data(eeprom);
+    dimming_.enable(test_one_bit(features_, Feature::Dimming));
+
+    LCD::enable_buzzer(test_one_bit(features_, Feature::Buzzer));
+    LCD::enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress));
 }
 
 //! Reset presets.
@@ -236,6 +242,11 @@ void Printer_::reset_eeprom_data()
     preheat_.reset_eeprom_data();
     features_ = DEFAULT_FEATURES;
     dimming_.reset_eeprom_data();
+}
+
+void Printer_::save_settings()
+{
+    enqueue_and_echo_commands_P(PSTR("M500"));
 }
 
 bool Printer_::is_thermal_protection_enabled() const
@@ -374,6 +385,8 @@ void Printer_::read_lcd_serial()
         Log::error() << F("reading incoming Frame") << Log::endl();
         return;
     }
+
+    LCD::buzz_on_press();
 
     Command command; Action action; Uint8 nb_words; Uint16 value;
     frame >> command >> action >> nb_words >> value;
@@ -1166,7 +1179,7 @@ void Printer_::pid_settings_save()
     Temperature::Ki = scalePID_i(static_cast<float>(i.word) / 100);
     Temperature::Kd = scalePID_d(static_cast<float>(d.word) / 100);
 
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    save_settings();
 
     pages_.show_forward_page();
 }
@@ -1395,7 +1408,7 @@ void Printer_::show_factory_reset_warning()
 void Printer_::do_factory_reset()
 {
     enqueue_and_echo_commands_P(PSTR("M502"));
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    save_settings();
     pages_.show_back_page();
 }
 
@@ -1948,7 +1961,7 @@ void Printer_::firmware_settings_thermal_protection()
 
 void Printer_::firmware_settings_save()
 {
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    save_settings();
     pages_.show_back_page();
 
     change_usb_baudrate();
@@ -2019,6 +2032,8 @@ void Printer_::lcd(KeyValue key_value)
     {
         case KeyValue::Show:                lcd_settings_show(); break;
         case KeyValue::LCDDimming:          lcd_settings_dimming(); break;
+        case KeyValue::Buzzer:              lcd_settings_buzzer(); break;
+        case KeyValue::BuzzOnPress:         lcd_settings_buzz_on_press(); break;
         case KeyValue::Back:                lcd_settings_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -2043,6 +2058,23 @@ void Printer_::lcd_settings_dimming()
     flip_bits(features_, Feature::Dimming);
     dimming_.enable(test_one_bit(features_, Feature::Dimming));
     send_features();
+    save_settings();
+}
+
+void Printer_::lcd_settings_buzzer()
+{
+    flip_bits(features_, Feature::Buzzer);
+    LCD::enable_buzzer(test_one_bit(features_, Feature::Buzzer));
+    send_features();
+    save_settings();
+}
+
+void Printer_::lcd_settings_buzz_on_press()
+{
+    flip_bits(features_, Feature::BuzzOnPress);
+    LCD::enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress));
+    send_features();
+    save_settings();
 }
 
 void Printer_::lcd_settings_back()
@@ -2118,7 +2150,7 @@ void PidSettings::save()
     Temperature::Ki = Ki;
     Temperature::Kd = Kd;
 
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    Printer_::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2142,7 +2174,7 @@ void StepSettings::save()
     Planner::axis_steps_per_mm[Z_AXIS] = axis_steps_per_mm[Z_AXIS];
     Planner::axis_steps_per_mm[E_AXIS] = axis_steps_per_mm[E_AXIS];
 
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    Printer_::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2170,7 +2202,7 @@ void FeedrateSettings::save()
     Planner::min_feedrate_mm_s = min_feedrate_mm_s;
     Planner::min_travel_feedrate_mm_s = min_travel_feedrate_mm_s;
 
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    Printer_::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2200,7 +2232,7 @@ void AccelerationSettings::save()
     Planner::retract_acceleration = retract_acceleration;
     Planner::travel_acceleration =  travel_acceleration;
 
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    Printer_::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2224,7 +2256,7 @@ void JerkSettings::save()
     Planner::max_jerk[Z_AXIS] = max_jerk[Z_AXIS];
     Planner::max_jerk[E_AXIS] = max_jerk[E_AXIS];
 
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    Printer_::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2487,8 +2519,7 @@ void Preheat::preset(uint16_t presetIndex)
         preset.bed = bed.word;
     }
 
-    // Save presets
-    enqueue_and_echo_commands_P(PSTR("M500"));
+    Printer_::save_settings();
 
     const Preset& preset = presets_[presetIndex];
 

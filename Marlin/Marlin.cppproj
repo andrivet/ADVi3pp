@@ -412,10 +412,10 @@
     <Compile Include="advi3pp.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="advi3pp_enums.h">
+    <Compile Include="advi3pp_.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="advi3pp_impl.h">
+    <Compile Include="advi3pp_enums.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="advi3pp_lcd.cpp">

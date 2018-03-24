@@ -32,7 +32,11 @@
 
 namespace advi3pp { inline namespace internals {
 
-static const Feature DEFAULT_FEATURES = Feature::ThermalProtection | Feature::HeadParking | Feature::Dimming;
+static const Feature DEFAULT_FEATURES =
+    Feature::ThermalProtection |
+    Feature::HeadParking |
+    Feature::Dimming |
+    Feature::Buzzer;
 static const Brightness DEFAULT_BRIGHTNESS = Brightness::Max;
 static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
 
@@ -357,6 +361,8 @@ struct Printer_
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
 
+    static void save_settings();
+
 private:
     void send_gplv3_7b_notice(); // Forks: you have to keep this notice
     void send_versions();
@@ -506,6 +512,8 @@ private:
     void lcd(KeyValue key_value);
     void lcd_settings_show();
     void lcd_settings_dimming();
+    void lcd_settings_buzzer();
+    void lcd_settings_buzz_on_press();
     void lcd_settings_back();
 
     void factory_reset(KeyValue key_value);
@@ -571,11 +579,21 @@ struct LCD_
     const String& get_progress() const;
     void reset_progress();
 
+    void enable_buzzer(bool enable);
+    void enable_buzz_on_press(bool enable);
+    void buzz(long duration, uint16_t frequency = 0);
+    void buzz_on_press();
+
+private:
+    void buzz_(long duration);
+
 private:
     String message_;
     String progress_name_;
     mutable String progress_percent_;
     mutable int percent_ = -1;
+    bool buzzer_enabled_ = true;
+    bool buzz_on_press_enabled_ = false;
 };
 
 }}

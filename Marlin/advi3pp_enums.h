@@ -260,6 +260,7 @@ enum class KeyValue: uint16_t
 
     LCDDimming              = 0x0001,
     Buzzer                  = 0x0002,
+    BuzzOnPress             = 0x0003,
 
     MismatchForward         = 0x0001,
 
@@ -275,12 +276,13 @@ enum class KeyValue: uint16_t
     Cancel                  = 0xFFFF
 };
 
-enum class Feature
+enum class Feature: uint16_t
 {
     HeadParking         = 0b0000000000000001,
     ThermalProtection   = 0b0000000000000010,
     Dimming             = 0b0000000000000100,
-    Buzzer              = 0b0000000000001000
+    Buzzer              = 0b0000000000001000,
+    BuzzOnPress          = 0b0000000000010000
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 

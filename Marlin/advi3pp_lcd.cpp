@@ -28,6 +28,11 @@
 #include "advi3pp.h"
 #include "advi3pp_.h"
 
+namespace
+{
+    const uint8_t BUZZ_ON_PRESS_DURATION = 10; // x 1 ms
+}
+
 namespace advi3pp {
 
 // --------------------------------------------------------------------
@@ -104,8 +109,28 @@ void LCD::set_status(const __FlashStringHelper* fmt, ...)
     va_end(args);
 }
 
+void LCD::enable_buzzer(bool enable)
+{
+   lcd.enable_buzzer(enable);
+}
+
+void LCD::enable_buzz_on_press(bool enable)
+{
+    lcd.enable_buzz_on_press(enable);
+}
+
+void LCD::buzz(long duration, uint16_t frequency)
+{
+    lcd.buzz(duration, frequency);
+}
+
+void LCD::buzz_on_press()
+{
+    lcd.buzz_on_press();
+}
+
 // --------------------------------------------------------------------
-// LCDImpl
+// LCD Implementation
 // --------------------------------------------------------------------
 
 LCD_& LCD_::instance()
@@ -227,6 +252,45 @@ void LCD_::reset_progress()
     progress_name_ = "";
     progress_percent_ = "";
     percent_ = -1;
+}
+
+void LCD_::enable_buzzer(bool enable)
+{
+    buzzer_enabled_ = enable;
+}
+
+void LCD_::enable_buzz_on_press(bool enable)
+{
+    buzz_on_press_enabled_ = enable;
+    if(enable)
+        buzz_(50);
+}
+
+//! Activate the LCD internal buzzer for the given duration.
+//! Note: The buzzer is not able to produce different frequencies so the 2nd parameter is ignored.
+void LCD_::buzz(long duration, uint16_t)
+{
+    if(!buzzer_enabled_)
+        return;
+
+    buzz_(duration);
+}
+
+void LCD_::buzz_(long duration)
+{
+    duration /= 10;
+
+    WriteRegisterDataRequest request{Register::BuzzerBeepingTime};
+    request << Uint8(static_cast<uint8_t>(duration > UINT8_MAX ? UINT8_MAX : duration));
+    request.send();
+}
+
+
+void LCD_::buzz_on_press()
+{
+    if(!buzz_on_press_enabled_)
+        return;
+    buzz_(BUZZ_ON_PRESS_DURATION);
 }
 
 }

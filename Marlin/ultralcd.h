@@ -199,6 +199,7 @@
   inline void lcd_reset_alert_level() { advi3pp::LCD::reset_alert_level(); }
   inline bool lcd_detected() { return advi3pp::LCD::detected(); }
   inline void lcd_refresh() { advi3pp::LCD::refresh(); }
+  inline void lcd_buzz(const long duration, const uint16_t freq) { advi3pp::LCD::buzz(duration, freq); }
 
 #else // no LCD
 
