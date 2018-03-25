@@ -94,6 +94,11 @@ void Printer::auto_pid_finished()
     printer.auto_pid_finished();
 }
 
+void Printer::g29_leveling_finished()
+{
+    printer.g29_leveling_finished();
+}
+
 //! Store presets in permanent memory.
 //! @param write Function to use for the actual writing
 //! @param eeprom_index
@@ -1697,6 +1702,11 @@ void Printer_::leveling_finish()
     pages_.show_back_page();
 }
 
+void Printer_::g29_leveling_finished()
+{
+    sensor_.g29_leveling_finished();
+}
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Extruder calibration
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2398,8 +2408,14 @@ void Sensor::leveling()
 {
     pages_.show_waiting_page(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    enqueue_and_echo_commands_P((PSTR("G29"))); // leveling
+    enqueue_and_echo_commands_P((PSTR("G29 E"))); // leveling
     enqueue_and_echo_commands_P((PSTR("M420 S1"))); // Set Bed Leveling State
+    enqueue_and_echo_commands_P((PSTR("G28")); // homing
+}
+
+void Sensor::g29_leveling_finished()
+{
+    pages_.show_back_page();
 }
 
 void Sensor::self_test()
@@ -2579,7 +2595,7 @@ void CommandProcessor::icode_0(const GCodeParser& parser)
     double sum = 0;
     for(size_t i = 0; i < NB_MEASURES; ++i)
     {
-        LCD::set_status(F("Measuring Z-height. Measure %i of %i..."), i, NB_MEASURES);
+        LCD::set_status(F("Measuring Z-height. Measure %i of %i..."), i + 1, NB_MEASURES);
         DEPLOY_PROBE();
         sum += run_z_probe();
         do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));

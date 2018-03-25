@@ -203,7 +203,6 @@ struct Uint32
 //! An unsigned 32 bits literal such as: 0_u32.
 constexpr Uint32 operator "" _u32(unsigned long long int dword) { return Uint32(static_cast<uint32_t>(dword)); }
 
-
 // --------------------------------------------------------------------
 // FixedSizeString
 // --------------------------------------------------------------------

@@ -5009,6 +5009,7 @@ void home_all_axes() { gcode_G28(true); }
               if (!position_is_reachable_by_probe(xProbe, yProbe)) continue;
             #endif
 
+            lcd_status_printf_P(0, PSTR("Measure Z-height at x = %i, y = %i mm"), static_cast<int>(xProbe), static_cast<int>(yProbe));
             measured_z = faux ? 0.001 * random(-100, 101) : probe_pt(xProbe, yProbe, stow_probe_after_each, verbose_level);
 
             if (isnan(measured_z)) {
@@ -5304,6 +5305,7 @@ void home_all_axes() { gcode_G28(true); }
     #endif
 
     report_current_position();
+    advi3pp::Printer::g29_leveling_finished();
 
     KEEPALIVE_STATE(IN_HANDLER);
 
