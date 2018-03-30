@@ -150,11 +150,17 @@ enum class Variable: uint16_t
     USBBaudrate             = 0x0325,
     SensorOffsetZ           = 0x0327,
 
-    TargetTemperature       = 0x0500,
-    Measure1                = 0x0501,
-    Measure2                = 0x0502,
-    Measure3                = 0x0503,
-    ADVi3ppLCDversion       = 0x0504
+    ADVi3ppLCDversion       = 0x0500,
+    TargetTemperature       = 0x0501,
+    Value0                  = 0x0510,
+    Value1                  = 0x0511,
+    Value2                  = 0x0512,
+    Value3                  = 0x0513,
+    Value4                  = 0x0514,
+    Value5                  = 0x0515,
+    Value6                  = 0x0516,
+    Value7                  = 0x0517,
+    Value8                  = 0x0518
 };
 
 //! List of actions sent by the LCD.

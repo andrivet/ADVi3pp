@@ -1726,7 +1726,7 @@ void Printer_::show_extruder_calibration()
 {
     set_target_temperature(200);
 
-    WriteRamDataRequest frame{Variable::Measure1};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << 200_u16;
     frame.send();
 
@@ -1752,7 +1752,7 @@ void Printer_::start_extruder_calibration()
 //! Compute the extruder (E axis) new value and show the steps settings.
 void Printer_::extruder_calibrartion_settings()
 {
-    ReadRamData response{Variable::Measure1, 1};
+    ReadRamData response{Variable::Value0, 1};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
@@ -1797,7 +1797,7 @@ void Printer_::xyz_motors_calibration(KeyValue key_value)
 
 void Printer_::show_xyz_motors_calibration()
 {
-    WriteRamDataRequest frame{Variable::Measure1};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << 200_u16 << 200_u16 << 200_u16;
     frame.send();
     pages_.save_forward_page();
@@ -1813,7 +1813,7 @@ float adjust_value(float old, double expected, double measured)
 
 void Printer_::xyz_motors_calibration_settings()
 {
-    ReadRamData response{Variable::Measure1, 3};
+    ReadRamData response{Variable::Value0, 3};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
@@ -1916,6 +1916,7 @@ void Printer_::sensor_tuning_back()
 void Printer_::sensor_leveling()
 {
 #ifdef ADVi3PP_BLTOUCH
+    pages_.save_forward_page();
     pages_.show_waiting_page(F("Homing..."));
     enqueue_and_echo_commands_P(PSTR("G28"));       // homing
     enqueue_and_echo_commands_P(PSTR("G1 Z10"));    // Raise head
@@ -1949,8 +1950,12 @@ void Printer_::sensor_grid(KeyValue key_value)
 
 void Printer_::sensor_grid_show()
 {
-    // TODO: Send grid values
-    pages_.save_forward_page();
+    WriteRamDataRequest frame{Variable::Value0};
+    for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
+        for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
+            frame << Uint16(static_cast<int16_t>(z_values[x][y] * 1000));
+    frame.send();
+
     pages_.show_page(Page::SensorGrid);
 }
 
