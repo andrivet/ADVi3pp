@@ -48,6 +48,7 @@ enum class BackgroundTask: uint8_t
     LoadFilament        = 2,
     UnloadFilament      = 3,
     ExtruderCalibration = 4,
+    ZHeightTuning       = 5,
     Undefined           = 0xFF
 };
 
@@ -208,19 +209,15 @@ private:
 
 struct Sensor
 {
-    Sensor(PagesManager& pages);
+    explicit Sensor(PagesManager& pages);
 
     void send_z_height_to_lcd(double height);
 	void save_lcd_z_height();
 
-    void leveling();
     void self_test();
     void reset();
     void deploy();
     void stow();
-
-    void start_z_height();
-    void g29_leveling_finished();
 
 private:
     void save_z_height(double height);
@@ -233,7 +230,7 @@ private:
 
 struct Sensor
 {
-    Sensor(PagesManager& pages) {}
+    explicit Sensor(PagesManager& pages) {}
 
     void send_z_height_to_lcd(double height) {}
 	void save_lcd_z_height() {}
@@ -313,24 +310,25 @@ private:
 
 struct BackTask
 {
-    BackTask(PagesManager& pages);
+    explicit BackTask(PagesManager& pages);
 
-    void send_status_data();
-
-    void set_next_update_time(unsigned int delta = 500);
-
-    void execute_background_task();
-    void set_next_background_task_time(unsigned int delta = 500);
     void set_background_task(BackgroundTask task, unsigned int delta = 500);
     void clear_background_task();
+    void execute_background_task();
+    void send_status_data();
+    void cancel_extruder_calibration();
+    double extruded() const;
+
+private:
+    void set_next_update_time(unsigned int delta = 500);
+    void set_next_background_task_time(unsigned int delta = 500);
 
     void load_filament_task();
     void unload_filament_task();
     void manual_leveling_task();
     void extruder_calibration_task();
     void extruder_calibration_finished();
-    void cancel_extruder_calibration();
-    double extruded() const;
+    void z_height_tuning_task();
 
 private:
     PagesManager pages_;
@@ -502,6 +500,19 @@ private:
     void sensor_tuning_back();
     void sensor_leveling();
     void sensor_z_height();
+
+    void sensor_grid(KeyValue key_value);
+    void sensor_grid_show();
+    void sensor_grid_cancel();
+    void sensor_grid_save();
+
+    void sensor_z_height(KeyValue key_value);
+    void sensor_z_height_cancel();
+    void sensor_z_height_continue();
+
+    void change_filament(KeyValue key_value);
+    void change_filament_show();
+    void change_filament_continue();
 
     void firmware(KeyValue key_value);
     void firmware_settings_show();

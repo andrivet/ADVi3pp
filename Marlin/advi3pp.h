@@ -81,7 +81,10 @@ enum class Page: uint8_t
     SensorSettings          = 94,
     LCD                     = 96,
     Copyrights              = 98,
-    SensorTuning            = 100
+    SensorTuning            = 100,
+    SensorGrid              = 102,
+    FilamentChange          = 104,
+    ZHeightTuning           = 106
 };
 
 //! The Duplicator i3 Plus printer.

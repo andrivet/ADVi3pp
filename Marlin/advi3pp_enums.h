@@ -186,6 +186,9 @@ enum class Action: uint16_t
     JerkSettings            = 0x0417,
     Copyrights              = 0x0418,
     SensorTuning            = 0x0419,
+    SensorGrid              = 0x041A,
+    SensorZHeight           = 0x041B,
+    ChangeFilament          = 0x041C,
 
     MoveXMinus              = 0x0420,
     MoveXPlus               = 0x0421,
@@ -272,6 +275,7 @@ enum class KeyValue: uint16_t
     SensorZHeight           = 0x0006,
 
     Save                    = 0xFFFE,
+    Continue                = 0xFFFE,
     Back                    = 0xFFFF,
     Cancel                  = 0xFFFF
 };

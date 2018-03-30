@@ -427,6 +427,9 @@ void Printer_::read_lcd_serial()
         case Action::JerkSettings:          jerk_settings(key_value); break;
         case Action::Copyrights:            copyrights(key_value); break;
         case Action::SensorTuning:          sensor_tuning(key_value); break;
+        case Action::SensorGrid:            sensor_grid(key_value); break;
+        case Action::SensorZHeight:         sensor_z_height(key_value); break;
+        case Action::ChangeFilament:        change_filament(key_value); break;
         case Action::MoveXPlus:             move_x_plus(); break;
         case Action::MoveXMinus:            move_x_minus(); break;
         case Action::MoveYPlus:             move_y_plus(); break;
@@ -1702,11 +1705,6 @@ void Printer_::leveling_finish()
     pages_.show_back_page();
 }
 
-void Printer_::g29_leveling_finished()
-{
-    sensor_.g29_leveling_finished();
-}
-
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Extruder calibration
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1918,22 +1916,117 @@ void Printer_::sensor_tuning_back()
 void Printer_::sensor_leveling()
 {
 #ifdef ADVi3PP_BLTOUCH
-    sensor_.leveling();
+    pages_.show_waiting_page(F("Homing..."));
+    enqueue_and_echo_commands_P(PSTR("G28"));       // homing
+    enqueue_and_echo_commands_P(PSTR("G1 Z10"));    // Raise head
+    enqueue_and_echo_commands_P(PSTR("G29 E"));     // leveling
+    enqueue_and_echo_commands_P(PSTR("G1 X0 Y0"));
 #else
     pages_.show_page(Page::NoSensor);
 #endif
 }
 
+void Printer_::g29_leveling_finished()
+{
+    LCD::reset_message();
+    sensor_grid_show();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Sensor grid
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void Printer_::sensor_grid(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:            sensor_grid_show(); break;
+        case KeyValue::Cancel:          sensor_grid_cancel(); break;
+        case KeyValue::Save:            sensor_grid_save(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void Printer_::sensor_grid_show()
+{
+    // TODO: Send grid values
+    pages_.save_forward_page();
+    pages_.show_page(Page::SensorGrid);
+}
+
+void Printer_::sensor_grid_cancel()
+{
+    pages_.show_back_page();
+}
+
+void Printer_::sensor_grid_save()
+{
+    enqueue_and_echo_commands_P(PSTR("M420 S1"));   // set bed leveling state (enable)
+    pages_.show_forward_page();
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Sensor Z-Height
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 void Printer_::sensor_z_height()
 {
 #ifdef ADVi3PP_BLTOUCH
-    sensor_.start_z_height();
+    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
     pages_.save_forward_page();
     pages_.show_waiting_page(F("Homing..."));
+    back_.set_background_task(BackgroundTask::ZHeightTuning);
 #else
     pages_.show_page(Page::NoSensor);
 #endif
 }
+
+void Printer_::sensor_z_height(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Cancel:          sensor_z_height_cancel(); break;
+        case KeyValue::Continue:        sensor_z_height_continue(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void Printer_::sensor_z_height_cancel()
+{
+    pages_.show_back_page();
+}
+
+void Printer_::sensor_z_height_continue()
+{
+    pages_.show_waiting_page(F("Measure Z-height"));
+    enqueue_and_echo_commands_P(PSTR("I0")); // measure z-height
+}
+
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Change Filament
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void Printer_::change_filament(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:            change_filament_show(); break;
+        case KeyValue::Save:            change_filament_continue(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void Printer_::change_filament_show()
+{
+    pages_.show_page(Page::FilamentChange);
+}
+
+void Printer_::change_filament_continue()
+{
+    // TODO
+}
+
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Firmware Settings
@@ -2404,18 +2497,10 @@ void Sensor::save_lcd_z_height()
     save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
 }
 
-void Sensor::leveling()
+void Sensor::save_z_height(double height)
 {
-    pages_.show_waiting_page(F("Homing..."));
-    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    enqueue_and_echo_commands_P((PSTR("G29 E"))); // leveling
-    enqueue_and_echo_commands_P((PSTR("M420 S1"))); // Set Bed Leveling State
-    enqueue_and_echo_commands_P((PSTR("G28")); // homing
-}
-
-void Sensor::g29_leveling_finished()
-{
-    pages_.show_back_page();
+    String command; command << F("M851 Z") << height;
+    enqueue_and_echo_command(command.c_str());
 }
 
 void Sensor::self_test()
@@ -2436,18 +2521,6 @@ void Sensor::deploy()
 void Sensor::stow()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
-}
-
-void Sensor::start_z_height()
-{
-	enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    enqueue_and_echo_commands_P(PSTR("I0"));
-}
-
-void Sensor::save_z_height(double height)
-{
-    String command; command << F("M851 Z") << height;
-    enqueue_and_echo_command(command.c_str());
 }
 
 #endif
@@ -2553,7 +2626,6 @@ void Preheat::preset(uint16_t presetIndex)
     enqueue_and_echo_command(command.c_str());
 
     pages_.show_page(Page::Temperature);
-    //set_update_graphs();
 }
 
 // --------------------------------------------------------------------
@@ -2575,11 +2647,10 @@ void CommandProcessor::process(const GCodeParser& parser)
     }
 }
 
+//! I-code 0: measure z-height
 void CommandProcessor::icode_0(const GCodeParser& parser)
 {
 #ifdef ADVi3PP_BLTOUCH
-
-    static const size_t NB_MEASURES = 3;
 
     if(axis_unhomed_error())
     {
@@ -2590,18 +2661,15 @@ void CommandProcessor::icode_0(const GCodeParser& parser)
     const float old_feedrate_mm_s = feedrate_mm_s;
     feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
 
-    do_blocking_move_to(100, 100, Z_CLEARANCE_DEPLOY_PROBE);
+    do_blocking_move_to(X_BED_SIZE / 2 - X_PROBE_OFFSET_FROM_EXTRUDER,
+                        Y_BED_SIZE / 2 - Y_PROBE_OFFSET_FROM_EXTRUDER,
+                        Z_CLEARANCE_DEPLOY_PROBE);
 
-    double sum = 0;
-    for(size_t i = 0; i < NB_MEASURES; ++i)
-    {
-        LCD::set_status(F("Measuring Z-height. Measure %i of %i..."), i + 1, NB_MEASURES);
-        DEPLOY_PROBE();
-        sum += run_z_probe();
-        do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
-    }
+    LCD::set_status(F("Measuring Z-height..."));
+    DEPLOY_PROBE();
+    auto zHeight = run_z_probe();
+    do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
 
-    double zHeight = sum / NB_MEASURES;
     feedrate_mm_s = old_feedrate_mm_s;
 
     sensor_.send_z_height_to_lcd(-zHeight);
@@ -2737,6 +2805,7 @@ void BackTask::execute_background_task()
         case BackgroundTask::LoadFilament:          load_filament_task(); break;
         case BackgroundTask::UnloadFilament:        unload_filament_task(); break;
         case BackgroundTask::ExtruderCalibration:   extruder_calibration_task(); break;
+        case BackgroundTask::ZHeightTuning:         z_height_tuning_task(); break;
         default:                                    Log::error() << F("Invalid background task ") << static_cast<uint16_t>(background_task_) << Log::endl(); break;
     }
 }
@@ -2789,14 +2858,30 @@ void BackTask::cancel_extruder_calibration()
 //! Leveling Background task.
 void BackTask::manual_leveling_task()
 {
-    if(axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
+    if(!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS])
     {
-        Log::log() << F("Leveling Homed, start process") << Log::endl();
-        clear_background_task();
-        pages_.show_page(Page::ManualLeveling, false);
-    }
-    else
         set_next_background_task_time(200);
+        return;
+    }
+
+    Log::log() << F("Leveling Homed, start process") << Log::endl();
+    LCD::reset_message();
+    clear_background_task();
+    pages_.show_page(Page::ManualLeveling, false);
+}
+
+void BackTask::z_height_tuning_task()
+{
+    if(!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS])
+    {
+        set_next_background_task_time(200);
+        return;
+    }
+
+    Log::log() << F("Homed, start process") << Log::endl();
+    LCD::reset_message();
+    clear_background_task();
+    pages_.show_page(Page::ZHeightTuning, false);
 }
 
 }
