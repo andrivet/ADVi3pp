@@ -561,6 +561,7 @@ private:
     CommandProcessor processor_;
     Sensor sensor_;
     Graphs graphs_;
+    bool sensor_interactive_leveling_ = false;
 };
 
 // --------------------------------------------------------------------

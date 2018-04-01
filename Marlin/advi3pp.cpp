@@ -1916,6 +1916,7 @@ void Printer_::sensor_tuning_back()
 void Printer_::sensor_leveling()
 {
 #ifdef ADVi3PP_BLTOUCH
+    sensor_interactive_leveling_ = true;
     pages_.save_forward_page();
     pages_.show_waiting_page(F("Homing..."));
     enqueue_and_echo_commands_P(PSTR("G28"));       // homing
@@ -1930,7 +1931,11 @@ void Printer_::sensor_leveling()
 void Printer_::g29_leveling_finished()
 {
     LCD::reset_message();
-    sensor_grid_show();
+    if(sensor_interactive_leveling_)
+        sensor_grid_show();
+    else
+        enqueue_and_echo_commands_P(PSTR("M420 S1"));   // set bed leveling state (enable)
+    sensor_interactive_leveling_ = false;
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

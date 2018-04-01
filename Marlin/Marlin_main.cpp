@@ -262,6 +262,11 @@
 #include "gcode.h"
 #include "advi3pp.h"
 
+// This is only to ensure that CLion is parsing code properly inside the IDE
+#ifdef __CLION_IDE__
+#define HAS_BED_PROBE 1
+#endif
+
 #if HAS_ABL
   #include "vector_3.h"
   #if ENABLED(AUTO_BED_LEVELING_LINEAR)
