@@ -40,17 +40,8 @@ static const Feature DEFAULT_FEATURES =
 static const Brightness DEFAULT_BRIGHTNESS = Brightness::Max;
 static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
 
-
-enum class BackgroundTask: uint8_t
-{
-    None                = 0,
-    ManualLeveling      = 1,
-    LoadFilament        = 2,
-    UnloadFilament      = 3,
-    ExtruderCalibration = 4,
-    ZHeightTuning       = 5,
-    Undefined           = 0xFF
-};
+class Printer_;
+using BackgroundTask = void (Printer_::*)();
 
 // --------------------------------------------------------------------
 // PagesManager
@@ -308,37 +299,27 @@ private:
 // BackTask
 // --------------------------------------------------------------------
 
-struct BackTask
+struct Task
 {
-    explicit BackTask(PagesManager& pages);
+    explicit Task(Printer_& printer, PagesManager& pages);
 
     void set_background_task(BackgroundTask task, unsigned int delta = 500);
     void clear_background_task();
+    void set_next_background_task_time(unsigned int delta = 500);
     void execute_background_task();
     void send_status_data();
     void cancel_extruder_calibration();
-    double extruded() const;
 
 private:
     void set_next_update_time(unsigned int delta = 500);
-    void set_next_background_task_time(unsigned int delta = 500);
-
-    void load_filament_task();
-    void unload_filament_task();
-    void manual_leveling_task();
-    void extruder_calibration_task();
-    void extruder_calibration_finished();
-    void z_height_tuning_task();
 
 private:
+    Printer_& printer_;
     PagesManager pages_;
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
-    BackgroundTask background_task_ = BackgroundTask::None;
-    double extruded_ = 0.0;
+    BackgroundTask background_task_ = nullptr;
 };
-
-inline double BackTask::extruded() const { return extruded_; };
 
 // --------------------------------------------------------------------
 // Printer implementation
@@ -411,6 +392,8 @@ private:
     void load_unload_show();
     void load_unload_start(bool load);
     void load_unload_stop();
+    void load_filament_task();
+    void unload_filament_task();
 
     void preheat(KeyValue key_value);
     void cooldown();
@@ -479,11 +462,14 @@ private:
     void leveling_point4();
     void leveling_point5();
     void leveling_finish();
+    void manual_leveling_task();
 
     void extruder_calibration(KeyValue key_value);
     void show_extruder_calibration();
     void start_extruder_calibration();
     void extruder_calibrartion_settings();
+    void extruder_calibration_task();
+    void extruder_calibration_finished();
 
     void xyz_motors_calibration(KeyValue key_value);
     void show_xyz_motors_calibration();
@@ -509,6 +495,7 @@ private:
     void sensor_z_height(KeyValue key_value);
     void sensor_z_height_cancel();
     void sensor_z_height_continue();
+    void z_height_tuning_task();
 
     void no_sensor(KeyValue key_value);
     void no_sensor_back();
@@ -548,7 +535,7 @@ private:
 
 private:
     PagesManager pages_;
-    BackTask back_;
+    Task task_;
     SDFilesManager sd_files_;
     Preheat preheat_;
     PidSettings old_pid_{};
@@ -565,6 +552,7 @@ private:
     Sensor sensor_;
     Graphs graphs_;
     bool sensor_interactive_leveling_ = false;
+    double extruded_ = 0.0;
 };
 
 // --------------------------------------------------------------------
