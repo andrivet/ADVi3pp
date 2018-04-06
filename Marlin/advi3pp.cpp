@@ -414,6 +414,7 @@ void Printer_::read_lcd_serial()
         case Action::XYZMotorsCalibration:  xyz_motors_calibration(key_value); break;
         case Action::PidTuning:             pid_tuning(key_value); break;
         case Action::SensorSettings:        sensor_settings(key_value); break;
+        case Action::NoSensor:              no_sensor(key_value); break;
         case Action::Firmware:              firmware(key_value); break;
         case Action::LCD:                   lcd(key_value); break;
         case Action::LCDBrightness:         dimming_.change_brightness(key_value); break;
@@ -551,7 +552,7 @@ void Printer_::sd_card(KeyValue key_value)
 		case KeyValue::SDLine2:
 		case KeyValue::SDLine3:
 		case KeyValue::SDLine4:
-		case KeyValue::SDLine5:				sd_files_.select_file(static_cast<uint16_t>(key_value)); break;
+		case KeyValue::SDLine5:				sd_files_.select_file(static_cast<uint16_t>(key_value) - 1); break;
 		case KeyValue::Back:                sd_files_.back(); break;
 		default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
 	}
@@ -1955,6 +1956,7 @@ void Printer_::sensor_grid(KeyValue key_value)
 
 void Printer_::sensor_grid_show()
 {
+#ifdef ADVi3PP_BLTOUCH
     WriteRamDataRequest frame{Variable::Value0};
     for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
         for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
@@ -1962,6 +1964,7 @@ void Printer_::sensor_grid_show()
     frame.send();
 
     pages_.show_page(Page::SensorGrid);
+#endif
 }
 
 void Printer_::sensor_grid_cancel()
@@ -2012,6 +2015,25 @@ void Printer_::sensor_z_height_continue()
     enqueue_and_echo_commands_P(PSTR("I0")); // measure z-height
 }
 
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// No Sensor
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+void Printer_::no_sensor(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Cancel:          no_sensor_back(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+
+}
+
+void Printer_::no_sensor_back()
+{
+    pages_.show_back_page();
+}
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Change Filament
@@ -2744,7 +2766,7 @@ void BackTask::send_status_data()
           << Uint16(Temperature::target_temperature[0])
           << Uint16(Temperature::degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
-          << Uint16(LOGICAL_Z_POSITION(current_position[Z_AXIS]) * 10)
+          << Uint16(lround(LOGICAL_Z_POSITION(current_position[Z_AXIS]) * 100.0))
           << FixedSizeString(LCD_::instance().get_message(), 40)
           << FixedSizeString(LCD_::instance().get_progress(), 40)
           << FixedSizeString(LCD_::instance().get_message(), 44, true);

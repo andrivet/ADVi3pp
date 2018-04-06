@@ -510,6 +510,9 @@ private:
     void sensor_z_height_cancel();
     void sensor_z_height_continue();
 
+    void no_sensor(KeyValue key_value);
+    void no_sensor_back();
+
     void change_filament(KeyValue key_value);
     void change_filament_show();
     void change_filament_continue();
