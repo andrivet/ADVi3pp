@@ -2119,6 +2119,7 @@ void Printer_::icode_0(const GCodeParser& parser)
     const float old_feedrate_mm_s = feedrate_mm_s;
     feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
 
+    LCD::set_status(F("Going to the center of the bed..."));
     do_blocking_move_to(X_BED_SIZE / 2 - X_PROBE_OFFSET_FROM_EXTRUDER,
                         Y_BED_SIZE / 2 - Y_PROBE_OFFSET_FROM_EXTRUDER,
                         Z_CLEARANCE_DEPLOY_PROBE);
