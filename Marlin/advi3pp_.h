@@ -262,24 +262,6 @@ private:
 };
 
 // --------------------------------------------------------------------
-// CommandProcessor
-// --------------------------------------------------------------------
-
-struct CommandProcessor
-{
-    CommandProcessor(PagesManager& pages, Sensor& sensor);
-
-    void process(const GCodeParser& parser);
-
-private:
-    void icode_0(const GCodeParser& parser);
-
-private:
-    PagesManager& pages_;
-    Sensor& sensor_;
-};
-
-// --------------------------------------------------------------------
 // Graphs
 // --------------------------------------------------------------------
 
@@ -549,7 +531,6 @@ private:
     uint32_t usb_baudrate_ = DEFAULT_USB_BAUDRATE;
     uint32_t usb_old_baudrate_ = DEFAULT_USB_BAUDRATE;
     Dimming dimming_{};
-    CommandProcessor processor_;
     Sensor sensor_;
     Graphs graphs_;
     bool sensor_interactive_leveling_ = false;

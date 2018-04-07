@@ -149,7 +149,7 @@ void Printer::process_command(const GCodeParser& parser)
 // --------------------------------------------------------------------
 
 Printer_::Printer_()
-: task_{*this, pages_}, sd_files_{pages_}, preheat_{pages_}, processor_{pages_, sensor_}, sensor_{pages_}
+: task_{*this, pages_}, sd_files_{pages_}, preheat_{pages_}, sensor_{pages_}
 {
 }
 
@@ -2127,6 +2127,7 @@ void Printer_::icode_0(const GCodeParser& parser)
     DEPLOY_PROBE();
     auto zHeight = run_z_probe();
     do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
+    LCD::reset_message();
 
     feedrate_mm_s = old_feedrate_mm_s;
 
