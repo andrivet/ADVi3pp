@@ -129,9 +129,9 @@ void Printer::temperature_error(const __FlashStringHelper* message)
     printer.temperature_error(message);
 }
 
-void Printer::send_status_data()
+void Printer::update()
 {
-    printer.send_status_data();
+    printer.task();
 }
 
 bool Printer::is_thermal_protection_enabled()
@@ -367,13 +367,27 @@ void Printer_::task()
     dimming_.check();
     read_lcd_serial();
     task_.execute_background_task();
-    task_.send_status_data();
+    send_status_data();
     graphs_.update();
 }
 
+//! Update the status of the printer on the LCD.
 void Printer_::send_status_data()
 {
-    task_.send_status_data();
+    if(!task_.is_update_time())
+        return;
+
+    WriteRamDataRequest frame{Variable::TargetBed};
+    frame << Uint16(Temperature::target_temperature_bed)
+          << Uint16(Temperature::degBed())
+          << Uint16(Temperature::target_temperature[0])
+          << Uint16(Temperature::degHotend(0))
+          << Uint16(scale(fanSpeeds[0], 255, 100))
+          << Uint16(lround(LOGICAL_Z_POSITION(current_position[Z_AXIS]) * 100.0))
+          << FixedSizeString(LCD_::instance().get_message(), 40)
+          << FixedSizeString(LCD_::instance().get_progress(), 40)
+          << FixedSizeString(LCD_::instance().get_message(), 44, true);
+    frame.send(false);
 }
 
 //! Read a frame from the LCD and act accordingly.
@@ -1760,7 +1774,7 @@ void Printer_::extruder_calibration(KeyValue key_value)
         case KeyValue::Show:                    show_extruder_calibration(); break;
         case KeyValue::CalibrationStart:        start_extruder_calibration(); break;
         case KeyValue::CalibrationSettings:     extruder_calibrartion_settings(); break;
-        case KeyValue::Back:                    task_.cancel_extruder_calibration(); break;
+        case KeyValue::Back:                    cancel_extruder_calibration(); break;
         default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
@@ -1823,6 +1837,21 @@ void Printer_::extruder_calibration_finished()
     task_.clear_background_task();
     pages_.show_page(Page::ExtruderCalibration3);
 }
+
+//! Cancel the extruder calibration.
+void Printer_::cancel_extruder_calibration()
+{
+    task_.clear_background_task();
+
+    Temperature::setTargetHotend(0, 0);
+    Temperature::setTargetBed(0);
+
+    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
+    pages_.show_back_page();
+}
+
 
 //! Compute the extruder (E axis) new value and show the steps settings.
 void Printer_::extruder_calibrartion_settings()
@@ -2825,28 +2854,6 @@ Task::Task(Printer_& printer, PagesManager& pages)
 {
 }
 
-//! Update the status of the printer on the LCD.
-void Task::send_status_data()
-{
-    auto current_time = millis();
-    if(!ELAPSED(current_time, next_update_time_))
-        return;
-    set_next_update_time();
-
-    WriteRamDataRequest frame{Variable::TargetBed};
-    frame << Uint16(Temperature::target_temperature_bed)
-          << Uint16(Temperature::degBed())
-          << Uint16(Temperature::target_temperature[0])
-          << Uint16(Temperature::degHotend(0))
-          << Uint16(scale(fanSpeeds[0], 255, 100))
-          << Uint16(lround(LOGICAL_Z_POSITION(current_position[Z_AXIS]) * 100.0))
-          << FixedSizeString(LCD_::instance().get_message(), 40)
-          << FixedSizeString(LCD_::instance().get_progress(), 40)
-          << FixedSizeString(LCD_::instance().get_message(), 44, true);
-    frame.send(false);
-}
-
-
 //! Set the next (minimal) background task time
 //! @param delta    Duration to be added to the current time to compute the next (minimal) background task time
 void Task::set_next_background_task_time(unsigned int delta)
@@ -2859,6 +2866,15 @@ void Task::set_next_background_task_time(unsigned int delta)
 void Task::set_next_update_time(unsigned int delta)
 {
     next_update_time_ = millis() + delta;
+}
+
+bool Task::is_update_time()
+{
+    auto current_time = millis();
+    if(!ELAPSED(current_time, next_update_time_))
+        return false;
+    set_next_update_time();
+    return true;
 }
 
 //! Set the next background task and its delay
@@ -2883,20 +2899,6 @@ void Task::execute_background_task()
         return;
 
     (printer_.*background_task_)();
-}
-
-//! Cancel the extruder calibration.
-void Task::cancel_extruder_calibration()
-{
-    clear_background_task();
-
-    Temperature::setTargetHotend(0, 0);
-    Temperature::setTargetBed(0);
-
-    enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
-
-    pages_.show_back_page();
 }
 
 }

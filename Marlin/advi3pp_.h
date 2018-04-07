@@ -289,8 +289,7 @@ struct Task
     void clear_background_task();
     void set_next_background_task_time(unsigned int delta = 500);
     void execute_background_task();
-    void send_status_data();
-    void cancel_extruder_calibration();
+    bool is_update_time();
 
 private:
     void set_next_update_time(unsigned int delta = 500);
@@ -320,7 +319,6 @@ struct Printer_
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_eeprom_data();
     void temperature_error(const __FlashStringHelper* message);
-    void send_status_data();
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
     void icode_0(const GCodeParser& parser);
@@ -328,6 +326,7 @@ struct Printer_
     static void save_settings();
 
 private:
+    void send_status_data();
     void send_gplv3_7b_notice(); // Forks: you have to keep this notice
     void send_versions();
     void read_lcd_serial();
@@ -453,6 +452,7 @@ private:
     void extruder_calibrartion_settings();
     void extruder_calibration_task();
     void extruder_calibration_finished();
+    void cancel_extruder_calibration();
 
     void xyz_motors_calibration(KeyValue key_value);
     void show_xyz_motors_calibration();
