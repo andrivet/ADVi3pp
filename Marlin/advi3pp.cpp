@@ -200,7 +200,11 @@ void Printer_::send_gplv3_7b_notice()
 //! Process command specific to this printer (I)
 void Printer_::process_command(const GCodeParser& parser)
 {
-    processor_.process(parser);
+    switch(parser.codenum)
+    {
+        case 0: icode_0(parser); break;
+        default: Log::error() << F("Invalid I-code number ") << static_cast<uint16_t>(parser.codenum) << Log::endl(); break;
+    }
 }
 
 //! Store presets in permanent memory.
@@ -2067,7 +2071,7 @@ void Printer_::sensor_z_height()
 
 void Printer_::z_height_tuning_task()
 {
-    if(!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS])
+    if(planner.blocks_queued())
     {
         task_.set_next_background_task_time(200);
         return;
@@ -2099,6 +2103,36 @@ void Printer_::sensor_z_height_continue()
 {
     pages_.show_waiting_page(F("Measure Z-height"));
     enqueue_and_echo_commands_P(PSTR("I0")); // measure z-height
+}
+
+//! I-code 0: measure z-height
+void Printer_::icode_0(const GCodeParser& parser)
+{
+#ifdef ADVi3PP_BLTOUCH
+
+    if(axis_unhomed_error())
+    {
+        pages_.show_back_page();
+        return;
+    }
+
+    const float old_feedrate_mm_s = feedrate_mm_s;
+    feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
+
+    do_blocking_move_to(X_BED_SIZE / 2 - X_PROBE_OFFSET_FROM_EXTRUDER,
+                        Y_BED_SIZE / 2 - Y_PROBE_OFFSET_FROM_EXTRUDER,
+                        Z_CLEARANCE_DEPLOY_PROBE);
+
+    LCD::set_status(F("Measuring Z-height..."));
+    DEPLOY_PROBE();
+    auto zHeight = run_z_probe();
+    do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
+
+    feedrate_mm_s = old_feedrate_mm_s;
+
+    sensor_.send_z_height_to_lcd(-zHeight);
+    pages_.show_page(Page::SensorSettings, false);
+#endif
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -2744,55 +2778,6 @@ void Preheat::preset(uint16_t presetIndex)
     enqueue_and_echo_command(command.c_str());
 
     pages_.show_page(Page::Temperature);
-}
-
-// --------------------------------------------------------------------
-// CommandProcessor
-// --------------------------------------------------------------------
-
-CommandProcessor::CommandProcessor(PagesManager& pages, Sensor& sensor)
-: pages_{pages}, sensor_{sensor}
-{
-}
-
-//! Process command specific to this printer (I)
-void CommandProcessor::process(const GCodeParser& parser)
-{
-    switch(parser.codenum)
-    {
-        case 0: icode_0(parser); break;
-        default: Log::error() << F("Invalid I-code number ") << static_cast<uint16_t>(parser.codenum) << Log::endl(); break;
-    }
-}
-
-//! I-code 0: measure z-height
-void CommandProcessor::icode_0(const GCodeParser& parser)
-{
-#ifdef ADVi3PP_BLTOUCH
-
-    if(axis_unhomed_error())
-    {
-        pages_.show_back_page();
-        return;
-    }
-
-    const float old_feedrate_mm_s = feedrate_mm_s;
-    feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
-
-    do_blocking_move_to(X_BED_SIZE / 2 - X_PROBE_OFFSET_FROM_EXTRUDER,
-                        Y_BED_SIZE / 2 - Y_PROBE_OFFSET_FROM_EXTRUDER,
-                        Z_CLEARANCE_DEPLOY_PROBE);
-
-    LCD::set_status(F("Measuring Z-height..."));
-    DEPLOY_PROBE();
-    auto zHeight = run_z_probe();
-    do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
-
-    feedrate_mm_s = old_feedrate_mm_s;
-
-    sensor_.send_z_height_to_lcd(-zHeight);
-    pages_.show_page(Page::SensorSettings, false);
-#endif
 }
 
 // --------------------------------------------------------------------

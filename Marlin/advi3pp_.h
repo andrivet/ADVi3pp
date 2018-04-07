@@ -341,6 +341,7 @@ struct Printer_
     void send_status_data();
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
+    void icode_0(const GCodeParser& parser);
 
     static void save_settings();
 
