@@ -1832,7 +1832,7 @@ void Printer_::extruder_calibrartion_settings()
 
     Uint16 e; response >> e;
     e.word /= 10;
-    
+
     // Fill all values because all 4 axis are displayed by  show_steps_settings
     steps_.axis_steps_per_mm[X_AXIS] = Planner::axis_steps_per_mm[X_AXIS];
     steps_.axis_steps_per_mm[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
