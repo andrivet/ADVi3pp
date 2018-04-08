@@ -3,16 +3,19 @@ Please use one of the templates below to fill out this box.
 
 ------------------------------------------------------------
 ### Feature Request
-Please put [FR] in the issue title: `[FR] Add-on that goes 'ping'`
+Please put [FR] in the issue title: `[FR] Title of the issue`
 
 ------------------------------------------------------------
 ### Bug Report
-- Description: ---
-- Expected behaviour: ---
-- Actual behaviour: ---
+- ADVi3++ version:
+- Bug short description:
+- Expected behaviour:
+- Actual behaviour:
 - Steps to reproduce:
   - Do this
   - Do that
+- SD card or USB print:
+- Software used to print (for USB printing) with its version:
 
 ------------------------------------------------------------
 ### Bug Report Tips
