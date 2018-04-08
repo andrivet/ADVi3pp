@@ -916,7 +916,6 @@ void Printer_::load_filament_task()
         Log::log() << F("Load Filament") << Log::endl();
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
     }
-    task_.set_next_background_task_time();
 }
 
 //! Unload the filament if the temperature is high enough.
@@ -927,7 +926,6 @@ void Printer_::unload_filament_task()
         Log::log() << F("Unload Filament") << Log::endl();
         enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
     }
-    task_.set_next_background_task_time();
 }
 
 
@@ -1708,17 +1706,14 @@ void Printer_::leveling_home()
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    task_.set_background_task(&Printer_::manual_leveling_task);
+    task_.set_background_task(&Printer_::manual_leveling_task, 200);
 }
 
 //! Leveling Background task.
 void Printer_::manual_leveling_task()
 {
     if(!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS])
-    {
-        task_.set_next_background_task_time(200);
         return;
-    }
 
     Log::log() << F("Leveling Homed, start process") << Log::endl();
     LCD::reset_message();
@@ -1826,10 +1821,7 @@ void Printer_::start_extruder_calibration()
 void Printer_::extruder_calibration_heating_task()
 {
     if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
-    {
-        task_.set_next_background_task_time();
         return;
-    }
 
     LCD::set_status(F("Wait until the extrusion is finished..."));
     enqueue_and_echo_commands_P(PSTR("G1 E100 F50")); // Extrude 100mm slowly
@@ -1840,10 +1832,7 @@ void Printer_::extruder_calibration_heating_task()
 void Printer_::extruder_calibration_extruding_task()
 {
     if(is_busy())
-    {
-        task_.set_next_background_task_time();
         return;
-    }
 
     Temperature::setTargetHotend(0, 0);
     task_.clear_background_task();
@@ -2118,7 +2107,7 @@ void Printer_::sensor_z_height()
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000"));    // center of the bed
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F240"));            // lower head
-    task_.set_background_task(&Printer_::z_height_tuning_task);
+    task_.set_background_task(&Printer_::z_height_tuning_task, 200);
 #else
     pages_.show_page(Page::NoSensor);
 #endif
@@ -2127,10 +2116,7 @@ void Printer_::sensor_z_height()
 void Printer_::z_height_tuning_task()
 {
     if(is_busy())
-    {
-        task_.set_next_background_task_time(200);
         return;
-    }
 
     Log::log() << F("Homed, start process") << Log::endl();
     LCD::reset_message();
@@ -2880,13 +2866,6 @@ Task::Task(Printer_& printer, PagesManager& pages)
 {
 }
 
-//! Set the next (minimal) background task time
-//! @param delta    Duration to be added to the current time to compute the next (minimal) background task time
-void Task::set_next_background_task_time(unsigned int delta)
-{
-    next_op_time_ = millis() + delta;
-}
-
 //! Set the next (minimal) update time
 //! @param delta    Duration to be added to the current time to compute the next (minimal) update time
 void Task::set_next_update_time(unsigned int delta)
@@ -2908,8 +2887,9 @@ bool Task::is_update_time()
 //! @param delta    Duration to be added to the current time to execute the background tast
 void Task::set_background_task(BackgroundTask task, unsigned int delta)
 {
+    op_time_delta_ = delta;
     background_task_ = task;
-    set_next_background_task_time(delta);
+    next_op_time_ = millis() + delta;
 }
 
 //! Reset the background task

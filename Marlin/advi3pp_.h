@@ -287,7 +287,6 @@ struct Task
 
     void set_background_task(BackgroundTask task, unsigned int delta = 500);
     void clear_background_task();
-    void set_next_background_task_time(unsigned int delta = 500);
     void execute_background_task();
     bool is_update_time();
 
@@ -297,6 +296,7 @@ private:
 private:
     Printer_& printer_;
     PagesManager pages_;
+    unsigned int op_time_delta_ = 500;
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
     BackgroundTask background_task_ = nullptr;
