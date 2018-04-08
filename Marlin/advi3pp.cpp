@@ -2087,7 +2087,7 @@ void Printer_::sensor_grid_show()
             frame << Uint16(static_cast<int16_t>(z_values[x][y] * 1000));
     frame.send();
 
-    pages_.show_page(Page::SensorGrid);
+    pages_.show_page(Page::SensorGrid, false);
 #endif
 }
 
@@ -2125,6 +2125,7 @@ void Printer_::z_height_tuning_home_task()
     if(is_busy())
         return;
 
+    LCD::set_status(F("Going to the middle of the bed..."));
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000"));    // center of the bed
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F240"));            // lower head
@@ -2179,6 +2180,10 @@ void Printer_::icode_0(const GCodeParser& parser)
 
     const float old_feedrate_mm_s = feedrate_mm_s;
     feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
+
+    do_blocking_move_to(X_BED_SIZE / 2 - X_PROBE_OFFSET_FROM_EXTRUDER,
+                        Y_BED_SIZE / 2 - Y_PROBE_OFFSET_FROM_EXTRUDER,
+                        Z_CLEARANCE_DEPLOY_PROBE);
 
     LCD::set_status(F("Measuring Z-height..."));
     DEPLOY_PROBE();
