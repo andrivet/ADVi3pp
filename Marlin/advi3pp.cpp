@@ -491,7 +491,7 @@ void Printer_::screen(KeyValue key_value)
 void Printer_::show_temps()
 {
     // If there is a SD card print running, display the SD print screen
-    if(card.cardOK && card.sdprinting)
+    if(card.cardOK && (print_job_timer.isRunning() || print_job_timer.isPaused()))
     {
         pages_.show_page(Page::SdPrint);
         return;
@@ -505,8 +505,8 @@ void Printer_::show_temps()
 //! Fallback to the USB printing if the SD card is not accessible.
 void Printer_::show_print()
 {
-    // If there is a SD card print running, display the SD print screen
-    if(card.cardOK && card.sdprinting)
+    // If there is a SD card print running (or paused), display the SD print screen
+    if(card.cardOK && (print_job_timer.isRunning() || print_job_timer.isPaused()))
     {
         pages_.show_page(Page::SdPrint);
         return;
@@ -680,7 +680,6 @@ void SDFilesManager::select_file(uint16_t file_index)
     Stepper::finish_and_disable(); // To circumvent homing problems
 
     pages_.show_page(Page::SdPrint);
-    //set_update_graphs();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
