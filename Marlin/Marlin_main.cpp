@@ -4978,6 +4978,9 @@ void home_all_axes() { gcode_G28(true); }
 
         measured_z = 0;
 
+        const int nb_measures = PR_OUTER_END * PR_INNER_END;
+        int measure_index = 0;
+
         // Outer loop is Y with PROBE_Y_FIRST disabled
         for (uint8_t PR_OUTER_VAR = 0; PR_OUTER_VAR < PR_OUTER_END && !isnan(measured_z); PR_OUTER_VAR++) {
 
@@ -5014,7 +5017,9 @@ void home_all_axes() { gcode_G28(true); }
               if (!position_is_reachable_by_probe(xProbe, yProbe)) continue;
             #endif
 
-            lcd_status_printf_P(0, PSTR("Measure Z-height at x = %i, y = %i mm"), static_cast<int>(xProbe), static_cast<int>(yProbe));
+            lcd_status_printf_P(0, PSTR("Measure %i/%i @ (%i, %i) mm"),
+                                ++measure_index, nb_measures,
+                                static_cast<int>(xProbe), static_cast<int>(yProbe));
             measured_z = faux ? 0.001 * random(-100, 101) : probe_pt(xProbe, yProbe, stow_probe_after_each, verbose_level);
 
             if (isnan(measured_z)) {
