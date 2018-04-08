@@ -343,6 +343,8 @@ private:
     void send_usb_baudrate();
     void change_usb_baudrate();
 
+    bool is_busy();
+
 private:
     // Actions
     void sd_card(KeyValue key_value);
@@ -450,7 +452,8 @@ private:
     void show_extruder_calibration();
     void start_extruder_calibration();
     void extruder_calibrartion_settings();
-    void extruder_calibration_task();
+    void extruder_calibration_heating_task();
+    void extruder_calibration_extruding_task();
     void extruder_calibration_finished();
     void cancel_extruder_calibration();
 
@@ -534,7 +537,6 @@ private:
     Sensor sensor_;
     Graphs graphs_;
     bool sensor_interactive_leveling_ = false;
-    double extruded_ = 0.0;
 };
 
 // --------------------------------------------------------------------

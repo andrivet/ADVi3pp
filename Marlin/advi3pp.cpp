@@ -197,6 +197,11 @@ void Printer_::send_gplv3_7b_notice()
     Log::log() << F("Based on ADVi3++, Copyright (C) 2017 Sebastien Andrivet") << Log::endl();
 }
 
+inline bool Printer_::is_busy()
+{
+    return planner.blocks_queued();
+}
+
 //! Process command specific to this printer (I)
 void Printer_::process_command(const GCodeParser& parser)
 {
@@ -1789,7 +1794,7 @@ void Printer_::show_extruder_calibration()
     frame.send();
 
     pages_.save_forward_page();
-    pages_.show_page(Page::ExtruderCalibration1);
+    pages_.show_page(Page::ExtruderTuningTemp);
 }
 
 //! Start extruder calibration.
@@ -1799,43 +1804,52 @@ void Printer_::start_extruder_calibration()
     if(hotend <= 0)
         return;
 
+    pages_.show_waiting_page(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend, 0);
-    task_.set_background_task(&Printer_::extruder_calibration_task);
+    task_.set_background_task(&Printer_::extruder_calibration_heating_task);
     enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
-
-    pages_.show_page(Page::ExtruderCalibration2, false);
 }
 
 //! Extruder calibration background task.
-void Printer_::extruder_calibration_task()
+void Printer_::extruder_calibration_heating_task()
 {
-    if(current_position[E_AXIS] >= calibration_extruder_filament)
-    {
-        extruder_calibration_finished();
-        return;
-    }
-
     if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
     {
         task_.set_next_background_task_time();
         return;
     }
 
-    enqueue_and_echo_commands_P(PSTR("G1 E10 F50")); // Extrude 10mm slowly
-    task_.set_next_background_task_time();
+    LCD::set_status(F("Wait until the extrusion is finished..."));
+    enqueue_and_echo_commands_P(PSTR("G1 E100 F50")); // Extrude 100mm slowly
+    task_.set_background_task(&Printer_::extruder_calibration_extruding_task);
 }
+
+//! Extruder calibration background task.
+void Printer_::extruder_calibration_extruding_task()
+{
+    if(is_busy())
+    {
+        task_.set_next_background_task_time();
+        return;
+    }
+
+    Temperature::setTargetHotend(0, 0);
+    task_.clear_background_task();
+    LCD::reset_message();
+    extruder_calibration_finished();
+}
+
 
 //! Record the amount of filament extruded.
 void Printer_::extruder_calibration_finished()
 {
-    extruded_ = current_position[E_AXIS];
-    Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
+    Log::log() << F("Filament extruded ") << current_position[E_AXIS] << Log::endl();
     enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
     task_.clear_background_task();
-    pages_.show_page(Page::ExtruderCalibration3);
+    pages_.show_page(Page::ExtruderTuningMeasure, false);
 }
 
 //! Cancel the extruder calibration.
@@ -1844,7 +1858,6 @@ void Printer_::cancel_extruder_calibration()
     task_.clear_background_task();
 
     Temperature::setTargetHotend(0, 0);
-    Temperature::setTargetBed(0);
 
     enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
@@ -1856,6 +1869,8 @@ void Printer_::cancel_extruder_calibration()
 //! Compute the extruder (E axis) new value and show the steps settings.
 void Printer_::extruder_calibrartion_settings()
 {
+    static const uint16_t EXTRUDED = 100;
+
     ReadRamData response{Variable::Value0, 1};
     if(!response.send_and_receive())
     {
@@ -1871,12 +1886,12 @@ void Printer_::extruder_calibrartion_settings()
     steps_.axis_steps_per_mm[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
     steps_.axis_steps_per_mm[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
 	steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS]
-                                       * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
+                                       * EXTRUDED / (EXTRUDED + calibration_extruder_delta - e.word);
 
 	Log::log() << F("Adjust: old = ")
                << Planner::axis_steps_per_mm[E_AXIS]
-               << F(", expected = ") << extruded_
-               << F(", measured = ") << (extruded_ + calibration_extruder_delta - e.word)
+               << F(", expected = ") << EXTRUDED
+               << F(", measured = ") << (EXTRUDED + calibration_extruder_delta - e.word)
                << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
 
     steps_settings_show(false);
@@ -2100,7 +2115,7 @@ void Printer_::sensor_z_height()
 
 void Printer_::z_height_tuning_task()
 {
-    if(planner.blocks_queued())
+    if(is_busy())
     {
         task_.set_next_background_task_time(200);
         return;
