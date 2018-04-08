@@ -644,13 +644,14 @@ void SDFilesManager::show_current_page()
 //! @param name     Copy the filename into this Chars
 void SDFilesManager::get_file_name(uint8_t index_in_page, String& name)
 {
+    name = "";
 	if(last_file_index_ >= index_in_page)
 	{
 		card.getfilename(last_file_index_ - index_in_page);
-		name = (card.longFilename[0] == 0) ? card.filename : card.longFilename;
+        if(card.filenameIsDir) name = "[";
+		name += (card.longFilename[0] == 0) ? card.filename : card.longFilename;
+		if(card.filenameIsDir) name += "]";
 	}
-	else
-		name = "";
 };
 
 //! Select a filename as sent by the LCD screen.
@@ -662,18 +663,22 @@ void SDFilesManager::select_file(uint16_t file_index)
 
     if(file_index > last_file_index_)
         return;
+
     card.getfilename(last_file_index_ - file_index);
-    FixedSizeString name{card.longFilename, 26};
-    if(name.length() <= 0) // If the SD card is not readable
+    if(card.filenameIsDir)
         return;
 
-    LCD_::instance().set_progress_name(card.longFilename);
+    String longName{(card.longFilename[0] == 0) ? card.filename : card.longFilename};
+    if(longName.length() <= 0) // If the SD card is not readable
+        return;
+
+    LCD_::instance().set_progress_name(longName);
 
     WriteRamDataRequest frame{Variable::CurrentFileName};
-    frame << name;
+    frame << FixedSizeString{longName, 26};
     frame.send(true);
 
-    card.openFile(card.filename, true);
+    card.openFile(card.filename, true); // use always short filename so it will work even if the filename is long
     card.startFileprint();
     print_job_timer.start();
 
@@ -705,8 +710,6 @@ void Printer_::sd_print_stop()
 {
     Log::log() << F("Stop Print") << Log::endl();
 
-    LCD_::instance().reset_progress();
-
     card.stopSDPrint();
     clear_command_queue();
     quickstop_stepper();
@@ -715,6 +718,14 @@ void Printer_::sd_print_stop()
     fanSpeeds[0] = 0;
 
     pages_.show_back_page();
+    task_.set_background_task(&Printer_::reset_messages_task, 500);
+}
+
+void Printer_::reset_messages_task()
+{
+    task_.clear_background_task();
+    LCD_::instance().reset_progress();
+    LCD_::instance().reset_message();
 }
 
 //! Pause SD printing
