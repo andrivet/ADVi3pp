@@ -713,6 +713,7 @@ void Printer_::sd_print_stop()
     quickstop_stepper();
     print_job_timer.stop();
     Temperature::disable_all_heaters();
+    fanSpeeds[0] = 0;
 
     pages_.show_back_page();
 }
