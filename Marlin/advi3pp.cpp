@@ -1812,9 +1812,12 @@ void Printer_::start_extruder_calibration()
 
     pages_.show_waiting_page(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend, 0);
+
+    enqueue_and_echo_commands_P(PSTR("G1 Z20 F240"));   // raise head
+    enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
+
     task_.set_background_task(&Printer_::extruder_calibration_heating_task);
-    enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 }
 
 //! Extruder calibration background task.
