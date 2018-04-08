@@ -245,14 +245,14 @@ struct SDFilesManager
 {
     explicit SDFilesManager(PagesManager& mgr);
 
-    void show();
+    void show_first_page();
     void back();
     void up();
     void down();
     void select_file(uint16_t file_index);
 
 private:
-    void show_files();
+    void show_current_page();
     void get_file_name(uint8_t index_in_page, String& name);
 
 private:
@@ -321,7 +321,6 @@ struct Printer_
     void temperature_error(const __FlashStringHelper* message);
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
-    void icode_0(const GCodeParser& parser);
 
     static void save_settings();
 
@@ -345,6 +344,8 @@ private:
 
     bool is_busy();
 
+    void icode_0(const GCodeParser& parser);
+
 private:
     // Actions
     void sd_card(KeyValue key_value);
@@ -352,6 +353,7 @@ private:
     void screen(KeyValue key_value);
     void show_temps();
     void show_print();
+    void show_sd_or_temp_page();
     void show_controls();
     void show_tuning();
     void show_settings();

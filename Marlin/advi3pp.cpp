@@ -490,44 +490,46 @@ void Printer_::screen(KeyValue key_value)
 //! the printing screen or the temperature screen.
 void Printer_::show_temps()
 {
-    // If there is a SD card print running, display the SD print screen
-    if(card.cardOK && (print_job_timer.isRunning() || print_job_timer.isPaused()))
+    if(!print_job_timer.isRunning() && !print_job_timer.isPaused())
     {
-        pages_.show_page(Page::SdPrint);
+        pages_.show_page(Page::Temperature);
         return;
     }
 
-    // If there is an USB print running, display the USB Print page. Otherwise, the temperature graph page
-    pages_.show_page(print_job_timer.isRunning() ? Page::UsbPrint : Page::Temperature);
+    // If there is a SD card print running (or paused), display the SD print screen. Otherwise the USB Print page
+    pages_.show_page(card.isFileOpen() ? Page::SdPrint : Page::UsbPrint);
 }
 
 //! Show one of the Printing screens depending of the context: either the SD screen or the SD printing screen.
 //! Fallback to the USB printing if the SD card is not accessible.
 void Printer_::show_print()
 {
-    // If there is a SD card print running (or paused), display the SD print screen
-    if(card.cardOK && (print_job_timer.isRunning() || print_job_timer.isPaused()))
+    // If there is a print running (or paused), display the SD or USB print screen
+    if(print_job_timer.isRunning() || print_job_timer.isPaused())
     {
-        pages_.show_page(Page::SdPrint);
+        pages_.show_page(card.isFileOpen() ? Page::SdPrint : Page::UsbPrint);
         return;
     }
 
-    if(print_job_timer.isRunning())
-    {
-        pages_.show_page(Page::UsbPrint);
-        return;
-    }        
+    pages_.show_waiting_page(F("Try to access the SD card..."));
+    task_.set_background_task(&Printer_::show_sd_or_temp_page);
+}
 
-    // Try to initialize the SD card
-    card.initsd();
+void Printer_::show_sd_or_temp_page()
+{
+    task_.clear_background_task();
+
+    card.initsd(); // Can take some time
+    LCD::reset_message();
     if(!card.cardOK)
     {
         // SD card not accessible so fall back to Temperatures
-        pages_.show_page(Page::Temperature);
+        pages_.show_page(Page::Temperature, false);
         return;
     }
 
-    sd_files_.show();
+    pages_.show_page(Page::SdCard, false);
+    sd_files_.show_first_page();
 }
 
 void Printer_::show_controls()
@@ -568,7 +570,6 @@ void Printer_::sd_card(KeyValue key_value)
 {
 	switch(key_value)
 	{
-		case KeyValue::Show:				sd_files_.show(); break;
 		case KeyValue::SDUp:				sd_files_.up(); break;
 		case KeyValue::SDDown:				sd_files_.down(); break;
 		case KeyValue::SDLine1:
@@ -586,7 +587,7 @@ SDFilesManager::SDFilesManager(PagesManager& mgr)
 {
 }
 
-void SDFilesManager::show()
+void SDFilesManager::show_first_page()
 {
 	if(!card.cardOK)
 		return;
@@ -594,8 +595,7 @@ void SDFilesManager::show()
 	nb_files_ = card.getnrfilenames();
 	last_file_index_ = nb_files_ - 1;
 
-	show_files();
-	pages_.show_page(Page::SdCard);
+    show_current_page();
 }
 
 void SDFilesManager::back()
@@ -611,7 +611,7 @@ void SDFilesManager::down()
 	if(last_file_index_ >= nb_visible_sd_files)
 		last_file_index_ -= nb_visible_sd_files;
 
-	show_files();
+    show_current_page();
 }
 
 void SDFilesManager::up()
@@ -622,11 +622,11 @@ void SDFilesManager::up()
 	if(last_file_index_ + nb_visible_sd_files < nb_files_)
 		last_file_index_ += nb_visible_sd_files;
 
-	show_files();
+    show_current_page();
 }
 
 //! Show the list of files on SD.
-void SDFilesManager::show_files()
+void SDFilesManager::show_current_page()
 {
     WriteRamDataRequest frame{Variable::FileName1};
 
