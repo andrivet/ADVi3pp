@@ -332,6 +332,7 @@ private:
     void send_stats();
     void show_boot_page();
     void reset_messages_task();
+    bool is_busy();
 
     String get_lcd_firmware_version();
     void get_advi3pp_lcd_version();
@@ -342,8 +343,6 @@ private:
     void send_features();
     void send_usb_baudrate();
     void change_usb_baudrate();
-
-    bool is_busy();
 
     void icode_0(const GCodeParser& parser);
 
@@ -484,7 +483,8 @@ private:
     void sensor_z_height(KeyValue key_value);
     void sensor_z_height_cancel();
     void sensor_z_height_continue();
-    void z_height_tuning_task();
+    void z_height_tuning_home_task();
+    void z_height_tuning_center_task();
 
     void no_sensor(KeyValue key_value);
     void no_sensor_back();
@@ -540,6 +540,7 @@ private:
     Sensor sensor_;
     Graphs graphs_;
     bool sensor_interactive_leveling_ = false;
+    double extruded_ = 0.0;
 };
 
 // --------------------------------------------------------------------

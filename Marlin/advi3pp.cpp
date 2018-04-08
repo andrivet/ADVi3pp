@@ -60,6 +60,8 @@ namespace
     const uint8_t BRIGHTNESS_MAX = 0x40;
     const uint8_t DIMMING_RATIO = 25; // in percent
     const uint16_t DIMMING_DELAY = 1 * 60;
+
+    const uint16_t EXTRUDER_TUNING_LENGTH = 100;
 }
 
 #ifdef ADVi3PP_BLTOUCH
@@ -195,11 +197,6 @@ void Printer_::show_boot_page()
 void Printer_::send_gplv3_7b_notice()
 {
     Log::log() << F("Based on ADVi3++, Copyright (C) 2017 Sebastien Andrivet") << Log::endl();
-}
-
-inline bool Printer_::is_busy()
-{
-    return planner.blocks_queued();
 }
 
 //! Process command specific to this printer (I)
@@ -374,6 +371,11 @@ void Printer_::task()
     task_.execute_background_task();
     send_status_data();
     graphs_.update();
+}
+
+bool Printer_::is_busy()
+{
+    return busy_state != NOT_BUSY || planner.blocks_queued();
 }
 
 //! Update the status of the printer on the LCD.
@@ -1813,10 +1815,6 @@ void Printer_::start_extruder_calibration()
     pages_.show_waiting_page(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend, 0);
 
-    enqueue_and_echo_commands_P(PSTR("G1 Z20 F240"));   // raise head
-    enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
-
     task_.set_background_task(&Printer_::extruder_calibration_heating_task);
 }
 
@@ -1825,17 +1823,27 @@ void Printer_::extruder_calibration_heating_task()
 {
     if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
         return;
+    task_.clear_background_task();
 
     LCD::set_status(F("Wait until the extrusion is finished..."));
-    enqueue_and_echo_commands_P(PSTR("G1 E100 F50")); // Extrude 100mm slowly
+    enqueue_and_echo_commands_P(PSTR("G1 Z20 F240"));   // raise head
+    enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
+
+    String command; command << F("G1 E") << EXTRUDER_TUNING_LENGTH << " F50"; // Extrude slowly
+    enqueue_and_echo_command(command.c_str());
+
     task_.set_background_task(&Printer_::extruder_calibration_extruding_task);
 }
 
 //! Extruder calibration background task.
 void Printer_::extruder_calibration_extruding_task()
 {
-    if(is_busy())
+    if(current_position[E_AXIS] < EXTRUDER_TUNING_LENGTH || is_busy())
         return;
+    task_.clear_background_task();
+
+    extruded_ = current_position[E_AXIS];
 
     Temperature::setTargetHotend(0, 0);
     task_.clear_background_task();
@@ -1843,11 +1851,10 @@ void Printer_::extruder_calibration_extruding_task()
     extruder_calibration_finished();
 }
 
-
 //! Record the amount of filament extruded.
 void Printer_::extruder_calibration_finished()
 {
-    Log::log() << F("Filament extruded ") << current_position[E_AXIS] << Log::endl();
+    Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
     enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
@@ -1872,8 +1879,6 @@ void Printer_::cancel_extruder_calibration()
 //! Compute the extruder (E axis) new value and show the steps settings.
 void Printer_::extruder_calibrartion_settings()
 {
-    static const uint16_t EXTRUDED = 100;
-
     ReadRamData response{Variable::Value0, 1};
     if(!response.send_and_receive())
     {
@@ -1889,12 +1894,12 @@ void Printer_::extruder_calibrartion_settings()
     steps_.axis_steps_per_mm[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
     steps_.axis_steps_per_mm[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
 	steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS]
-                                       * EXTRUDED / (EXTRUDED + calibration_extruder_delta - e.word);
+                                       * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
 
 	Log::log() << F("Adjust: old = ")
                << Planner::axis_steps_per_mm[E_AXIS]
-               << F(", expected = ") << EXTRUDED
-               << F(", measured = ") << (EXTRUDED + calibration_extruder_delta - e.word)
+               << F(", expected = ") << extruded_
+               << F(", measured = ") << (extruded_ + calibration_extruder_delta - e.word)
                << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
 
     steps_settings_show(false);
@@ -2106,24 +2111,36 @@ void Printer_::sensor_z_height()
 #ifdef ADVi3PP_BLTOUCH
     pages_.save_forward_page();
     pages_.show_waiting_page(F("Homing..."));
-    enqueue_and_echo_commands_P((PSTR("G28")));                 // homing
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000"));    // center of the bed
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F240"));            // lower head
-    task_.set_background_task(&Printer_::z_height_tuning_task, 200);
+    enqueue_and_echo_commands_P((PSTR("G28")));  // homing
+    task_.set_background_task(&Printer_::z_height_tuning_home_task, 200);
 #else
     pages_.show_page(Page::NoSensor);
 #endif
 }
 
-void Printer_::z_height_tuning_task()
+void Printer_::z_height_tuning_home_task()
 {
+    if(!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS])
+        return;
     if(is_busy())
         return;
 
-    Log::log() << F("Homed, start process") << Log::endl();
-    LCD::reset_message();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000"));    // center of the bed
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F240"));            // lower head
+
+    task_.set_background_task(&Printer_::z_height_tuning_center_task, 200);
+}
+
+void Printer_::z_height_tuning_center_task()
+{
+    if(current_position[X_AXIS] != 100 || current_position[Y_AXIS] != 100 || current_position[Z_AXIS] != 0)
+        return;
+    if(is_busy())
+        return;
     task_.clear_background_task();
+
+    LCD::reset_message();
     pages_.show_page(Page::ZHeightTuning, false);
 }
 
@@ -2139,7 +2156,7 @@ void Printer_::sensor_z_height(KeyValue key_value)
 
 void Printer_::sensor_z_height_cancel()
 {
-    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
+    enqueue_and_echo_commands_P((PSTR("G28 X0 Y0"))); // homing
     pages_.show_back_page();
 }
 
@@ -2162,11 +2179,6 @@ void Printer_::icode_0(const GCodeParser& parser)
 
     const float old_feedrate_mm_s = feedrate_mm_s;
     feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
-
-    LCD::set_status(F("Going to the center of the bed..."));
-    do_blocking_move_to(X_BED_SIZE / 2 - X_PROBE_OFFSET_FROM_EXTRUDER,
-                        Y_BED_SIZE / 2 - Y_PROBE_OFFSET_FROM_EXTRUDER,
-                        Z_CLEARANCE_DEPLOY_PROBE);
 
     LCD::set_status(F("Measuring Z-height..."));
     DEPLOY_PROBE();
