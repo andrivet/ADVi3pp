@@ -571,6 +571,8 @@ void Temperature::_temp_error(const int8_t e, const char * const serial_msg, con
 }
 
 void Temperature::max_temp_error(const int8_t e) {
+  if(!advi3pp::Printer::is_thermal_protection_enabled())
+    return;
   #if HAS_TEMP_BED
     _temp_error(e, PSTR(MSG_T_MAXTEMP), e >= 0 ? PSTR(MSG_ERR_MAXTEMP) : PSTR(MSG_ERR_MAXTEMP_BED));
   #else
@@ -581,6 +583,8 @@ void Temperature::max_temp_error(const int8_t e) {
   #endif
 }
 void Temperature::min_temp_error(const int8_t e) {
+  if(!advi3pp::Printer::is_thermal_protection_enabled())
+    return;
   #if HAS_TEMP_BED
     _temp_error(e, PSTR(MSG_T_MINTEMP), e >= 0 ? PSTR(MSG_ERR_MINTEMP) : PSTR(MSG_ERR_MINTEMP_BED));
   #else
@@ -2133,17 +2137,21 @@ void Temperature::isr() {
           target_temperature[e]
         #endif
       ;
-      if (rawtemp > maxttemp_raw[e] * tdir && heater_on) max_temp_error(e);
-      if (rawtemp < minttemp_raw[e] * tdir && !is_preheating(e) && heater_on) {
+
+      if(advi3pp::Printer::is_thermal_protection_enabled())
+      {
+        if (rawtemp > maxttemp_raw[e] * tdir && heater_on) max_temp_error(e);
+        if (rawtemp < minttemp_raw[e] * tdir && !is_preheating(e) && heater_on) {
+          #ifdef MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED
+            if (++consecutive_low_temperature_error[e] >= MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED)
+          #endif
+              min_temp_error(e);
+        }
         #ifdef MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED
-          if (++consecutive_low_temperature_error[e] >= MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED)
+          else
+            consecutive_low_temperature_error[e] = 0;
         #endif
-            min_temp_error(e);
       }
-      #ifdef MAX_CONSECUTIVE_LOW_TEMPERATURE_ERROR_ALLOWED
-        else
-          consecutive_low_temperature_error[e] = 0;
-      #endif
     }
 
     #if HAS_TEMP_BED
@@ -2159,8 +2167,12 @@ void Temperature::isr() {
           target_temperature_bed
         #endif
       ;
-      if (current_temperature_bed_raw GEBED bed_maxttemp_raw && bed_on) max_temp_error(-1);
-      if (bed_minttemp_raw GEBED current_temperature_bed_raw && bed_on) min_temp_error(-1);
+
+      if(advi3pp::Printer::is_thermal_protection_enabled())
+      {
+        if (current_temperature_bed_raw GEBED bed_maxttemp_raw && bed_on) max_temp_error(-1);
+        if (bed_minttemp_raw GEBED current_temperature_bed_raw && bed_on) min_temp_error(-1);
+      }
     #endif
 
   } // temp_count >= OVERSAMPLENR
