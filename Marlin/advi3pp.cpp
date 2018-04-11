@@ -43,11 +43,11 @@
 namespace
 {
     const uint16_t advi3_pp_version = 0x300;
-    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x210;
+    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x300;
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x300;
     // Modify also DETAILED_BUILD_VERSION in Version.h
 
-    const unsigned long advi3_pp_baudrate = 115200; // Between the LCD panel and the mainboard
+    const unsigned long advi3_pp_baudrate = 250000; // Between the LCD panel and the mainboard
     const uint16_t nb_visible_sd_files = 5;
 	const uint8_t  nb_visible_sd_file_chars = 48;
     const uint16_t calibration_cube_size = 20; // 20 mm
