@@ -2915,6 +2915,13 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
 
 static void homeaxis(const AxisEnum axis) {
 
+  #if MB(I3_PLUS)
+  /* fix for extruder stepper noise on the X_MIN switch.
+   * See: https://github.com/andrivet/ADVi3pp-Marlin/commit/5da26d65fd23c923a3d7c16d39c7518396392a60*/
+  if (axis == X_AXIS)
+    disable_e_steppers();
+  #endif
+
   #if IS_SCARA
     // Only Z homing (with probe) is permitted
     if (axis != Z_AXIS) { BUZZ(100, 880); return; }
