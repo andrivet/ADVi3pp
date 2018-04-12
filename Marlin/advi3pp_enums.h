@@ -175,8 +175,8 @@ enum class Action: uint16_t
     SdCard                  = 0x0406,
     FactoryReset            = 0x0407,
     Leveling                = 0x0408,
-    ExtruderCalibration     = 0x0409,
-    XYZMotorsCalibration    = 0x040A,
+    ExtruderTuning          = 0x0409,
+    XYZMotorsTuning         = 0x040A,
     PidTuning               = 0x040B,
     SensorSettings          = 0x040C,
     Firmware                = 0x040D,
@@ -257,8 +257,8 @@ enum class KeyValue: uint16_t
     LevelingPoint4          = 0x0004,
     LevelingPoint5          = 0x0005,
 
-    CalibrationStart        = 0x0001,
-    CalibrationSettings     = 0x0002,
+    TuningStart             = 0x0001,
+    TuningSettings          = 0x0002,
 
     PidTuningStep1          = 0x0000,
     PidTuningStep2          = 0x0001,

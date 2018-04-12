@@ -50,9 +50,9 @@ namespace
     const unsigned long advi3_pp_baudrate = 250000; // Between the LCD panel and the mainboard
     const uint16_t nb_visible_sd_files = 5;
 	const uint8_t  nb_visible_sd_file_chars = 48;
-    const uint16_t calibration_cube_size = 20; // 20 mm
-    const uint16_t calibration_extruder_filament = 100; // 10 cm
-	const uint16_t calibration_extruder_delta = 20; // 2 cm
+    const uint16_t tuning_cube_size = 20; // 20 mm
+    const uint16_t tuning_extruder_filament = 100; // 10 cm
+	const uint16_t tuning_extruder_delta = 20; // 2 cm
 
     const uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
 
@@ -433,8 +433,8 @@ void Printer_::read_lcd_serial()
         case Action::SdCard:                sd_card(key_value); break;
         case Action::FactoryReset:          factory_reset(key_value); break;
         case Action::Leveling:              leveling(key_value); break;
-        case Action::ExtruderCalibration:   extruder_calibration(key_value); break;
-        case Action::XYZMotorsCalibration:  xyz_motors_calibration(key_value); break;
+        case Action::ExtruderTuning:        extruder_tuning(key_value); break;
+        case Action::XYZMotorsTuning:       xyz_motors_tuning(key_value); break;
         case Action::PidTuning:             pid_tuning(key_value); break;
         case Action::SensorSettings:        sensor_settings(key_value); break;
         case Action::NoSensor:              no_sensor(key_value); break;
@@ -1775,23 +1775,23 @@ void Printer_::leveling_finish()
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// Extruder calibration
+// Extruder tuning
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void Printer_::extruder_calibration(KeyValue key_value)
+void Printer_::extruder_tuning(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::Show:                    show_extruder_calibration(); break;
-        case KeyValue::CalibrationStart:        start_extruder_calibration(); break;
-        case KeyValue::CalibrationSettings:     extruder_calibrartion_settings(); break;
-        case KeyValue::Back:                    cancel_extruder_calibration(); break;
-        default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Show:            show_extruder_tuning(); break;
+        case KeyValue::TuningStart:     start_extruder_tuning(); break;
+        case KeyValue::TuningSettings:  extruder_calibrartion_settings(); break;
+        case KeyValue::Back:            cancel_extruder_tuning(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
-//! Show the extruder calibration screen.
-void Printer_::show_extruder_calibration()
+//! Show the extruder tuning screen.
+void Printer_::show_extruder_tuning()
 {
     set_target_temperature(200);
 
@@ -1803,8 +1803,8 @@ void Printer_::show_extruder_calibration()
     pages_.show_page(Page::ExtruderTuningTemp);
 }
 
-//! Start extruder calibration.
-void Printer_::start_extruder_calibration()
+//! Start extruder tuning.
+void Printer_::start_extruder_tuning()
 {
     auto hotend = get_target_temperature();
     if(hotend <= 0)
@@ -1813,11 +1813,11 @@ void Printer_::start_extruder_calibration()
     pages_.show_waiting_page(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend, 0);
 
-    task_.set_background_task(&Printer_::extruder_calibration_heating_task);
+    task_.set_background_task(&Printer_::extruder_tuning_heating_task);
 }
 
-//! Extruder calibration background task.
-void Printer_::extruder_calibration_heating_task()
+//! Extruder tuning background task.
+void Printer_::extruder_tuning_heating_task()
 {
     if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
         return;
@@ -1828,16 +1828,16 @@ void Printer_::extruder_calibration_heating_task()
     enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
 
-    String command; command << F("G1 E") << EXTRUDER_TUNING_LENGTH << " F50"; // Extrude slowly
+    String command; command << F("G1 E") << tuning_extruder_filament << " F50"; // Extrude slowly
     enqueue_and_echo_command(command.c_str());
 
-    task_.set_background_task(&Printer_::extruder_calibration_extruding_task);
+    task_.set_background_task(&Printer_::extruder_tuning_extruding_task);
 }
 
-//! Extruder calibration background task.
-void Printer_::extruder_calibration_extruding_task()
+//! Extruder tuning background task.
+void Printer_::extruder_tuning_extruding_task()
 {
-    if(current_position[E_AXIS] < EXTRUDER_TUNING_LENGTH || is_busy())
+    if(current_position[E_AXIS] < tuning_extruder_filament || is_busy())
         return;
     task_.clear_background_task();
 
@@ -1846,11 +1846,11 @@ void Printer_::extruder_calibration_extruding_task()
     Temperature::setTargetHotend(0, 0);
     task_.clear_background_task();
     LCD::reset_message();
-    extruder_calibration_finished();
+    extruder_tuning_finished();
 }
 
 //! Record the amount of filament extruded.
-void Printer_::extruder_calibration_finished()
+void Printer_::extruder_tuning_finished()
 {
     Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
     enqueue_and_echo_commands_P(PSTR("G82"));       // absolute E mode
@@ -1860,8 +1860,8 @@ void Printer_::extruder_calibration_finished()
     pages_.show_page(Page::ExtruderTuningMeasure, false);
 }
 
-//! Cancel the extruder calibration.
-void Printer_::cancel_extruder_calibration()
+//! Cancel the extruder tuning.
+void Printer_::cancel_extruder_tuning()
 {
     task_.clear_background_task();
 
@@ -1892,39 +1892,39 @@ void Printer_::extruder_calibrartion_settings()
     steps_.axis_steps_per_mm[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
     steps_.axis_steps_per_mm[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
 	steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS]
-                                       * extruded_ / (extruded_ + calibration_extruder_delta - e.word);
+                                       * extruded_ / (extruded_ + tuning_extruder_delta - e.word);
 
 	Log::log() << F("Adjust: old = ")
                << Planner::axis_steps_per_mm[E_AXIS]
                << F(", expected = ") << extruded_
-               << F(", measured = ") << (extruded_ + calibration_extruder_delta - e.word)
+               << F(", measured = ") << (extruded_ + tuning_extruder_delta - e.word)
                << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
 
     steps_settings_show(false);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// XYZ Motors calibration
+// XYZ Motors tuning
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void Printer_::xyz_motors_calibration(KeyValue key_value)
+void Printer_::xyz_motors_tuning(KeyValue key_value)
 {
     switch(key_value)
     {
-        case KeyValue::Show:                    show_xyz_motors_calibration(); break;
-        case KeyValue::CalibrationSettings:     xyz_motors_calibration_settings(); break;
-        case KeyValue::Back:                    cancel_xyz_motors_calibration(); break;
-        default:                                Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+        case KeyValue::Show:            show_xyz_motors_tuning(); break;
+        case KeyValue::TuningSettings:  xyz_motors_tuning_settings(); break;
+        case KeyValue::Back:            cancel_xyz_motors_tuning(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
 }
 
-void Printer_::show_xyz_motors_calibration()
+void Printer_::show_xyz_motors_tuning()
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << 200_u16 << 200_u16 << 200_u16;
     frame.send();
     pages_.save_forward_page();
-    pages_.show_page(Page::XYZMotorsCalibration);
+    pages_.show_page(Page::XYZMotorsTuning);
 }
 
 float adjust_value(float old, double expected, double measured)
@@ -1934,7 +1934,7 @@ float adjust_value(float old, double expected, double measured)
     return new_value;
 };
 
-void Printer_::xyz_motors_calibration_settings()
+void Printer_::xyz_motors_tuning_settings()
 {
     ReadRamData response{Variable::Value0, 3};
     if(!response.send_and_receive())
@@ -1946,17 +1946,17 @@ void Printer_::xyz_motors_calibration_settings()
     Uint16 x, y, z;
     response >> x >> y >> z;
 
-    steps_.axis_steps_per_mm[X_AXIS] = adjust_value(Planner::axis_steps_per_mm[X_AXIS], calibration_cube_size * 10, x.word);
-    steps_.axis_steps_per_mm[Y_AXIS] = adjust_value(Planner::axis_steps_per_mm[Y_AXIS], calibration_cube_size * 10, y.word);
-    steps_.axis_steps_per_mm[Z_AXIS] = adjust_value(Planner::axis_steps_per_mm[Z_AXIS], calibration_cube_size * 10, z.word);
+    steps_.axis_steps_per_mm[X_AXIS] = adjust_value(Planner::axis_steps_per_mm[X_AXIS], tuning_cube_size * 10, x.word);
+    steps_.axis_steps_per_mm[Y_AXIS] = adjust_value(Planner::axis_steps_per_mm[Y_AXIS], tuning_cube_size * 10, y.word);
+    steps_.axis_steps_per_mm[Z_AXIS] = adjust_value(Planner::axis_steps_per_mm[Z_AXIS], tuning_cube_size * 10, z.word);
     // Fill all values because all 4 axis are displayed by  show_steps_settings
     steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS];
 
     steps_settings_show(false);
 }
 
-//! Cancel the extruder calibration.
-void Printer_::cancel_xyz_motors_calibration()
+//! Cancel the extruder tuning.
+void Printer_::cancel_xyz_motors_tuning()
 {
     pages_.show_back_page();
 }

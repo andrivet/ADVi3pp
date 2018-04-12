@@ -450,19 +450,19 @@ private:
     void leveling_finish();
     void manual_leveling_task();
 
-    void extruder_calibration(KeyValue key_value);
-    void show_extruder_calibration();
-    void start_extruder_calibration();
+    void extruder_tuning(KeyValue key_value);
+    void show_extruder_tuning();
+    void start_extruder_tuning();
     void extruder_calibrartion_settings();
-    void extruder_calibration_heating_task();
-    void extruder_calibration_extruding_task();
-    void extruder_calibration_finished();
-    void cancel_extruder_calibration();
+    void extruder_tuning_heating_task();
+    void extruder_tuning_extruding_task();
+    void extruder_tuning_finished();
+    void cancel_extruder_tuning();
 
-    void xyz_motors_calibration(KeyValue key_value);
-    void show_xyz_motors_calibration();
-    void cancel_xyz_motors_calibration();
-    void xyz_motors_calibration_settings();
+    void xyz_motors_tuning(KeyValue key_value);
+    void show_xyz_motors_tuning();
+    void cancel_xyz_motors_tuning();
+    void xyz_motors_tuning_settings();
 
     void sensor_settings(KeyValue key_value);
     void sensor_settings_show();

@@ -58,7 +58,7 @@ enum class Page: uint8_t
     ManualLeveling          = 48,
     ExtruderTuningTemp      = 50,
     ExtruderTuningMeasure   = 54,
-    XYZMotorsCalibration    = 56,
+    XYZMotorsTuning         = 56,
     PidTuning1              = 58,
     PidTuning2              = 60,
     MotorsSettings          = 62,
