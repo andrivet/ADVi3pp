@@ -60,8 +60,6 @@ namespace
     const uint8_t BRIGHTNESS_MAX = 0x40;
     const uint8_t DIMMING_RATIO = 25; // in percent
     const uint16_t DIMMING_DELAY = 1 * 60;
-
-    const uint16_t EXTRUDER_TUNING_LENGTH = 100;
 }
 
 #ifdef ADVi3PP_BLTOUCH
