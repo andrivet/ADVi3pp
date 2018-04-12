@@ -201,6 +201,11 @@
   inline void lcd_refresh() { advi3pp::LCD::refresh(); }
   inline void lcd_buzz(const long duration, const uint16_t freq) { advi3pp::LCD::buzz(duration, freq); }
 
+  #if ENABLED(ADVANCED_PAUSE_FEATURE)
+  void lcd_advanced_pause_message_option();
+  void lcd_advanced_pause_show_message(const AdvancedPauseMessage message);
+  #endif // ADVANCED_PAUSE_FEATURE
+
 #else // no LCD
 
   inline void lcd_update() {}

@@ -6477,7 +6477,7 @@ inline void gcode_M17() {
       HOTEND_LOOP() {
         if (thermalManager.degTargetHotend(e) && abs(thermalManager.degHotend(e) - thermalManager.degTargetHotend(e)) > TEMP_HYSTERESIS) {
           heaters_heating = true;
-          #if ENABLED(ULTIPANEL)
+          #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
             lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT);
           #endif
           break;
@@ -6535,7 +6535,7 @@ inline void gcode_M17() {
 
     // Show initial message and wait for synchronize steppers
     if (show_lcd) {
-      #if ENABLED(ULTIPANEL)
+      #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
         lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INIT);
       #endif
     }
@@ -6553,7 +6553,7 @@ inline void gcode_M17() {
 
     if (unload_length != 0) {
       if (show_lcd) {
-        #if ENABLED(ULTIPANEL)
+        #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
           lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_UNLOAD);
           idle();
         #endif
@@ -6564,7 +6564,7 @@ inline void gcode_M17() {
     }
 
     if (show_lcd) {
-      #if ENABLED(ULTIPANEL)
+      #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
         lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
       #endif
     }
@@ -6608,7 +6608,7 @@ inline void gcode_M17() {
           nozzle_timed_out |= thermalManager.is_heater_idle(e);
 
       if (nozzle_timed_out) {
-        #if ENABLED(ULTIPANEL)
+        #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
           lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE);
         #endif
 
@@ -6621,7 +6621,7 @@ inline void gcode_M17() {
         // Wait for the heaters to reach the target temperatures
         ensure_safe_temperature();
 
-        #if ENABLED(ULTIPANEL)
+        #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
           lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
         #endif
 
@@ -6664,7 +6664,7 @@ inline void gcode_M17() {
     set_destination_from_current();
 
     if (load_length != 0) {
-      #if ENABLED(ULTIPANEL)
+      #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
         // Show "insert filament"
         if (nozzle_timed_out)
           lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INSERT);
@@ -6680,7 +6680,7 @@ inline void gcode_M17() {
       }
       KEEPALIVE_STATE(IN_HANDLER);
 
-      #if ENABLED(ULTIPANEL)
+      #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
         // Show "load" message
         lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_LOAD);
       #endif
@@ -6689,7 +6689,7 @@ inline void gcode_M17() {
       do_pause_e_move(load_length, FILAMENT_CHANGE_LOAD_FEEDRATE);
     }
 
-    #if ENABLED(ULTIPANEL) && ADVANCED_PAUSE_EXTRUDE_LENGTH > 0
+    #if (ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)) && ADVANCED_PAUSE_EXTRUDE_LENGTH > 0
 
       if (!thermalManager.tooColdToExtrude(active_extruder)) {
         float extrude_length = initial_extrude_length;
@@ -6718,7 +6718,7 @@ inline void gcode_M17() {
 
     #endif
 
-    #if ENABLED(ULTIPANEL)
+    #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
       // "Wait for print to resume"
       lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_RESUME);
     #endif
@@ -6735,7 +6735,7 @@ inline void gcode_M17() {
       filament_ran_out = false;
     #endif
 
-    #if ENABLED(ULTIPANEL)
+    #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
       // Show status screen
       lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_STATUS);
     #endif

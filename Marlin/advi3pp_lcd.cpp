@@ -302,3 +302,26 @@ void lcd_status_printf_P(const uint8_t /*level*/, const char * const fmt, ...)
     advi3pp::lcd.status_printf_P(fmt, args);
     va_end(args);
 }
+
+#if ENABLED(ADVANCED_PAUSE_FEATURE)
+
+void lcd_advanced_pause_show_message(const AdvancedPauseMessage message)
+{
+  switch (message)
+  {
+  case ADVANCED_PAUSE_MESSAGE_INIT:                 advi3pp::LCD::set_status(F("Pausing...")); break;
+  case ADVANCED_PAUSE_MESSAGE_UNLOAD:               advi3pp::LCD::set_status(F("Unloading filament...")); break;
+  case ADVANCED_PAUSE_MESSAGE_INSERT:               advi3pp::LCD::set_status(F("Insert filament and click")); break;
+  case ADVANCED_PAUSE_MESSAGE_EXTRUDE:              advi3pp::LCD::set_status(F("Extruding...")); break;
+  case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE: advi3pp::LCD::set_status(F("Press screen to heat")); break;
+  case ADVANCED_PAUSE_MESSAGE_RESUME:               advi3pp::LCD::set_status(F("Resuming print...")); break;
+  case ADVANCED_PAUSE_MESSAGE_STATUS:               advi3pp::LCD::set_status(F("Printing")); break;
+#if ADVANCED_PAUSE_EXTRUDE_LENGTH > 0
+      case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:
+                                                    advi3pp::LCD::set_status(F("Waiting for heat...")); break;
+      case ADVANCED_PAUSE_MESSAGE_OPTION:           advanced_pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
+#endif
+  default: advi3pp::Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << advi3pp::Log::endl(); break;
+  }
+}
+#endif // ADVANCED_PAUSE_FEATURE
