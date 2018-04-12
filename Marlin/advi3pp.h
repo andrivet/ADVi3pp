@@ -120,7 +120,7 @@ struct LCD
     static void reset_message();
     static void enable_buzzer(bool enable);
     static void enable_buzz_on_press(bool enable);
-    static void buzz(long duration, uint16_t frequency);
+    static void buzz(long duration, uint16_t frequency = 0);
     static void buzz_on_press();
 };
 

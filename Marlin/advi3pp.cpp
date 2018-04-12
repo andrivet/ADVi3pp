@@ -915,6 +915,7 @@ void Printer_::load_filament_task()
     {
         Log::log() << F("Load Filament") << Log::endl();
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
+        LCD::buzz(100); // Inform the user that the extrusion starts
     }
 }
 
@@ -925,6 +926,7 @@ void Printer_::unload_filament_task()
     {
         Log::log() << F("Unload Filament") << Log::endl();
         enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
+        LCD::buzz(100); // Inform the user that the un-extrusion starts
     }
 }
 
