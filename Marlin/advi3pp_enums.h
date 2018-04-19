@@ -167,8 +167,7 @@ enum class Variable: uint16_t
 enum class Action: uint16_t
 {
     Screen                  = 0x0400,
-    SdPrintCommand          = 0x0401,
-    UsbPrintCommand         = 0x0402,
+    PrintCommand            = 0x0401,
     LoadUnload              = 0x0403,
     Preheat                 = 0x0404,
     Move                    = 0x0405,

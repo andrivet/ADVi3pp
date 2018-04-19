@@ -47,7 +47,7 @@ namespace
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x300;
     // Modify also DETAILED_BUILD_VERSION in Version.h
 
-    const unsigned long advi3_pp_baudrate = 250000; // Between the LCD panel and the mainboard
+    const unsigned long advi3_pp_baudrate = 115200; // Between the LCD panel and the mainboard
     const uint16_t nb_visible_sd_files = 5;
 	const uint8_t  nb_visible_sd_file_chars = 48;
     const uint16_t tuning_cube_size = 20; // 20 mm
@@ -103,7 +103,7 @@ void Printer::g29_leveling_finished()
 //! @param write Function to use for the actual writing
 //! @param eeprom_index
 //! @param working_crc
-void Printer::store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+void Printer::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
     printer.store_eeprom_data(write, eeprom_index, working_crc);
 }
@@ -112,15 +112,21 @@ void Printer::store_presets(eeprom_write write, int& eeprom_index, uint16_t& wor
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void Printer::restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+void Printer::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
     printer.restore_eeprom_data(read, eeprom_index, working_crc);
 }
 
 //! Reset presets.
-void Printer::reset_presets()
+void Printer::reset_eeprom_data()
 {
     printer.reset_eeprom_data();
+}
+
+//! Inform the user that the EEPROM data are not compatible and have been reset
+void Printer::eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc)
+{
+    printer.eeprom_settings_mismatch(stored_crc, computed_crc);
 }
 
 //! Called when a temperature error occurred and display the error on the LCD.
@@ -181,7 +187,7 @@ void Printer_::show_boot_page()
 {
     if(!is_lcd_version_valid())
     {
-        pages_.show_page(Page::Mismatch, false);
+        pages_.show_page(Page::VersionsMismatch, false);
         return;
     }
 
@@ -253,6 +259,12 @@ void Printer_::reset_eeprom_data()
     dimming_.reset_eeprom_data();
 }
 
+//! Inform the user that the EEPROM data are not compatible and have been reset
+void Printer_::eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc)
+{
+    pages_.show_page(Page::EEPROMMismatch);
+}
+
 void Printer_::save_settings()
 {
     enqueue_and_echo_commands_P(PSTR("M500"));
@@ -291,10 +303,14 @@ void PagesManager::show_page(Page page, bool save_back)
     frame.send(true);
 }
 
-void PagesManager::show_waiting_page(const __FlashStringHelper* message)
+void PagesManager::show_waiting_page(const __FlashStringHelper* message, Wait wait)
 {
+    Page waitPage = Page::Waiting;
+    if(wait == Wait::Back) waitPage = Page::WaitBack;
+    else if(wait == Wait::BackContinue) waitPage = Page::WaitBackContinue;
+
     LCD::set_status_PGM(reinterpret_cast<const char*>(message));
-    show_page(Page::Waiting, true);
+    show_page(waitPage, true);
 }
 
 //! Retrieve the current page on the LCD screen
@@ -425,8 +441,7 @@ void Printer_::read_lcd_serial()
     switch(action)
     {
         case Action::Screen:                screen(key_value); break;
-        case Action::SdPrintCommand:        sd_print_command(key_value); break;
-        case Action::UsbPrintCommand:       usb_print_command(key_value); break;
+        case Action::PrintCommand:          print_command(key_value); break;
         case Action::LoadUnload:            load_unload(key_value); break;
         case Action::Preheat:               preheat(key_value); break;
         case Action::Move:                  move(key_value); break;
@@ -496,18 +511,19 @@ void Printer_::show_temps()
         return;
     }
 
-    // If there is a SD card print running (or paused), display the SD print screen. Otherwise the USB Print page
-    pages_.show_page(card.isFileOpen() ? Page::SdPrint : Page::UsbPrint);
+    // If there is a print running (or paused), display the print screen.
+    pages_.show_page(Page::Print);
 }
 
-//! Show one of the Printing screens depending of the context: either the SD screen or the SD printing screen.
-//! Fallback to the USB printing if the SD card is not accessible.
+//! Show one of the Printing screens depending of the context:
+//! - If a print is running, display the Print screen
+//! - Otherwise, try to access the SD card. Depending of the result, display the SD card Page or the Temperatures page
 void Printer_::show_print()
 {
     // If there is a print running (or paused), display the SD or USB print screen
     if(print_job_timer.isRunning() || print_job_timer.isPaused())
     {
-        pages_.show_page(card.isFileOpen() ? Page::SdPrint : Page::UsbPrint);
+        pages_.show_page(Page::Print);
         return;
     }
 
@@ -682,9 +698,21 @@ void SDFilesManager::select_file(uint16_t file_index)
     card.startFileprint();
     print_job_timer.start();
 
-    Stepper::finish_and_disable(); // To circumvent homing problems
+    pages_.show_page(Page::Print);
+}
 
-    pages_.show_page(Page::SdPrint);
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Printing commands (USB and SD)
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+//! Handle print commands.
+//! @param key_value    The sub-action to handle
+void Printer_::print_command(KeyValue key_value)
+{
+    if(card.isFileOpen())
+        sd_print_command(key_value);
+    else
+        usb_print_command(key_value);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -708,7 +736,7 @@ void Printer_::sd_print_command(KeyValue key_value)
 //! Stop SD printing
 void Printer_::sd_print_stop()
 {
-    Log::log() << F("Stop Print") << Log::endl();
+    Log::log() << F("Stop SD Print") << Log::endl();
 
     card.stopSDPrint();
     clear_command_queue();
@@ -782,7 +810,7 @@ void Printer_::usb_print_command(KeyValue key_value)
 //! Stop SD printing
 void Printer_::usb_print_stop()
 {
-    Log::log() << F("Stop Print") << Log::endl();
+    Log::log() << F("Stop USB Print") << Log::endl();
 
     LCD_::instance().reset_progress();
 
@@ -790,35 +818,35 @@ void Printer_::usb_print_stop()
     quickstop_stepper();
     print_job_timer.stop();
     Temperature::disable_all_heaters();
+    fanSpeeds[0] = 0;
+    SERIAL_ECHOLNPGM("//action:disconnect");
 
     pages_.show_back_page();
+    task_.set_background_task(&Printer_::reset_messages_task, 500);
 }
 
 //! Pause SD printing
 void Printer_::usb_print_pause()
 {
-    Log::log() << F("Pause Print") << Log::endl();
+    Log::log() << F("Pause USB Print") << Log::endl();
 
-    LCD::queue_message(F("Pause printing"));
+    LCD::queue_message(F("Pause printing..."));
 
     print_job_timer.pause();
 #if ENABLED(PARK_HEAD_ON_PAUSE)
     enqueue_and_echo_commands_P(PSTR("M125"));
 #endif
+
+    SERIAL_ECHOLNPGM("//action:pause");
 }
 
 //! Resume the current SD printing
 void Printer_::usb_print_resume()
 {
     Log::log() << F("Resume Print") << Log::endl();
-
     LCD::queue_message(F("Resume printing"));
-
-#if ENABLED(PARK_HEAD_ON_PAUSE)
     enqueue_and_echo_commands_P(PSTR("M24"));
-#else
-    print_job_timer.start();
-#endif
+    SERIAL_ECHOLNPGM("//action:resume");
 }
 
 //! Handle the Back button
@@ -892,7 +920,9 @@ void Printer_::load_unload_start(bool load)
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
     task_.set_background_task(load ? &Printer_::load_filament_task : &Printer_::unload_filament_task);
-    pages_.show_page(load ? Page::Load2 : Page::Unload2);
+    pages_.show_waiting_page(load
+                             ? F("Wait until the filament comes out of the nozzle")
+                             : F("Wait until the filament comes out of the extruder"));
 }
 
 //! Handle back from the Load on Unload LCD screen.
@@ -900,6 +930,7 @@ void Printer_::load_unload_stop()
 {
     Log::log() << F("Load/Unload Stop");
 
+    LCD::reset_message();
     task_.clear_background_task();
     clear_command_queue();
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
@@ -2234,7 +2265,6 @@ void Printer_::change_filament(KeyValue key_value)
 
 void Printer_::change_filament_show()
 {
-    pages_.show_page(Page::FilamentChange);
 }
 
 void Printer_::change_filament_continue()

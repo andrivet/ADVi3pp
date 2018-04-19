@@ -692,7 +692,7 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(dummy);
     #endif
 
-    advi3pp::Printer::store_presets(&write_data, eeprom_index, working_crc);
+    advi3pp::Printer::store_eeprom_data(&write_data, eeprom_index, working_crc);
     
     #if HAS_MOTOR_CURRENT_PWM
       for (uint8_t q = 3; q--;) EEPROM_WRITE(stepper.motor_current_setting[q]);
@@ -1168,7 +1168,7 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(dummy);
       #endif
 
-      advi3pp::Printer::restore_presets(&read_data, eeprom_index, working_crc);
+      advi3pp::Printer::restore_eeprom_data(&read_data, eeprom_index, working_crc);
 
       //
       // Motor Current PWM
@@ -1229,6 +1229,7 @@ void MarlinSettings::postprocess() {
           SERIAL_ERRORLNPGM(" (calculated)!");
         #endif
         reset();
+        advi3pp::Printer::eeprom_settings_mismatch(stored_crc, working_crc);
       }
 
       #if ENABLED(AUTO_BED_LEVELING_UBL)
@@ -1396,7 +1397,7 @@ void MarlinSettings::reset() {
   planner.max_jerk[Z_AXIS] = DEFAULT_ZJERK;
   planner.max_jerk[E_AXIS] = DEFAULT_EJERK;
 
-  advi3pp::Printer::reset_presets();
+  advi3pp::Printer::reset_eeprom_data();
   
   #if HAS_HOME_OFFSET
     ZERO(home_offset);

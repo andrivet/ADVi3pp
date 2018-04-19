@@ -47,12 +47,19 @@ using BackgroundTask = void (Printer_::*)();
 // PagesManager
 // --------------------------------------------------------------------
 
+enum class Wait
+{
+    NoControl,
+    Back,
+    BackContinue
+};
+
 struct PagesManager
 {
     PagesManager() = default;
 
     void show_page(Page page, bool save_back = true);
-    void show_waiting_page(const __FlashStringHelper* message);
+    void show_waiting_page(const __FlashStringHelper* message, Wait wait = Wait::NoControl);
     Page get_current_page();
     void show_back_page();
     void save_forward_page();
@@ -318,6 +325,7 @@ struct Printer_
     void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_eeprom_data();
+    void eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc);
     void temperature_error(const __FlashStringHelper* message);
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
@@ -361,6 +369,8 @@ private:
     void show_motors();
 
     void back();
+
+    void print_command(KeyValue key_value);
 
     void sd_print_command(KeyValue key_value);
     void sd_print_stop();

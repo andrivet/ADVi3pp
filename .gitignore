@@ -149,3 +149,5 @@ ArduinoCore
 
 .python-version
 Marlin/BLTouch-Debug
+.vscode/.browse.c_cpp.db*
+.vscode/launch.json

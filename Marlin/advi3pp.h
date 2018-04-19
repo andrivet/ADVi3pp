@@ -47,13 +47,12 @@ enum class Page: uint8_t
     Tuning                  = 26,
     Settings                = 28,
     LoadUnload              = 30,
-    Load2                   = 32,
-    Unload2                 = 34,
+    WaitBack                = 32,
+    WaitBackContinue        = 34,
     Preheat                 = 36,
     Move                    = 38,
     SdCard                  = 40,
-    SdPrint                 = 42,
-    UsbPrint                = 44,
+    Print                   = 42,
     Waiting                 = 46,
     ManualLeveling          = 48,
     ExtruderTuningTemp      = 50,
@@ -72,7 +71,7 @@ enum class Page: uint8_t
     JerkSettings            = 78,
     PrintSettings           = 80,
     ThermalRunawayError     = 82,
-    Mismatch                = 84,
+    VersionsMismatch        = 84,
     Temperature             = 86,
     Infos                   = 88,
     Firmware                = 90,
@@ -82,7 +81,7 @@ enum class Page: uint8_t
     Copyrights              = 98,
     SensorTuning            = 100,
     SensorGrid              = 102,
-    FilamentChange          = 104,
+    EEPROMMismatch          = 104,
     ZHeightTuning           = 106
 };
 
@@ -93,9 +92,10 @@ struct Printer
     static void task();
     static void auto_pid_finished();
     static void g29_leveling_finished();
-    static void store_presets(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    static void restore_presets(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
-    static void reset_presets();
+    static void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    static void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    static void reset_eeprom_data();
+    static void eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc);
     static void temperature_error(const __FlashStringHelper* message);
     static void update();
     static bool is_thermal_protection_enabled();
