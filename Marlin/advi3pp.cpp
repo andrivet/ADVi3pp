@@ -222,10 +222,8 @@ void Printer_::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t
     EepromWrite eeprom{write, eeprom_index, working_crc};
 
     preheat_.store_eeprom_data(eeprom);
-    uint16_t dummy = 0; eeprom.write(dummy);
     eeprom.write(features_);
     eeprom.write(usb_baudrate_);
-
     dimming_.store_eeprom_data(eeprom);
 }
 
@@ -238,15 +236,11 @@ void Printer_::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t
     EepromRead eeprom{read, eeprom_index, working_crc};
 
     preheat_.restore_eeprom_data(eeprom);
-    uint16_t dummy = 0; eeprom.read(dummy);
     eeprom.read(features_);
     eeprom.read(usb_baudrate_);
-
-    Log::log() << F("Features: ") << static_cast<uint16_t>(features_) << Log::endl();
-
     dimming_.restore_eeprom_data(eeprom);
-    dimming_.enable(test_one_bit(features_, Feature::Dimming));
 
+    dimming_.enable(test_one_bit(features_, Feature::Dimming));
     LCD::enable_buzzer(test_one_bit(features_, Feature::Buzzer));
     LCD::enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress));
 }
@@ -2746,6 +2740,7 @@ void Sensor::save_z_height(double height)
 {
     String command; command << F("M851 Z") << height;
     enqueue_and_echo_command(command.c_str());
+    enqueue_and_echo_commands_P(PSTR("M500")); // Save EEPROM data
 }
 
 void Sensor::self_test()
