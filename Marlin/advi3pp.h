@@ -95,7 +95,7 @@ struct Printer
     static void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     static void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     static void reset_eeprom_data();
-    static void eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc);
+    static void eeprom_settings_mismatch();
     static void save_settings();
     static void temperature_error(const __FlashStringHelper* message);
     static void update();

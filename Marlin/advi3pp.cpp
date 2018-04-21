@@ -124,9 +124,9 @@ void Printer::reset_eeprom_data()
 }
 
 //! Inform the user that the EEPROM data are not compatible and have been reset
-void Printer::eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc)
+void Printer::eeprom_settings_mismatch()
 {
-    printer.eeprom_settings_mismatch(stored_crc, computed_crc);
+    printer.eeprom_settings_mismatch();
 }
 
 void Printer::save_settings()
@@ -190,7 +190,7 @@ void Printer_::setup()
 
 void Printer_::show_boot_page()
 {
-    if(eeprom_mimatch_)
+    if(eeprom_mismatch_)
     {
         pages_.show_page(Page::EEPROMMismatch);
         return;
@@ -266,16 +266,16 @@ void Printer_::reset_eeprom_data()
 }
 
 //! Inform the user that the EEPROM data are not compatible and have been reset
-void Printer_::eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc)
+void Printer_::eeprom_settings_mismatch()
 {
-    // It is not possible to show the Mimatch page now since nothing is yet initialized.
+    // It is not possible to show the Mismatch page now since nothing is yet initialized.
     // It will be done in the setup method.
-    eeprom_mimatch_ = true;
+    eeprom_mismatch_ = true;
 }
 
 void Printer_::save_settings()
 {
-    eeprom_mimatch_ = false;
+    eeprom_mismatch_ = false;
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
 

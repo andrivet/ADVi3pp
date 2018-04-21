@@ -325,7 +325,7 @@ struct Printer_
     void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_eeprom_data();
-    void eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc);
+    void eeprom_settings_mismatch();
     void temperature_error(const __FlashStringHelper* message);
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
@@ -554,7 +554,7 @@ private:
     Graphs graphs_;
     bool sensor_interactive_leveling_ = false;
     double extruded_ = 0.0;
-    bool eeprom_mimatch_ = false;
+    bool eeprom_mismatch_ = false;
 };
 
 // --------------------------------------------------------------------

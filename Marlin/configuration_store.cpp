@@ -36,7 +36,7 @@
  *
  */
 
-#define EEPROM_VERSION "V48"
+#define EEPROM_VERSION "V49"
 
 // Change EEPROM version if these are changed:
 #define EEPROM_OFFSET 100
@@ -780,6 +780,7 @@ void MarlinSettings::postprocess() {
         SERIAL_ECHOLNPGM(" Marlin=" EEPROM_VERSION ")");
       #endif
       reset();
+      advi3pp::Printer::eeprom_settings_mismatch();
     }
     else {
       float dummy = 0;
@@ -1229,7 +1230,7 @@ void MarlinSettings::postprocess() {
           SERIAL_ERRORLNPGM(" (calculated)!");
         #endif
         reset();
-        advi3pp::Printer::eeprom_settings_mismatch(stored_crc, working_crc);
+        advi3pp::Printer::eeprom_settings_mismatch();
       }
 
       #if ENABLED(AUTO_BED_LEVELING_UBL)
