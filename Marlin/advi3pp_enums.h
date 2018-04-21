@@ -194,6 +194,7 @@ enum class Action: uint16_t
     SensorGrid              = 0x041A,
     SensorZHeight           = 0x041B,
     ChangeFilament          = 0x041C,
+    EEPROMMismatch          = 0x041D,
 
     MoveXMinus              = 0x0420,
     MoveXPlus               = 0x0421,

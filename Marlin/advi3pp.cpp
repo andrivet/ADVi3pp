@@ -129,6 +129,11 @@ void Printer::eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_cr
     printer.eeprom_settings_mismatch(stored_crc, computed_crc);
 }
 
+void Printer::save_settings()
+{
+    printer.save_settings();
+}
+
 //! Called when a temperature error occurred and display the error on the LCD.
 void Printer::temperature_error(const __FlashStringHelper* message)
 {
@@ -185,6 +190,12 @@ void Printer_::setup()
 
 void Printer_::show_boot_page()
 {
+    if(eeprom_mimatch_)
+    {
+        pages_.show_page(Page::EEPROMMismatch);
+        return;
+    }
+
     if(!is_lcd_version_valid())
     {
         pages_.show_page(Page::VersionsMismatch, false);
@@ -250,23 +261,42 @@ void Printer_::reset_eeprom_data()
 {
     preheat_.reset_eeprom_data();
     features_ = DEFAULT_FEATURES;
+    usb_baudrate_ = DEFAULT_USB_BAUDRATE;
     dimming_.reset_eeprom_data();
 }
 
 //! Inform the user that the EEPROM data are not compatible and have been reset
 void Printer_::eeprom_settings_mismatch(uint16_t stored_crc, uint16_t computed_crc)
 {
-    pages_.show_page(Page::EEPROMMismatch);
+    // It is not possible to show the Mimatch page now since nothing is yet initialized.
+    // It will be done in the setup method.
+    eeprom_mimatch_ = true;
 }
 
 void Printer_::save_settings()
 {
+    eeprom_mimatch_ = false;
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
 
 bool Printer_::is_thermal_protection_enabled() const
 {
     return test_one_bit(features_, Feature::ThermalProtection);
+}
+
+void Printer_::eeprom_mimatch(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Continue:        eeprom_mimatch_continue(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void Printer_::eeprom_mimatch_continue()
+{
+    save_settings();
+    pages_.show_page(Page::Main, false);
 }
 
 namespace
@@ -463,6 +493,7 @@ void Printer_::read_lcd_serial()
         case Action::SensorGrid:            sensor_grid(key_value); break;
         case Action::SensorZHeight:         sensor_z_height(key_value); break;
         case Action::ChangeFilament:        change_filament(key_value); break;
+        case Action::EEPROMMismatch:        eeprom_mimatch(key_value); break;
         case Action::MoveXPlus:             move_x_plus(); break;
         case Action::MoveXMinus:            move_x_minus(); break;
         case Action::MoveYPlus:             move_y_plus(); break;
@@ -2492,7 +2523,7 @@ void PidSettings::save()
     Temperature::Ki = Ki;
     Temperature::Kd = Kd;
 
-    Printer_::save_settings();
+    Printer::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2516,7 +2547,7 @@ void StepSettings::save()
     Planner::axis_steps_per_mm[Z_AXIS] = axis_steps_per_mm[Z_AXIS];
     Planner::axis_steps_per_mm[E_AXIS] = axis_steps_per_mm[E_AXIS];
 
-    Printer_::save_settings();
+    Printer::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2544,7 +2575,7 @@ void FeedrateSettings::save()
     Planner::min_feedrate_mm_s = min_feedrate_mm_s;
     Planner::min_travel_feedrate_mm_s = min_travel_feedrate_mm_s;
 
-    Printer_::save_settings();
+    Printer::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2574,7 +2605,7 @@ void AccelerationSettings::save()
     Planner::retract_acceleration = retract_acceleration;
     Planner::travel_acceleration =  travel_acceleration;
 
-    Printer_::save_settings();
+    Printer::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2598,7 +2629,7 @@ void JerkSettings::save()
     Planner::max_jerk[Z_AXIS] = max_jerk[Z_AXIS];
     Planner::max_jerk[E_AXIS] = max_jerk[E_AXIS];
 
-    Printer_::save_settings();
+    Printer::save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -2740,7 +2771,7 @@ void Sensor::save_z_height(double height)
 {
     String command; command << F("M851 Z") << height;
     enqueue_and_echo_command(command.c_str());
-    enqueue_and_echo_commands_P(PSTR("M500")); // Save EEPROM data
+    Printer::save_settings();
 }
 
 void Sensor::self_test()
@@ -2853,7 +2884,7 @@ void Preheat::preset(uint16_t presetIndex)
     }
 
     if(hasChanged)
-        Printer_::save_settings();
+        Printer::save_settings();
 
     const Preset& preset = presets_[presetIndex];
 

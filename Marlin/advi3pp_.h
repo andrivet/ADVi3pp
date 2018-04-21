@@ -330,7 +330,7 @@ struct Printer_
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
 
-    static void save_settings();
+    void save_settings();
 
 private:
     void send_status_data();
@@ -532,6 +532,9 @@ private:
     void copyrights_show();
     void copyrights_back();
 
+    void eeprom_mimatch(KeyValue key_value);
+    void eeprom_mimatch_continue();
+
 private:
     PagesManager pages_;
     Task task_;
@@ -551,6 +554,7 @@ private:
     Graphs graphs_;
     bool sensor_interactive_leveling_ = false;
     double extruded_ = 0.0;
+    bool eeprom_mimatch_ = false;
 };
 
 // --------------------------------------------------------------------
