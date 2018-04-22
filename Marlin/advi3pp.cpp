@@ -996,7 +996,7 @@ void Printer_::load_unload_start(bool load)
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
     task_.set_background_task(load ? &Printer_::load_filament_start_task : &Printer_::unload_filament_start_task);
-    pages_.show_wait_back_page(F("Wait until temperature is reached..."), &Printer_::load_unload_stop);
+    pages_.show_wait_back_page(F("Wait until the target temp is reached..."), &Printer_::load_unload_stop);
 }
 
 //! Handle back from the Load on Unload LCD screen.
@@ -1031,7 +1031,7 @@ void Printer_::load_filament_start_task()
         LCD::buzz(100); // Inform the user that the extrusion starts
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
         task_.set_background_task(&Printer_::load_filament_task);
-        LCD::set_status(F("Wait until filament comes out..."));
+        LCD::set_status(F("Wait until the filament comes out..."));
     }
 }
 
@@ -1052,7 +1052,7 @@ void Printer_::unload_filament_start_task()
         LCD::buzz(100); // Inform the user that the un-extrusion starts
         enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
         task_.set_background_task(&Printer_::unload_filament_task);
-        LCD::set_status(F("Wait until the filament comes out"));
+        LCD::set_status(F("Wait until the filament comes out..."));
     }
 }
 
