@@ -944,7 +944,7 @@ void Printer_::load_unload_start(bool load)
     Temperature::setTargetHotend(hotend, 0);
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
-    task_.set_background_task(load ? &Printer_::load_filament_task : &Printer_::unload_filament_task);
+    task_.set_background_task(load ? &Printer_::load_filament_start_task : &Printer_::unload_filament_start_task);
     pages_.show_waiting_page(load
                              ? F("Wait until the filament comes out of the nozzle")
                              : F("Wait until the filament comes out of the extruder"));
@@ -965,13 +965,34 @@ void Printer_::load_unload_stop()
 }
 
 //! Load the filament if the temperature is high enough.
-void Printer_::load_filament_task()
+void Printer_::load_filament_start_task()
 {
     if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
     {
         Log::log() << F("Load Filament") << Log::endl();
-        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
         LCD::buzz(100); // Inform the user that the extrusion starts
+        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
+        task_.set_background_task(&Printer_::load_filament_task);
+    }
+}
+
+//! Load the filament if the temperature is high enough.
+void Printer_::load_filament_task()
+{
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
+        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
+}
+
+
+//! Unload the filament if the temperature is high enough.
+void Printer_::unload_filament_start_task()
+{
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
+    {
+        Log::log() << F("Unload Filament") << Log::endl();
+        LCD::buzz(100); // Inform the user that the un-extrusion starts
+        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
+        task_.set_background_task(&Printer_::unload_filament_task);
     }
 }
 
@@ -979,13 +1000,8 @@ void Printer_::load_filament_task()
 void Printer_::unload_filament_task()
 {
     if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
-    {
-        Log::log() << F("Unload Filament") << Log::endl();
         enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
-        LCD::buzz(100); // Inform the user that the un-extrusion starts
-    }
 }
-
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Preheat & Cooldown

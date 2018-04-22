@@ -388,7 +388,9 @@ private:
     void load_unload_show();
     void load_unload_start(bool load);
     void load_unload_stop();
+    void load_filament_start_task();
     void load_filament_task();
+    void unload_filament_start_task();
     void unload_filament_task();
 
     void preheat(KeyValue key_value);
