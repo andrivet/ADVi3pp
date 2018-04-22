@@ -996,7 +996,7 @@ void Printer_::load_unload_start(bool load)
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
     task_.set_background_task(load ? &Printer_::load_filament_start_task : &Printer_::unload_filament_start_task);
-    pages_.show_wait_back_page(F("Wait until the temperature is reached"), &Printer_::load_unload_stop);
+    pages_.show_wait_back_page(F("Wait until temperature is reached..."), &Printer_::load_unload_stop);
 }
 
 //! Handle back from the Load on Unload LCD screen.
@@ -1005,12 +1005,21 @@ void Printer_::load_unload_stop()
     Log::log() << F("Load/Unload Stop");
 
     LCD::reset_message();
-    task_.clear_background_task();
+    task_.set_background_task(&Printer_::load_unload_stop_task);
     clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     Temperature::setTargetHotend(0, 0);
 
     pages_.show_back_page();
+}
+
+void Printer_::load_unload_stop_task()
+{
+    if(is_busy())
+        return;
+
+    task_.clear_background_task();
+    // Do this asychronously to avoid race conditions
+    enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
 }
 
 //! Load the filament if the temperature is high enough.
@@ -1022,7 +1031,7 @@ void Printer_::load_filament_start_task()
         LCD::buzz(100); // Inform the user that the extrusion starts
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
         task_.set_background_task(&Printer_::load_filament_task);
-        LCD::set_status(F("Wait until the filament comes out"));
+        LCD::set_status(F("Wait until filament comes out..."));
     }
 }
 
@@ -3047,6 +3056,7 @@ void Task::execute_background_task()
     if(background_task_ == nullptr || !ELAPSED(millis(), next_op_time_))
         return;
 
+    next_op_time_ = millis() + op_time_delta_;
     (printer_.*background_task_)();
 }
 

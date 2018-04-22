@@ -396,6 +396,7 @@ private:
     void load_filament_task();
     void unload_filament_start_task();
     void unload_filament_task();
+    void load_unload_stop_task();
 
     void preheat(KeyValue key_value);
     void cooldown();
