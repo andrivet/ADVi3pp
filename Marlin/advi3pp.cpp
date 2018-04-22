@@ -160,7 +160,7 @@ void Printer::process_command(const GCodeParser& parser)
 // --------------------------------------------------------------------
 
 Printer_::Printer_()
-: task_{*this, pages_}, sd_files_{pages_}, preheat_{pages_}, sensor_{pages_}
+: pages_{*this}, task_{*this, pages_}, sd_files_{pages_}, preheat_{pages_}, sensor_{pages_}
 {
 }
 
@@ -313,6 +313,11 @@ namespace
 // Pages management
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+PagesManager::PagesManager(Printer_& printer)
+: printer_{printer}
+{
+}
+
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
 void PagesManager::show_page(Page page, bool save_back)
@@ -327,14 +332,59 @@ void PagesManager::show_page(Page page, bool save_back)
     frame.send(true);
 }
 
-void PagesManager::show_waiting_page(const __FlashStringHelper* message, Wait wait)
+void PagesManager::show_wait_page(const __FlashStringHelper* message)
 {
-    Page waitPage = Page::Waiting;
-    if(wait == Wait::Back) waitPage = Page::WaitBack;
-    else if(wait == Wait::BackContinue) waitPage = Page::WaitBackContinue;
-
     LCD::set_status_PGM(reinterpret_cast<const char*>(message));
-    show_page(waitPage, true);
+    show_page(Page::Waiting);
+}
+
+void PagesManager::show_wait_back_page(const __FlashStringHelper* message, WaitCalllback back)
+{
+    LCD::set_status_PGM(reinterpret_cast<const char*>(message));
+    back_ = back;
+    show_page(Page::WaitBack);
+}
+
+void PagesManager::show_wait_back_continue_page(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont)
+{
+    LCD::set_status_PGM(reinterpret_cast<const char*>(message));
+    back_ = back;
+    continue_ = cont;
+    show_page(Page::WaitBackContinue);
+}
+
+void PagesManager::handle_lcd_command(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Back:            handle_lcd_back(); break;
+        case KeyValue::Continue:        handle_lcd_continue(); break;
+        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void PagesManager::handle_lcd_back()
+{
+    if(!back_)
+    {
+        Log::error() << F("No Back action defined") << Log::endl();
+        return;
+    }
+
+    (printer_.*back_)();
+    back_ = nullptr;
+}
+
+void PagesManager::handle_lcd_continue()
+{
+    if(!continue_)
+    {
+        Log::error() << F("No Continue action defined") << Log::endl();
+        return;
+    }
+
+    (printer_.*continue_)();
+    continue_ = nullptr;
 }
 
 //! Retrieve the current page on the LCD screen
@@ -466,6 +516,7 @@ void Printer_::read_lcd_serial()
     {
         case Action::Screen:                screen(key_value); break;
         case Action::PrintCommand:          print_command(key_value); break;
+        case Action::Wait:                  pages_.handle_lcd_command(key_value); break;
         case Action::LoadUnload:            load_unload(key_value); break;
         case Action::Preheat:               preheat(key_value); break;
         case Action::Move:                  move(key_value); break;
@@ -552,7 +603,7 @@ void Printer_::show_print()
         return;
     }
 
-    pages_.show_waiting_page(F("Try to access the SD card..."));
+    pages_.show_wait_page(F("Try to access the SD card..."));
     task_.set_background_task(&Printer_::show_sd_or_temp_page);
 }
 
@@ -945,9 +996,7 @@ void Printer_::load_unload_start(bool load)
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
     task_.set_background_task(load ? &Printer_::load_filament_start_task : &Printer_::unload_filament_start_task);
-    pages_.show_waiting_page(load
-                             ? F("Wait until the filament comes out of the nozzle")
-                             : F("Wait until the filament comes out of the extruder"));
+    pages_.show_wait_back_page(F("Wait until the temperature is reached"), &Printer_::load_unload_stop);
 }
 
 //! Handle back from the Load on Unload LCD screen.
@@ -973,6 +1022,7 @@ void Printer_::load_filament_start_task()
         LCD::buzz(100); // Inform the user that the extrusion starts
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
         task_.set_background_task(&Printer_::load_filament_task);
+        LCD::set_status(F("Wait until the filament comes out"));
     }
 }
 
@@ -993,6 +1043,7 @@ void Printer_::unload_filament_start_task()
         LCD::buzz(100); // Inform the user that the un-extrusion starts
         enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
         task_.set_background_task(&Printer_::unload_filament_task);
+        LCD::set_status(F("Wait until the filament comes out"));
     }
 }
 
@@ -1775,7 +1826,7 @@ void Printer_::leveling(KeyValue key_value)
 //! Home the printer for bed leveling.
 void Printer_::leveling_home()
 {
-    pages_.show_waiting_page(F("Homing..."));
+    pages_.show_wait_page(F("Homing..."));
     axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
@@ -1884,7 +1935,7 @@ void Printer_::start_extruder_tuning()
     if(hotend <= 0)
         return;
 
-    pages_.show_waiting_page(F("Heating the extruder..."));
+    pages_.show_wait_page(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend, 0);
 
     task_.set_background_task(&Printer_::extruder_tuning_heating_task);
@@ -2115,7 +2166,7 @@ void Printer_::sensor_leveling()
 #ifdef ADVi3PP_BLTOUCH
     sensor_interactive_leveling_ = true;
     pages_.save_forward_page();
-    pages_.show_waiting_page(F("Homing..."));
+    pages_.show_wait_page(F("Homing..."));
     enqueue_and_echo_commands_P(PSTR("G28"));                   // homing
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
     enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
@@ -2182,7 +2233,7 @@ void Printer_::sensor_z_height()
 {
 #ifdef ADVi3PP_BLTOUCH
     pages_.save_forward_page();
-    pages_.show_waiting_page(F("Homing..."));
+    pages_.show_wait_page(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28")));  // homing
     task_.set_background_task(&Printer_::z_height_tuning_home_task, 200);
 #else
@@ -2235,7 +2286,7 @@ void Printer_::sensor_z_height_cancel()
 
 void Printer_::sensor_z_height_continue()
 {
-    pages_.show_waiting_page(F("Measure Z-height"));
+    pages_.show_wait_page(F("Measure Z-height"));
     enqueue_and_echo_commands_P(PSTR("I0")); // measure z-height
 }
 

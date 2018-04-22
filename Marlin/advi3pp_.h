@@ -42,32 +42,36 @@ static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
 
 class Printer_;
 using BackgroundTask = void (Printer_::*)();
+using WaitCalllback = void (Printer_::*)();
 
 // --------------------------------------------------------------------
 // PagesManager
 // --------------------------------------------------------------------
 
-enum class Wait
-{
-    NoControl,
-    Back,
-    BackContinue
-};
-
 struct PagesManager
 {
-    PagesManager() = default;
+    explicit PagesManager(Printer_& printer);
 
     void show_page(Page page, bool save_back = true);
-    void show_waiting_page(const __FlashStringHelper* message, Wait wait = Wait::NoControl);
+    void show_wait_page(const __FlashStringHelper* message);
+    void show_wait_back_page(const __FlashStringHelper* message, WaitCalllback back);
+    void show_wait_back_continue_page(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont);
+    void handle_lcd_command(KeyValue key_value);
     Page get_current_page();
     void show_back_page();
     void save_forward_page();
     void show_forward_page();
 
 private:
+    void handle_lcd_back();
+    void handle_lcd_continue();
+
+private:
+    Printer_& printer_;
     Stack<Page, 8> back_pages_{};
     Page forward_page_ = Page::None;
+    WaitCalllback back_ = nullptr;
+    WaitCalllback continue_ = nullptr;
 };
 
 // --------------------------------------------------------------------

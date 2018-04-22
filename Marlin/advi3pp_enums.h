@@ -168,6 +168,7 @@ enum class Action: uint16_t
 {
     Screen                  = 0x0400,
     PrintCommand            = 0x0401,
+    Wait                    = 0x0402,
     LoadUnload              = 0x0403,
     Preheat                 = 0x0404,
     Move                    = 0x0405,
