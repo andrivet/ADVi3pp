@@ -467,9 +467,9 @@ bool Printer_::is_busy()
 }
 
 //! Update the status of the printer on the LCD.
-void Printer_::send_status_data()
+void Printer_::send_status_data(bool force_update)
 {
-    if(!task_.is_update_time())
+    if(!force_update && !task_.is_update_time())
         return;
 
     WriteRamDataRequest frame{Variable::TargetBed};
@@ -2571,14 +2571,10 @@ void Printer_::send_stats()
 //! Display the Thermal Runaway Error screen.
 void Printer_::temperature_error(const __FlashStringHelper* message)
 {
-    String lcd_message{message};
-
-    WriteRamDataRequest frame{Variable::Message};
-    frame << lcd_message;
-    frame.send(true);
+    LCD::set_status(message);
+    send_status_data(true);
     pages_.show_page(advi3pp::Page::ThermalRunawayError);
 }
-
 
 // --------------------------------------------------------------------
 // PidSettings
