@@ -28,6 +28,8 @@
 
 namespace advi3pp { inline namespace internals {
 
+static const size_t MAX_GARBAGE_BYTES = 5;
+
 // --------------------------------------------------------------------
 // Logging
 // --------------------------------------------------------------------
@@ -360,10 +362,21 @@ bool Frame::receive(bool log)
     //      2 |      1 |       1 |    N  bytes
     //  5A A5 |     06 |      83 |  ...
 
-    wait_for_data(3);
+    uint8_t header0 = 0;
+    for(size_t index = 0; index < MAX_GARBAGE_BYTES; ++index)
+    {
+        wait_for_data(1);
+        header0 = static_cast<uint8_t>(Serial2.read());
+        if(header0 == HEADER_BYTE_0)
+            break;
+        Log::error() << F("Garbage read: ") << header0 << Log::endl();
+    }
+    if(header0 != HEADER_BYTE_0)
+        return false;
 
-	uint8_t header0 = Serial2.read(), header1 = Serial2.read();
-    if(header0 != HEADER_BYTE_0 || header1 != HEADER_BYTE_1)
+    wait_for_data(2);
+	auto header1 = static_cast<uint8_t>(Serial2.read());
+    if(header1 != HEADER_BYTE_1)
     {
         Log::error() << F("Invalid header when receiving a Frame: ") << header0 << ", " << header1 << Log::endl();
         return false;
