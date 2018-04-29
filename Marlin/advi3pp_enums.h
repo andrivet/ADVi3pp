@@ -293,7 +293,7 @@ enum class Feature: uint16_t
     ThermalProtection   = 0b0000000000000010,
     Dimming             = 0b0000000000000100,
     Buzzer              = 0b0000000000001000,
-    BuzzOnPress          = 0b0000000000010000
+    BuzzOnPress         = 0b0000000000010000
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 

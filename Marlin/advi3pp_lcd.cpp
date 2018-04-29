@@ -39,103 +39,101 @@ namespace advi3pp {
 // LCD
 // --------------------------------------------------------------------
 
-namespace { LCD_ lcd; }
-
 void LCD::update()
 {
-    lcd.update();
+    LCD_::instance().update();
 }
 
 void LCD::init()
 {
-    lcd.init();
+    LCD_::instance().init();
 }
 
 bool LCD::has_status()
 {
-    return lcd.has_status();
+    return  LCD_::instance().has_status();
 }
 
 void LCD::set_status(const char* message, bool /*persist*/)
 {
-    lcd.set_status(message);
+    LCD_::instance().set_status(message);
 }
 
 void LCD::set_status_PGM(const char* message, int8_t /*level*/)
 {
-    lcd.set_status_PGM(message);
+    LCD_::instance().set_status_PGM(message);
 }
 
 void LCD::set_alert_status_PGM(const char* message)
 {
-    lcd.set_alert_status_PGM(message);
+    LCD_::instance().set_alert_status_PGM(message);
 }
 
 void LCD::buttons_update()
 {
-    lcd.buttons_update();
+    LCD_::instance().buttons_update();
 }
 
 void LCD::reset_alert_level()
 {
-    lcd.reset_alert_level();
+    LCD_::instance().reset_alert_level();
 }
 
 bool LCD::detected()
 {
-    return lcd.detected();
+    return  LCD_::instance().detected();
 }
 
 void LCD::refresh()
 {
-    lcd.refresh();
+    LCD_::instance().refresh();
 }
 
 void LCD::queue_message(const String &message)
 {
-    lcd.queue_message(message);
+    LCD_::instance().queue_message(message);
 }
 
 void LCD::reset_message()
 {
-    lcd.reset_message();
+    LCD_::instance().reset_message();
 }
 
 void LCD::set_status(const __FlashStringHelper* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    lcd.set_status(fmt, args);
+    LCD_::instance().set_status(fmt, args);
     va_end(args);
 }
 
 void LCD::enable_buzzer(bool enable)
 {
-   lcd.enable_buzzer(enable);
+    LCD_::instance().enable_buzzer(enable);
 }
 
 void LCD::enable_buzz_on_press(bool enable)
 {
-    lcd.enable_buzz_on_press(enable);
+    LCD_::instance().enable_buzz_on_press(enable);
 }
 
 void LCD::buzz(long duration, uint16_t frequency)
 {
-    lcd.buzz(duration, frequency);
+    LCD_::instance().buzz(duration, frequency);
 }
 
 void LCD::buzz_on_press()
 {
-    lcd.buzz_on_press();
+    LCD_::instance().buzz_on_press();
 }
 
 // --------------------------------------------------------------------
 // LCD Implementation
 // --------------------------------------------------------------------
 
-LCD_& LCD_::instance()
+LCD_::LCD_(PagesManager& pages)
+: pages_{pages}
 {
-    return lcd;
 }
 
 void LCD_::update()
@@ -271,7 +269,10 @@ void LCD_::enable_buzz_on_press(bool enable)
 void LCD_::buzz(long duration, uint16_t)
 {
     if(!buzzer_enabled_)
+    {
+        Log::log() << F("Silent Buzz") << Log::endl();
         return;
+    }
 
     buzz_(duration);
 }
@@ -289,7 +290,10 @@ void LCD_::buzz_(long duration)
 void LCD_::buzz_on_press()
 {
     if(!buzz_on_press_enabled_)
+    {
+        Log::log() << F("Silent Buzz") << Log::endl();
         return;
+    }
     buzz_(BUZZ_ON_PRESS_DURATION);
 }
 
@@ -299,29 +303,6 @@ void lcd_status_printf_P(const uint8_t /*level*/, const char * const fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    advi3pp::lcd.status_printf_P(fmt, args);
+    advi3pp::LCD_::instance().status_printf_P(fmt, args);
     va_end(args);
 }
-
-#if ENABLED(ADVANCED_PAUSE_FEATURE)
-
-void lcd_advanced_pause_show_message(const AdvancedPauseMessage message)
-{
-  switch (message)
-  {
-  case ADVANCED_PAUSE_MESSAGE_INIT:                 advi3pp::LCD::set_status(F("Pausing...")); break;
-  case ADVANCED_PAUSE_MESSAGE_UNLOAD:               advi3pp::LCD::set_status(F("Unloading filament...")); break;
-  case ADVANCED_PAUSE_MESSAGE_INSERT:               advi3pp::LCD::set_status(F("Insert filament and click")); break;
-  case ADVANCED_PAUSE_MESSAGE_EXTRUDE:              advi3pp::LCD::set_status(F("Extruding...")); break;
-  case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE: advi3pp::LCD::set_status(F("Press screen to heat")); break;
-  case ADVANCED_PAUSE_MESSAGE_RESUME:               advi3pp::LCD::set_status(F("Resuming print...")); break;
-  case ADVANCED_PAUSE_MESSAGE_STATUS:               advi3pp::LCD::set_status(F("Printing")); break;
-#if ADVANCED_PAUSE_EXTRUDE_LENGTH > 0
-      case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:
-                                                    advi3pp::LCD::set_status(F("Waiting for heat...")); break;
-      case ADVANCED_PAUSE_MESSAGE_OPTION:           advanced_pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
-#endif
-  default: advi3pp::Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << advi3pp::Log::endl(); break;
-  }
-}
-#endif // ADVANCED_PAUSE_FEATURE

@@ -41,8 +41,9 @@ static const Brightness DEFAULT_BRIGHTNESS = Brightness::Max;
 static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
 
 class Printer_;
-using BackgroundTask = void (Printer_::*)();
-using WaitCalllback = void (Printer_::*)();
+
+using BackgroundTask = void(*)();
+using WaitCalllback = void(*)();
 
 // --------------------------------------------------------------------
 // PagesManager
@@ -53,9 +54,9 @@ struct PagesManager
     explicit PagesManager(Printer_& printer);
 
     void show_page(Page page, bool save_back = true);
-    void show_wait_page(const __FlashStringHelper* message);
-    void show_wait_back_page(const __FlashStringHelper* message, WaitCalllback back);
-    void show_wait_back_continue_page(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont);
+    void show_wait_page(const __FlashStringHelper* message, bool save_back = true);
+    void show_wait_back_page(const __FlashStringHelper* message, WaitCalllback back, bool save_back = true);
+    void show_wait_back_continue_page(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back = true);
     void handle_lcd_command(KeyValue key_value);
     Page get_current_page();
     void show_back_page();
@@ -314,6 +315,77 @@ private:
 };
 
 // --------------------------------------------------------------------
+// Advanced Pause
+// --------------------------------------------------------------------
+
+struct AdvancedPause
+{
+    AdvancedPause(PagesManager& pages);
+
+    void advanced_pause_show_message(AdvancedPauseMessage message);
+
+private:
+    static AdvancedPause& instance(); // TODO: Quick and dirty. To fix.
+
+    void init();
+    void insert_filament();
+    void printing();
+
+private:
+    PagesManager& pages_;
+    AdvancedPauseMessage last_advanced_pause_message_ = static_cast<AdvancedPauseMessage>(-1);
+};
+
+// --------------------------------------------------------------------
+// LCD implementation
+// --------------------------------------------------------------------
+
+//! Implementation of the Duplication i3 Plus LCD
+struct LCD_
+{
+    explicit LCD_(PagesManager& pages);
+
+    static LCD_& instance();
+
+    void update();
+    void init();
+    bool has_status();
+    void set_status(const char* message);
+    void set_status_PGM(const char* message);
+    void set_alert_status_PGM(const char* message);
+    void status_printf_P(const char* fmt, va_list argp);
+    void set_status(const __FlashStringHelper* fmt, va_list argp);
+    void buttons_update();
+    void reset_alert_level();
+    bool detected();
+    void refresh();
+    const String& get_message() const;
+    void queue_message(const String& message);
+    void reset_message();
+
+    void set_progress_name(const String& name);
+    const String& get_progress() const;
+    void reset_progress();
+
+    void enable_buzzer(bool enable);
+    void enable_buzz_on_press(bool enable);
+    void buzz(long duration, uint16_t frequency = 0);
+    void buzz_on_press();
+
+private:
+    void buzz_(long duration);
+
+private:
+    PagesManager pages_;
+    String message_;
+    String progress_name_;
+    mutable String progress_percent_;
+    mutable int percent_ = -1;
+    bool buzzer_enabled_ = true;
+    bool buzz_on_press_enabled_ = false;
+};
+
+// --------------------------------------------------------------------
 // Printer implementation
 // --------------------------------------------------------------------
 
@@ -333,6 +405,7 @@ struct Printer_
     void temperature_error(const __FlashStringHelper* message);
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
+    void advanced_pause_show_message(AdvancedPauseMessage message);
 
     void save_settings();
 
@@ -357,6 +430,9 @@ private:
     void change_usb_baudrate();
 
     void icode_0(const GCodeParser& parser);
+
+    friend LCD_& LCD_::instance();
+    friend AdvancedPause& AdvancedPause::instance();
 
 private:
     // Actions
@@ -544,6 +620,7 @@ private:
 
 private:
     PagesManager pages_;
+    LCD_ lcd_;
     Task task_;
     SDFilesManager sd_files_;
     Preheat preheat_;
@@ -559,55 +636,11 @@ private:
     Dimming dimming_{};
     Sensor sensor_;
     Graphs graphs_;
+    AdvancedPause pause_;
+
     bool sensor_interactive_leveling_ = false;
     double extruded_ = 0.0;
     bool eeprom_mismatch_ = false;
-};
-
-// --------------------------------------------------------------------
-// LCD implementation
-// --------------------------------------------------------------------
-
-//! Implementation of the Duplication i3 Plus LCD
-struct LCD_
-{
-    static LCD_& instance();
-
-    void update();
-    void init();
-    bool has_status();
-    void set_status(const char* message);
-    void set_status_PGM(const char* message);
-    void set_alert_status_PGM(const char* message);
-    void status_printf_P(const char* fmt, va_list argp);
-    void set_status(const __FlashStringHelper* fmt, va_list argp);
-    void buttons_update();
-    void reset_alert_level();
-    bool detected();
-    void refresh();
-    const String& get_message() const;
-    void queue_message(const String& message);
-    void reset_message();
-
-    void set_progress_name(const String& name);
-    const String& get_progress() const;
-    void reset_progress();
-
-    void enable_buzzer(bool enable);
-    void enable_buzz_on_press(bool enable);
-    void buzz(long duration, uint16_t frequency = 0);
-    void buzz_on_press();
-
-private:
-    void buzz_(long duration);
-
-private:
-    String message_;
-    String progress_name_;
-    mutable String progress_percent_;
-    mutable int percent_ = -1;
-    bool buzzer_enabled_ = true;
-    bool buzz_on_press_enabled_ = false;
 };
 
 }}
