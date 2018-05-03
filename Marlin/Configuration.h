@@ -38,6 +38,7 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 #define CONFIGURATION_H_VERSION 010107
+#define ADVi3PP_BLTOUCH
 
 // This is only to ensure that CLion is parsing code properly inside the IDE
 #ifdef __CLION_IDE__
@@ -648,6 +649,7 @@
 #ifdef ADVi3PP_BLTOUCH
 // BLTouch probe uses Z-Max endstop
 #define Z_MIN_PROBE_ENDSTOP
+#define Z_MIN_PROBE_PIN Z_MAX_PIN
 #endif
 
 /**
@@ -1084,7 +1086,7 @@
 // - Prevent Z homing when the Z probe is outside bed area.
 //
 // We are still using the z-min endstop and people do not like much the safe homing in the middle of the bed
-//#define Z_SAFE_HOMING
+#define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
   #define Z_SAFE_HOMING_X_POINT ((X_BED_SIZE) / 2)    // X point for Z homing when homing all axes (G28).
