@@ -38,7 +38,6 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 #define CONFIGURATION_H_VERSION 010107
-#define ADVi3PP_BLTOUCH
 
 // This is only to ensure that CLion is parsing code properly inside the IDE
 #ifdef __CLION_IDE__
