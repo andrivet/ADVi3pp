@@ -184,6 +184,7 @@ void Printer_::setup()
         change_usb_baudrate();
 
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
+    send_sponsors();
     Serial2.begin(advi3_pp_baudrate);
     get_advi3pp_lcd_version();
     send_versions();
@@ -217,6 +218,11 @@ void Printer_::show_boot_page()
 void Printer_::send_gplv3_7b_notice()
 {
     Log::log() << F("Based on ADVi3++, Copyright (C) 2017 Sebastien Andrivet") << Log::endl();
+}
+
+void Printer_::send_sponsors()
+{
+    Log::log() << F("Sponsored by Johnathan Chamberlain") << Log::endl();
 }
 
 //! Process command specific to this printer (I)
@@ -550,6 +556,7 @@ void Printer_::read_lcd_serial()
         case Action::SensorZHeight:         sensor_z_height(key_value); break;
         case Action::ChangeFilament:        change_filament(key_value); break;
         case Action::EEPROMMismatch:        eeprom_mimatch(key_value); break;
+        case Action::Sponsors:              sponsors(key_value); break;
         case Action::MoveXPlus:             move_x_plus(); break;
         case Action::MoveXMinus:            move_x_minus(); break;
         case Action::MoveYPlus:             move_y_plus(); break;
@@ -1716,6 +1723,10 @@ bool Printer_::is_lcd_version_valid() const
     return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
 }
 
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Versions
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 //! Display the Versions screen,
 void Printer_::versions(KeyValue key_value)
 {
@@ -1741,6 +1752,31 @@ void Printer_::versions_back()
 void Printer_::versions_show()
 {
     pages_.show_page(Page::Versions);
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Sponsors
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+//! Display the Sponsors screen,
+void Printer_::sponsors(KeyValue key_value)
+{
+    switch(key_value)
+    {
+        case KeyValue::Show:					sponsors_show(); break;
+        case KeyValue::Back:                    sponsors_back(); break;
+        default:								Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
+    }
+}
+
+void Printer_::sponsors_back()
+{
+    pages_.show_back_page();
+}
+
+void Printer_::sponsors_show()
+{
+    pages_.show_page(Page::Sponsors);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

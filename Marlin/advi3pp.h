@@ -53,6 +53,7 @@ enum class Page: uint8_t
     Move                    = 38,
     SdCard                  = 40,
     Print                   = 42,
+    Sponsors                = 44,
     Waiting                 = 46,
     ManualLeveling          = 48,
     ExtruderTuningTemp      = 50,
