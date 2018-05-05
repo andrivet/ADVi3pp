@@ -412,6 +412,7 @@ struct Printer_
 private:
     void send_status_data(bool force_update = false);
     void send_gplv3_7b_notice(); // Forks: you have to keep this notice
+    void send_sponsors();
     void send_versions();
     void read_lcd_serial();
     void send_stats();
@@ -610,6 +611,10 @@ private:
     void versions_show();
     void versions_mismatch_forward();
     void versions_back();
+
+    void sponsors(KeyValue key_value);
+    void sponsors_show();
+    void sponsors_back();
 
     void copyrights(KeyValue key_value);
     void copyrights_show();
