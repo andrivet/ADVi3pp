@@ -350,6 +350,14 @@ void PagesManager::show_wait_back_continue_page(const __FlashStringHelper* messa
     show_page(Page::WaitBackContinue, save_back);
 }
 
+void PagesManager::show_wait_continue_page(const __FlashStringHelper* message, WaitCalllback cont, bool save_back)
+{
+    LCD::set_status_PGM(reinterpret_cast<const char*>(message));
+    back_ = nullptr;
+    continue_ = cont;
+    show_page(Page::WaitContinue, save_back);
+}
+
 void PagesManager::handle_lcd_command(KeyValue key_value)
 {
     switch(key_value)
@@ -3174,10 +3182,9 @@ void AdvancedPause::init()
 
 void AdvancedPause::insert_filament()
 {
-    pages_.show_wait_back_continue_page
+    pages_.show_wait_continue_page
     (
         F("Insert filament and press continue..."),
-        []{ advi3pp::LCD::set_status(F("Cancel currently not supported")); },
         []{ ::wait_for_user = false; AdvancedPause::instance().pages_.show_wait_page(F("Filament inserted.."), false); },
         false
     );
