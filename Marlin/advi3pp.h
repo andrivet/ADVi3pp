@@ -92,7 +92,7 @@ struct Printer
     static void setup();
     static void task();
     static void auto_pid_finished();
-    static void g29_leveling_finished();
+    static void g29_leveling_finished(bool success);
     static void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     static void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     static void reset_eeprom_data();

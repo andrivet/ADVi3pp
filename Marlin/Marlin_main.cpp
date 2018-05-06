@@ -5322,7 +5322,7 @@ void home_all_axes() { gcode_G28(true); }
     #endif
 
     report_current_position();
-    advi3pp::Printer::g29_leveling_finished();
+    advi3pp::Printer::g29_leveling_finished(!isnan(measured_z));
 
     KEEPALIVE_STATE(IN_HANDLER);
 
