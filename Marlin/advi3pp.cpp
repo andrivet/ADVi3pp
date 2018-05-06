@@ -172,26 +172,12 @@ Printer_::Printer_()
 //! Initialize the printer and its LCD
 void Printer_::setup()
 {
-#ifdef DEBUG
-    Log::log() << F("This is a DEBUG build") << Log::endl();
-#endif
-
-#ifdef ADVi3PP_BLTOUCH
-	 Log::log() << F("This is a BLTouch build") << Log::endl();
-#endif
+    init_ = true;
 
     if(usb_baudrate_ != BAUDRATE)
         change_usb_baudrate();
 
-    send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
-    //send_sponsors();
     Serial2.begin(advi3_pp_baudrate);
-    get_advi3pp_lcd_version();
-    send_versions();
-    graphs_.clear();
-    dimming_.reset();
-
-    show_boot_page();
 }
 
 void Printer_::show_boot_page()
@@ -462,9 +448,36 @@ void PagesManager::show_forward_page()
 // Incoming LCD commands and status update
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+//! Do not do soo many things in setup so do things here
+void Printer_::init()
+{
+    init_ = false;
+
+#ifdef DEBUG
+    Log::log() << F("This is a DEBUG build") << Log::endl();
+#endif
+
+#ifdef ADVi3PP_BLTOUCH
+    Log::log() << F("This is a BLTouch build") << Log::endl();
+#endif
+
+    send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
+    send_sponsors();
+
+    get_advi3pp_lcd_version();
+    send_versions();
+    graphs_.clear();
+    dimming_.reset();
+
+    show_boot_page();
+}
+
 //! Background tasks
 void Printer_::task()
 {
+    if(init_)
+        init();
+
     dimming_.check();
     read_lcd_serial();
     task_.execute_background_task();

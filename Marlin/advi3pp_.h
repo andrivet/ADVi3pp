@@ -410,6 +410,7 @@ struct Printer_
     void save_settings();
 
 private:
+    void init();
     void send_status_data(bool force_update = false);
     void send_gplv3_7b_notice(); // Forks: you have to keep this notice
     void send_sponsors();
@@ -643,6 +644,7 @@ private:
     Graphs graphs_;
     AdvancedPause pause_;
 
+    bool init_ = true;
     bool sensor_interactive_leveling_ = false;
     double extruded_ = 0.0;
     bool eeprom_mismatch_ = false;
