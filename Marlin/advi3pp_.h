@@ -57,6 +57,7 @@ struct PagesManager
     void show_wait_page(const __FlashStringHelper* message, bool save_back = true);
     void show_wait_back_page(const __FlashStringHelper* message, WaitCalllback back, bool save_back = true);
     void show_wait_back_continue_page(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back = true);
+    void show_wait_continue_page(const __FlashStringHelper* message, WaitCalllback cont, bool save_back = true);
     void handle_lcd_command(KeyValue key_value);
     Page get_current_page();
     void show_back_page();
