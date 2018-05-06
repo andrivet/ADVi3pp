@@ -94,9 +94,9 @@ void Printer::auto_pid_finished()
     printer.auto_pid_finished();
 }
 
-void Printer::g29_leveling_finished()
+void Printer::g29_leveling_finished(bool success)
 {
-    printer.g29_leveling_finished();
+    printer.g29_leveling_finished(success);
 }
 
 //! Store presets in permanent memory.
@@ -184,7 +184,7 @@ void Printer_::setup()
         change_usb_baudrate();
 
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
-    send_sponsors();
+    //send_sponsors();
     Serial2.begin(advi3_pp_baudrate);
     get_advi3pp_lcd_version();
     send_versions();
@@ -2230,9 +2230,21 @@ void Printer_::sensor_leveling()
 #endif
 }
 
-void Printer_::g29_leveling_finished()
+void Printer_::g29_leveling_finished(bool success)
 {
+    if(!success)
+    {
+        LCD::set_status(F("Leveling failed"));
+        if(!sensor_interactive_leveling_ && !IS_SD_FILE_OPEN)
+        {
+            //USB: "disconnect" is the only standard command to stop a print
+            SERIAL_ECHOLNPGM("//action:disconnect");
+            return;
+        }
+    }
+
     LCD::reset_message();
+
     if(sensor_interactive_leveling_)
         sensor_grid_show();
     else
