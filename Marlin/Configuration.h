@@ -649,7 +649,8 @@
 #ifdef ADVi3PP_BLTOUCH
 // BLTouch probe uses Z-Max endstop
 #define Z_MIN_PROBE_ENDSTOP
-#define Z_MIN_PROBE_PIN Z_MAX_PIN
+/** Use the z probe for homing **/
+#define Z_USE_Z_MIN_PROBE_FOR_HOMING
 #endif
 
 /**
