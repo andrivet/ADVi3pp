@@ -647,10 +647,10 @@
  *
  */
 #ifdef ADVi3PP_BLTOUCH
-// BLTouch probe uses Z-Max endstop
-#define Z_MIN_PROBE_ENDSTOP
-/** Use the z probe for homing **/
-#define Z_USE_Z_MIN_PROBE_FOR_HOMING
+  // BLTouch probe uses Z-Max endstop
+  #define Z_MIN_PROBE_ENDSTOP
+  /** Use BLTOUCH probe for homing **/
+  #define Z_USE_ADVi3PP_BLTOUCH_FOR_HOMING
 #endif
 
 /**
@@ -1087,7 +1087,7 @@
 // - Prevent Z homing when the Z probe is outside bed area.
 //
 // We are still using the z-min endstop and people do not like much the safe homing in the middle of the bed
-#define Z_SAFE_HOMING
+//#define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
   #define Z_SAFE_HOMING_X_POINT ((X_BED_SIZE) / 2)    // X point for Z homing when homing all axes (G28).
