@@ -162,12 +162,19 @@
   /**
    * Auto Bed Leveling and Z Probe Repeatability Test
    */
-  #define HOMING_Z_WITH_PROBE (HAS_BED_PROBE && Z_HOME_DIR < 0 && (ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN) || ENABLED(Z_USE_Z_MIN_PROBE_FOR_HOMING)))
+  #define HOMING_Z_WITH_PROBE (HAS_BED_PROBE && Z_HOME_DIR < 0 && (ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN) || ENABLED(Z_USE_ADVi3PP_BLTOUCH_FOR_HOMING)))
 
   /**
    * Z Sled Probe requires Z_SAFE_HOMING
    */
   #if ENABLED(Z_PROBE_SLED)
+    #define Z_SAFE_HOMING
+  #endif
+
+  /** 
+   * Z_USE_Z_MIN_PROBE_FOR_HOMING Requires Safe Homing 
+   */
+  #if ENABLED(Z_USE_ADVi3PP_BLTOUCH_FOR_HOMING)
     #define Z_SAFE_HOMING
   #endif
 
