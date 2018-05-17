@@ -29,6 +29,7 @@
 #include "advi3pp_enums.h"
 #include "advi3pp.h"
 #include "advi3pp_utils.h"
+#include "ADVcallback.h"
 
 namespace advi3pp { inline namespace internals {
 
@@ -42,8 +43,9 @@ static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
 
 class Printer_;
 
-using BackgroundTask = void(*)();
-using WaitCalllback = void(*)();
+using andrivet::Callback;
+using BackgroundTask = Callback<void(*)()>;
+using WaitCalllback = Callback<void(*)()>;
 
 // --------------------------------------------------------------------
 // PagesManager
@@ -72,8 +74,8 @@ private:
     Printer_& printer_;
     Stack<Page, 8> back_pages_{};
     Page forward_page_ = Page::None;
-    WaitCalllback back_ = nullptr;
-    WaitCalllback continue_ = nullptr;
+    WaitCalllback back_;
+    WaitCalllback continue_;
 };
 
 // --------------------------------------------------------------------
@@ -312,7 +314,7 @@ private:
     unsigned int op_time_delta_ = 500;
     millis_t next_op_time_ = 0;
     millis_t next_update_time_ = 0;
-    BackgroundTask background_task_ = nullptr;
+    BackgroundTask background_task_;
 };
 
 // --------------------------------------------------------------------

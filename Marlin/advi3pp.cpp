@@ -637,7 +637,7 @@ void Printer_::show_print()
     }
 
     pages_.show_wait_page(F("Try to access the SD card..."));
-    task_.set_background_task([]{ printer.show_sd_or_temp_page(); });
+    task_.set_background_task(WaitCalllback([]{ printer.show_sd_or_temp_page(); }));
 }
 
 void Printer_::show_sd_or_temp_page()
@@ -855,7 +855,7 @@ void Printer_::sd_print_stop()
     fanSpeeds[0] = 0;
 
     pages_.show_back_page();
-    task_.set_background_task([]{printer.reset_messages_task();}, 500);
+    task_.set_background_task(WaitCalllback([]{printer.reset_messages_task();}), 500);
 }
 
 void Printer_::reset_messages_task()
@@ -931,7 +931,7 @@ void Printer_::usb_print_stop()
     SERIAL_ECHOLNPGM("//action:disconnect");
 
     pages_.show_back_page();
-    task_.set_background_task([]{ printer.reset_messages_task(); }, 500);
+    task_.set_background_task(WaitCalllback([]{ printer.reset_messages_task(); }), 500);
 }
 
 //! Pause SD printing
@@ -1029,10 +1029,9 @@ void Printer_::load_unload_start(bool load)
     enqueue_and_echo_commands_P(PSTR("G91")); // relative mode
 
     task_.set_background_task(load
-        ? []{ printer.load_filament_start_task(); }
-        : []{ printer.unload_filament_start_task(); });
-    pages_.show_wait_back_page(F("Wait until the target temp is reached..."),
-        []{ printer.load_unload_stop(); });
+        ? WaitCalllback([]{ printer.load_filament_start_task(); })
+        : WaitCalllback([]{ printer.unload_filament_start_task(); }));
+    pages_.show_wait_back_page(F("Wait until the target temp is reached..."), WaitCalllback([]{ printer.load_unload_stop(); }));
 }
 
 //! Handle back from the Load on Unload LCD screen.
@@ -1041,7 +1040,7 @@ void Printer_::load_unload_stop()
     Log::log() << F("Load/Unload Stop");
 
     LCD::reset_message();
-    task_.set_background_task([]{ printer.load_unload_stop_task(); });
+    task_.set_background_task(BackgroundTask([]{ printer.load_unload_stop_task(); }));
     clear_command_queue();
     Temperature::setTargetHotend(0, 0);
 
@@ -1067,7 +1066,7 @@ void Printer_::load_filament_start_task()
         Log::log() << F("Load Filament") << Log::endl();
         LCD::buzz(100); // Inform the user that the extrusion starts
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
-        task_.set_background_task([]{printer.load_filament_task();});
+        task_.set_background_task(BackgroundTask([]{printer.load_filament_task();}));
         LCD::set_status(F("Wait until the filament comes out..."));
     }
 }
@@ -1088,7 +1087,7 @@ void Printer_::unload_filament_start_task()
         Log::log() << F("Unload Filament") << Log::endl();
         LCD::buzz(100); // Inform the user that the un-extrusion starts
         enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
-        task_.set_background_task([]{printer.unload_filament_task();});
+        task_.set_background_task(BackgroundTask([]{printer.unload_filament_task();}));
         LCD::set_status(F("Wait until the filament comes out..."));
     }
 }
@@ -1906,7 +1905,7 @@ void Printer_::leveling_home()
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    task_.set_background_task([]{printer.manual_leveling_task();}, 200);
+    task_.set_background_task(BackgroundTask([]{printer.manual_leveling_task();}), 200);
 }
 
 //! Leveling Background task.
@@ -2013,7 +2012,7 @@ void Printer_::start_extruder_tuning()
     pages_.show_wait_page(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend, 0);
 
-    task_.set_background_task([]{printer.extruder_tuning_heating_task();});
+    task_.set_background_task(BackgroundTask([]{printer.extruder_tuning_heating_task();}));
 }
 
 //! Extruder tuning background task.
@@ -2031,7 +2030,7 @@ void Printer_::extruder_tuning_heating_task()
     String command; command << F("G1 E") << tuning_extruder_filament << " F50"; // Extrude slowly
     enqueue_and_echo_command(command.c_str());
 
-    task_.set_background_task([]{printer.extruder_tuning_extruding_task();});
+    task_.set_background_task(BackgroundTask([]{printer.extruder_tuning_extruding_task();}));
 }
 
 //! Extruder tuning background task.
@@ -2322,7 +2321,7 @@ void Printer_::sensor_z_height()
     pages_.save_forward_page();
     pages_.show_wait_page(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28")));  // homing
-    task_.set_background_task([]{printer.z_height_tuning_home_task();}, 200);
+    task_.set_background_task(BackgroundTask([]{printer.z_height_tuning_home_task();}), 200);
 #else
     pages_.show_page(Page::NoSensor);
 #endif
@@ -2340,7 +2339,7 @@ void Printer_::z_height_tuning_home_task()
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000"));    // center of the bed
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F240"));            // lower head
 
-    task_.set_background_task([]{printer.z_height_tuning_center_task();}, 200);
+    task_.set_background_task(BackgroundTask([]{printer.z_height_tuning_center_task();}), 200);
 }
 
 void Printer_::z_height_tuning_center_task()
@@ -3127,7 +3126,7 @@ void Task::clear_background_task()
 //! If there is an operating running, execute its next step
 void Task::execute_background_task()
 {
-    if(background_task_ == nullptr || !ELAPSED(millis(), next_op_time_))
+    if(!background_task_ || !ELAPSED(millis(), next_op_time_))
         return;
 
     next_op_time_ = millis() + op_time_delta_;
@@ -3185,7 +3184,7 @@ void AdvancedPause::insert_filament()
     pages_.show_wait_continue_page
     (
         F("Insert filament and press continue..."),
-        []{ ::wait_for_user = false; AdvancedPause::instance().pages_.show_wait_page(F("Filament inserted.."), false); },
+        WaitCalllback([]{ ::wait_for_user = false; AdvancedPause::instance().pages_.show_wait_page(F("Filament inserted.."), false); }),
         false
     );
 }
