@@ -377,7 +377,7 @@ private:
     void buzz_(long duration);
 
 private:
-    PagesManager pages_;
+    PagesManager& pages_;
     String message_;
     String progress_name_;
     mutable String progress_percent_;
