@@ -323,13 +323,11 @@ private:
 
 struct AdvancedPause
 {
-    AdvancedPause(PagesManager& pages);
+    explicit AdvancedPause(PagesManager& pages);
 
     void advanced_pause_show_message(AdvancedPauseMessage message);
 
 private:
-    static AdvancedPause& instance(); // TODO: Quick and dirty. To fix.
-
     void init();
     void insert_filament();
     void printing();
@@ -437,7 +435,6 @@ private:
     void icode_0(const GCodeParser& parser);
 
     friend LCD_& LCD_::instance();
-    friend AdvancedPause& AdvancedPause::instance();
 
 private:
     // Actions
