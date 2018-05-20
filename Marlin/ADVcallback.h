@@ -112,7 +112,7 @@ struct Callback<R(*)(A...)>
     explicit Callback(const L& l): callable_{new CallableFunction<decltype(l), R, A...>(l)} {}
 
     // From another Callback
-    Callback(const CB& cb): callable_{cb.callable_->clone()} {}
+    Callback(const CB& cb): callable_{cb.callable_ != nullptr ? cb.callable_->clone() : nullptr} {}
 
     // Assignment
     Callback& operator=(const CB& c) { callable_.reset(c.callable_ != nullptr ? c.callable_->clone() : nullptr); return *this; }
