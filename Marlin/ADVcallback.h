@@ -107,6 +107,14 @@ struct Callback<R(*)(A...)>
     template <typename O, typename M>
     Callback(const O& o, const M& m): callable_{new CallableConstMethod<O, R, A...>(o, m)} {}
 
+    // From a member function
+    template <typename O, typename M>
+    Callback(O* o, const M& m): callable_{new CallableMethod<O, R, A...>(*o, m)} {}
+
+    // From a const member function
+    template <typename O, typename M>
+    Callback(const O* o, const M& m): callable_{new CallableConstMethod<O, R, A...>(*o, m)} {}
+
     // Captured lambda specialization
     template<typename L>
     explicit Callback(const L& l): callable_{new CallableFunction<decltype(l), R, A...>(l)} {}
