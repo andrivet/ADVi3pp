@@ -103,6 +103,7 @@ void Log::dump(const uint8_t* bytes, size_t size)
 
 void __assert(const char *msg, const char *file, uint16_t line)
 {
+    asm("break \n");
     Log::log() << F("### ASSERTION FAILED: ") << msg << " in file " << file << ", line " << line << Log::endl();
 }
 
