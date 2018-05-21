@@ -3141,7 +3141,7 @@ void Task::execute_background_task()
 
 bool Task::has_background_task() const
 {
-    return static_cast<bool>(background_task_);
+    return bool(background_task_);
 }
 
 // --------------------------------------------------------------------
