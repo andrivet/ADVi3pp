@@ -303,6 +303,7 @@ struct Task
     void set_background_task(BackgroundTask task, unsigned int delta = 500);
     void clear_background_task();
     void execute_background_task();
+    bool has_background_task() const;
     bool is_update_time();
 
 private:
@@ -331,6 +332,7 @@ private:
     void init();
     void insert_filament();
     void printing();
+    void filament_inserted();
 
 private:
     PagesManager& pages_;
