@@ -52,8 +52,8 @@ public:
     explicit operator bool() const noexcept { return get() != nullptr; }
     T* get() const noexcept { return ptr_; }
     T* release() noexcept { T* p = ptr_; ptr_ = nullptr; return p; }
-    void reset(T* p = nullptr) noexcept { if(p != get()) { delete get(); ptr_ = p; } }
-    void reset(nullptr_t) noexcept { delete get(); ptr_ = nullptr; }
+    void reset(T* p = nullptr) noexcept { if(p != ptr_) { delete ptr_; ptr_ = p; } }
+    void reset(nullptr_t) noexcept { delete ptr_; ptr_ = nullptr; }
     void swap(unique_ptr& p) noexcept { andrivet::swap(ptr_, p.ptr_); }
 
     // Disabled
