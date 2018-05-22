@@ -483,6 +483,7 @@ private:
 
     void move(KeyValue key_value);
     void show_move();
+    void move(const char* command, millis_t delay);
     void move_x_plus();
     void move_x_minus();
     void move_x_home();
@@ -650,6 +651,7 @@ private:
     bool sensor_interactive_leveling_ = false;
     double extruded_ = 0.0;
     bool eeprom_mismatch_ = false;
+    millis_t last_move_time_ = 0;
 };
 
 }}

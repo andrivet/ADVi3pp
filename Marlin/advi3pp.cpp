@@ -1163,57 +1163,51 @@ void Printer_::move_back()
 }
 
 //! Move the nozzle.
+void Printer_::move(const char* command, millis_t delay)
+{
+    if(!ELAPSED(millis(), last_move_time_ + delay))
+        return;
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(command);
+    enqueue_and_echo_commands_P(PSTR("G90"));
+    last_move_time_ = millis();
+}
+
+
+//! Move the nozzle.
 void Printer_::move_x_plus()
 {
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 X5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
+    move(PSTR("G1 X4 F1000"), 150);
 }
 
 //! Move the nozzle.
 void Printer_::move_x_minus()
 {
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 X-5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
+    move(PSTR("G1 X-4 F1000"), 150);
 }
 
 //! Move the nozzle.
 void Printer_::move_y_plus()
 {
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 Y5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
+    move(PSTR("G1 Y4 F1000"), 150);
 }
 
 //! Move the nozzle.
 void Printer_::move_y_minus()
 {
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 Y-5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
+    move(PSTR("G1 Y-4 F1000"), 150);
 }
 
 //! Move the nozzle.
 void Printer_::move_z_plus()
 {
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0.5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
+    move(PSTR("G1 Z0.5 F1000"), 10);
 }
 
 //! Move the nozzle.
 void Printer_::move_z_minus()
 {
-    clear_command_queue();
-    enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z-0.5 F3000"));
-    enqueue_and_echo_commands_P(PSTR("G90"));
+    move(PSTR("G1 Z-0.5 F1000"), 10);
 }
 
 //! Extrude some filament.
