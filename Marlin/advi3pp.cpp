@@ -2252,22 +2252,28 @@ void Printer_::g29_leveling_finished(bool success)
 {
     if(!success)
     {
-        LCD::set_status(F("Leveling failed"));
-        if(!sensor_interactive_leveling_ && !IS_SD_FILE_OPEN)
-        {
-            //USB: "disconnect" is the only standard command to stop a print
-            SERIAL_ECHOLNPGM("//action:disconnect");
-            return;
-        }
+        if(!sensor_interactive_leveling_ && !IS_SD_FILE_OPEN) // i.e. USB print
+            SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
+
+		sensor_interactive_leveling_ = false;
+		pages_.show_wait_back_page(F("Leveling failed"), WaitCalllback(this, &Printer_::g29_leveling_failed), false);
+        return;
     }
 
     LCD::reset_message();
 
     if(sensor_interactive_leveling_)
+	{
+		sensor_interactive_leveling_ = false;	
         sensor_grid_show();
+	}
     else
         enqueue_and_echo_commands_P(PSTR("M420 S1"));   // set bed leveling state (enable)
-    sensor_interactive_leveling_ = false;
+}
+
+void Printer_::g29_leveling_failed()
+{
+    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

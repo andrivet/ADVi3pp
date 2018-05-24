@@ -424,6 +424,8 @@ private:
     void reset_messages_task();
     bool is_busy();
 
+    void g29_leveling_failed();;
+
     String get_lcd_firmware_version();
     void get_advi3pp_lcd_version();
     bool is_lcd_version_valid() const;

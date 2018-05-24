@@ -2189,7 +2189,9 @@ static void clean_up_after_endstop_or_probe_move() {
 
     // Retract BLTouch immediately after a probe if it was triggered
     #if ENABLED(BLTOUCH)
-      if (probe_triggered && set_bltouch_deployed(false)) return true;
+      // Always stow the sensor, not only when the probe was triggered
+      // (otherwise, the sensor stays deployed in case of probing error)
+      if (set_bltouch_deployed(false)) return true;
     #endif
 
     // Clear endstop flags
