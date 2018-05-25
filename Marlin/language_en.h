@@ -745,7 +745,7 @@
   #define MSG_ERR_REDUNDANT_TEMP              _UxGT("Err: REDUNDANT TEMP")
 #endif
 #ifndef MSG_THERMAL_RUNAWAY
-  #define MSG_THERMAL_RUNAWAY                 _UxGT("The heating of the extruder is too slow")
+  #define MSG_THERMAL_RUNAWAY                 _UxGT("The temperature has deviated too much")
 #endif
 #ifndef MSG_ERR_MAXTEMP
   #define MSG_ERR_MAXTEMP                     _UxGT("Maximum temperature exceeded")
