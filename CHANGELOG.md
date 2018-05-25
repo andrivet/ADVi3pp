@@ -1,5 +1,30 @@
 # ADVi3++ Changelog
 
+## 3.0.0 (2018-05-25)
+
+### New features
+
+* BLTouch support (Classic and Smart). Clones of BLTouch are not supported (and I recommend to avoid them)
+* [#8], [#18]: M600 support and head parking
+* Pause, Resume and Stop when printing from USB
+* Z-height in status (near the fan speed, in green)
+* Display messages on Home screen
+* Thermal Runaway enhancements: Now displays why the printer was stopped. You can also choose to disable thermal protection. At your own risk. I recommend to let it on.
+* USB baudrate: you can now choose the baud rate. It is 115200 by default (like in the previous versions)
+* Buzzer control: You can now disable or enable the buzzer from the LCD panel. The buzzer is now off by default when you press the screen, but does but for some actions (load and unload for example).
+* Screen Dimming control: You can now disable or enable the dimming of the LCD panel and choose its intensity.
+* **#82**: Change slightly colors for a better contrast
+* **#102**: Declare thermal protection capability
+* **#103**: In settings stored in EEPROM are not compatible, warn the user and reset settings to factory
+
+### Bug fixes
+
+* **#15**: Will not x-home if you cancel a print and then restart. Very annoying but not easy to fix
+* [#84]: SD Card (Print menu): Directories are displayed like if they were files
+* **#37**, #97, #118: Filament loading/unloading stops when requested
+* 121 Manual moves (X, Y and Z) are now smother 
+
+
 ## 2.1.0 (2018-01-12)
 
 ### New features
