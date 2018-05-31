@@ -1,5 +1,12 @@
 # ADVi3++ Changelog
 
+## 3.0.1 (2018-05-31)
+
+### Bug fixes
+
+* **#128**: Jerk values were wrong for Z and E axis
+* **#129**: It was not possible to confirm Factory Reset
+
 ## 3.0.0 (2018-05-25)
 
 ### New features
