@@ -42,9 +42,9 @@
 
 namespace
 {
-    const uint16_t advi3_pp_version = 0x300;
+    const uint16_t advi3_pp_version = 0x301;
     const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x300;
-    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x300;
+    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x301;
     // Modify also DETAILED_BUILD_VERSION in Version.h
 
     const unsigned long advi3_pp_baudrate = 115200; // Between the LCD panel and the mainboard
@@ -1606,10 +1606,10 @@ void Printer_::jerk_settings_save()
     Uint16 x, y, z, e;
     response >> x >> y >> z >> e;
 
-    jerks_.max_jerk[X_AXIS] = static_cast<uint32_t>(x.word / 10);
-    jerks_.max_jerk[Y_AXIS] = static_cast<uint32_t>(y.word / 10);
-    jerks_.max_jerk[Z_AXIS] = static_cast<uint32_t>(z.word / 10);
-    jerks_.max_jerk[E_AXIS] = static_cast<uint32_t>(e.word / 10);
+    jerks_.max_jerk[X_AXIS] = x.word / 10.0;
+    jerks_.max_jerk[Y_AXIS] = y.word / 10.0;
+    jerks_.max_jerk[Z_AXIS] = z.word / 10.0;
+    jerks_.max_jerk[E_AXIS] = e.word / 10.0;
     jerks_.save();
 
     pages_.show_forward_page();
