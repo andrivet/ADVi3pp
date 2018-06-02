@@ -17,6 +17,10 @@ Please be sure to review the checklists below before submitting and use one of t
 
 Note: It is no more necessary to add "[FR]" in the title. You can, if you want, label your issue with "enhancement".
 
+Detailed description of the feature request:
+
+_Please provide information (such as links to web sites, blogs, technical description)._
+
 ------------------------------------------------------------
 ### Bug Report
 
