@@ -25,6 +25,10 @@
 #ifndef ADV_I3_PLUS_PLUS_H
 #define ADV_I3_PLUS_PLUS_H
 
+// The preferred way to build ADVi3++ is with PlatformIO. With PlatformIO, you can easily build BLTouch and non-BLtouch releases.
+// If for whatever reason, you prefer to use Arduino IDE, uncomment the following line to build a BLTouch release.
+// #define ADVi3PP_BLTOUCH
+
 #include <stdint.h>
 #include <stdarg.h>
 

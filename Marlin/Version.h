@@ -26,6 +26,8 @@
  * directive USE_AUTOMATIC_VERSIONING.
  */
 
+#include "advi3pp_defines.h"
+
 #if ENABLED(USE_AUTOMATIC_VERSIONING)
 
   #include "_Version.h"

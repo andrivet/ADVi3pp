@@ -24,6 +24,8 @@
  *Wanhao Duplicator i3 Plus pin assignments
  */
 
+#include "advi3pp_defines.h"
+
 #ifndef __AVR_ATmega2560__
   #error "Oops!  Make sure you have 'Arduino Mega' selected from the 'Tools -> Boards' menu."
 #endif
