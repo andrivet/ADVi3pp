@@ -43,7 +43,7 @@
 namespace
 {
     const uint16_t advi3_pp_version = 0x302;
-    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x302;
+    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x301;
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x302;
 
     const unsigned long advi3_pp_baudrate = 115200; // Between the LCD panel and the mainboard
