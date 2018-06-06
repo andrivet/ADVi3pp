@@ -414,6 +414,7 @@ struct Printer_
 
 private:
     void init();
+    void check_and_fix();
     void send_status_data(bool force_update = false);
     void send_gplv3_7b_notice(); // Forks: you have to keep this notice
     void send_sponsors();
