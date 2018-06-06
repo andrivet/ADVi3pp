@@ -2285,6 +2285,10 @@ static void clean_up_after_endstop_or_probe_move() {
         }
       #endif
 
+      // If the two measures are too different, there was a problem
+      if(abs(z2 - first_probe_z) > 10.0)
+        return NAN;
+
       // Return a weighted average of the fast and slow probes
       return (z2 * 3.0 + first_probe_z * 2.0) * 0.2;
 
