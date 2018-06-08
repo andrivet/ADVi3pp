@@ -47,7 +47,7 @@ enum class Action: uint16_t;
 // Logging
 // --------------------------------------------------------------------
 
-#ifdef DEBUG
+#ifdef ADVi3PP_LOG_FRAMES
 struct Log
 {
     struct EndOfLine {};

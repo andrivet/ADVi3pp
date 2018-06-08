@@ -34,7 +34,7 @@ static const size_t MAX_GARBAGE_BYTES = 5;
 // Logging
 // --------------------------------------------------------------------
 
-#ifdef DEBUG
+#ifdef ADVi3PP_LOG_FRAMES
 
 Log Log::logging_;
 
