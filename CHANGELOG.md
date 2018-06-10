@@ -1,5 +1,18 @@
 # ADVi3++ Changelog
 
+## 3.0.2 (2018-06-10)
+
+### New features
+
+* **#138** - Simplify the build of a BLTouch release with Arduino IDE
+
+### Bug fixes
+
+* **#126** - ABL stops at random heights with same g-code
+* **#132** - Bug: cannot set sensor/nozzle height lower than -2 mm bug
+* **#133** - The default steps (X, Y, Z and probably E) are wrong
+* **#136** - When a setting is wrong (such as jerk equals to 0), reset it to the default
+
 ## 3.0.1 (2018-05-31)
 
 ### Bug fixes
