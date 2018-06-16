@@ -6,6 +6,20 @@
 
 **ADVi3++** is a fork of the [Marlin Firmware](http://marlinfw.org/) for the Wanhao Duplicator i3 Plus (and its clones: Monoprice Maker Select Plus, Cocoon Create). It includes both Marlin itself and customizations of the LCD screens.
 
+## Become a Sponsor of this Project
+
+Working on **ADVi3++** takes a lot of time and effort. I make my best to release good quality software, useful and precise documents. I track bugs reported by users and replies to help requests on [Patreon](https://www.patreon.com/andrivet) and [Facebook](https://www.facebook.com/advi3pp/). I invest also time and money to implement new hardware features.
+
+If you like what I am doing, [**please consider supporting me as a patron on Patreon**](https://www.patreon.com/andrivet) so I can continue and develop new releases and new documents. Supporting this project is a guaranty for you that it will continue and become better and better.
+
+<a href="https://www.patreon.com/bePatron?u=6504486" data-patreon-widget-type="become-patron-button">Become a Patron</a><script async src="https://c6.patreon.com/becomePatronButton.bundle.js"></script>
+
+### Vote for your favorite new feature
+
+Version 3 has just been released. I do not expect version 4 to arrive before some months (with Beta releases sooner of course), but it is time to think now of what will be **version 4**. And if you are a **Sponsor** of the project on Patreon, you can participate to this.
+
+[More information](https://www.patreon.com/posts/on-road-to-4-19201225)
+
 ## Objectives
 
 The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
@@ -97,3 +111,5 @@ Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 **ADVi3++ User Manual**
 
 <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This manual is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+
+
