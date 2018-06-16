@@ -10,9 +10,9 @@
 
 Working on **ADVi3++** takes a lot of time and effort. I make my best to release good quality software, useful and precise documents. I track bugs reported by users and replies to help requests on [Patreon](https://www.patreon.com/andrivet) and [Facebook](https://www.facebook.com/advi3pp/). I invest also time and money to implement new hardware features.
 
-If you like what I am doing, [**please consider supporting me as a patron on Patreon**](https://www.patreon.com/andrivet) so I can continue and develop new releases and new documents. Supporting this project is a guaranty for you that it will continue and become better and better.
+If you like what I am doing, [**please consider supporting me as a patron on Patreon**](https://www.patreon.com/bePatron?u=6504486) so I can continue and develop new releases and new documents. Supporting this project is a guaranty for you that it will continue and become better and better.
 
-<a href="https://www.patreon.com/bePatron?u=6504486" data-patreon-widget-type="become-patron-button">Become a Patron</a><script async src="https://c6.patreon.com/becomePatronButton.bundle.js"></script>
+<a href="https://www.patreon.com/bePatron?u=6504486">![](https://github.com/andrivet/ADVi3pp-User-Manual/raw/master/assets/become-a-patron.png)</a>
 
 ### Vote for your favorite new feature
 
