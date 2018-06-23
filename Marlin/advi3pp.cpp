@@ -1091,7 +1091,8 @@ void Printer_::unload_filament_start_task()
     {
         Log::log() << F("Unload Filament") << Log::endl();
         LCD::buzz(100); // Inform the user that the un-extrusion starts
-        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
+        enqueue_and_echo_commands_P(PSTR("G1 E3 F120")); //extrude 5mm to avoid sticking
+        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120")); //continue to unload filament
         task_.set_background_task(BackgroundTask(this, &Printer_::unload_filament_task));
         LCD::set_status(F("Wait until the filament comes out..."));
     }
