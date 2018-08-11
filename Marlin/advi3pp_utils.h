@@ -435,7 +435,7 @@ inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& wor
 template <typename T>
 inline void EepromRead::read(T& data)
 {
-    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
+    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_, false);
 }
 
 }}

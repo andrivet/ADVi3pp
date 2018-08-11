@@ -26,6 +26,7 @@
  * directive USE_AUTOMATIC_VERSIONING.
  */
 
+// @advi3++: ADVi3++ specific defines to ease the compilation of BLTouch firmware
 #include "advi3pp_defines.h"
 
 #if ENABLED(USE_AUTOMATIC_VERSIONING)
@@ -34,6 +35,7 @@
 
 #else
 
+  // @advi3++: Change the name depending if BLTouch support is enabled or not
   #ifdef ADVi3PP_BLTOUCH
   #define ADVi3PP_NAME "ADVi3++BLTouch"
   #else
@@ -43,20 +45,22 @@
   /**
    * Marlin release version identifier
    */
-  #define SHORT_BUILD_VERSION "1.1.8"
+  #define SHORT_BUILD_VERSION "1.1.9"
 
   /**
    * Verbose version identifier which should contain a reference to the location
    * from where the binary was downloaded or the source code was compiled.
    */
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 3.0.2)"
+  // @advi3++: Construct build version (version number set by advbumpversion) 
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 4.0.0.dev)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
    * here we define this default string as the date where the latest release
    * version was tagged.
    */
-  #define STRING_DISTRIBUTION_DATE "2018-06-10 12:00"
+  // @advi3++: Build date (set by advbumpversion) 
+  #define STRING_DISTRIBUTION_DATE "2018-08-05"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
@@ -65,8 +69,8 @@
    * but not limited to: ADD, DELETE RENAME OR REPURPOSE any directive/option on
    * the configuration files.
    */
-  #define REQUIRED_CONFIGURATION_H_VERSION 010107
-  #define REQUIRED_CONFIGURATION_ADV_H_VERSION 010107
+  #define REQUIRED_CONFIGURATION_H_VERSION 010109
+  #define REQUIRED_CONFIGURATION_ADV_H_VERSION 010109
 
   /**
    * The protocol for communication to the host. Protocol indicates communication
@@ -78,6 +82,7 @@
   /**
    * Defines a generic printer name to be output to the LCD after booting Marlin.
    */
+  // @advi3++: Machine name 
   #define MACHINE_NAME "Wanhao Duplicator i3 Plus"
 
   /**
@@ -86,17 +91,20 @@
    * has a distinct Github fork— the Source Code URL should just be the main
    * Marlin repository.
    */
+  // @advi3++: ADVi3++ sources 
   #define SOURCE_CODE_URL "https://github.com/andrivet/ADVi3pp-Marlin"
 
   /**
    * Default generic printer UUID.
    */
+  // @advi3++: ADVi3++ specific UUID 
   #define DEFAULT_MACHINE_UUID "44b2f5d6-e7e4-47bf-be81-c2a6b4fc7975"
 
   /**
    * The WEBSITE_URL is the location where users can get more information such as
    * documentation about a specific Marlin release.
    */
-  #define WEBSITE_URL "https://github.com/andrivet/ADVi3pp-Marlin"
+  // @advi3++: ADVi3++ User Manual
+  #define WEBSITE_URL "https://andrivet.github.io/ADVi3pp-User-Manual/"
 
 #endif // USE_AUTOMATIC_VERSIONING

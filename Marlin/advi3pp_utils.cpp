@@ -26,6 +26,9 @@
 #include "advi3pp_utils.h"
 #include "advi3pp_.h"
 
+#include <HardwareSerial.h>
+extern HardwareSerial Serial2;
+
 namespace advi3pp { inline namespace internals {
 
 static const size_t MAX_GARBAGE_BYTES = 5;
