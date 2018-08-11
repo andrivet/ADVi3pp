@@ -1,10 +1,10 @@
 Thank you for submitting your feedback to the ADVi3++ project.
 
-Please be sure to review the checklists below before submitting and use one of the templates. 
+Please be sure to review our [code of conduct](code_of_conduct.md) and the checklists below before submitting and use one of the templates. 
 
 **It is mandatory**. If you do not comply with these rules, I will **delete** your issue.
 
-- [ ] This issue is **NOT** about support. This is not the right place for support (there is an [ADVI3++ Facebook page](https://www.facebook.com/advi3pp/) for that)
+- [ ] This issue is **NOT** about support. This is not the right place for support. There is an [ADVI3++ Facebook page](https://www.facebook.com/advi3pp/) where you can ask questions. I do provide support but only for supporters on the project on Patreon (www.patreon.com/andrivet).
 
 ------------------------------------------------------------
 ### Feature Request
@@ -15,9 +15,7 @@ Please be sure to review the checklists below before submitting and use one of t
 - [ ] You have provided enough information (such as links to web sites, blogs, technical description) so that anyone can understand what you are talking about. Just any only a title is not enough.
 - [ ] You have provided objective **facts**, not your personal feelings, your personal preferences.
 
-Note: It is no more necessary to add "[FR]" in the title. You can, if you want, label your issue with "enhancement".
-
-Detailed description of the feature request:
+#### Detailed description of the feature request:
 
 _Please provide information (such as links to web sites, blogs, technical description)._
 
@@ -30,7 +28,7 @@ _Please provide information (such as links to web sites, blogs, technical descri
 - [ ] You are able to describe step by step the process to reproduce the bug
 
 * Exact model of your **printer**:
-* **ADVi3++** exact version:
+* **ADVi3++** exact version (Mainboard):
 * Printing using **SD card** or **USB**:
 * **For USB printing only** Software used to print with its exact version:
 
