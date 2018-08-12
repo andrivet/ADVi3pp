@@ -221,7 +221,7 @@ void LCD_::queue_message(const String &message)
 
 void LCD_::reset_message()
 {
-     enqueue_and_echo_commands_P(PSTR("M117"));
+     message_ = "";
 }
 
 void LCD_::set_progress_name(const String& name)
