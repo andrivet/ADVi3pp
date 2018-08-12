@@ -32,15 +32,15 @@
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data>
-        <options />
-        <configurations />
-        <files />
-        <documentation help="" />
-        <offline-documentation help="" />
-        <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.34.1" />
-        </dependencies>
-      </framework-data>
+  <options />
+  <configurations />
+  <files />
+  <documentation help="" />
+  <offline-documentation help="" />
+  <dependencies>
+    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.35.1" />
+  </dependencies>
+</framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800071896</avrtoolserialnumber>
@@ -489,13 +489,25 @@
     <Compile Include="dac_mcp4728.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="delay.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="digipot_mcp4018.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="digipot_mcp4451.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="drivers.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="duration_t.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="emergency_parser.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="emergency_parser.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="endstops.cpp">
@@ -516,13 +528,16 @@
     <Compile Include="fastio_1280.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="fwretract.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="fwretract.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="G26_Mesh_Validation_Tool.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="gcode.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="gcode.h">
+    <Compile Include="HAL.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hex_print_routines.cpp">
@@ -559,6 +574,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="macros.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="malyanlcd.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Marlin.h">
@@ -603,6 +621,12 @@
     <Compile Include="nozzle.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="parser.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="parser.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="pca9632.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -642,10 +666,28 @@
     <Compile Include="point_t.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="power.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="power.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="power_loss_recovery.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="power_loss_recovery.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="printcounter.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="printcounter.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="runout.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="runout.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="SanityCheck.h">
@@ -702,9 +744,6 @@
     <Compile Include="servo.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Marlin.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="softspi.h">
       <SubType>compile</SubType>
     </Compile>
@@ -750,7 +789,16 @@
     <Compile Include="thermistortable_1.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="tmc_macros.h">
+    <Compile Include="thermistortable_15.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_501.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="tmc_util.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="tmc_util.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="twibus.cpp">
