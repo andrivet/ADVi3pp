@@ -134,6 +134,12 @@ void Printer::reset_eeprom_data()
     printer.reset_eeprom_data();
 }
 
+//! Return the size of data specific to ADVi3++
+uint16_t Printer::size_of_eeprom_data()
+{
+    return printer.size_of_eeprom_data();
+}
+
 //! Inform the user that the EEPROM data are not compatible and have been reset
 void Printer::eeprom_settings_mismatch()
 {
@@ -274,6 +280,16 @@ void Printer_::reset_eeprom_data()
     usb_baudrate_ = DEFAULT_USB_BAUDRATE;
     dimming_.reset_eeprom_data();
 }
+
+//! Return the size of data specific to ADVi3++
+uint16_t Printer_::size_of_eeprom_data() const
+{
+    return  preheat_.size_of_eeprom_data() +
+            sizeof(features_) +
+            sizeof(usb_baudrate_) +
+            dimming_.size_of_eeprom_data();
+}
+
 
 //! Inform the user that the EEPROM data are not compatible and have been reset
 void Printer_::eeprom_settings_mismatch()
@@ -2919,6 +2935,11 @@ void Dimming::reset_eeprom_data()
     brightness_ = DEFAULT_BRIGHTNESS;
 }
 
+uint16_t Dimming::size_of_eeprom_data() const
+{
+    return sizeof(brightness_);
+}
+
 // --------------------------------------------------------------------
 // BLTouch
 // --------------------------------------------------------------------
@@ -3016,6 +3037,11 @@ void Preheat::reset_eeprom_data()
     presets_[0].bed = DEFAULT_PREHEAT_PRESET1_BED;
     presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
     presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
+}
+
+uint16_t Preheat::size_of_eeprom_data() const
+{
+    return NB_PRESETS * (sizeof(Preset::hotend) + sizeof(Preset::bed));
 }
 
 //! Show the preheat screen

@@ -100,6 +100,7 @@ struct Preheat
     void store_eeprom_data(EepromWrite& eeprom);
     void restore_eeprom_data(EepromRead& eeprom);
     void reset_eeprom_data();
+    uint16_t size_of_eeprom_data() const;
 
     void show();
     void back();
@@ -192,6 +193,7 @@ struct Dimming
     void store_eeprom_data(EepromWrite& eeprom);
     void restore_eeprom_data(EepromRead& eeprom);
     void reset_eeprom_data();
+    uint16_t size_of_eeprom_data() const;
 
 private:
     void set_next_checking_time();
@@ -404,6 +406,7 @@ struct Printer_
     void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset_eeprom_data();
+    uint16_t size_of_eeprom_data() const;
     void eeprom_settings_mismatch();
     void temperature_error(const __FlashStringHelper* message);
     bool is_thermal_protection_enabled() const;

@@ -42,7 +42,10 @@
 
 // Check the integrity of data offsets.
 // Can be disabled for production build.
-//#define DEBUG_EEPROM_READWRITE
+// @advi3++: Enable in DEBUG builds
+#ifdef DEBUG
+#define DEBUG_EEPROM_READWRITE
+#endif
 
 #include "configuration_store.h"
 #include "Marlin.h"
@@ -266,7 +269,8 @@ MarlinSettings settings;
   extern void refresh_bed_level();
 #endif
 
-uint16_t MarlinSettings::datasize() { return sizeof(SettingsData); }
+// @advi3++: Add the size of ADVi3++ specific data
+uint16_t MarlinSettings::datasize() { return sizeof(SettingsData) + advi3pp::Printer::size_of_eeprom_data(); }
 
 /**
  * Post-process after Retrieve or Reset
