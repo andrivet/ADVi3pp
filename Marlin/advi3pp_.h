@@ -563,11 +563,6 @@ private:
     void extruder_tuning_finished();
     void cancel_extruder_tuning();
 
-    void xyz_motors_tuning(KeyValue key_value);
-    void show_xyz_motors_tuning();
-    void cancel_xyz_motors_tuning();
-    void xyz_motors_tuning_settings();
-
     void sensor_settings(KeyValue key_value);
     void sensor_settings_show();
     void sensor_settings_save();

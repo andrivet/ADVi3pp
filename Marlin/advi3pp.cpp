@@ -54,7 +54,6 @@ namespace
     const unsigned long advi3_pp_baudrate = 115200; // Between the LCD panel and the mainboard
     const uint16_t nb_visible_sd_files = 5;
 	const uint8_t  nb_visible_sd_file_chars = 48;
-    const uint16_t tuning_cube_size = 20; // 20 mm
     const uint16_t tuning_extruder_filament = 100; // 10 cm
 	const uint16_t tuning_extruder_delta = 20; // 2 cm
 
@@ -585,7 +584,6 @@ void Printer_::read_lcd_serial()
         case Action::FactoryReset:          factory_reset(key_value); break;
         case Action::Leveling:              leveling(key_value); break;
         case Action::ExtruderTuning:        extruder_tuning(key_value); break;
-        case Action::XYZMotorsTuning:       xyz_motors_tuning(key_value); break;
         case Action::PidTuning:             pid_tuning(key_value); break;
         case Action::SensorSettings:        sensor_settings(key_value); break;
         case Action::NoSensor:              no_sensor(key_value); break;
@@ -2127,64 +2125,6 @@ void Printer_::extruder_calibrartion_settings()
                << F(", new = ") << steps_.axis_steps_per_mm[E_AXIS] << Log::endl();
 
     steps_settings_show(false);
-}
-
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// XYZ Motors tuning
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-void Printer_::xyz_motors_tuning(KeyValue key_value)
-{
-    switch(key_value)
-    {
-        case KeyValue::Show:            show_xyz_motors_tuning(); break;
-        case KeyValue::TuningSettings:  xyz_motors_tuning_settings(); break;
-        case KeyValue::Back:            cancel_xyz_motors_tuning(); break;
-        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
-    }
-}
-
-void Printer_::show_xyz_motors_tuning()
-{
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << 200_u16 << 200_u16 << 200_u16;
-    frame.send();
-    pages_.save_forward_page();
-    pages_.show_page(Page::XYZMotorsTuning);
-}
-
-float adjust_value(float old, double expected, double measured)
-{
-	auto new_value = old * expected / measured;
-    Log::log() << F("Adjust: old = ") << old << F(", expected = ") << expected << F(", measured = ") << measured << F(", new = ") << new_value << Log::endl();
-    return new_value;
-};
-
-void Printer_::xyz_motors_tuning_settings()
-{
-    ReadRamData response{Variable::Value0, 3};
-    if(!response.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
-        return;
-    }
-
-    Uint16 x, y, z;
-    response >> x >> y >> z;
-
-    steps_.axis_steps_per_mm[X_AXIS] = adjust_value(Planner::axis_steps_per_mm[X_AXIS], tuning_cube_size * 10, x.word);
-    steps_.axis_steps_per_mm[Y_AXIS] = adjust_value(Planner::axis_steps_per_mm[Y_AXIS], tuning_cube_size * 10, y.word);
-    steps_.axis_steps_per_mm[Z_AXIS] = adjust_value(Planner::axis_steps_per_mm[Z_AXIS], tuning_cube_size * 10, z.word);
-    // Fill all values because all 4 axis are displayed by  show_steps_settings
-    steps_.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS];
-
-    steps_settings_show(false);
-}
-
-//! Cancel the extruder tuning.
-void Printer_::cancel_xyz_motors_tuning()
-{
-    pages_.show_back_page();
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

@@ -59,7 +59,6 @@ enum class Page: uint8_t
     ExtruderTuningTemp      = 50,
     WaitContinue            = 52,
     ExtruderTuningMeasure   = 54,
-    XYZMotorsTuning         = 56,
     PidTuning1              = 58,
     PidTuning2              = 60,
     MotorsSettings          = 62,
