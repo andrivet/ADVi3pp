@@ -33,14 +33,6 @@
 
 namespace advi3pp {
 
-static const Feature DEFAULT_FEATURES =
-    Feature::ThermalProtection |
-    Feature::HeadParking |
-    Feature::Dimming |
-    Feature::Buzzer;
-
-static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
-
 class Printer_;
 
 using andrivet::Callback;
@@ -643,9 +635,9 @@ private:
     AccelerationSettings accelerations_{};
     JerkSettings jerks_{};
     uint16_t lcd_version_ = 0x0000;
-    Feature features_ =  DEFAULT_FEATURES;
-    uint32_t usb_baudrate_ = DEFAULT_USB_BAUDRATE;
-    uint32_t usb_old_baudrate_ = DEFAULT_USB_BAUDRATE;
+    Feature features_;
+    uint32_t usb_baudrate_;
+    uint32_t usb_old_baudrate_;
     Dimming dimming_{};
     Sensor sensor_;
     Graphs graphs_;

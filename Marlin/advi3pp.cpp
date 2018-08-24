@@ -61,6 +61,14 @@ namespace
     const uint16_t tuning_extruder_filament = 100; // 10 cm
 	const uint16_t tuning_extruder_delta = 20; // 2 cm
 
+    const advi3pp::Feature DEFAULT_FEATURES =
+        advi3pp::Feature::ThermalProtection |
+        advi3pp::Feature::HeadParking |
+        advi3pp::Feature::Dimming |
+        advi3pp::Feature::Buzzer;
+
+    const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
+
     const uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
 
     const int8_t BRIGHTNESS_MIN = 0x01;
@@ -192,7 +200,10 @@ LCD_& LCD_::instance()
 // --------------------------------------------------------------------
 
 Printer_::Printer_()
-: pages_{*this}, lcd_{pages_}, task_{*this, pages_}, sd_files_{pages_}, preheat_{pages_}, sensor_{pages_}, pause_{pages_}
+: pages_{*this}, lcd_{pages_}, task_{*this, pages_}, sd_files_{pages_}, preheat_{pages_},
+  features_{DEFAULT_FEATURES},
+  usb_baudrate_{DEFAULT_USB_BAUDRATE}, usb_old_baudrate_{DEFAULT_USB_BAUDRATE},
+  sensor_{pages_}, pause_{pages_}
 {
 }
 
