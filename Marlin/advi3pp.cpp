@@ -64,21 +64,13 @@ namespace
     const uint8_t DIMMING_RATIO = 25; // in percent
     const uint16_t DIMMING_DELAY = 1 * 60;
 
-    const uint16_t DEFAULT_PREHEAT_PRESET1_HOTEND  = 180;
-    const uint16_t DEFAULT_PREHEAT_PRESET1_BED     = 50;
-    const uint16_t DEFAULT_PREHEAT_PRESET1_FAN     = 0;
-    const uint16_t DEFAULT_PREHEAT_PRESET2_HOTEND  = 200;
-    const uint16_t DEFAULT_PREHEAT_PRESET2_BED     = 60;
-    const uint16_t DEFAULT_PREHEAT_PRESET2_FAN     = 0;
-    const uint16_t DEFAULT_PREHEAT_PRESET3_HOTEND  = 220;
-    const uint16_t DEFAULT_PREHEAT_PRESET3_BED     = 70;
-    const uint16_t DEFAULT_PREHEAT_PRESET3_FAN     = 0;
-    const uint16_t DEFAULT_PREHEAT_PRESET4_HOTEND  = 200;
-    const uint16_t DEFAULT_PREHEAT_PRESET4_BED     = 0;
-    const uint16_t DEFAULT_PREHEAT_PRESET4_FAN     = 0;
-    const uint16_t DEFAULT_PREHEAT_PRESET5_HOTEND  = 220;
-    const uint16_t DEFAULT_PREHEAT_PRESET5_BED     = 0;
-    const uint16_t DEFAULT_PREHEAT_PRESET5_FAN     = 0;
+    const uint16_t DEFAULT_PREHEAT_PRESET[5][3] = {
+        {180, 50, 0},
+        {200, 60, 0},
+        {220, 70, 0},
+        {180, 00, 0},
+        {200, 00, 0}
+    };
 }
 
 #ifdef ADVi3PP_BLTOUCH
@@ -3012,23 +3004,12 @@ void Preheat::restore_eeprom_data(EepromRead& eeprom)
 //! Reset presets.
 void Preheat::reset_eeprom_data()
 {
-    presets_[0].hotend = DEFAULT_PREHEAT_PRESET1_HOTEND;
-    presets_[1].hotend = DEFAULT_PREHEAT_PRESET2_HOTEND;
-    presets_[2].hotend = DEFAULT_PREHEAT_PRESET3_HOTEND;
-    presets_[3].hotend = DEFAULT_PREHEAT_PRESET4_HOTEND;
-    presets_[4].hotend = DEFAULT_PREHEAT_PRESET5_HOTEND;
-
-    presets_[0].bed = DEFAULT_PREHEAT_PRESET1_BED;
-    presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
-    presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
-    presets_[3].bed = DEFAULT_PREHEAT_PRESET4_BED;
-    presets_[4].bed = DEFAULT_PREHEAT_PRESET5_BED;
-
-    presets_[0].fan = DEFAULT_PREHEAT_PRESET1_FAN;
-    presets_[1].fan = DEFAULT_PREHEAT_PRESET2_FAN;
-    presets_[2].fan = DEFAULT_PREHEAT_PRESET3_FAN;
-    presets_[3].fan = DEFAULT_PREHEAT_PRESET4_FAN;
-    presets_[4].bed = DEFAULT_PREHEAT_PRESET5_FAN;
+    for(auto i = 0; i < NB_PRESETS; ++i)
+    {
+        presets_[i].hotend  = DEFAULT_PREHEAT_PRESET[i][0];
+        presets_[i].bed     = DEFAULT_PREHEAT_PRESET[i][1];
+        presets_[i].fan     = DEFAULT_PREHEAT_PRESET[i][2];
+    }
 }
 
 uint16_t Preheat::size_of_eeprom_data() const
