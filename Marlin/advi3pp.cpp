@@ -66,10 +66,19 @@ namespace
 
     const uint16_t DEFAULT_PREHEAT_PRESET1_HOTEND  = 180;
     const uint16_t DEFAULT_PREHEAT_PRESET1_BED     = 50;
+    const uint16_t DEFAULT_PREHEAT_PRESET1_FAN     = 0;
     const uint16_t DEFAULT_PREHEAT_PRESET2_HOTEND  = 200;
     const uint16_t DEFAULT_PREHEAT_PRESET2_BED     = 60;
+    const uint16_t DEFAULT_PREHEAT_PRESET2_FAN     = 0;
     const uint16_t DEFAULT_PREHEAT_PRESET3_HOTEND  = 220;
     const uint16_t DEFAULT_PREHEAT_PRESET3_BED     = 70;
+    const uint16_t DEFAULT_PREHEAT_PRESET3_FAN     = 0;
+    const uint16_t DEFAULT_PREHEAT_PRESET4_HOTEND  = 200;
+    const uint16_t DEFAULT_PREHEAT_PRESET4_BED     = 0;
+    const uint16_t DEFAULT_PREHEAT_PRESET4_FAN     = 0;
+    const uint16_t DEFAULT_PREHEAT_PRESET5_HOTEND  = 220;
+    const uint16_t DEFAULT_PREHEAT_PRESET5_BED     = 0;
+    const uint16_t DEFAULT_PREHEAT_PRESET5_FAN     = 0;
 }
 
 #ifdef ADVi3PP_BLTOUCH
@@ -582,14 +591,13 @@ void Printer_::read_lcd_serial()
         case Action::Move:                  move(key_value); break;
         case Action::SdCard:                sd_card(key_value); break;
         case Action::FactoryReset:          factory_reset(key_value); break;
-        case Action::Leveling:              leveling(key_value); break;
+        case Action::ManualLeveling:        manual_leveling(key_value); break;
         case Action::ExtruderTuning:        extruder_tuning(key_value); break;
         case Action::PidTuning:             pid_tuning(key_value); break;
         case Action::SensorSettings:        sensor_settings(key_value); break;
-        case Action::NoSensor:              no_sensor(key_value); break;
         case Action::Firmware:              firmware(key_value); break;
+        case Action::NoSensor:              no_sensor(key_value); break;
         case Action::LCD:                   lcd(key_value); break;
-        case Action::LCDBrightness:         dimming_.change_brightness(key_value); break;
         case Action::Statistics:            statistics(key_value); break;
         case Action::Versions:              versions(key_value); break;
         case Action::PrintSettings:         print_settings(key_value); break;
@@ -605,6 +613,10 @@ void Printer_::read_lcd_serial()
         case Action::ChangeFilament:        change_filament(key_value); break;
         case Action::EEPROMMismatch:        eeprom_mimatch(key_value); break;
         case Action::Sponsors:              sponsors(key_value); break;
+        case Action::LinearAdvanceTuning:   linear_advance_tuning(key_value); break;
+        case Action::LinearAdvanceSettings: linear_advance_settings(key_value); break;
+        case Action::Diagnosis:             diagnosis(key_value); break;
+
         case Action::MoveXPlus:             move_x_plus(); break;
         case Action::MoveXMinus:            move_x_minus(); break;
         case Action::MoveYPlus:             move_y_plus(); break;
@@ -613,6 +625,8 @@ void Printer_::read_lcd_serial()
         case Action::MoveZMinus:            move_z_minus(); break;
         case Action::MoveEPlus:             move_e_plus(); break;
         case Action::MoveEMinus:            move_e_minus(); break;
+        case Action::LCDBrightness:         dimming_.change_brightness(key_value); break;
+
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
 }
@@ -862,8 +876,8 @@ void Printer_::sd_print_command(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::PrintStop:           sd_print_stop(); break;
-        case KeyValue::PrintPause:          sd_print_pause(); break;
-        case KeyValue::PrintResume:         sd_print_resume(); break;
+        case KeyValue::PrintPauseResume:    sd_print_pause_resume(); break;
+        case KeyValue::PrintAdvancedPause:  sd_print_advanced_pause(); break;
         case KeyValue::Back:                sd_print_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -893,8 +907,9 @@ void Printer_::reset_messages_task()
 }
 
 //! Pause SD printing
-void Printer_::sd_print_pause()
+void Printer_::sd_print_pause_resume()
 {
+    // FIX
     Log::log() << F("Pause Print") << Log::endl();
 
     LCD::queue_message(F("Pause printing..."));
@@ -906,8 +921,9 @@ void Printer_::sd_print_pause()
 }
 
 //! Resume the current SD printing
-void Printer_::sd_print_resume()
+void Printer_::sd_print_advanced_pause()
 {
+    // FIX
     Log::log() << F("Resume Print") << Log::endl();
 
     LCD::queue_message(F("Resume printing"));
@@ -936,8 +952,8 @@ void Printer_::usb_print_command(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::PrintStop:           usb_print_stop(); break;
-        case KeyValue::PrintPause:          usb_print_pause(); break;
-        case KeyValue::PrintResume:         usb_print_resume(); break;
+        case KeyValue::PrintPauseResume:    usb_print_pause_resume(); break;
+        case KeyValue::PrintAdvancedPause:  usb_print_advanced_pause(); break;
         case KeyValue::Back:                usb_print_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -962,8 +978,9 @@ void Printer_::usb_print_stop()
 }
 
 //! Pause SD printing
-void Printer_::usb_print_pause()
+void Printer_::usb_print_pause_resume()
 {
+    // FIX
     Log::log() << F("Pause USB Print") << Log::endl();
 
     LCD::queue_message(F("Pause printing..."));
@@ -977,8 +994,9 @@ void Printer_::usb_print_pause()
 }
 
 //! Resume the current SD printing
-void Printer_::usb_print_resume()
+void Printer_::usb_print_advanced_pause()
 {
+    // FIX
     Log::log() << F("Resume Print") << Log::endl();
     LCD::queue_message(F("Resume printing"));
     enqueue_and_echo_commands_P(PSTR("M24"));
@@ -999,16 +1017,17 @@ void Printer_::usb_print_back()
 //! @param temperature  The temperature to set
 void Printer_::set_target_temperature(uint16_t temperature)
 {
-    WriteRamDataRequest frame{Variable::TargetTemperature};
+    /*WriteRamDataRequest frame{Variable::TargetTemperature};
     frame << Uint16(temperature);
-    frame.send();
+    frame.send();*/
+    // TODO
 }
 
 //! Get the target temperature set on the LCD screen
 //! @return     The temperature
 uint16_t Printer_::Printer_::get_target_temperature()
 {
-    ReadRamData frame{Variable::TargetTemperature, 1};
+    /*ReadRamData frame{Variable::TargetTemperature, 1};
     if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
@@ -1017,6 +1036,9 @@ uint16_t Printer_::Printer_::get_target_temperature()
 
     Uint16 hotend; frame >> hotend;
     return hotend.word;
+     */
+    // TODO
+    return 0;
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1142,9 +1164,8 @@ void Printer_::preheat(KeyValue key_value)
     {
         case KeyValue::Show:            preheat_.show(); break;
         case KeyValue::Back:            preheat_.back(); break;
-        case KeyValue::Preset1:
-        case KeyValue::Preset2:
-        case KeyValue::Preset3:         preheat_.preset(static_cast<uint16_t>(key_value)); break;
+        case KeyValue::PresetPrevious:  preheat_.previous(); break;
+        case KeyValue::PresetNext:      preheat_.next(); break;
         case KeyValue::Cooldown:        cooldown(); break;
         default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -1172,7 +1193,7 @@ void Printer_::move(KeyValue key_value)
         case KeyValue::MoveYHome:           move_y_home(); break;
         case KeyValue::MoveZHome:           move_z_home(); break;
         case KeyValue::MoveAllHome:         move_all_home(); break;
-        case KeyValue::MoveAllDisable:      disable_motors(); break;
+        case KeyValue::DisableMotors:       disable_motors(); break;
         case KeyValue::Back:                move_back(); break;
         default:                            Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
     }
@@ -1366,11 +1387,12 @@ void Printer_::jerk_settings(advi3pp::KeyValue key_value)
 //! Display on the LCD screen the printing settings.
 void Printer_::print_settings_show()
 {
-    WriteRamDataRequest frame{Variable::PrintSettingsSpeed};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(feedrate_percentage)
+          << Uint16(scale(fanSpeeds[0], 255, 100))
           << Uint16(Temperature::degTargetHotend(0))
           << Uint16(Temperature::degTargetBed())
-          << Uint16(scale(fanSpeeds[0], 255, 100));
+          << Uint16(0.0); // FIXME
     frame.send();
 
     pages_.save_forward_page();
@@ -1380,20 +1402,21 @@ void Printer_::print_settings_show()
 //! Save the printing settings.
 void Printer_::print_settings_save()
 {
-    ReadRamData response{Variable::PrintSettingsSpeed, 4};
+    ReadRamData response{Variable::Value0, 5};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Print Settings)") << Log::endl();
         return;
     }
 
-    Uint16 speed, hotend, bed, fan;
-    response >> speed >> hotend >> bed >> fan;
+    Uint16 speed, fan, hotend, bed, babysteps;
+    response >> speed >> hotend >> bed >> fan >> babysteps;
 
     feedrate_percentage = speed.word;
     Temperature::setTargetHotend(hotend.word, 0);
     Temperature::setTargetBed(bed.word);
     fanSpeeds[0] = scale(fan.word, 100, 255);
+    // FIXME: Babysteps
 
     pages_.show_forward_page();
 }
@@ -1412,8 +1435,9 @@ void Printer_::pid_settings_show(bool back, bool init)
         pages_.save_forward_page();
     }        
 
-    WriteRamDataRequest frame{Variable::PidP};
-    frame << Uint16(Temperature::Kp * 100)
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16() // FIXME
+          << Uint16(Temperature::Kp * 100)
           << Uint16(unscalePID_i(Temperature::Ki) * 100)
           << Uint16(unscalePID_d(Temperature::Kd) * 100);
     frame.send();
@@ -1424,15 +1448,15 @@ void Printer_::pid_settings_show(bool back, bool init)
 //! Save the PID settings
 void Printer_::pid_settings_save()
 {
-    ReadRamData response{Variable::PidP, 3};
+    ReadRamData response{Variable::Value0, 4};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (PID Settings)") << Log::endl();
         return;
     }
 
-    Uint16 p, i, d;
-    response >> p >> i >> d;
+    Uint16 temperature, p, i, d;
+    response >> temperature >> p >> i >> d;
 
     Temperature::Kp = static_cast<float>(p.word) / 100;
     Temperature::Ki = scalePID_i(static_cast<float>(i.word) / 100);
@@ -1459,7 +1483,7 @@ void Printer_::steps_settings_show(bool init)
         pages_.save_forward_page();
     }        
 
-    WriteRamDataRequest frame{Variable::StepSettingsX};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(steps_.axis_steps_per_mm[X_AXIS] * 10)
           << Uint16(steps_.axis_steps_per_mm[Y_AXIS] * 10)
           << Uint16(steps_.axis_steps_per_mm[Z_AXIS] * 10)
@@ -1472,7 +1496,7 @@ void Printer_::steps_settings_show(bool init)
 //! Save the Steps settings
 void Printer_::steps_settings_save()
 {
-    ReadRamData response{Variable::StepSettingsX, 4};
+    ReadRamData response{Variable::Value0, 4};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Steps Settings)") << Log::endl();
@@ -1506,7 +1530,7 @@ void Printer_::feedrate_settings_show(bool init)
         pages_.save_forward_page();
     }        
 
-    WriteRamDataRequest frame{Variable::FeedrateMaxX};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(feedrates_.max_feedrate_mm_s[X_AXIS])
           << Uint16(feedrates_.max_feedrate_mm_s[Y_AXIS])
           << Uint16(feedrates_.max_feedrate_mm_s[Z_AXIS])
@@ -1521,7 +1545,7 @@ void Printer_::feedrate_settings_show(bool init)
 //! Save the Feedrate settings
 void Printer_::feedrate_settings_save()
 {
-    ReadRamData response{Variable::FeedrateMaxX, 6};
+    ReadRamData response{Variable::Value0, 6};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Feedrate Settings)") << Log::endl();
@@ -1557,7 +1581,7 @@ void Printer_::acceleration_settings_show(bool init)
         pages_.save_forward_page();
     }        
 
-    WriteRamDataRequest frame{Variable::AccelerationMaxX};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(static_cast<uint16_t>(accelerations_.max_acceleration_mm_per_s2[X_AXIS]))
           << Uint16(static_cast<uint16_t>(accelerations_.max_acceleration_mm_per_s2[Y_AXIS]))
           << Uint16(static_cast<uint16_t>(accelerations_.max_acceleration_mm_per_s2[Z_AXIS]))
@@ -1573,7 +1597,7 @@ void Printer_::acceleration_settings_show(bool init)
 //! Save the Acceleration settings
 void Printer_::acceleration_settings_save()
 {
-    ReadRamData response{Variable::AccelerationMaxX, 7};
+    ReadRamData response{Variable::Value0, 7};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
@@ -1610,7 +1634,7 @@ void Printer_::jerk_settings_show(bool init)
         pages_.save_forward_page();
     }        
 
-    WriteRamDataRequest frame{Variable::JerkX};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(jerks_.max_jerk[X_AXIS] * 10)
           << Uint16(jerks_.max_jerk[Y_AXIS] * 10)
           << Uint16(jerks_.max_jerk[Z_AXIS] * 10)
@@ -1623,7 +1647,7 @@ void Printer_::jerk_settings_show(bool init)
 //! Save the Jerk settings
 void Printer_::jerk_settings_save()
 {
-    ReadRamData response{Variable::JerkX, 4};
+    ReadRamData response{Variable::Value0, 4};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
@@ -1907,7 +1931,7 @@ void Printer_::pid_tuning_cancel()
 // Leveling
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void Printer_::leveling(KeyValue key_value)
+void Printer_::manual_leveling(KeyValue key_value)
 {
     switch(key_value)
     {
@@ -2175,7 +2199,6 @@ void Printer_::sensor_tuning(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::Show:            sensor_tuning_show(); break;
-        case KeyValue::SensorLeveling:  sensor_leveling(); break;
 #ifdef ADVi3PP_BLTOUCH
         case KeyValue::SensorSelfTest:  sensor_.self_test(); break;
         case KeyValue::SensorReset:     sensor_.reset(); break;
@@ -2484,7 +2507,7 @@ void Printer_::send_usb_baudrate()
 {
     String value; value << usb_baudrate_;
 
-    WriteRamDataRequest frame{Variable::Value};
+    WriteRamDataRequest frame{Variable::ValueText};
     frame << FixedSizeString{value, 6};
     frame.send();
 }
@@ -2549,7 +2572,7 @@ void Printer_::lcd(KeyValue key_value)
 
 void Printer_::send_features()
 {
-    WriteRamDataRequest frame{Variable::Features};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(static_cast<uint16_t>(features_));
     frame.send();
 }
@@ -2640,6 +2663,25 @@ void Printer_::check_and_fix()
     if(Planner::max_jerk[X_AXIS] == 0) Planner::max_jerk[X_AXIS] = DEFAULT_XJERK;
     if(Planner::max_jerk[Y_AXIS] == 0) Planner::max_jerk[Y_AXIS] = DEFAULT_YJERK;
     if(Planner::max_jerk[Z_AXIS] == 0) Planner::max_jerk[Z_AXIS] = DEFAULT_ZJERK;
+}
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// Linear Advance
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void Printer_::linear_advance_tuning(KeyValue key_value)
+{
+
+}
+
+void Printer_::linear_advance_settings(KeyValue key_value)
+{
+
+}
+
+void Printer_::diagnosis(KeyValue key_value)
+{
+
 }
 
 
@@ -2893,14 +2935,14 @@ Sensor::Sensor(PagesManager& pages)
 
 void Sensor::send_z_height_to_lcd(double z_height)
 {
-    WriteRamDataRequest frame{Variable::SensorOffsetZ};
+    WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(z_height * 100);
     frame.send();
 }
 
 void Sensor::save_lcd_z_height()
 {
-    ReadRamData response{Variable::SensorOffsetZ, 1};
+    ReadRamData response{Variable::Value0, 1};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
@@ -2973,10 +3015,20 @@ void Preheat::reset_eeprom_data()
     presets_[0].hotend = DEFAULT_PREHEAT_PRESET1_HOTEND;
     presets_[1].hotend = DEFAULT_PREHEAT_PRESET2_HOTEND;
     presets_[2].hotend = DEFAULT_PREHEAT_PRESET3_HOTEND;
+    presets_[3].hotend = DEFAULT_PREHEAT_PRESET4_HOTEND;
+    presets_[4].hotend = DEFAULT_PREHEAT_PRESET5_HOTEND;
 
     presets_[0].bed = DEFAULT_PREHEAT_PRESET1_BED;
     presets_[1].bed = DEFAULT_PREHEAT_PRESET2_BED;
     presets_[2].bed = DEFAULT_PREHEAT_PRESET3_BED;
+    presets_[3].bed = DEFAULT_PREHEAT_PRESET4_BED;
+    presets_[4].bed = DEFAULT_PREHEAT_PRESET5_BED;
+
+    presets_[0].fan = DEFAULT_PREHEAT_PRESET1_FAN;
+    presets_[1].fan = DEFAULT_PREHEAT_PRESET2_FAN;
+    presets_[2].fan = DEFAULT_PREHEAT_PRESET3_FAN;
+    presets_[3].fan = DEFAULT_PREHEAT_PRESET4_FAN;
+    presets_[4].bed = DEFAULT_PREHEAT_PRESET5_FAN;
 }
 
 uint16_t Preheat::size_of_eeprom_data() const
@@ -2988,64 +3040,27 @@ uint16_t Preheat::size_of_eeprom_data() const
 void Preheat::show()
 {
     Log::log() << F("Preheat page") << Log::endl();
-    WriteRamDataRequest frame{Variable::Preset1Bed};
-    for(auto& preset : presets_)
-        frame << Uint16(preset.bed) << Uint16(preset.hotend);
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(presets_[0].bed)
+          << Uint16(presets_[0].hotend)
+          << Uint16(presets_[0].fan);
     frame.send();
     pages_.show_page(Page::Preheat);
+}
+
+void Preheat::previous()
+{
+    // TODO
+}
+
+void Preheat::next()
+{
+    // TODO
 }
 
 void Preheat::back()
 {
     pages_.show_back_page();
-}
-
-//! Preheat the nozzle and save the presets.
-//! @param key_value    The index (starting from 1) of the preset to use
-void Preheat::preset(uint16_t presetIndex)
-{
-    Log::log() << F("Preheat Start") << Log::endl();
-
-    presetIndex -= 1;
-    if(presetIndex >= NB_PRESETS)
-    {
-        Log::error() << F("Invalid preset # ") << presetIndex << Log::endl();
-        return;
-    }
-
-    ReadRamData frame{Variable::Preset1Bed, 6};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Presets)") << Log::endl();
-        return;
-    }
-
-    Uint16 hotend, bed;
-    bool hasChanged = false;
-
-    for(auto& preset : presets_)
-    {
-        frame >> bed >> hotend;
-        if(hotend.word != preset.hotend || bed.word != preset.bed)
-            hasChanged = true;
-        preset.hotend = hotend.word;
-        preset.bed = bed.word;
-    }
-
-    if(hasChanged)
-        Printer::save_settings();
-
-    const Preset& preset = presets_[presetIndex];
-
-    String command;
-
-    command = F("M104 S"); command << preset.hotend;
-    enqueue_and_echo_command(command.c_str());
-
-    command = F("M140 S"); command << preset.bed;
-    enqueue_and_echo_command(command.c_str());
-
-    pages_.show_page(Page::Temperature);
 }
 
 // --------------------------------------------------------------------

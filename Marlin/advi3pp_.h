@@ -87,6 +87,7 @@ struct Preset
 {
     uint16_t hotend;
     uint16_t bed;
+    uint16_t fan;
 };
 
 // --------------------------------------------------------------------
@@ -104,11 +105,12 @@ struct Preheat
 
     void show();
     void back();
-    void preset(uint16_t presetIndex);
+    void previous();
+    void next();
 
 private:
-    static const size_t NB_PRESETS = 3;
-    Preset presets_[NB_PRESETS] = {};
+    static const size_t NB_PRESETS = 5;
+    Preset presets_[NB_PRESETS];
     PagesManager& pages_;
 };
 
@@ -464,14 +466,14 @@ private:
 
     void sd_print_command(KeyValue key_value);
     void sd_print_stop();
-    void sd_print_pause();
-    void sd_print_resume();
+    void sd_print_pause_resume();
+    void sd_print_advanced_pause();
     void sd_print_back();
 
     void usb_print_command(KeyValue key_value);
     void usb_print_stop();
-    void usb_print_pause();
-    void usb_print_resume();
+    void usb_print_pause_resume();
+    void usb_print_advanced_pause();
     void usb_print_back();
 
     void load_unload(KeyValue key_value);
@@ -544,7 +546,7 @@ private:
     void pid_tuning_step2();
     void pid_tuning_cancel();
 
-    void leveling(KeyValue key_value);
+    void manual_leveling(KeyValue key_value);
     void leveling_home();
     void leveling_point1();
     void leveling_point2();
@@ -627,6 +629,10 @@ private:
 
     void eeprom_mimatch(KeyValue key_value);
     void eeprom_mimatch_continue();
+
+    void linear_advance_tuning(KeyValue key_value);
+    void linear_advance_settings(KeyValue key_value);
+    void diagnosis(KeyValue key_value);
 
 private:
     PagesManager pages_;

@@ -28,7 +28,7 @@
 namespace advi3pp { inline namespace internals {
 
 
-//! List of commands and their values.
+//! List of commands and their values (DGUS Mini)
 enum class Command: uint8_t
 {
     WriteRegisterData       = 0x80, // 128
@@ -38,7 +38,7 @@ enum class Command: uint8_t
     WriteCurveData          = 0x84  // 132
 };
 
-//! List of registers and their values.
+//! List of registers and their values (DGUS Mini)
 enum class Register: uint8_t
 {
     Version                 = 0x00,
@@ -90,6 +90,8 @@ enum class Variable: uint16_t
     Message                 = 0x0006,
     Progress                = 0x001A,
     CenteredMessage         = 0x002E,
+    ProgressLow             = 0x0044,
+    ProgressHigh            = 0x0045,
 
     MotherboardVersion      = 0x0100,
     LcdVersion              = 0x0108,
@@ -102,7 +104,6 @@ enum class Variable: uint16_t
     TotalPrintTime          = 0x0183,
     LongestPrintTime        = 0x018B,
     TotalFilament           = 0x0193,
-    Value                   = 0x019B,
 
     FileName1               = 0x0200,
     FileName2               = 0x0218,
@@ -110,48 +111,7 @@ enum class Variable: uint16_t
     FileName4               = 0x0248,
     FileName5               = 0x0260,
 
-    StepSettingsX           = 0x0300,
-    StepSettingsY           = 0x0301,
-    StepSettingsZ           = 0x0302,
-    StepSettingsE           = 0x0303,
-    PidP                    = 0x0304,
-    PidI                    = 0x0305,
-    PidD                    = 0x0306,
-    PrintSettingsSpeed      = 0x0307,
-    PrintSettingsHotend     = 0x0308,
-    PrintSettingsBed        = 0x0309,
-    PrintSettingsFan        = 0x030A,
-    FeedrateMaxX            = 0x030B,
-    FeedrateMaxY            = 0x030C,
-    FeedrateMaxZ            = 0x030D,
-    FeedrateMaxE            = 0x030E,
-    FeedratMin              = 0x030F,
-    FeedratTravel           = 0x0310,
-    AccelerationMaxX        = 0x0311,
-    AccelerationMaxY        = 0x0312,
-    AccelerationMaxZ        = 0x0313,
-    AccelerationMaxE        = 0x0314,
-    AccelerationPrint       = 0x0315,
-    AccelerationRetract     = 0x0316,
-    AccelerationTravel      = 0x0317,
-    JerkX                   = 0x0318,
-    JerkY                   = 0x0319,
-    JerkZ                   = 0x031A,
-    JerkE                   = 0x031B,
-    LCDBrightness           = 0x031C,  // Also an action
-    CurrentSensor           = 0x031D,
-    Features                = 0x031E,
-    Preset1Bed              = 0x031F,
-    Preset1Hotend           = 0x0320,
-    Preset2Bed              = 0x0321,
-    Preset2Hotend           = 0x0322,
-    Preset3Bed              = 0x0323,
-    Preset4Hotend           = 0x0324,
-    USBBaudrate             = 0x0325,
-    SensorOffsetZ           = 0x0327,
-
     ADVi3ppLCDversion       = 0x0500,
-    TargetTemperature       = 0x0501,
     Value0                  = 0x0510,
     Value1                  = 0x0511,
     Value2                  = 0x0512,
@@ -160,7 +120,9 @@ enum class Variable: uint16_t
     Value5                  = 0x0515,
     Value6                  = 0x0516,
     Value7                  = 0x0517,
-    Value8                  = 0x0518
+    Value8                  = 0x0518,
+    ValueText               = 0x0540,
+    CenteredTextValue       = 0x0554
 };
 
 //! List of actions sent by the LCD.
@@ -174,9 +136,8 @@ enum class Action: uint16_t
     Move                    = 0x0405,
     SdCard                  = 0x0406,
     FactoryReset            = 0x0407,
-    Leveling                = 0x0408,
+    ManualLeveling          = 0x0408,
     ExtruderTuning          = 0x0409,
-    XYZMotorsTuning         = 0x040A,
     PidTuning               = 0x040B,
     SensorSettings          = 0x040C,
     Firmware                = 0x040D,
@@ -197,17 +158,19 @@ enum class Action: uint16_t
     ChangeFilament          = 0x041C,
     EEPROMMismatch          = 0x041D,
     Sponsors                = 0x041E,
+    LinearAdvanceTuning     = 0x041F,
+    LinearAdvanceSettings   = 0x0420,
+    Diagnosis               = 0x0421,
 
-    MoveXMinus              = 0x0420,
-    MoveXPlus               = 0x0421,
-    MoveYMinus              = 0x0422,
-    MoveYPlus               = 0x0423,
-    MoveZMinus              = 0x0424,
-    MoveZPlus               = 0x0425,
-    MoveEMinus              = 0x0426,
-    MoveEPlus               = 0x0427,
-
-    LCDBrightness           = 0x031C, // Also a Variable
+    MoveXMinus              = 0x0450,
+    MoveXPlus               = 0x0451,
+    MoveYMinus              = 0x0452,
+    MoveYPlus               = 0x0453,
+    MoveZMinus              = 0x0454,
+    MoveZPlus               = 0x0455,
+    MoveEMinus              = 0x0456,
+    MoveEPlus               = 0x0457,
+    LCDBrightness           = 0x0458,
 
     Undefined               = 0xFFFF
 };
@@ -224,24 +187,24 @@ enum class KeyValue: uint16_t
     Settings                = 0x0004,
     Infos                   = 0x0005,
     Motors                  = 0x0006,
+    Leveling                = 0x0007,
 
     PrintStop               = 0x0000,
-    PrintPause              = 0x0001,
-    PrintResume             = 0x0002,
+    PrintPauseResume        = 0x0001,
+    PrintAdvancedPause      = 0x0002,
 
     Load                    = 0x0001,
     Unload                  = 0x0002,
 
-    Preset1                 = 0x0001,
-    Preset2                 = 0x0002,
-    Preset3                 = 0x0003,
+    PresetPrevious          = 0x0001,
+    PresetNext              = 0x0002,
     Cooldown                = 0xAAAA,
 
     MoveXHome               = 0x0001,
     MoveYHome               = 0x0002,
     MoveZHome               = 0x0003,
     MoveAllHome             = 0x0004,
-    MoveAllDisable          = 0x0005,
+    DisableMotors           = 0x0005,
 
     SDLine1                 = 0x0001,
     SDLine2                 = 0x0002,
@@ -258,16 +221,26 @@ enum class KeyValue: uint16_t
     LevelingPoint3          = 0x0003,
     LevelingPoint4          = 0x0004,
     LevelingPoint5          = 0x0005,
+    LevelingPointA          = 0x0006,
+    LevelingPointB          = 0x0007,
+    LevelingPointC          = 0x0008,
+    LevelingPointD          = 0x0009,
 
     TuningStart             = 0x0001,
     TuningSettings          = 0x0002,
 
     PidTuningStep1          = 0x0000,
     PidTuningStep2          = 0x0001,
+    PidTuningHotend         = 0x0002,
+    PidTuningBed            = 0x0003,
+
+    SensorSettingsPrevious  = 0x0001,
+    SensorSettingsNext      = 0x0002,
 
     ThermalProtection       = 0x0001,
     USBBaudrateMinus        = 0x0002,
     USBBaudratePlus         = 0x0003,
+    RunoutSensor            = 0x0004,
 
     LCDDimming              = 0x0001,
     Buzzer                  = 0x0002,
@@ -275,12 +248,18 @@ enum class KeyValue: uint16_t
 
     MismatchForward         = 0x0001,
 
-    SensorLeveling          = 0x0001,
-    SensorSelfTest          = 0x0002,
-    SensorReset             = 0x0003,
-    SensorDeploy            = 0x0004,
-    SensorStow              = 0x0005,
-    SensorZHeight           = 0x0006,
+    PidSettingsHotend       = 0x0001,
+    PidSettingsBed          = 0x0002,
+
+    SensorSelfTest          = 0x0001,
+    SensorReset             = 0x0002,
+    SensorDeploy            = 0x0003,
+    SensorStow              = 0x0004,
+    SensorZHeight           = 0x0005,
+
+    ZHeight01               = 0x0001,
+    ZHeight05               = 0x0002,
+    ZHeight10               = 0x0003,
 
     Save                    = 0xFFFE,
     Continue                = 0xFFFE,
@@ -294,7 +273,8 @@ enum class Feature: uint16_t
     ThermalProtection   = 0b0000000000000010,
     Dimming             = 0b0000000000000100,
     Buzzer              = 0b0000000000001000,
-    BuzzOnPress         = 0b0000000000010000
+    BuzzOnPress         = 0b0000000000010000,
+    RunoutSensor        = 0b0000000000100000
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 

@@ -59,6 +59,7 @@ enum class Page: uint8_t
     ExtruderTuningTemp      = 50,
     WaitContinue            = 52,
     ExtruderTuningMeasure   = 54,
+    Leveling                = 56,
     PidTuning1              = 58,
     PidTuning2              = 60,
     MotorsSettings          = 62,
@@ -83,7 +84,9 @@ enum class Page: uint8_t
     SensorTuning            = 100,
     SensorGrid              = 102,
     EEPROMMismatch          = 104,
-    ZHeightTuning           = 106
+    ZHeightTuning           = 106,
+    LinearAdvanceTuning     = 108,
+    LinearAdvanceSettings   = 110
 };
 
 //! The Duplicator i3 Plus printer.
