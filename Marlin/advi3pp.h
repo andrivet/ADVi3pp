@@ -106,6 +106,7 @@ struct Printer
     static void update();
     static bool is_thermal_protection_enabled();
     static void process_command(const GCodeParser& parser);
+    static void set_brightness(int16_t britghness);
 };
 
 //! The Duplicator i3 Plus LCD Screen

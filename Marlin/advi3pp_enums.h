@@ -278,12 +278,6 @@ enum class Feature: uint16_t
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 
-enum class Brightness
-{
-    Min = 0x00,
-    Max = 0x40
-};
-
 }
 
 #endif //ADV_I3_PLUS_PLUS_ENUMS_H

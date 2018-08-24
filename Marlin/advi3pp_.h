@@ -38,7 +38,7 @@ static const Feature DEFAULT_FEATURES =
     Feature::HeadParking |
     Feature::Dimming |
     Feature::Buzzer;
-static const Brightness DEFAULT_BRIGHTNESS = Brightness::Max;
+
 static const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
 
 class Printer_;
@@ -191,11 +191,7 @@ struct Dimming
     void enable(bool enable);
     void check();
     void reset();
-    void change_brightness(KeyValue brightness);
-    void store_eeprom_data(EepromWrite& eeprom);
-    void restore_eeprom_data(EepromRead& eeprom);
-    void reset_eeprom_data();
-    uint16_t size_of_eeprom_data() const;
+    void change_brightness(int16_t brightness);
 
 private:
     void set_next_checking_time();
@@ -206,7 +202,6 @@ private:
 private:
     bool enabled_ = true;
     bool dimming_ = false;
-    Brightness brightness_ = DEFAULT_BRIGHTNESS;
     millis_t next_check_time_ = 0;
     millis_t next_dimming_time_ = 0;
 };
@@ -414,6 +409,7 @@ struct Printer_
     bool is_thermal_protection_enabled() const;
     void process_command(const GCodeParser& parser);
     void advanced_pause_show_message(AdvancedPauseMessage message);
+    void set_brightness(int16_t britghness);
 
     void save_settings();
 

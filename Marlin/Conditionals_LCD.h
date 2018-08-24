@@ -371,6 +371,10 @@
   #endif
 #endif
 
+// @advi3++: Allow M250 - LCD con
+#define HAS_LCD_CONTRAST 1
+#define DEFAULT_LCD_CONTRAST 0x40
+
 // Boot screens
 #if DISABLED(ULTRA_LCD)
   #undef SHOW_BOOTSCREEN

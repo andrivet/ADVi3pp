@@ -55,7 +55,7 @@
     #endif
 
     extern int16_t lcd_contrast;
-    void set_lcd_contrast(const int16_t value);
+    inline void set_lcd_contrast(const int16_t value) { advi3pp::Printer::set_brightness(value); }
 
     #endif // ADVANCED_PAUSE_FEATURE
 #endif

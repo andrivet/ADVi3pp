@@ -45,6 +45,10 @@
 #include <HardwareSerial.h>
 extern HardwareSerial Serial2;
 
+// Used directly by Marlin
+uint8_t progress_bar_percent;
+int16_t lcd_contrast;
+
 namespace
 {
     const uint16_t advi3_pp_version = 0x400;
@@ -59,8 +63,8 @@ namespace
 
     const uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
 
-    const uint8_t BRIGHTNESS_MIN = 0x01;
-    const uint8_t BRIGHTNESS_MAX = 0x40;
+    const int8_t BRIGHTNESS_MIN = 0x01;
+    const int8_t BRIGHTNESS_MAX = 0x40;
     const uint8_t DIMMING_RATIO = 25; // in percent
     const uint16_t DIMMING_DELAY = 1 * 60;
 
@@ -79,7 +83,6 @@ float run_z_probe();
 extern float zprobe_zoffset;
 #endif
 
-extern uint8_t progress_bar_percent;
 
 namespace advi3pp {
 
@@ -174,6 +177,11 @@ void Printer::process_command(const GCodeParser& parser)
     printer.process_command(parser);
 }
 
+void Printer::set_brightness(int16_t britghness)
+{
+    printer.set_brightness(britghness);
+}
+
 LCD_& LCD_::instance()
 {
     return printer.lcd_;
@@ -251,7 +259,6 @@ void Printer_::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t
     preheat_.store_eeprom_data(eeprom);
     eeprom.write(features_);
     eeprom.write(usb_baudrate_);
-    dimming_.store_eeprom_data(eeprom);
 }
 
 //! Restore presets from permanent memory.
@@ -265,7 +272,6 @@ void Printer_::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t
     preheat_.restore_eeprom_data(eeprom);
     eeprom.read(features_);
     eeprom.read(usb_baudrate_);
-    dimming_.restore_eeprom_data(eeprom);
 
     dimming_.enable(test_one_bit(features_, Feature::Dimming));
     LCD::enable_buzzer(test_one_bit(features_, Feature::Buzzer));
@@ -280,7 +286,6 @@ void Printer_::reset_eeprom_data()
     preheat_.reset_eeprom_data();
     features_ = DEFAULT_FEATURES;
     usb_baudrate_ = DEFAULT_USB_BAUDRATE;
-    dimming_.reset_eeprom_data();
 }
 
 //! Return the size of data specific to ADVi3++
@@ -288,8 +293,7 @@ uint16_t Printer_::size_of_eeprom_data() const
 {
     return  preheat_.size_of_eeprom_data() +
             sizeof(features_) +
-            sizeof(usb_baudrate_) +
-            dimming_.size_of_eeprom_data();
+            sizeof(usb_baudrate_);
 }
 
 
@@ -629,7 +633,7 @@ void Printer_::read_lcd_serial()
         case Action::MoveZMinus:            move_z_minus(); break;
         case Action::MoveEPlus:             move_e_plus(); break;
         case Action::MoveEMinus:            move_e_minus(); break;
-        case Action::LCDBrightness:         dimming_.change_brightness(key_value); break;
+        case Action::LCDBrightness:         dimming_.change_brightness(static_cast<int16_t>(key_value)); break;
 
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
@@ -2821,6 +2825,11 @@ void JerkSettings::save()
 // Dimming
 // --------------------------------------------------------------------
 
+void Printer_::set_brightness(int16_t brightness)
+{
+    dimming_.change_brightness(brightness);
+}
+
 Dimming::Dimming()
 {
     set_next_checking_time();
@@ -2845,14 +2854,13 @@ void Dimming::set_next_dimmming_time()
 
 uint8_t Dimming::get_adjusted_brithness()
 {
-    auto brightness = static_cast<uint16_t>(brightness_);
     if(dimming_)
-        brightness = brightness * DIMMING_RATIO / 100;
-    if(brightness < BRIGHTNESS_MIN)
-        brightness = BRIGHTNESS_MIN;
-    if(brightness > BRIGHTNESS_MAX)
-        brightness = BRIGHTNESS_MAX;
-    return static_cast<uint8_t>(brightness);
+        lcd_contrast = lcd_contrast * DIMMING_RATIO / 100;
+    if(lcd_contrast < BRIGHTNESS_MIN)
+        lcd_contrast = BRIGHTNESS_MIN;
+    if(lcd_contrast > BRIGHTNESS_MAX)
+        lcd_contrast = BRIGHTNESS_MAX;
+    return static_cast<uint8_t>(lcd_contrast);
 }
 
 void Dimming::check()
@@ -2899,31 +2907,10 @@ void Dimming::send_brightness()
     frame.send(true);
 }
 
-void Dimming::change_brightness(KeyValue brightness)
+void Dimming::change_brightness(int16_t brightness)
 {
     reset();
-    brightness_ = static_cast<Brightness>(brightness);
     send_brightness();
-}
-
-void Dimming::store_eeprom_data(EepromWrite& eeprom)
-{
-    eeprom.write(brightness_);
-}
-
-void Dimming::restore_eeprom_data(EepromRead& eeprom)
-{
-    eeprom.read(brightness_);
-}
-
-void Dimming::reset_eeprom_data()
-{
-    brightness_ = DEFAULT_BRIGHTNESS;
-}
-
-uint16_t Dimming::size_of_eeprom_data() const
-{
-    return sizeof(brightness_);
 }
 
 // --------------------------------------------------------------------
