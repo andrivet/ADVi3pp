@@ -29,7 +29,7 @@
 #include <HardwareSerial.h>
 extern HardwareSerial Serial2;
 
-namespace advi3pp { inline namespace internals {
+namespace advi3pp {
 
 static const size_t MAX_GARBAGE_BYTES = 5;
 
@@ -689,5 +689,4 @@ WriteCurveDataRequest::WriteCurveDataRequest(uint8_t channels)
     *this << Uint8{channels};
 }
 
-
-}}
+}

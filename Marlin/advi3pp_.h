@@ -31,7 +31,7 @@
 #include "advi3pp_utils.h"
 #include "ADVcallback.h"
 
-namespace advi3pp { inline namespace internals {
+namespace advi3pp {
 
 static const Feature DEFAULT_FEATURES =
     Feature::ThermalProtection |
@@ -661,7 +661,7 @@ private:
     millis_t last_move_time_ = 0;
 };
 
-}}
+}
 
 #endif //ADV_I3_PLUS_PLUS_PRIVATE_H
 

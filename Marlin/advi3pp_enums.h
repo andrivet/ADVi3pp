@@ -25,7 +25,7 @@
 #ifndef ADV_I3_PLUS_PLUS_ENUMS_H
 #define ADV_I3_PLUS_PLUS_ENUMS_H
 
-namespace advi3pp { inline namespace internals {
+namespace advi3pp {
 
 
 //! List of commands and their values (DGUS Mini)
@@ -284,6 +284,6 @@ enum class Brightness
     Max = 0x40
 };
 
-}}
+}
 
 #endif //ADV_I3_PLUS_PLUS_ENUMS_H

@@ -36,7 +36,7 @@
 #ifndef MARLIN_ADVI3PP_BITMASKS_H
 #define MARLIN_ADVI3PP_BITMASKS_H
 
-namespace advi3pp { inline namespace internals {
+namespace advi3pp {
 
 template<bool B, class T = void>
 struct enable_if {};
@@ -146,6 +146,6 @@ clear_bits(E& lhs, E rhs)
 #define ENABLE_BITMASK_OPERATOR(E) \
 template<> struct enable_bitmask_operators<E> { static const bool enable = true; }
 
-}}
+}
 
 #endif //MARLIN_ADVI3PP_BITMASKS_H

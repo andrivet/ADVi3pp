@@ -81,7 +81,7 @@ extern float zprobe_zoffset;
 
 namespace advi3pp {
 
-inline namespace { Printer_ printer; };
+namespace { Printer_ printer; };
 
 // --------------------------------------------------------------------
 // Printer
@@ -225,7 +225,7 @@ void Printer_::send_gplv3_7b_notice()
 
 void Printer_::send_sponsors()
 {
-    Log::log() << F("Sponsored by Johnathan Chamberlain") << Log::endl();
+    Log::log() << F("Sponsored by Johnathan Chamberlain, Timothy D Hoogland, Gavin Smith, Sawtoothsquid") << Log::endl();
 }
 
 //! Process command specific to this printer (I)
@@ -3004,7 +3004,7 @@ void Preheat::restore_eeprom_data(EepromRead& eeprom)
 //! Reset presets.
 void Preheat::reset_eeprom_data()
 {
-    for(auto i = 0; i < NB_PRESETS; ++i)
+    for(size_t i = 0; i < NB_PRESETS; ++i)
     {
         presets_[i].hotend  = DEFAULT_PREHEAT_PRESET[i][0];
         presets_[i].bed     = DEFAULT_PREHEAT_PRESET[i][1];

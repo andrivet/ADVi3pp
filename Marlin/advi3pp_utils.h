@@ -33,7 +33,7 @@
 #endif
 #endif
 
-namespace advi3pp { inline namespace internals {
+namespace advi3pp {
 
 template <typename T, size_t N>
 constexpr size_t countof(T const (&)[N]) noexcept { return N; }
@@ -438,7 +438,7 @@ inline void EepromRead::read(T& data)
     read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_, false);
 }
 
-}}
+}
 
 
 #endif //ADV_I3_PLUS_PLUS_UTILS_H
