@@ -39,16 +39,16 @@
     inline void lcd_setalertstatusPGM(const char* message) { advi3pp::LCD::set_alert_status_PGM(message); }
     inline void lcd_reset_alert_level() { advi3pp::LCD::reset_alert_level(); }
     inline void lcd_reset_status() { advi3pp::LCD::reset_message(); }
-    void lcd_status_printf_P(const uint8_t level, const char * const fmt, ...);
+    void lcd_status_printf_P(uint8_t level, const char * fmt, ...);
     inline void lcd_buttons_update() { advi3pp::LCD::buttons_update(); }
     inline void lcd_refresh() { advi3pp::LCD::refresh(); }
     inline void lcd_buzz(const long duration, const uint16_t freq) { advi3pp::LCD::buzz(duration, freq); }
 
     #if ENABLED(ADVANCED_PAUSE_FEATURE)
     extern uint8_t active_extruder;
-    void lcd_advanced_pause_show_message(const AdvancedPauseMessage message,
-                                         const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT,
-                                         const uint8_t extruder=active_extruder);
+    void lcd_advanced_pause_show_message(AdvancedPauseMessage message,
+                                         AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT,
+                                         uint8_t extruder=active_extruder);
 
     #if ENABLED(LCD_SET_PROGRESS_MANUALLY)
     extern uint8_t progress_bar_percent;
