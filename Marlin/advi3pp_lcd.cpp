@@ -28,6 +28,8 @@
 #include "advi3pp.h"
 #include "advi3pp_.h"
 
+uint8_t progress_bar_percent;
+
 namespace
 {
     const uint8_t BUZZ_ON_PRESS_DURATION = 10; // x 1 ms

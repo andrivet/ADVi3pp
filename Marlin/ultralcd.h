@@ -50,7 +50,12 @@
                                          const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT,
                                          const uint8_t extruder=active_extruder);
 
-    //extern int16_t lcd_preheat_hotend_temp[3], lcd_preheat_bed_temp[3], lcd_preheat_fan_speed[3];
+    #if ENABLED(LCD_SET_PROGRESS_MANUALLY)
+    extern uint8_t progress_bar_percent;
+    #endif
+
+    extern int16_t lcd_contrast;
+    void set_lcd_contrast(const int16_t value);
 
     #endif // ADVANCED_PAUSE_FEATURE
 #endif

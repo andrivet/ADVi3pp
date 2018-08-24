@@ -7930,7 +7930,8 @@ inline void gcode_M42() {
 
 #endif // G26_MESH_VALIDATION
 
-#if ENABLED(ULTRA_LCD) && ENABLED(LCD_SET_PROGRESS_MANUALLY)
+// @advi3++: Enable M73
+#if (ENABLED(ULTRA_LCD) || ENABLED(I3PLUS_LCD)) && ENABLED(LCD_SET_PROGRESS_MANUALLY)
   /**
    * M73: Set percentage complete (for display on LCD)
    *

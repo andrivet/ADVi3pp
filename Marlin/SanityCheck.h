@@ -403,7 +403,7 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
 #if ENABLED(LCD_PROGRESS_BAR)
   #if DISABLED(SDSUPPORT) && DISABLED(LCD_SET_PROGRESS_MANUALLY)
     #error "LCD_PROGRESS_BAR requires SDSUPPORT or LCD_SET_PROGRESS_MANUALLY."
-  #elif DISABLED(ULTRA_LCD)
+  #elif DISABLED(ULTRA_LCD) && DISABLED(I3PLUS_LCD) // @advi3++: Allow LCD_PROGRESS_BAR
     #error "LCD_PROGRESS_BAR requires a character LCD."
   #elif ENABLED(DOGLCD)
     #error "LCD_PROGRESS_BAR does not apply to graphical displays."

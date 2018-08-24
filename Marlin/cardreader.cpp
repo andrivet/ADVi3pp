@@ -911,7 +911,8 @@ void CardReader::printingHasFinished() {
     #if ENABLED(SDCARD_SORT_ALPHA)
       presort();
     #endif
-    #if ENABLED(ULTRA_LCD) && ENABLED(LCD_SET_PROGRESS_MANUALLY)
+    // @advi3++: Allow progress bar
+    #if (ENABLED(ULTRA_LCD) || ENABLED(I3PLUS_LCD)) && ENABLED(LCD_SET_PROGRESS_MANUALLY)
       progress_bar_percent = 0;
     #endif
     #if ENABLED(SD_REPRINT_LAST_SELECTED_FILE)

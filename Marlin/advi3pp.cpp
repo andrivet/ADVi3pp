@@ -79,6 +79,8 @@ float run_z_probe();
 extern float zprobe_zoffset;
 #endif
 
+extern uint8_t progress_bar_percent;
+
 namespace advi3pp {
 
 namespace { Printer_ printer; };
@@ -518,6 +520,7 @@ void Printer_::task()
     dimming_.check();
     read_lcd_serial();
     task_.execute_background_task();
+    update_progress();
     send_status_data();
     graphs_.update();
 }
@@ -525,6 +528,13 @@ void Printer_::task()
 bool Printer_::is_busy()
 {
     return busy_state != NOT_BUSY || planner.has_blocks_queued();
+}
+
+void Printer_::update_progress()
+{
+    // Progress bar % comes from SD when actively printing
+    if(card.sdprinting)
+        progress_bar_percent = card.percentDone();
 }
 
 //! Update the status of the printer on the LCD.
@@ -542,7 +552,9 @@ void Printer_::send_status_data(bool force_update)
           << Uint16(lround(LOGICAL_Z_POSITION(current_position[Z_AXIS]) * 100.0))
           << FixedSizeString(LCD_::instance().get_message(), 40)
           << FixedSizeString(LCD_::instance().get_progress(), 40)
-          << FixedSizeString(LCD_::instance().get_message(), 44, true);
+          << FixedSizeString(LCD_::instance().get_message(), 44, true)
+          << Uint16(progress_bar_percent >= 50 ? 5 : progress_bar_percent / 10)
+          << Uint16(progress_bar_percent <  50 ? 0 : (progress_bar_percent / 10) - 5);
     frame.send(false);
 }
 
