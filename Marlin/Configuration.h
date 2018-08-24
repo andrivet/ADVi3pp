@@ -43,13 +43,15 @@
 //================================ ADVi3++ //================================
 //===========================================================================
 
+// @advi3++: To help build BLTouch releases
 #include "advi3pp_defines.h"
 
-// This is only to ensure that CLion is parsing code properly inside the IDE
+// @advi3++: This is only to ensure that CLion is parsing code properly inside the IDE
 #ifdef __CLION_IDE__
 #define DEBUG
 #define ADVi3PP_BLTOUCH
 #endif
+
 
 //===========================================================================
 //============================= Getting Started =============================
@@ -137,7 +139,7 @@
 // The following define selects which electronics board you have.
 // Please choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-// @advi3++: Change the motherboard
+// @advi3++: Wanhao Duplicator i3 Plus motherboard
   #define MOTHERBOARD BOARD_I3_PLUS
 #endif
 
@@ -359,12 +361,12 @@
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275
+#define HEATER_0_MAXTEMP 300
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
 #define HEATER_3_MAXTEMP 275
 #define HEATER_4_MAXTEMP 275
-#define BED_MAXTEMP 150
+#define BED_MAXTEMP 180
 
 //===========================================================================
 //============================= PID Settings ================================
@@ -527,44 +529,44 @@
 //#define USE_XMAX_PLUG
 //#define USE_YMAX_PLUG
 #ifdef ADVi3PP_BLTOUCH
-// @advi3++: Used by BLTouch probe
-#define USE_ZMAX_PLUG
+// @advi3++: No more used by BLTouch probe (advi3++ v4)
+//#define USE_ZMAX_PLUG
 #endif
 
 // Enable pullup for all endstops to prevent a floating state
 // @advi3++: Enable pullups
-#define ENDSTOPPULLUPS
+//#define ENDSTOPPULLUPS
 #if DISABLED(ENDSTOPPULLUPS)
   // Disable ENDSTOPPULLUPS to set pullups individually
-  //#define ENDSTOPPULLUP_XMAX
-  //#define ENDSTOPPULLUP_YMAX
-  //#define ENDSTOPPULLUP_ZMAX
-  //#define ENDSTOPPULLUP_XMIN
-  //#define ENDSTOPPULLUP_YMIN
-  //#define ENDSTOPPULLUP_ZMIN
-  //#define ENDSTOPPULLUP_ZMIN_PROBE
+  #define ENDSTOPPULLUP_XMAX
+  #define ENDSTOPPULLUP_YMAX
+  #define ENDSTOPPULLUP_ZMAX
+  #define ENDSTOPPULLUP_XMIN
+  #define ENDSTOPPULLUP_YMIN
+  #define ENDSTOPPULLUP_ZMIN
+  #define ENDSTOPPULLUP_ZMIN_PROBE
 #endif
 
 // @advi3++: Sets the directions for BLTouch
 #ifdef ADVi3PP_BLTOUCH
-// Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
-#define X_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Y_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Z_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define X_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Y_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Z_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Z_MIN_PROBE_ENDSTOP_INVERTING false // set to true to invert the logic of the probe.
+  // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
+  #define X_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Y_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Z_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define X_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Y_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Z_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
+  #define Z_MIN_PROBE_ENDSTOP_INVERTING true // set to true to invert the logic of the probe.
 #else
-// Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
-#define X_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Y_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Z_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define X_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Y_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Z_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
-#define Z_MIN_PROBE_ENDSTOP_INVERTING true // set to true to invert the logic of the probe.
-#endif
+  // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
+  #define X_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Y_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Z_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define X_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Y_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Z_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+  #define Z_MIN_PROBE_ENDSTOP_INVERTING true // set to true to invert the logic of the probe.
+  #endif
 
 /**
  * Specify Stepper Driver types
@@ -644,7 +646,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
 // @advi3++: Set resonable default values for Wanhao i3 Plus
-#define DEFAULT_MAX_FEEDRATE          { 450, 450, 5, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 450, 450, 20, 25 }
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -706,7 +708,8 @@
  *
  * Enable this option for a probe connected to the Z Min endstop pin.
  */
-//#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+// @advi3++: From v4, use the min probe connector for BLTouch
+#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 
 /**
  * Z_MIN_PROBE_ENDSTOP
@@ -727,10 +730,6 @@
  * disastrous consequences. Use with caution and do your homework.
  *
  */
-#ifdef ADVi3PP_BLTOUCH
-// @advi3++: BLTouch probe uses Z-Max endstop
-#define Z_MIN_PROBE_ENDSTOP
-#endif
 
 /**
  * Probe Type
@@ -769,7 +768,7 @@
 
 #if ENABLED(BLTOUCH)
 // @advi3++: Set delay for BLTouch
-  #define BLTOUCH_DELAY 375   // (ms) Enable and increase if needed
+  #define BLTOUCH_DELAY 100   // (ms) Enable and increase if needed
 #endif
 
 /**
@@ -818,7 +817,7 @@
  *    (0,0)
  */
 // @advi3++: Set the position of the probe (front-left). Adjust these values if your probe is elsewhere
-#define X_PROBE_OFFSET_FROM_EXTRUDER -29   // X offset: -left  +right  [of the nozzle]
+#define X_PROBE_OFFSET_FROM_EXTRUDER -28   // X offset: -left  +right  [of the nozzle]
 #define Y_PROBE_OFFSET_FROM_EXTRUDER -40   // Y offset: -front +behind [the nozzle]
 #define Z_PROBE_OFFSET_FROM_EXTRUDER -1.54 // Z offset: -below +above  [the nozzle]
 
@@ -827,14 +826,14 @@
 #define MIN_PROBE_EDGE 10
 
 // X and Y axis travel speed (mm/m) between probes
-#define XY_PROBE_SPEED 8000
+#define XY_PROBE_SPEED 10000
 
 // Feedrate (mm/m) for the first approach when double-probing (MULTIPLE_PROBING == 2)
 #define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
 
 // Feedrate (mm/m) for the "accurate" probe of each point
 // @advi3++: Use a far slower speed for the second measure
-#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 8)
+#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 2)
 
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
@@ -857,9 +856,9 @@
  *     But: `M851 Z+1` with a CLEARANCE of 2  =>  2mm from bed to nozzle.
  */
 // @advi3++: Set clearance for deploy and stow
-#define Z_CLEARANCE_DEPLOY_PROBE   15 // Z Clearance for Deploy/Stow
-#define Z_CLEARANCE_BETWEEN_PROBES  5 // Z Clearance between probe points
-#define Z_CLEARANCE_MULTI_PROBE     5 // Z Clearance between multiple probes
+#define Z_CLEARANCE_DEPLOY_PROBE    5 // Z Clearance for Deploy/Stow
+#define Z_CLEARANCE_BETWEEN_PROBES  4 // Z Clearance between probe points
+#define Z_CLEARANCE_MULTI_PROBE     4 // Z Clearance between multiple probes
 //#define Z_AFTER_PROBING           5 // Z position after probing is done
 
 #define Z_PROBE_LOW_POINT          -2 // Farthest distance below the trigger-point to go before stopping
@@ -1083,10 +1082,10 @@
 
   // Set the boundaries for probing (where the probe can reach).
   // @advi3++: Set the area for probing. Note: it is not centered (as the probe is on the left-front corner) 
-  #define LEFT_PROBE_BED_POSITION 20
-  #define RIGHT_PROBE_BED_POSITION 160
-  #define FRONT_PROBE_BED_POSITION 10
-  #define BACK_PROBE_BED_POSITION 150
+  #define LEFT_PROBE_BED_POSITION 30
+  #define RIGHT_PROBE_BED_POSITION 170
+  #define FRONT_PROBE_BED_POSITION 40
+  #define BACK_PROBE_BED_POSITION 160
 
   // Probe along the Y axis, advancing X after each column
   //#define PROBE_Y_FIRST
@@ -1200,7 +1199,8 @@
 // - Move the Z probe (or nozzle) to a defined XY point before Z Homing when homing all axes (G28).
 // - Prevent Z homing when the Z probe is outside bed area.
 //
-//#define Z_SAFE_HOMING
+// @advi3++: From v4, use safe homing
+#define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
   #define Z_SAFE_HOMING_X_POINT ((X_BED_SIZE) / 2)    // X point for Z homing when homing all axes (G28).
@@ -1209,7 +1209,7 @@
 
 // Homing speeds (mm/m)
 #define HOMING_FEEDRATE_XY (50*60)
-#define HOMING_FEEDRATE_Z  (4*60)
+#define HOMING_FEEDRATE_Z  (20*60)
 
 // @section calibrate
 
