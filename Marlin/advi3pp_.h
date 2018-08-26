@@ -52,7 +52,7 @@ struct PagesManager
     void show_wait_back_page(const __FlashStringHelper* message, WaitCalllback back, bool save_back = true);
     void show_wait_back_continue_page(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back = true);
     void show_wait_continue_page(const __FlashStringHelper* message, WaitCalllback cont, bool save_back = true);
-    void handle_lcd_command(KeyValue key_value);
+    void handle_wait(KeyValue key_value);
     Page get_current_page();
     void show_back_page();
     void save_forward_page();
@@ -71,6 +71,67 @@ private:
 };
 
 // --------------------------------------------------------------------
+// Settings
+// --------------------------------------------------------------------
+
+struct Task;
+struct Printer_;
+struct LCD_;
+
+struct Handler
+{
+    explicit Handler(Printer_& printer);
+
+    void handle(KeyValue value);
+    void show(bool save_forward, bool save_back);
+    virtual void store_eeprom_data(EepromWrite& eeprom);
+    virtual void restore_eeprom_data(EepromRead& eeprom);
+    virtual void reset_eeprom_data();
+    virtual uint16_t size_of_eeprom_data() const;
+
+protected:
+    virtual bool dispatch(KeyValue value);
+    void invalid(KeyValue value);
+
+    PagesManager& pages() const { return printer_.pages(); }
+    Task& task() const { return printer_.task(); }
+    Printer_& printer() const { return printer_; }
+
+private:
+    virtual void save();
+    virtual void back();
+    virtual void do_backup();
+    virtual void do_rollback();
+    virtual Page do_show() = 0;
+    virtual void do_save();
+
+private:
+    Printer_& printer_;
+};
+
+// --------------------------------------------------------------------
+// Load and Unload
+// --------------------------------------------------------------------
+
+struct LoadUnload: Handler
+{
+    explicit LoadUnload(Printer_& printer);
+
+private:
+    bool dispatch(KeyValue key_value) override;
+    Page do_show() override;
+    void prepare();
+    void load();
+    void unload();
+    void stop();
+    void stop_task();
+    void load_start_task();
+    void load_task();
+    void unload_start_task();
+    void unload_task();
+};
+
+// --------------------------------------------------------------------
 // Preset
 // --------------------------------------------------------------------
 
@@ -86,91 +147,501 @@ struct Preset
 // Preheat
 // --------------------------------------------------------------------
 
-struct Preheat
+struct Preheat: Handler
 {
-    explicit Preheat(PagesManager& mgr): pages_{mgr} {}
+    explicit Preheat(PagesManager& mgr);
 
-    void store_eeprom_data(EepromWrite& eeprom);
-    void restore_eeprom_data(EepromRead& eeprom);
-    void reset_eeprom_data();
-    uint16_t size_of_eeprom_data() const;
+    void store_eeprom_data(EepromWrite& eeprom) override;
+    void restore_eeprom_data(EepromRead& eeprom) override;
+    void reset_eeprom_data() override;
+    uint16_t size_of_eeprom_data() const override;
 
-    void show();
-    void back();
+private:
+    bool dispatch(KeyValue key_value) override;
+    Page do_show() override;
+    void send_preset();
     void previous();
     void next();
+    void cooldown();
 
 private:
     static const size_t NB_PRESETS = 5;
     Preset presets_[NB_PRESETS];
-    PagesManager& pages_;
+    size_t index_ = 0;
 };
 
 // --------------------------------------------------------------------
-// PidpSettings
+// Move
 // --------------------------------------------------------------------
 
-struct PidSettings
+struct Move: Handler
 {
-    void init();
-    void save();
+    explicit Move(PagesManager& pages);
 
-    float Kp, Ki, Kd;
+private:
+    bool dispatch(KeyValue key_value) override;
+    Page do_show() override;
+
+    void x_plus();
+    void x_minus();
+    void x_home();
+    void y_plus();
+    void y_minus();
+    void y_home();
+    void z_plus();
+    void z_minus();
+    void z_home();
+    void e_plus();
+    void e_minus();
+    void all_home();
+    void disable_motors();
+    void move(const char* command, millis_t delay);
+
+private:
+    millis_t last_move_time_ = 0;
+};
+
+// --------------------------------------------------------------------
+// SD Card
+// --------------------------------------------------------------------
+
+struct SdCard: Handler
+{
+    explicit SdCard(PagesManager& mgr, Task& task);
+
+    void show_first_page();
+
+private:
+    bool dispatch(KeyValue value) override;
+    void show_current_page();
+    void get_file_name(uint8_t index_in_page, String& name);
+    void up();
+    void down();
+    void select_file(uint16_t file_index);
+
+private:
+    uint16_t nb_files_ = 0;
+    uint16_t last_file_index_ = 0;
+};
+
+// --------------------------------------------------------------------
+// Print
+// --------------------------------------------------------------------
+
+struct Print: Handler
+{
+    explicit Print(PagesManager& pages);
+
+private:
+    bool dispatch(KeyValue value) override;
+    void stop();
+    void pause_resume();
+    void advanced_pause();
+    void reset_messages_task();
+
+    virtual void do_stop() = 0;
+    virtual void do_pause() = 0;
+    virtual void do_resume() = 0;
+    virtual bool is_printing() const = 0;
+};
+
+// --------------------------------------------------------------------
+// SD Print
+// --------------------------------------------------------------------
+
+struct SdPrint: Print
+{
+    explicit SdPrint(PagesManager& pages);
+
+private:
+    void do_stop() override;
+    void do_pause() override;
+    void do_resume() override;
+    bool is_printing() const override;
+};
+
+// --------------------------------------------------------------------
+// USB Print
+// --------------------------------------------------------------------
+
+struct UsbPrint: Print
+{
+    explicit UsbPrint(PagesManager& pages);
+
+private:
+    void do_stop() override;
+    void do_pause() override;
+    void do_resume() override;
+    bool is_printing() const override;
+};
+
+// --------------------------------------------------------------------
+// Factory Reset
+// --------------------------------------------------------------------
+
+struct FactoryReset: Handler
+{
+    explicit FactoryReset(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Manual Leveling
+// --------------------------------------------------------------------
+
+struct ManualLeveling: Handler
+{
+    explicit ManualLeveling(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Extruder Tuning
+// --------------------------------------------------------------------
+
+struct ExtruderTuning: Handler
+{
+    explicit ExtruderTuning(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// PID Tuning
+// --------------------------------------------------------------------
+
+struct PidTuning: Handler
+{
+    explicit PidTuning(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Sensor
+// --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
+
+struct SensorSettings: Handler
+{
+    explicit SensorSettings(PagesManager& pages);
+
+    void send_z_height_to_lcd(double height);
+    void save_lcd_z_height();
+
+    void self_test();
+    void reset();
+    void deploy();
+    void stow();
+
+private:
+    void save_z_height(double height);
+};
+
+struct NoSensor: Handler
+{
+    explicit NoSensor(PagesManager& pages);
+};
+
+#else
+
+struct SensorSettings: Handler
+{
+    explicit SensorSettings(PagesManager& pages) {}
+
+    void send_z_height_to_lcd(double height) {}
+	void save_lcd_z_height() {}
+
+    void leveling() {}
+    void self_test() {}
+    void reset() {}
+    void deploy() {}
+    void stow() {}
+
+    void start_z_height() {}
+};
+
+struct NoSensor: Handler
+{
+    explicit NoSensor(PagesManager& pages);
+};
+
+#endif
+
+// --------------------------------------------------------------------
+// Firmware Setting
+// --------------------------------------------------------------------
+
+struct FirmwareSettings: Handler
+{
+    explicit FirmwareSettings(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// LCD Setting
+// --------------------------------------------------------------------
+
+struct LcdSettings: Handler
+{
+    explicit LcdSettings(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Statistics
+// --------------------------------------------------------------------
+
+struct Statistics: Handler
+{
+    explicit Statistics(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Versions
+// --------------------------------------------------------------------
+
+struct Versions: Handler
+{
+    explicit Versions(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Print Settings
+// --------------------------------------------------------------------
+
+struct PrintSettings: Handler
+{
+    explicit PrintSettings(PagesManager& pages);
+
+    void baby_minus();
+    void baby_plus();
+
+protected:
+    bool dispatch(KeyValue value) override;
+
+private:
+    Page do_show() override;
+    void do_save() override;
+
+private:
+    double multiplier_ = 0.01;
+};
+
+// --------------------------------------------------------------------
+// PidSettings
+// --------------------------------------------------------------------
+
+struct Pid
+{
+    float Kp_, Ki_, Kd_;
+    int temperature_;
+};
+
+struct PidSettings: Handler
+{
+public:
+    explicit PidSettings(PagesManager& pages);
+
+    void set(uint16_t temperature, bool bed);
+    void next();
+    void previous();
+
+private:
+    void do_backup() override;
+    void do_rollback() override;
+    Page do_show() override;
+    void do_save() override;
+
+private:
+    static const size_t NB_PIDs = 5;
+    Pid backup_;
+    Pid pid_[2][NB_PIDs];
+    bool bed_ = true;
+    size_t index_ = 0;
 };
 
 // --------------------------------------------------------------------
 // StepSettings
 // --------------------------------------------------------------------
 
-struct StepSettings
+struct StepSettings: Handler
 {
-    void init();
-    void save();
+    explicit StepSettings(PagesManager& pages);
 
-    float axis_steps_per_mm[XYZE_N];
+private:
+    void do_backup() override;
+    void do_rollback() override;
+    Page do_show() override;
+    void do_save() override;
+
+    float backup_[XYZE_N];
 };
 
 // --------------------------------------------------------------------
 // FeedrateSettings
 // --------------------------------------------------------------------
 
-struct FeedrateSettings
+struct FeedrateSettings: Handler
 {
-    void init();
-    void save();
+    explicit FeedrateSettings(PagesManager& pages);
 
-    float max_feedrate_mm_s[XYZE_N];
-    float min_feedrate_mm_s;
-    float min_travel_feedrate_mm_s;
+private:
+    void do_backup() override;
+    void do_rollback() override;
+    Page do_show() override;
+    void do_save() override;
+
+    float backup_max_feedrate_mm_s_[XYZE_N];
+    float backup_min_feedrate_mm_s_;
+    float backup_min_travel_feedrate_mm_s_;
 };
 
 // --------------------------------------------------------------------
 // AccelerationSettings
 // --------------------------------------------------------------------
 
-struct AccelerationSettings
+struct AccelerationSettings: Handler
 {
-    void init();
-    void save();
+    explicit AccelerationSettings(PagesManager& pages);
 
-    uint32_t max_acceleration_mm_per_s2[XYZE_N];
-    float acceleration;
-    float retract_acceleration;
-    float travel_acceleration;
+private:
+    void do_backup() override;
+    void do_rollback() override;
+    Page do_show() override;
+    void do_save() override;
+
+    uint32_t backup_max_acceleration_mm_per_s2_[XYZE_N];
+    float backup_acceleration_;
+    float backup_retract_acceleration_;
+    float backup_travel_acceleration_;
 };
 
 // --------------------------------------------------------------------
 // JerkSettings
 // --------------------------------------------------------------------
 
-struct JerkSettings
+struct JerkSettings: Handler
 {
-    void init();
-    void save();
+    explicit JerkSettings(PagesManager& pages);
 
-    float max_jerk[XYZE];
+private:
+    void do_backup() override;
+    void do_rollback() override;
+    Page do_show() override;
+    void do_save() override;
+
+    float backup_max_jerk_[XYZE];
 };
 
+// --------------------------------------------------------------------
+// Copyrights
+// --------------------------------------------------------------------
+
+struct Copyrights: Handler
+{
+    explicit Copyrights(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Sensor Tuning
+// --------------------------------------------------------------------
+
+struct SensorTuning: Handler
+{
+    explicit SensorTuning(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Sensor Grid
+// --------------------------------------------------------------------
+
+struct SensorGrid: Handler
+{
+    explicit SensorGrid(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Sensor Z Height
+// --------------------------------------------------------------------
+
+struct SensorZHeight: Handler
+{
+    explicit SensorZHeight(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Change Filament
+// --------------------------------------------------------------------
+
+struct ChangeFilament: Handler
+{
+    explicit ChangeFilament(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// EEPROM Mistatch
+// --------------------------------------------------------------------
+
+struct EepromMismatch: Handler
+{
+    explicit EepromMismatch(PagesManager& pages);
+
+    bool does_mismatch() const;
+    void set_mismatch();
+    void reset_mismatch();
+};
+
+// --------------------------------------------------------------------
+// Sponsors
+// --------------------------------------------------------------------
+
+struct Sponsors: Handler
+{
+    explicit Sponsors(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Linear Advance Tuning
+// --------------------------------------------------------------------
+
+struct LinearAdvanceTuning: Handler
+{
+    explicit LinearAdvanceTuning(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Linear Advance Settings
+// --------------------------------------------------------------------
+
+struct LinearAdvanceSettings: Handler
+{
+    explicit LinearAdvanceSettings(PagesManager& pages);
+};
+
+// --------------------------------------------------------------------
+// Diagnosis
+// --------------------------------------------------------------------
+
+struct Diagnosis: Handler
+{
+    explicit Diagnosis(PagesManager& pages);
+};
+
+
+// --------------------------------------------------------------------
+// Advanced Pause
+// --------------------------------------------------------------------
+
+struct AdvancedPause: Handler
+{
+    explicit AdvancedPause(PagesManager& pages);
+
+    void advanced_pause_show_message(AdvancedPauseMessage message);
+
+private:
+    void init();
+    void insert_filament();
+    void printing();
+    void filament_inserted();
+
+private:
+    PagesManager& pages_;
+    AdvancedPauseMessage last_advanced_pause_message_ = static_cast<AdvancedPauseMessage>(-1);
+};
 
 // --------------------------------------------------------------------
 // LCD screen brightness and dimming
@@ -199,75 +670,6 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Sensor
-// --------------------------------------------------------------------
-
-#ifdef ADVi3PP_BLTOUCH
-
-struct Sensor
-{
-    explicit Sensor(PagesManager& pages);
-
-    void send_z_height_to_lcd(double height);
-	void save_lcd_z_height();
-
-    void self_test();
-    void reset();
-    void deploy();
-    void stow();
-
-private:
-    void save_z_height(double height);
-
-private:
-    PagesManager& pages_;
-};
-
-#else
-
-struct Sensor
-{
-    explicit Sensor(PagesManager& pages) {}
-
-    void send_z_height_to_lcd(double height) {}
-	void save_lcd_z_height() {}
-
-    void leveling() {}
-    void self_test() {}
-    void reset() {}
-    void deploy() {}
-    void stow() {}
-
-    void start_z_height() {}
-};
-
-#endif
-
-// --------------------------------------------------------------------
-// FilesManager
-// --------------------------------------------------------------------
-
-struct SDFilesManager
-{
-    explicit SDFilesManager(PagesManager& mgr);
-
-    void show_first_page();
-    void back();
-    void up();
-    void down();
-    void select_file(uint16_t file_index);
-
-private:
-    void show_current_page();
-    void get_file_name(uint8_t index_in_page, String& name);
-
-private:
-    uint16_t nb_files_ = 0;
-    uint16_t last_file_index_ = 0;
-    PagesManager& pages_;
-};
-
-// --------------------------------------------------------------------
 // Graphs
 // --------------------------------------------------------------------
 
@@ -284,7 +686,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// BackTask
+// Background Task
 // --------------------------------------------------------------------
 
 struct Task
@@ -309,26 +711,6 @@ private:
     BackgroundTask background_task_;
 };
 
-// --------------------------------------------------------------------
-// Advanced Pause
-// --------------------------------------------------------------------
-
-struct AdvancedPause
-{
-    explicit AdvancedPause(PagesManager& pages);
-
-    void advanced_pause_show_message(AdvancedPauseMessage message);
-
-private:
-    void init();
-    void insert_filament();
-    void printing();
-    void filament_inserted();
-
-private:
-    PagesManager& pages_;
-    AdvancedPauseMessage last_advanced_pause_message_ = static_cast<AdvancedPauseMessage>(-1);
-};
 
 // --------------------------------------------------------------------
 // LCD implementation
@@ -402,6 +784,8 @@ struct Printer_
     void process_command(const GCodeParser& parser);
     void advanced_pause_show_message(AdvancedPauseMessage message);
     void set_brightness(int16_t britghness);
+    uint16_t last_used_hotend_temperature() const;
+    uint16_t last_used_bed_temperature() const;
 
     void save_settings();
 
@@ -425,8 +809,6 @@ private:
     void get_advi3pp_lcd_version();
     bool is_lcd_version_valid() const;
 
-    void set_target_temperature(uint16_t temperature);
-    uint16_t get_target_temperature();
     void send_features();
     void send_usb_baudrate();
     void change_usb_baudrate();
@@ -437,43 +819,13 @@ private:
 
 private:
     // Actions
-    void sd_card(KeyValue key_value);
-
     void screen(KeyValue key_value);
     void show_temps();
     void show_print();
     void show_sd_or_temp_page();
-    void show_controls();
-    void show_tuning();
-    void show_settings();
-    void show_infos();
-    void show_motors();
-
     void back();
 
     void print_command(KeyValue key_value);
-
-    void sd_print_command(KeyValue key_value);
-    void sd_print_stop();
-    void sd_print_pause_resume();
-    void sd_print_advanced_pause();
-    void sd_print_back();
-
-    void usb_print_command(KeyValue key_value);
-    void usb_print_stop();
-    void usb_print_pause_resume();
-    void usb_print_advanced_pause();
-    void usb_print_back();
-
-    void load_unload(KeyValue key_value);
-    void load_unload_show();
-    void load_unload_start(bool load);
-    void load_unload_stop();
-    void load_filament_start_task();
-    void load_filament_task();
-    void unload_filament_start_task();
-    void unload_filament_task();
-    void load_unload_stop_task();
 
     void preheat(KeyValue key_value);
     void cooldown();
@@ -495,36 +847,6 @@ private:
     void move_all_home();
     void disable_motors();
     void move_back();
-
-    void print_settings(KeyValue key_value);
-    void print_settings_show();
-    void print_settings_save();
-    void print_settings_cancel();
-
-    void pid_settings(KeyValue key_value);
-    void pid_settings_show(bool back, bool init = true);
-    void pid_settings_save();
-    void pid_settings_cancel();
-
-    void steps_settings(KeyValue key_value);
-    void steps_settings_show(bool init = true);
-    void steps_settings_save();
-    void steps_settings_cancel();
-
-    void feedrate_settings(KeyValue key_value);
-    void feedrate_settings_show(bool init = true);
-    void feedrate_settings_save();
-    void feedrate_settings_cancel();
-
-    void acceleration_settings(KeyValue key_value);
-    void acceleration_settings_show(bool init = true);
-    void acceleration_settings_save();
-    void acceleration_settings_cancel();
-
-    void jerk_settings(KeyValue key_value);
-    void jerk_settings_show(bool init = true);
-    void jerk_settings_save();
-    void jerk_settings_cancel();
 
     void statistics(KeyValue key_value);
     void show_stats();
@@ -548,7 +870,7 @@ private:
     void extruder_tuning(KeyValue key_value);
     void show_extruder_tuning();
     void start_extruder_tuning();
-    void extruder_calibrartion_settings();
+    void extruder_calibration_settings();
     void extruder_tuning_heating_task();
     void extruder_tuning_extruding_task();
     void extruder_tuning_finished();
@@ -627,27 +949,51 @@ private:
     PagesManager pages_;
     LCD_ lcd_;
     Task task_;
-    SDFilesManager sd_files_;
-    Preheat preheat_;
-    PidSettings old_pid_{};
-    StepSettings steps_{};
-    FeedrateSettings feedrates_{};
-    AccelerationSettings accelerations_{};
-    JerkSettings jerks_{};
     uint16_t lcd_version_ = 0x0000;
     Feature features_;
     uint32_t usb_baudrate_;
     uint32_t usb_old_baudrate_;
     Dimming dimming_{};
-    Sensor sensor_;
     Graphs graphs_;
+
+    LoadUnload load_unload_;
+    Preheat preheat_;
+    Move move_;
+    SdCard sd_card_;
+    FactoryReset factory_reset_;
+    ManualLeveling manual_leveling_;
+    ExtruderTuning extruder_tuning_;
+    PidTuning pid_tuning_;
+    SensorSettings sensor_settings_;
+    FirmwareSettings firmware_settings_;
+    NoSensor no_sensor_;
+    LcdSettings lcd_settings_;
+    Statistics statistics_;
+    Versions versions_;
+    PrintSettings print_settings_;
+    PidSettings pid_settings_;
+    StepSettings steps_settings_;
+    FeedrateSettings feedrates_settings_;
+    AccelerationSettings accelerations_settings_;
+    JerkSettings jerks_settings_;
+    Copyrights copyrights_;
+    SensorTuning sensor_tuning_;
+    SensorGrid sensor_grid_;
+    SensorZHeight sensor_z_height_;
+    ChangeFilament change_filament_;
+    EepromMismatch eeprom_mismatch_;
+    Sponsors sponsors_;
+    LinearAdvanceTuning linear_advance_tuning_;
+    LinearAdvanceSettings linear_advance_settings_;
+    Diagnosis diagnosis_;
+    SdPrint sd_print_;
+    UsbPrint usb_print_;
     AdvancedPause pause_;
 
     bool init_ = true;
     bool sensor_interactive_leveling_ = false;
     double extruded_ = 0.0;
-    bool eeprom_mismatch_ = false;
-    millis_t last_move_time_ = 0;
+    uint16_t last_used_temperature = 200;
 };
 
 }

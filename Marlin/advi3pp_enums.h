@@ -171,6 +171,8 @@ enum class Action: uint16_t
     MoveEMinus              = 0x0456,
     MoveEPlus               = 0x0457,
     LCDBrightness           = 0x0458,
+    BabyMinus               = 0x0459,
+    BabyPlus                = 0x045A,
 
     Undefined               = 0xFFFF
 };
@@ -261,10 +263,12 @@ enum class KeyValue: uint16_t
     ZHeight05               = 0x0002,
     ZHeight10               = 0x0003,
 
+    Baby001                 = 0x0001,
+    Baby005                 = 0x0002,
+    Baby010                 = 0x0003,
+
     Save                    = 0xFFFE,
-    Continue                = 0xFFFE,
-    Back                    = 0xFFFF,
-    Cancel                  = 0xFFFF
+    Back                    = 0xFFFF
 };
 
 enum class Feature: uint16_t
