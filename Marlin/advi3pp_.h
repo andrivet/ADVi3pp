@@ -848,7 +848,7 @@ private:
     uint32_t usb_baudrate_;
     Feature features_;
     uint16_t last_used_hotend_temperature_ = 200;
-    uint16_t last_used_bed_temperature_ = 200;
+    uint16_t last_used_bed_temperature_ = 50;
     String message_;
     String progress_name_;
     mutable String progress_percent_;
