@@ -790,7 +790,7 @@ struct ADVi3pp_
     void eeprom_settings_mismatch();
     void temperature_error(const __FlashStringHelper* message);
     bool is_thermal_protection_enabled() const;
-    void process_command(const GCodeParser& parser);
+    void process_command();
     void advanced_pause_show_message(AdvancedPauseMessage message);
     void set_brightness(int16_t britghness);
     uint16_t last_used_hotend_temperature() const { return last_used_hotend_temperature_; }

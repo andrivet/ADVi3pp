@@ -12268,7 +12268,7 @@ void process_parsed_command() {
   // Handle a known G, M, or T
   switch (parser.command_letter) {
     case 'I': // @advi3++: Process command specific to ADVi3++ ("I")
-      advi3pp::ADVi3pp::process_command(parser);
+      advi3pp::ADVi3pp::process_command();
       break;
 
     case 'G': switch (parser.codenum) {

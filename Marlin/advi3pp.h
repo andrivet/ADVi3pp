@@ -53,7 +53,7 @@ struct ADVi3pp
     static void eeprom_settings_mismatch();
     static void temperature_error(const __FlashStringHelper* message);
     static bool is_thermal_protection_enabled();
-    static void process_command(const GCodeParser& parser);
+    static void process_command();
     static void set_brightness(int16_t britghness);
     static bool has_status();
     static void set_status(const char* message, bool persist);

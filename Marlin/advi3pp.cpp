@@ -34,6 +34,7 @@
 #include "advi3pp_utils.h"
 #include "advi3pp_.h"
 
+#include <serial.h>
 #include <HardwareSerial.h>
 //extern HardwareSerial Serial2;
 
@@ -59,7 +60,6 @@ namespace
         advi3pp::Feature::Buzzer;
 
     const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
-
     const uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
 
     const int8_t BRIGHTNESS_MIN = 0x01;
@@ -184,12 +184,14 @@ void ADVi3pp_::send_sponsors()
 }
 
 //! Process command specific to this printer (I)
-void ADVi3pp_::process_command(const GCodeParser& parser)
+void ADVi3pp_::process_command()
 {
     switch(GCodeParser::codenum)
     {
         case 0: icode_0(parser); break;
-        default: Log::error() << F("Invalid I-code number ") << static_cast<uint16_t>(parser.codenum) << Log::endl(); break;
+        default: Log::error() << F("Invalid I-code number ")
+                              << static_cast<uint16_t>(GCodeParser::codenum)
+                              << Log::endl(); break;
     }
 }
 
@@ -694,8 +696,24 @@ void ADVi3pp_::buzz_on_press()
 
 void ADVi3pp_::change_usb_baudrate(uint32_t baudrate)
 {
-    // TODO
     usb_baudrate_ = baudrate;
+
+    // We do not use Log because this message is always output (Log is only active in DEBUG)
+    SERIAL_ECHO(F("Switch USB baudrate to "));
+    SERIAL_ECHO(usb_baudrate_);
+    SERIAL_ECHO("\r\n");
+
+    // wait for last transmitted data to be sent
+    SERIAL_FLUSH();
+    MYSERIAL0.begin(usb_baudrate_);
+    // empty out possible garbage from input buffer
+    while(MYSERIAL0.available())
+        MYSERIAL0.read();
+
+    // We do not use Log because this message is always output (Log is only active in DEBUG
+    SERIAL_ECHO(F("\r\nUSB baudrate switched to "));
+    SERIAL_ECHO(usb_baudrate_);
+    SERIAL_ECHO("\r\n");
 }
 
 void ADVi3pp_::change_features(Feature features)

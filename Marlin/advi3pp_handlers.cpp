@@ -1370,7 +1370,7 @@ bool ExtruderTuning::dispatch(KeyValue key_value)
 Page ExtruderTuning::do_show()
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << 200_u16;
+    frame << Uint16(advi3pp.last_used_hotend_temperature());
     frame.send();
 
     pages.save_forward_page();
