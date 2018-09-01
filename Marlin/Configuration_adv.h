@@ -748,8 +748,10 @@
  *
  * Warning: Does not respect endstops!
  */
-// @advi3++: Allow babystepping
+// @advi3++: Allow babystepping (Sensor only)
+#ifdef ADVi3PP_BLTOUCH
 #define BABYSTEPPING
+#endif
 #if ENABLED(BABYSTEPPING)
   //#define BABYSTEP_XY              // Also enable X/Y Babystepping. Not supported on DELTA!
   #define BABYSTEP_INVERT_Z false    // Change if Z babysteps should go the other way

@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include "advi3pp_pages.h"
 
 class MarlinSettings;
 class GCodeParser;
@@ -38,62 +39,11 @@ using eeprom_read  = void (*)(int &pos, uint8_t* value, uint16_t size, uint16_t*
 
 namespace advi3pp {
 
-enum class Page: uint8_t
-{
-    None                    = 0,
-    Boot                    = 1,
-    Main                    = 22,
-    Controls                = 24,
-    Tuning                  = 26,
-    Settings                = 28,
-    LoadUnload              = 30,
-    WaitBack                = 32,
-    WaitBackContinue        = 34,
-    Preheat                 = 36,
-    Move                    = 38,
-    SdCard                  = 40,
-    Print                   = 42,
-    Sponsors                = 44,
-    Waiting                 = 46,
-    ManualLeveling          = 48,
-    ExtruderTuningTemp      = 50,
-    WaitContinue            = 52,
-    ExtruderTuningMeasure   = 54,
-    Leveling                = 56,
-    PidTuning1              = 58,
-    PidTuning2              = 60,
-    MotorsSettings          = 62,
-    PidSettings             = 64,
-    FactoryReset            = 66,
-    Statistics              = 68,
-    Versions                = 70,
-    StepsSettings           = 72,
-    FeedrateSettings        = 74,
-    AccelerationSettings    = 76,
-    JerkSettings            = 78,
-    PrintSettings           = 80,
-    ThermalRunawayError     = 82,
-    VersionsMismatch        = 84,
-    Temperature             = 86,
-    Infos                   = 88,
-    Firmware                = 90,
-    NoSensor                = 92,
-    SensorSettings          = 94,
-    LCD                     = 96,
-    Copyrights              = 98,
-    SensorTuning            = 100,
-    SensorGrid              = 102,
-    EEPROMMismatch          = 104,
-    ZHeightTuning           = 106,
-    LinearAdvanceTuning     = 108,
-    LinearAdvanceSettings   = 110
-};
-
-//! The Duplicator i3 Plus printer.
-struct Printer
+//! ADVi3++ public facade.
+struct ADVi3pp
 {
     static void setup();
-    static void task();
+    static void idle();
     static void auto_pid_finished();
     static void g29_leveling_finished(bool success);
     static void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
@@ -101,34 +51,16 @@ struct Printer
     static void reset_eeprom_data();
     static uint16_t size_of_eeprom_data();
     static void eeprom_settings_mismatch();
-    static void save_settings();
     static void temperature_error(const __FlashStringHelper* message);
-    static void update();
     static bool is_thermal_protection_enabled();
     static void process_command(const GCodeParser& parser);
     static void set_brightness(int16_t britghness);
-};
-
-//! The Duplicator i3 Plus LCD Screen
-struct LCD
-{
-    static void update();
-    static void init();
     static bool has_status();
     static void set_status(const char* message, bool persist);
     static void set_status_PGM(const char* message, int8_t level = 0);
-    static void set_status(const __FlashStringHelper* fmt, ...);
     static void set_alert_status_PGM(const char* message);
-    static void buttons_update();
-    static void reset_alert_level();
-    static bool detected();
-    static void refresh();
-    static void queue_message(const String& message);
     static void reset_message();
-    static void enable_buzzer(bool enable);
-    static void enable_buzz_on_press(bool enable);
     static void buzz(long duration, uint16_t frequency = 0);
-    static void buzz_on_press();
 };
 
 }

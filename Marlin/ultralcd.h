@@ -29,20 +29,20 @@
 #include "advi3pp.h"
 
 #if ENABLED(I3PLUS_LCD)
-    inline void lcd_init() { advi3pp::LCD::init(); }
-    inline bool lcd_detected() { return advi3pp::LCD::detected(); }
-    inline void lcd_update() { advi3pp::LCD::update(); }
+    inline void lcd_init() { /* Nothing to do */ }
+    inline bool lcd_detected() { return true; }
+    inline void lcd_update() {  /* Nothing to do */ }
 
-    inline bool lcd_hasstatus() { return advi3pp::LCD::has_status(); }
-    inline void lcd_setstatus(const char* const message, const bool persist=false) { advi3pp::LCD::set_status(message, persist); }
-    inline void lcd_setstatusPGM(const char* const message, const int8_t level=0) { advi3pp::LCD::set_status_PGM(message, level); }
-    inline void lcd_setalertstatusPGM(const char* message) { advi3pp::LCD::set_alert_status_PGM(message); }
-    inline void lcd_reset_alert_level() { advi3pp::LCD::reset_alert_level(); }
-    inline void lcd_reset_status() { advi3pp::LCD::reset_message(); }
+    inline bool lcd_hasstatus() { return advi3pp::ADVi3pp::has_status(); }
+    inline void lcd_setstatus(const char* const message, const bool persist=false) { advi3pp::ADVi3pp::set_status(message, persist); }
+    inline void lcd_setstatusPGM(const char* const message, const int8_t level=0) { advi3pp::ADVi3pp::set_status_PGM(message, level); }
+    inline void lcd_setalertstatusPGM(const char* message) { advi3pp::ADVi3pp::set_alert_status_PGM(message); }
+    inline void lcd_reset_alert_level() { /* Do nothing */ }
+    inline void lcd_reset_status() { advi3pp::ADVi3pp::reset_message(); }
     void lcd_status_printf_P(uint8_t level, const char * fmt, ...);
-    inline void lcd_buttons_update() { advi3pp::LCD::buttons_update(); }
-    inline void lcd_refresh() { advi3pp::LCD::refresh(); }
-    inline void lcd_buzz(const long duration, const uint16_t freq) { advi3pp::LCD::buzz(duration, freq); }
+    inline void lcd_buttons_update() { /* Do nothing */ }
+    inline void lcd_refresh() { /* Do nothing */ }
+    inline void lcd_buzz(const long duration, const uint16_t freq) { advi3pp::ADVi3pp::buzz(duration, freq); }
 
     #if ENABLED(ADVANCED_PAUSE_FEATURE)
     extern uint8_t active_extruder;
@@ -55,7 +55,7 @@
     #endif
 
     extern int16_t lcd_contrast;
-    inline void set_lcd_contrast(const int16_t value) { advi3pp::Printer::set_brightness(value); }
+    inline void set_lcd_contrast(const int16_t value) { advi3pp::ADVi3pp::set_brightness(value); }
 
     #endif // ADVANCED_PAUSE_FEATURE
 #endif

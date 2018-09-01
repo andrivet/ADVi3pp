@@ -27,7 +27,7 @@
 #include "advi3pp_.h"
 
 #include <HardwareSerial.h>
-extern HardwareSerial Serial2;
+//extern HardwareSerial Serial2;
 
 namespace advi3pp {
 

@@ -46,7 +46,7 @@
 // @advi3++: To help build BLTouch releases
 #include "advi3pp_defines.h"
 
-// @advi3++: This is only to ensure that CLion is parsing code properly inside the IDE
+// @advi3++: This is only to ensure that Jetbrains CLion is parsing code properly inside the IDE
 #ifdef __CLION_IDE__
 #define DEBUG
 #define ADVi3PP_BLTOUCH

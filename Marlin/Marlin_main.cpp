@@ -268,7 +268,7 @@
 #include "parser.h"
 #include "advi3pp.h" // @advi3++
 
-// @advi3++: This is only to ensure that CLion is parsing code properly inside the IDE
+// @advi3++: This is only to ensure that Jetbrains CLion is parsing code properly inside the IDE
 #ifdef __CLION_IDE__
 #define HAS_BED_PROBE 1
 #endif
@@ -5472,7 +5472,7 @@ void home_all_axes() { gcode_G28(true); }
     #endif
 
     report_current_position();
-    advi3pp::Printer::g29_leveling_finished(!isnan(measured_z));
+    advi3pp::ADVi3pp::g29_leveling_finished(!isnan(measured_z));
   }
 
 #endif // OLDSCHOOL_ABL
@@ -12268,7 +12268,7 @@ void process_parsed_command() {
   // Handle a known G, M, or T
   switch (parser.command_letter) {
     case 'I': // @advi3++: Process command specific to ADVi3++ ("I")
-      advi3pp::Printer::process_command(parser);
+      advi3pp::ADVi3pp::process_command(parser);
       break;
 
     case 'G': switch (parser.codenum) {
@@ -14381,7 +14381,7 @@ void idle(
 
   lcd_update();
   // @advi3++: ADVi3++ idle tasks
-  advi3pp::Printer::task();
+  advi3pp::ADVi3pp::idle();
 
   host_keepalive();
 
@@ -14732,7 +14732,7 @@ void setup() {
   #endif
 
   // @advi3++: ADVi3++ setup
-  advi3pp::Printer::setup();
+  advi3pp::ADVi3pp::setup();
 
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();

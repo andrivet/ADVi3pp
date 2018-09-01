@@ -33,6 +33,8 @@
 #endif
 #endif
 
+#include "advi3pp.h"
+
 namespace advi3pp {
 
 template <typename T, size_t N>

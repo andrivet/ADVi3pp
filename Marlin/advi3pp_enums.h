@@ -216,8 +216,6 @@ enum class KeyValue: uint16_t
     SDUp                    = 0x8000,
     SDDown                  = 0x8001,
 
-    ResetConfirm            = 0x0001,
-
     LevelingPoint1          = 0x0001,
     LevelingPoint2          = 0x0002,
     LevelingPoint3          = 0x0003,
@@ -231,7 +229,6 @@ enum class KeyValue: uint16_t
     TuningStart             = 0x0001,
     TuningSettings          = 0x0002,
 
-    PidTuningStep1          = 0x0000,
     PidTuningStep2          = 0x0001,
     PidTuningHotend         = 0x0002,
     PidTuningBed            = 0x0003,
@@ -273,6 +270,7 @@ enum class KeyValue: uint16_t
 
 enum class Feature: uint16_t
 {
+    None                = 0b0000000000000000,
     HeadParking         = 0b0000000000000001,
     ThermalProtection   = 0b0000000000000010,
     Dimming             = 0b0000000000000100,
