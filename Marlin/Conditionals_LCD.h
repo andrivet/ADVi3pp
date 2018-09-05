@@ -371,7 +371,7 @@
   #endif
 #endif
 
-// @advi3++: Allow M250 - LCD con
+// @advi3++: Allow M250 - LCD contrast
 #define HAS_LCD_CONTRAST 1
 #define DEFAULT_LCD_CONTRAST 0x40
 

@@ -740,7 +740,7 @@ private:
     void set_next_checking_time();
     void set_next_dimmming_time();
     void send_brightness();
-    uint8_t get_adjusted_brithness();
+    uint8_t get_adjusted_brightness();
 
 private:
     bool enabled_ = true;
