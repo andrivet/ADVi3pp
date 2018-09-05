@@ -27,7 +27,7 @@
 #include "advi3pp_.h"
 
 #include <HardwareSerial.h>
-//extern HardwareSerial Serial2;
+#include "serial.h"
 
 namespace advi3pp {
 
@@ -37,7 +37,7 @@ static const size_t MAX_GARBAGE_BYTES = 5;
 // Logging
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_LOG_FRAMES
+#ifdef ADVi3PP_LOG
 
 Log Log::logging_;
 
@@ -49,37 +49,37 @@ Log& Log::error()
 
 Log& Log::operator<<(const String& data)
 {
-    Serial.print(data.c_str());
+    SERIAL_ECHO(data.c_str());
     return log();
 }
 
 Log& Log::operator<<(uint8_t data)
 {
-    Serial.print(data);
+    SERIAL_ECHO_F(data, HEX);
     return log();
 }
 
 Log& Log::operator<<(uint16_t data)
 {
-    Serial.print(data);
+    SERIAL_ECHO_F(data, HEX);
     return log();
 }
 
 Log& Log::operator<<(uint32_t data)
 {
-    Serial.print(data);
+    SERIAL_ECHO_F(data, HEX);
     return log();
 }
 
 Log& Log::operator<<(double data)
 {
-    Serial.print(data);
+    SERIAL_ECHO(data);
     return log();
 }
 
-void Log::operator<<(EndOfLine eol)
+void Log::operator<<(EndOfLine)
 {
-    Serial.println();
+    SERIAL_ECHOLN("");
 }
 
 //! Dump the bytes in hexadecimal and print them (serial)
@@ -101,7 +101,7 @@ void Log::dump(const uint8_t* bytes, size_t size)
     }
     buffer[size * 3] = 0;
 
-    Serial.println(buffer);
+    SERIAL_ECHOLN(buffer);
 }
 
 void __assert(const char *msg, const char *file, uint16_t line)
@@ -311,14 +311,17 @@ Frame& operator<<(Frame& frame, const String& data)
     return frame;
 }
 
-//! Send htis Frame to the LCD display.
+//! Send this Frame to the LCD display.
 //! @param logging  Enable logging in DEBUG release
 bool Frame::send(bool logging)
 {
     if(logging)
     {
-        Log::log() << F(">>> ") << get_length() << F(" bytes, cmd = ") << static_cast<uint8_t>(get_command()) << Log::endl();
+        Log::log() << F("<=S= 0x") << get_length() << F(" bytes, cmd = 0x") << static_cast<uint8_t>(get_command())
+                   << Log::endl();
+#ifdef ADVi3PP_LOG_FRAMES
         Log::dump(buffer_, get_length() + 3);
+#endif
     }
     size_t size = 3 + buffer_[Position::Length];
     return Serial2.write(buffer_, size) == size; // Header, length and data
@@ -405,11 +408,13 @@ bool Frame::receive(bool log)
         return false;
     }
 
+#ifdef ADVi3PP_LOG_FRAMES
     if(log)
     {
         Log::log() << F("<<< ") << length << F(" bytes.") << Log::endl();
         Log::dump(buffer_, length + 3);
     }
+#endif
 
     position_ = Position::Command;
     return true;

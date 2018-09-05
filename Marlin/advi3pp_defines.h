@@ -30,8 +30,14 @@
 // If for whatever reason, you prefer to use Arduino IDE, uncomment the following line to build a BLTouch release.
 // #define ADVi3PP_BLTOUCH
 
-// To log the content of frames, uncomment the following line
+#ifdef DEBUG
+// To log various aspects of ADVi3++
+#define ADVi3PP_LOG
+
+// To log the content of frames, uncomment the following line. Very chatty, but useful to debug tough bugs
 //#define ADVi3PP_LOG_FRAMES
+
+#endif
 
 #endif
 

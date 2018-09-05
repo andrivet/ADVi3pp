@@ -49,7 +49,7 @@ enum class Action: uint16_t;
 // Logging
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_LOG_FRAMES
+#ifdef ADVi3PP_LOG
 struct Log
 {
     struct EndOfLine {};
