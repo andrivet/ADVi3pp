@@ -34,9 +34,8 @@
 #include "advi3pp_utils.h"
 #include "advi3pp_.h"
 
-#include <serial.h>
+#include "serial.h"
 #include <HardwareSerial.h>
-//extern HardwareSerial Serial2;
 
 extern uint8_t progress_bar_percent;
 extern int16_t lcd_contrast;
@@ -102,6 +101,7 @@ inline namespace singletons
     Dimming dimming;
     Graphs graphs;
 
+    extern Wait wait;
     extern LoadUnload load_unload;
     extern Preheat preheat;
     extern Move move;
@@ -175,12 +175,12 @@ void ADVi3pp_::show_boot_page()
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void ADVi3pp_::send_gplv3_7b_notice()
 {
-    Log::log() << F("Based on ADVi3++, Copyright (C) 2017 Sebastien Andrivet") << Log::endl();
+    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017 Sebastien Andrivet");
 }
 
 void ADVi3pp_::send_sponsors()
 {
-    Log::log() << F("Sponsored by Johnathan Chamberlain, Timothy D Hoogland, Gavin Smith, Sawtoothsquid") << Log::endl();
+    SERIAL_ECHOLNPGM("Sponsored by Johnathan Chamberlain, Timothy D Hoogland, Gavin Smith, Sawtoothsquid");
 }
 
 //! Process command specific to this printer (I)
@@ -273,7 +273,7 @@ bool ADVi3pp_::is_thermal_protection_enabled() const
 // Incoming LCD commands and status update
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-//! Do not do soo many things in setup so do things here
+//! Do not do too many things in setup so do things here
 void ADVi3pp_::init()
 {
     init_ = false;
@@ -372,13 +372,14 @@ void ADVi3pp_::read_lcd_serial()
     frame >> command >> action >> nb_words >> value;
     auto key_value = static_cast<KeyValue>(value.word);
 
-    Log::log() << F(">>> ") << nb_words.byte << F(" words, Action = ") << static_cast<uint16_t>(action) << F(", KeyValue = ") << value.word << Log::endl();
+    Log::log() << F("=R=> ") << nb_words.byte << F(" words, Action = 0x") << static_cast<uint16_t>(action)
+               << F(", KeyValue = 0x") << value.word << Log::endl();
 
     switch(action)
     {
         case Action::Screen:                screen(key_value); break;
         case Action::PrintCommand:          print_command(key_value); break;
-        case Action::Wait:                  pages.handle_wait(key_value); break;
+        case Action::Wait:                  wait.handle(key_value); break;
         case Action::LoadUnload:            load_unload.handle(key_value); break;
         case Action::Preheat:               preheat.handle(key_value); break;
         case Action::Move:                  move.handle(key_value); break;
@@ -473,7 +474,7 @@ void ADVi3pp_::show_print()
         return;
     }
 
-    pages.show_wait_page(F("Try to access the SD card..."));
+    wait.show(F("Try to access the SD card..."));
     task.set_background_task(BackgroundTask(this, &ADVi3pp_::show_sd_or_temp_page));
 }
 
