@@ -32,15 +32,15 @@
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data>
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.35.1" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.36.0" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolserialnumber>J41800071896</avrtoolserialnumber>
@@ -417,6 +417,9 @@
     <OutputPath>bin\BLTouch-Debug\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ADVcallback.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="advi3pp.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -426,16 +429,34 @@
     <Compile Include="advi3pp_.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="advi3pp_bitmasks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="advi3pp_defines.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="advi3pp_enums.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="advi3pp_lcd.cpp">
+    <Compile Include="advi3pp_facade.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="advi3pp_handlers.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="advi3pp_pages.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="advi3pp_utils.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="advi3pp_utils.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="ADVstd.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="ADVunique_ptr.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="bitmap_flags.h">
@@ -750,6 +771,18 @@
     <Compile Include="speed_lookuptable.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="status_screen_DOGM.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="status_screen_lite_ST7920.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="status_screen_lite_ST7920_class.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="status_screen_lite_ST7920_spi.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="stepper.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -789,10 +822,91 @@
     <Compile Include="thermistortable_1.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="thermistortable_10.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_1010.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_1047.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_11.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_110.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_12.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_13.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_147.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="thermistortable_15.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="thermistortable_2.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_20.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_3.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_4.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_5.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="thermistortable_501.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_51.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_52.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_55.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_6.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_60.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_66.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_7.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_70.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_71.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_75.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_8.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_9.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_998.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="thermistortable_999.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="tmc_util.cpp">
