@@ -35,7 +35,6 @@
 #include "advi3pp_.h"
 
 #include <HardwareSerial.h>
-//extern HardwareSerial Serial2;
 
 // Used directly by Marlin
 uint8_t progress_bar_percent;
@@ -103,6 +102,7 @@ inline namespace singletons
     extern Dimming dimming;
     extern Graphs graphs;
 
+    Wait wait;
     LoadUnload load_unload;
     Preheat preheat;
     Move move;
@@ -155,69 +155,6 @@ void Pages::show_page(Page page, bool save_back)
     WriteRegisterDataRequest frame{Register::PictureID};
     frame << 00_u8 << page;
     frame.send(true);
-}
-
-void Pages::show_wait_page(const __FlashStringHelper* message, bool save_back)
-{
-    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
-    show_page(Page::Waiting, save_back);
-}
-
-void Pages::show_wait_back_page(const __FlashStringHelper* message, WaitCalllback back, bool save_back)
-{
-    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
-    back_ = back;
-    show_page(Page::WaitBack, save_back);
-}
-
-void Pages::show_wait_back_continue_page(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back)
-{
-    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
-    back_ = back;
-    continue_ = cont;
-    show_page(Page::WaitBackContinue, save_back);
-}
-
-void Pages::show_wait_continue_page(const __FlashStringHelper* message, WaitCalllback cont, bool save_back)
-{
-    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
-    back_ = nullptr;
-    continue_ = cont;
-    show_page(Page::WaitContinue, save_back);
-}
-
-void Pages::handle_wait(KeyValue key_value)
-{
-    switch(key_value)
-    {
-        case KeyValue::Back:        handle_lcd_back(); break;
-        case KeyValue::Save:        handle_lcd_continue(); break;
-        default:                    Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
-    }
-}
-
-void Pages::handle_lcd_back()
-{
-    if(!back_)
-    {
-        Log::error() << F("No Back action defined") << Log::endl();
-        return;
-    }
-
-    back_();
-    back_ = nullptr;
-}
-
-void Pages::handle_lcd_continue()
-{
-    if(!continue_)
-    {
-        Log::error() << F("No Continue action defined") << Log::endl();
-        return;
-    }
-
-    continue_();
-    continue_ = nullptr;
 }
 
 //! Retrieve the current page on the LCD screen
@@ -369,6 +306,66 @@ void Handler::reset_eeprom_data()
 uint16_t Handler::size_of_eeprom_data() const
 {
     return 0;
+}
+
+// --------------------------------------------------------------------
+// Wait
+// --------------------------------------------------------------------
+
+void Wait::show(const __FlashStringHelper* message, bool save_back)
+{
+    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
+    back_ = nullptr;
+    continue_ = nullptr;
+    pages.show_page(Page::Waiting, save_back);
+}
+
+void Wait::show(const __FlashStringHelper* message, WaitCalllback back, bool save_back)
+{
+    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
+    back_ = back;
+    continue_ = nullptr;
+    pages.show_page(Page::WaitBack, save_back);
+}
+
+void Wait::show(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back)
+{
+    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
+    back_ = back;
+    continue_ = cont;
+    pages.show_page(Page::WaitBackContinue, save_back);
+}
+
+void Wait::show_continue(const __FlashStringHelper* message, WaitCalllback cont, bool save_back)
+{
+    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
+    back_ = nullptr;
+    continue_ = cont;
+    pages.show_page(Page::WaitContinue, save_back);
+}
+
+void Wait::do_rollback()
+{
+    if(!back_)
+    {
+        Log::error() << F("No Back action defined") << Log::endl();
+        return;
+    }
+
+    back_();
+    back_ = nullptr;
+}
+
+void Wait::do_save()
+{
+    if(!continue_)
+    {
+        Log::error() << F("No Continue action defined") << Log::endl();
+        return;
+    }
+
+    continue_();
+    continue_ = nullptr;
 }
 
 // --------------------------------------------------------------------
@@ -678,8 +675,8 @@ void LoadUnload::load()
     prepare();
 
     task.set_background_task(BackgroundTask(this, &LoadUnload::load_start_task));
-    pages.show_wait_back_page(F("Wait until the target temp is reached..."),
-        WaitCalllback(this, &LoadUnload::stop));
+    wait.show(F("Wait until the target temp is reached..."),
+              WaitCalllback(this, &LoadUnload::stop));
 }
 
 //! Start Load action.
@@ -688,8 +685,8 @@ void LoadUnload::unload()
     prepare();
 
     task.set_background_task(BackgroundTask(this, &LoadUnload::unload_start_task));
-    pages.show_wait_back_page(F("Wait until the target temp is reached..."),
-        WaitCalllback(this, &LoadUnload::stop));
+    wait.show(F("Wait until the target temp is reached..."),
+              WaitCalllback(this, &LoadUnload::stop));
 }
 
 
@@ -1248,7 +1245,7 @@ void ManualLeveling::back()
 //! Home the printer for bed leveling.
 Page ManualLeveling::do_show()
 {
-    pages.show_wait_page(F("Homing..."));
+    wait.show(F("Homing..."));
     axis_homed = 0;
     axis_known_position = 0;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
@@ -1389,7 +1386,7 @@ void ExtruderTuning::start()
 
     Uint16 hotend; frame >> hotend;
 
-    pages.show_wait_page(F("Heating the extruder..."));
+    wait.show(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend.word, 0);
 
     task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
@@ -1532,7 +1529,7 @@ void SensorTuning::leveling()
 {
     sensor_interactive_leveling_ = true;
     pages.save_forward_page();
-    pages.show_wait_page(F("Homing..."));
+    wait.show(F("Homing..."));
     enqueue_and_echo_commands_P(PSTR("G28"));                   // homing
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
     enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
@@ -1547,7 +1544,7 @@ void SensorTuning::g29_leveling_finished(bool success)
             SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
 
         if(sensor_interactive_leveling_)
-            pages.show_wait_back_page(F("Leveling failed"), WaitCalllback(this, &SensorTuning::g29_leveling_failed), false);
+            wait.show(F("Leveling failed"), WaitCalllback(this, &SensorTuning::g29_leveling_failed), false);
         else
             advi3pp.set_status(F("Leveling failed"));
 
@@ -1622,7 +1619,7 @@ void SensorGrid::do_save()
 Page SensorZHeight::do_show()
 {
     pages.save_forward_page();
-    pages.show_wait_page(F("Homing..."));
+    wait.show(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
     return Page::None;
@@ -1662,7 +1659,7 @@ void SensorZHeight::do_rollback()
 
 void SensorZHeight::save()
 {
-    pages.show_wait_page(F("Measure Z-height"));
+    wait.show(F("Measure Z-height"));
     enqueue_and_echo_commands_P(PSTR("I0")); // measure z-height
 }
 
@@ -2405,19 +2402,19 @@ void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage messa
 void AdvancedPause::init()
 {
     pages.save_forward_page();
-    pages.show_wait_page(F("Pausing..."));
+    wait.show(F("Pausing..."));
 }
 
 void AdvancedPause::insert_filament()
 {
-    pages.show_wait_continue_page(F("Insert filament and press continue..."),
+    wait.show_continue(F("Insert filament and press continue..."),
         WaitCalllback(this, &AdvancedPause::filament_inserted), false);
 }
 
 void AdvancedPause::filament_inserted()
 {
     ::wait_for_user = false;
-    pages.show_wait_page(F("Filament inserted.."), false);
+    wait.show(F("Filament inserted.."), false);
 }
 
 void AdvancedPause::printing()
@@ -2433,6 +2430,12 @@ void AdvancedPause::printing()
 Page EepromMismatch::do_show()
 {
     return Page::EEPROMMismatch;
+}
+
+void EepromMismatch::do_save()
+{
+    advi3pp.save_settings();
+    pages.show_page(Page::Main);
 }
 
 bool EepromMismatch::does_mismatch() const

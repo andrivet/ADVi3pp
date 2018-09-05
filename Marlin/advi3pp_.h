@@ -49,11 +49,6 @@ using WaitCalllback = Callback<void(*)()>;
 struct Pages
 {
     void show_page(Page page, bool save_back = true);
-    void show_wait_page(const __FlashStringHelper* message, bool save_back = true);
-    void show_wait_back_page(const __FlashStringHelper* message, WaitCalllback back, bool save_back = true);
-    void show_wait_back_continue_page(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back = true);
-    void show_wait_continue_page(const __FlashStringHelper* message, WaitCalllback cont, bool save_back = true);
-    void handle_wait(KeyValue key_value);
     Page get_current_page();
     void show_back_page();
     void save_forward_page();
@@ -66,8 +61,6 @@ private:
 private:
     Stack<Page, 8> back_pages_{};
     Page forward_page_ = Page::None;
-    WaitCalllback back_;
-    WaitCalllback continue_;
 };
 
 // --------------------------------------------------------------------
@@ -93,6 +86,25 @@ protected:
     virtual void do_save();
 
     void invalid(KeyValue value);
+};
+
+// --------------------------------------------------------------------
+// Load and Unload
+// --------------------------------------------------------------------
+
+struct Wait: Handler
+{
+    void show(const __FlashStringHelper* message, bool save_back = true);
+    void show(const __FlashStringHelper* message, WaitCalllback back, bool save_back = true);
+    void show(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back = true);
+    void show_continue(const __FlashStringHelper* message, WaitCalllback cont, bool save_back = true);
+
+private:
+    void do_save() override;
+    void do_rollback() override;
+
+    WaitCalllback back_;
+    WaitCalllback continue_;
 };
 
 // --------------------------------------------------------------------
@@ -647,6 +659,7 @@ struct EepromMismatch: Handler
 
 private:
     Page do_show() override;
+    void do_save() override;
 
     bool mismatch_ = false;
 };
