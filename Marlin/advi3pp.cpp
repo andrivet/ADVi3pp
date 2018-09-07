@@ -31,7 +31,9 @@
 #include "duration_t.h"
 
 #include "advi3pp.h"
-#include "advi3pp_utils.h"
+#include "advi3pp_log.h"
+#include "advi3pp_dgus.h"
+#include "advi3pp_stack.h"
 #include "advi3pp_.h"
 
 #include "serial.h"

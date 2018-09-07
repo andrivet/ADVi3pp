@@ -31,7 +31,9 @@
 #include "duration_t.h"
 
 #include "advi3pp.h"
-#include "advi3pp_utils.h"
+#include "advi3pp_log.h"
+#include "advi3pp_dgus.h"
+#include "advi3pp_stack.h"
 #include "advi3pp_.h"
 
 #include <HardwareSerial.h>
@@ -83,6 +85,9 @@ namespace
     //! @param targetScale  Target scale
     //! @return             The scaled value
     int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { return value * targetScale / valueScale; }
+
+    template <typename T, size_t N>
+    constexpr size_t countof(T const (&)[N]) noexcept { return N; }
 }
 
 #ifdef ADVi3PP_BLTOUCH
@@ -2273,15 +2278,16 @@ void Dimming::set_next_dimmming_time()
     next_dimming_time_ = millis() + 1000 * DIMMING_DELAY;
 }
 
-uint8_t Dimming::get_adjusted_brithness()
+uint8_t Dimming::get_adjusted_brightness()
 {
+    uint16_t brightness = ::lcd_contrast;
     if(dimming_)
-        lcd_contrast = lcd_contrast * DIMMING_RATIO / 100;
-    if(lcd_contrast < BRIGHTNESS_MIN)
-        lcd_contrast = BRIGHTNESS_MIN;
-    if(lcd_contrast > BRIGHTNESS_MAX)
-        lcd_contrast = BRIGHTNESS_MAX;
-    return static_cast<uint8_t>(lcd_contrast);
+        brightness = brightness * DIMMING_RATIO / 100;
+    if(brightness < BRIGHTNESS_MIN)
+        brightness = BRIGHTNESS_MIN;
+    if(brightness > BRIGHTNESS_MAX)
+        brightness = BRIGHTNESS_MAX;
+    return static_cast<uint8_t>(brightness);
 }
 
 void Dimming::check()
@@ -2321,7 +2327,7 @@ void Dimming::reset()
 
 void Dimming::send_brightness()
 {
-    auto brightness = get_adjusted_brithness();
+    auto brightness = get_adjusted_brightness();
 
     WriteRegisterDataRequest frame{Register::Brightness};
     frame << Uint8{brightness};
@@ -2330,6 +2336,7 @@ void Dimming::send_brightness()
 
 void Dimming::change_brightness(int16_t brightness)
 {
+    ::lcd_contrast = brightness;
     reset();
     send_brightness();
 }

@@ -1,5 +1,6 @@
 /**
  * Marlin 3D Printer Firmware For Wanhao Duplicator i3 Plus (ADVi3++)
+ * DWIN DGUS utility classes
  *
  * Copyright (C) 2017 Sebastien Andrivet [https://github.com/andrivet/]
  *
@@ -22,81 +23,73 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef ADV_I3_PLUS_PLUS_UTILS_H
-#define ADV_I3_PLUS_PLUS_UTILS_H
+#ifndef ADV_I3_PLUS_PLUS_DGUS_H
+#define ADV_I3_PLUS_PLUS_DGUS_H
 
-#ifndef NO_MARLIN
 #include "Marlin.h"
-
-#if ENABLED(PRINTCOUNTER)
 #include "duration_t.h"
-#endif
-#endif
-
-#include "advi3pp.h"
 
 namespace advi3pp {
 
-template <typename T, size_t N>
-constexpr size_t countof(T const (&)[N]) noexcept { return N; }
 
-enum class Register: uint8_t;
+//! List of commands and their values (DGUS Mini)
+enum class Command: uint8_t
+{
+    WriteRegisterData       = 0x80, // 128
+    ReadRegisterData        = 0x81, // 129
+    WriteRamData            = 0x82, // 130
+    ReadRamData             = 0x83, // 131
+    WriteCurveData          = 0x84  // 132
+};
+
+//! List of registers and their values (DGUS Mini)
+enum class Register: uint8_t
+{
+    Version                 = 0x00,
+    Brightness              = 0x01,
+    BuzzerBeepingTime       = 0x02,
+    PictureID               = 0x03,
+    TouchPanelFlag          = 0x05,
+    TouchPanelStatus        = 0x06,
+    TouchPanelPosition      = 0x07,
+    TouchPanelEnable        = 0x0B,
+    RunTime                 = 0x0C,
+    R0                      = 0x10,
+    R1                      = 0x11,
+    R2                      = 0x12,
+    R3                      = 0x13,
+    R4                      = 0x14,
+    R5                      = 0x15,
+    R6                      = 0x16,
+    R7                      = 0x17,
+    R8                      = 0x18,
+    R9                      = 0x19,
+    RA                      = 0x1A,
+    RtcComAdj               = 0x1F,
+    RtcNow                  = 0x20,
+    EnLibOP                 = 0x40,
+    LibOPMode               = 0x41,
+    LibID                   = 0x42,
+    LibAddress              = 0x43,
+    VP                      = 0x46,
+    OPLength                = 0x48,
+    Timer0                  = 0x4A,
+    Timer1                  = 0x4C,
+    Timer2                  = 0x4D,
+    Timer3                  = 0x4E,
+    KeyCode                 = 0x4F,
+    TrendlineClear          = 0xEB,
+    ResetTrigger            = 0xEE
+};
+
 enum class Variable: uint16_t;
-enum class Command: uint8_t;
 enum class Action: uint16_t;
+enum class KeyValue: uint16_t;
+enum class Page: uint8_t;
 
 // --------------------------------------------------------------------
-// Logging
+// String operators
 // --------------------------------------------------------------------
-
-#ifdef ADVi3PP_LOG
-struct Log
-{
-    struct EndOfLine {};
-
-    Log& operator<<(const String& data);
-    Log& operator<<(uint8_t data);
-    Log& operator<<(uint16_t data);
-    Log& operator<<(uint32_t data);
-    Log& operator<<(double data);
-    void operator<<(EndOfLine eol);
-
-    inline static Log& log() { return logging_; }
-    static Log& error();
-    inline static EndOfLine endl() { return EndOfLine{}; }
-    static void dump(const uint8_t* bytes, size_t size);
-
-private:
-    static Log logging_;
-};
-
-void __assert (const char *msg, const char *file, uint16_t line);
-#define assert(E) (void)((E) || (__assert (#E, __FILE__, __LINE__), 0))
-
-#else
-struct Log
-{
-    struct EndOfLine {};
-
-    inline Log& operator<<(const String& data) { return log(); }
-    inline Log& operator<<(uint8_t data) { return log(); }
-    inline Log& operator<<(uint16_t data) { return log(); }
-    inline Log& operator<<(uint32_t data) { return log(); }
-    inline Log& operator<<(double data) { return log(); }
-    inline void operator<<(EndOfLine eol) {};
-
-    inline static Log& log() { return logging_; }
-    inline static Log& error() { return log(); }
-    inline static EndOfLine endl() { return EndOfLine{}; }
-    inline static void dump(const uint8_t* bytes, size_t size) {}
-
-private:
-    static Log logging_;
-};
-
-#define assert(E) (void)(false)
-
-#endif
 
 #ifndef UNIT_TEST
 inline String& operator<<(String& rhs, const __FlashStringHelper* lhs) { rhs += lhs; return rhs; }
@@ -109,53 +102,6 @@ String& operator<<(String& rhs, Command lhs);
 String& operator<<(String& rhs, Register lhs);
 String& operator<<(String& rhs, Variable lhs);
 #endif
-
-// --------------------------------------------------------------------
-// Stack - Simple Stack
-// --------------------------------------------------------------------
-
-template<typename T, size_t S>
-struct Stack
-{
-    void push(T e);
-    T pop();
-    bool is_empty() const;
-    bool contains(T e) const;
-
-private:
-    T elements_[S];
-    size_t top_ = 0;
-};
-
-template<typename T, size_t S>
-void Stack<T, S>::push(T e)
-{
-    assert(top_ <= S);
-    elements_[top_++] = e;
-};
-
-template<typename T, size_t S>
-T Stack<T, S>::pop()
-{
-    assert(!is_empty());
-    return elements_[--top_];
-};
-
-template<typename T, size_t S>
-bool Stack<T, S>::is_empty() const
-{
-    return top_ == 0;
-};
-
-template<typename T, size_t S>
-bool Stack<T, S>::contains(T e) const
-{
-    for(size_t i = 0; i < top_; ++i)
-        if(elements_[top_ - i - 1] == e)
-            return true;
-    return false;
-};
-
 
 // --------------------------------------------------------------------
 // Uint8
@@ -277,7 +223,8 @@ protected:
     static const size_t FRAME_BUFFER_SIZE = 255;
     static const uint8_t HEADER_BYTE_0 = 0x5A;
     static const uint8_t HEADER_BYTE_1 = 0xA5;
-    struct Position { enum { Header0 = 0, Header1 = 1, Length = 2, Command = 3, Data = 4, Register = 4, Variable = 4, NbBytes = 5, NbWords = 6 }; };
+    struct Position { enum { Header0 = 0, Header1 = 1, Length = 2, Command = 3, Data = 4, Register = 4, Variable = 4,
+    		NbBytes = 5, NbWords = 6 }; };
 
     uint8_t buffer_[FRAME_BUFFER_SIZE];
     uint8_t position_ = 0;
@@ -393,54 +340,7 @@ struct WriteCurveDataRequest: Frame
 };
 
 // --------------------------------------------------------------------
-// EEPROM Data Read & Write
-// --------------------------------------------------------------------
-
-struct EepromWrite
-{
-    EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    template <typename T> void write(T& data);
-
-private:
-    eeprom_write write_;
-    int& eeprom_index_;
-    uint16_t& working_crc_;
-};
-
-struct EepromRead
-{
-    EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
-    template <typename T> inline void read(T& data);
-
-private:
-    eeprom_read read_;
-    int& eeprom_index_;
-    uint16_t& working_crc_;
-};
-
-inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
-        : write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc)
-{
-}
-
-template <typename T>
-inline void EepromWrite::write(T& data)
-{
-    write_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
-}
-
-inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
-        : read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc)
-{
-}
-
-template <typename T>
-inline void EepromRead::read(T& data)
-{
-    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_, false);
-}
 
 }
 
-
-#endif //ADV_I3_PLUS_PLUS_UTILS_H
+#endif //ADV_I3_PLUS_PLUS_DGUS_H

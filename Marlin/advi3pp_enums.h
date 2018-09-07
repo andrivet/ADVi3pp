@@ -28,56 +28,6 @@
 namespace advi3pp {
 
 
-//! List of commands and their values (DGUS Mini)
-enum class Command: uint8_t
-{
-    WriteRegisterData       = 0x80, // 128
-    ReadRegisterData        = 0x81, // 129
-    WriteRamData            = 0x82, // 130
-    ReadRamData             = 0x83, // 131
-    WriteCurveData          = 0x84  // 132
-};
-
-//! List of registers and their values (DGUS Mini)
-enum class Register: uint8_t
-{
-    Version                 = 0x00,
-    Brightness              = 0x01,
-    BuzzerBeepingTime       = 0x02,
-    PictureID               = 0x03,
-    TouchPanelFlag          = 0x05,
-    TouchPanelStatus        = 0x06,
-    TouchPanelPosition      = 0x07,
-    TouchPanelEnable        = 0x0B,
-    RunTime                 = 0x0C,
-    R0                      = 0x10,
-    R1                      = 0x11,
-    R2                      = 0x12,
-    R3                      = 0x13,
-    R4                      = 0x14,
-    R5                      = 0x15,
-    R6                      = 0x16,
-    R7                      = 0x17,
-    R8                      = 0x18,
-    R9                      = 0x19,
-    RA                      = 0x1A,
-    RtcComAdj               = 0x1F,
-    RtcNow                  = 0x20,
-    EnLibOP                 = 0x40,
-    LibOPMode               = 0x41,
-    LibID                   = 0x42,
-    LibAddress              = 0x43,
-    VP                      = 0x46,
-    OPLength                = 0x48,
-    Timer0                  = 0x4A,
-    Timer1                  = 0x4C,
-    Timer2                  = 0x4D,
-    Timer3                  = 0x4E,
-    KeyCode                 = 0x4F,
-    TrendlineClear          = 0xEB,
-    ResetTrigger            = 0xEE
-};
-
 //! List of variables and their addresses.
 enum class Variable: uint16_t
 {

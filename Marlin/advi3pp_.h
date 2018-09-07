@@ -30,10 +30,11 @@
 #define HAS_BED_PROBE 1
 #endif
 
+#include "Marlin.h"
 #include "advi3pp_bitmasks.h"
 #include "advi3pp_enums.h"
 #include "advi3pp.h"
-#include "advi3pp_utils.h"
+#include "advi3pp_stack.h"
 #include "ADVcallback.h"
 
 namespace advi3pp {
@@ -41,6 +42,54 @@ namespace advi3pp {
 using andrivet::Callback;
 using BackgroundTask = Callback<void(*)()>;
 using WaitCalllback = Callback<void(*)()>;
+
+// --------------------------------------------------------------------
+// EEPROM Data Read & Write
+// --------------------------------------------------------------------
+
+struct EepromWrite
+{
+    EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    template <typename T> void write(T& data);
+
+private:
+    eeprom_write write_;
+    int& eeprom_index_;
+    uint16_t& working_crc_;
+};
+
+struct EepromRead
+{
+    EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    template <typename T> inline void read(T& data);
+
+private:
+    eeprom_read read_;
+    int& eeprom_index_;
+    uint16_t& working_crc_;
+};
+
+inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+        : write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc)
+{
+}
+
+template <typename T>
+inline void EepromWrite::write(T& data)
+{
+    write_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_);
+}
+
+inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+        : read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc)
+{
+}
+
+template <typename T>
+inline void EepromRead::read(T& data)
+{
+    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_, false);
+}
 
 // --------------------------------------------------------------------
 // Pages
@@ -53,10 +102,6 @@ struct Pages
     void show_back_page();
     void save_forward_page();
     void show_forward_page();
-
-private:
-    void handle_lcd_back();
-    void handle_lcd_continue();
 
 private:
     Stack<Page, 8> back_pages_{};

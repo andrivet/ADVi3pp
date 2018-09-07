@@ -1,5 +1,6 @@
 /**
  * Marlin 3D Printer Firmware For Wanhao Duplicator i3 Plus (ADVi3++)
+ * DWIN DGUS utility classes
  *
  * Copyright (C) 2017 Sebastien Andrivet [https://github.com/andrivet/]
  *
@@ -22,95 +23,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "advi3pp.h"
-#include "advi3pp_utils.h"
-#include "advi3pp_.h"
 
-#include <HardwareSerial.h>
-#include "serial.h"
+#include "advi3pp_defines.h"
+#include "advi3pp_dgus.h"
+#include "advi3pp_log.h"
 
 namespace advi3pp {
 
-static const size_t MAX_GARBAGE_BYTES = 5;
-
-// --------------------------------------------------------------------
-// Logging
-// --------------------------------------------------------------------
-
-#ifdef ADVi3PP_LOG
-
-Log Log::logging_;
-
-Log& Log::error()
-{
-    log() << F("### ERROR: ");
-    return log();
-}
-
-Log& Log::operator<<(const String& data)
-{
-    SERIAL_ECHO(data.c_str());
-    return log();
-}
-
-Log& Log::operator<<(uint8_t data)
-{
-    SERIAL_ECHO_F(data, HEX);
-    return log();
-}
-
-Log& Log::operator<<(uint16_t data)
-{
-    SERIAL_ECHO_F(data, HEX);
-    return log();
-}
-
-Log& Log::operator<<(uint32_t data)
-{
-    SERIAL_ECHO_F(data, HEX);
-    return log();
-}
-
-Log& Log::operator<<(double data)
-{
-    SERIAL_ECHO(data);
-    return log();
-}
-
-void Log::operator<<(EndOfLine)
-{
-    SERIAL_ECHOLN("");
-}
-
-//! Dump the bytes in hexadecimal and print them (serial)
-void Log::dump(const uint8_t* bytes, size_t size)
-{
-    static const size_t MAX_LENGTH = 20;
-
-    static const char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    if(size > MAX_LENGTH)
-        size = MAX_LENGTH;
-
-    // TODO: output one byte at a time
-    char buffer[MAX_LENGTH * 3 + 1];
-    for(size_t index = 0; index < size; ++index)
-    {
-        buffer[index * 3 + 0] = digits[bytes[index] / 16];
-        buffer[index * 3 + 1] = digits[bytes[index] % 16];
-        buffer[index * 3 + 2] = ' ';
-    }
-    buffer[size * 3] = 0;
-
-    SERIAL_ECHOLN(buffer);
-}
-
-void __assert(const char *msg, const char *file, uint16_t line)
-{
-    asm("break \n");
-    Log::log() << F("### ASSERTION FAILED: ") << msg << " in file " << file << ", line " << line << Log::endl();
-}
-
-#endif
+namespace { const size_t MAX_GARBAGE_BYTES = 5; }
 
 // --------------------------------------------------------------------
 // FixedSizeString
@@ -122,7 +42,7 @@ void __assert(const char *msg, const char *file, uint16_t line)
 FixedSizeString::FixedSizeString(const String& str, size_t size, bool center)
 {
     if(str.length() <= size)
-		assign(str.c_str(), size, center);
+        assign(str.c_str(), size, center);
     else
         string_ = str.substring(0, size);
 }
@@ -134,7 +54,7 @@ FixedSizeString::FixedSizeString(duration_t duration, size_t size, bool center)
 {
     char buffer[21 + 1]; // 21, from the doc
     duration.toString(buffer);
-	assign(buffer, size, center);
+    assign(buffer, size, center);
 }
 
 //! Assign a fixed-size string from a string and a size
@@ -142,20 +62,20 @@ FixedSizeString::FixedSizeString(duration_t duration, size_t size, bool center)
 //! @param size     The size
 void FixedSizeString::assign(const String& str, size_t size, bool center)
 {
-	string_.reserve(size);
-	string_ = "";
+    string_.reserve(size);
+    string_ = "";
 
-	if(center)
+    if(center)
     {
         size_t pad = (size - str.length()) / 2;
-	    for(size_t i = 0; i < pad; ++i)
-	        string_ += ' ';
+        for(size_t i = 0; i < pad; ++i)
+            string_ += ' ';
     }
 
-	string_ += str;
+    string_ += str;
 
-	while(string_.length() < size)
-		string_ += ' ';
+    while(string_.length() < size)
+        string_ += ' ';
 }
 
 // --------------------------------------------------------------------
