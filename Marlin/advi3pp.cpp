@@ -45,15 +45,7 @@ extern int16_t lcd_contrast;
 
 namespace
 {
-    const uint16_t advi3_pp_version = 0x400;
-    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x400;
-    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x400;
-
     const unsigned long advi3_pp_baudrate = 115200; // Between the LCD panel and the mainboard
-    const uint16_t nb_visible_sd_files = 5;
-	const uint8_t  nb_visible_sd_file_chars = 48;
-    const uint16_t tuning_extruder_filament = 100; // 10 cm
-	const uint16_t tuning_extruder_delta = 20; // 2 cm
 
     const advi3pp::Feature DEFAULT_FEATURES =
         advi3pp::Feature::ThermalProtection |
@@ -62,29 +54,8 @@ namespace
         advi3pp::Feature::Buzzer;
 
     const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
-    const uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
-
-    const int8_t BRIGHTNESS_MIN = 0x01;
-    const int8_t BRIGHTNESS_MAX = 0x40;
-    const uint8_t DIMMING_RATIO = 25; // in percent
-    const uint16_t DIMMING_DELAY = 1 * 60;
-
-    const uint16_t DEFAULT_PREHEAT_PRESET[5][3] = {
-        {180, 50, 0},
-        {200, 60, 0},
-        {220, 70, 0},
-        {180, 00, 0},
-        {200, 00, 0}
-    };
 
     const uint8_t BUZZ_ON_PRESS_DURATION = 10; // x 1 ms
-
-    //! Transform a value from a scale to another one.
-    //! @param value        Value to be transformed
-    //! @param valueScale   Current scale of the value (maximal)
-    //! @param targetScale  Target scale
-    //! @return             The scaled value
-    int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { return value * targetScale / valueScale; }
 }
 
 #ifdef ADVi3PP_BLTOUCH

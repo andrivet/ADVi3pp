@@ -48,19 +48,10 @@ namespace
     const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x400;
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x400;
 
-    const unsigned long advi3_pp_baudrate = 115200; // Between the LCD panel and the mainboard
     const uint16_t nb_visible_sd_files = 5;
 	const uint8_t  nb_visible_sd_file_chars = 48;
     const uint16_t tuning_extruder_filament = 100; // 10 cm
 	const uint16_t tuning_extruder_delta = 20; // 2 cm
-
-    const advi3pp::Feature DEFAULT_FEATURES =
-        advi3pp::Feature::ThermalProtection |
-        advi3pp::Feature::HeadParking |
-        advi3pp::Feature::Dimming |
-        advi3pp::Feature::Buzzer;
-
-    const uint32_t DEFAULT_USB_BAUDRATE = BAUDRATE;
 
     const uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
 
@@ -76,18 +67,6 @@ namespace
         {180, 00, 0},
         {200, 00, 0}
     };
-
-    const uint8_t BUZZ_ON_PRESS_DURATION = 10; // x 1 ms
-
-    //! Transform a value from a scale to another one.
-    //! @param value        Value to be transformed
-    //! @param valueScale   Current scale of the value (maximal)
-    //! @param targetScale  Target scale
-    //! @return             The scaled value
-    int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { return value * targetScale / valueScale; }
-
-    template <typename T, size_t N>
-    constexpr size_t countof(T const (&)[N]) noexcept { return N; }
 }
 
 #ifdef ADVi3PP_BLTOUCH
@@ -438,7 +417,7 @@ void SdCard::up()
 //! Show the list of files on SD.
 void SdCard::show_current_page()
 {
-    WriteRamDataRequest frame{Variable::FileName1};
+    WriteRamDataRequest frame{Variable::LongText0};
 
     String name;
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
@@ -484,7 +463,7 @@ void SdCard::select_file(uint16_t file_index)
 
     advi3pp.set_progress_name(longName);
 
-    WriteRamDataRequest frame{Variable::CurrentFileName};
+    WriteRamDataRequest frame{Variable::FileName};
     frame << FixedSizeString{longName, 26};
     frame.send(true);
 
@@ -1026,17 +1005,17 @@ void Statistics::send_stats()
 {
     printStatistics stats = print_job_timer.getStats();
 
-    WriteRamDataRequest frame{Variable::TotalPrints};
+    WriteRamDataRequest frame{Variable::ShortText0};
     frame << Uint16(stats.totalPrints) << Uint16(stats.finishedPrints);
     frame.send();
 
     duration_t duration = stats.printTime;
-    frame.reset(Variable::TotalPrintTime);
+    frame.reset(Variable::ShortText1);
     frame << FixedSizeString{duration, 16};
     frame.send();
 
     duration = stats.longestPrint;
-    frame.reset(Variable::LongestPrintTime);
+    frame.reset(Variable::ShortText2);
     frame << FixedSizeString{duration, 16};
     frame.send();
 
@@ -1045,7 +1024,7 @@ void Statistics::send_stats()
                   << "."
                   << static_cast<unsigned int>(stats.filamentUsed / 100) % 10
                   << "m";
-    frame.reset(Variable::TotalFilament);
+    frame.reset(Variable::ShortText3);
     frame << FixedSizeString{filament_used, 16};
     frame.send();
 }
@@ -1103,7 +1082,7 @@ void Versions::send_versions()
     String advi3pp_lcd_version = convert_version(lcd_version_);
     String lcd_firmware_version = get_lcd_firmware_version();
 
-    WriteRamDataRequest frame{Variable::MotherboardVersion};
+    WriteRamDataRequest frame{Variable::ShortText0};
     frame << FixedSizeString(motherboard_version, 16)
           << FixedSizeString(advi3pp_lcd_version, 16)
           << FixedSizeString(lcd_firmware_version, 16)
@@ -1774,7 +1753,7 @@ void FirmwareSettings::send_usb_baudrate()
 {
     String value; value << usb_baudrate_;
 
-    WriteRamDataRequest frame{Variable::ValueText};
+    WriteRamDataRequest frame{Variable::ShortText0};
     frame << FixedSizeString{value, 6};
     frame.send();
 }

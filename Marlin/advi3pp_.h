@@ -44,6 +44,18 @@ using BackgroundTask = Callback<void(*)()>;
 using WaitCalllback = Callback<void(*)()>;
 
 // --------------------------------------------------------------------
+
+//! Transform a value from a scale to another one.
+//! @param value        Value to be transformed
+//! @param valueScale   Current scale of the value (maximal)
+//! @param targetScale  Target scale
+//! @return             The scaled value
+inline int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { return value * targetScale / valueScale; }
+
+template <typename T, size_t N>
+constexpr size_t countof(T const (&)[N]) noexcept { return N; }
+
+// --------------------------------------------------------------------
 // EEPROM Data Read & Write
 // --------------------------------------------------------------------
 
