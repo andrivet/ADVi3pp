@@ -25,6 +25,9 @@
 #ifndef ADV_I3_PLUS_PLUS_ENUMS_H
 #define ADV_I3_PLUS_PLUS_ENUMS_H
 
+#include <stdint.h>
+#include "advi3pp_bitmasks.h"
+
 namespace advi3pp {
 
 

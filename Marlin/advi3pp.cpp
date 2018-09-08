@@ -22,7 +22,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#include "configuration_store.h"
+
+#include <HardwareSerial.h>
+
+#include "serial.h"
 #include "temperature.h"
 #include "cardreader.h"
 #include "planner.h"
@@ -36,8 +39,6 @@
 #include "advi3pp_stack.h"
 #include "advi3pp_.h"
 
-#include "serial.h"
-#include <HardwareSerial.h>
 
 extern uint8_t progress_bar_percent;
 extern int16_t lcd_contrast;
