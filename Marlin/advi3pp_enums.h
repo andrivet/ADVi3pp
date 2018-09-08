@@ -34,53 +34,54 @@ namespace advi3pp {
 //! List of variables and their addresses.
 enum class Variable: uint16_t
 {
+    // 0 - Statuses
     TargetBed               = 0x0000,
     Bed                     = 0x0001,
     TargetHotEnd            = 0x0002,
     HotEnd                  = 0x0003,
     FanSpeed                = 0x0004,
     ZHeight                 = 0x0005,
-    Message                 = 0x0006,
-    Progress                = 0x001A,
-    CenteredMessage         = 0x002E,
-    ProgressLow             = 0x0044,
-    ProgressHigh            = 0x0045,
+    ProgressLow             = 0x0006,
+    ProgressHigh            = 0x0007,
+    Message                 = 0x0010,
+    CenteredMessage         = 0x0028,
+    Progress                = 0x0040,
+    FileName                = 0x0058,
 
-    MotherboardVersion      = 0x0100,
-    LcdVersion              = 0x0108,
-    LcdFirmwareVersion      = 0x0110,
-    MarlinVersion           = 0x0118,
+    // 1 - Short Texts
+    ShortText0              = 0x0100,
+    ShortText1              = 0x0108,
+    ShortText2              = 0x0110,
+    ShortText3              = 0x0118,
+    ShortText4              = 0x0120,
 
-    CurrentFileName         = 0x0169,
-    TotalPrints             = 0x0181,
-    CompletedPrints         = 0x0182,
-    TotalPrintTime          = 0x0183,
-    LongestPrintTime        = 0x018B,
-    TotalFilament           = 0x0193,
+    // 2 - Long Texts
+    LongText0               = 0x0200,
+    LongText1               = 0x0218,
+    LongText2               = 0x0230,
+    LongText3               = 0x0248,
+    LongText4               = 0x0260,
+    LongTextCentered0       = 0x0278,
 
-    FileName1               = 0x0200,
-    FileName2               = 0x0218,
-    FileName3               = 0x0230,
-    FileName4               = 0x0248,
-    FileName5               = 0x0260,
+    // 3 - Values
+    Value0                  = 0x0300,
+    Value1                  = 0x0301,
+    Value2                  = 0x0302,
+    Value3                  = 0x0303,
+    Value4                  = 0x0304,
+    Value5                  = 0x0305,
+    Value6                  = 0x0306,
+    Value7                  = 0x0307,
 
+    // 5 - Versions
     ADVi3ppLCDversion       = 0x0500,
-    Value0                  = 0x0510,
-    Value1                  = 0x0511,
-    Value2                  = 0x0512,
-    Value3                  = 0x0513,
-    Value4                  = 0x0514,
-    Value5                  = 0x0515,
-    Value6                  = 0x0516,
-    Value7                  = 0x0517,
-    Value8                  = 0x0518,
-    ValueText               = 0x0540,
-    CenteredTextValue       = 0x0554
+    ADVi3ppversion          = 0x0501,
 };
 
 //! List of actions sent by the LCD.
 enum class Action: uint16_t
 {
+    // 4 - Actions
     Screen                  = 0x0400,
     PrintCommand            = 0x0401,
     Wait                    = 0x0402,
@@ -115,17 +116,20 @@ enum class Action: uint16_t
     LinearAdvanceSettings   = 0x0420,
     Diagnosis               = 0x0421,
 
-    MoveXMinus              = 0x0450,
-    MoveXPlus               = 0x0451,
-    MoveYMinus              = 0x0452,
-    MoveYPlus               = 0x0453,
-    MoveZMinus              = 0x0454,
-    MoveZPlus               = 0x0455,
-    MoveEMinus              = 0x0456,
-    MoveEPlus               = 0x0457,
-    LCDBrightness           = 0x0458,
-    BabyMinus               = 0x0459,
-    BabyPlus                = 0x045A,
+    // 6 - Moves
+    MoveXMinus              = 0x060,
+    MoveXPlus               = 0x061,
+    MoveYMinus              = 0x062,
+    MoveYPlus               = 0x063,
+    MoveZMinus              = 0x064,
+    MoveZPlus               = 0x065,
+    MoveEMinus              = 0x066,
+    MoveEPlus               = 0x067,
+    BabyMinus               = 0x068,
+    BabyPlus                = 0x069,
+    ZHeightMinus            = 0x06A,
+    ZHeightPlus             = 0x06B,
+    LCDBrightness           = 0x06C,
 
     Undefined               = 0xFFFF
 };
@@ -153,7 +157,7 @@ enum class KeyValue: uint16_t
 
     PresetPrevious          = 0x0001,
     PresetNext              = 0x0002,
-    Cooldown                = 0xAAAA,
+    Cooldown                = 0x0003,
 
     MoveXHome               = 0x0001,
     MoveYHome               = 0x0002,
@@ -166,8 +170,8 @@ enum class KeyValue: uint16_t
     SDLine3                 = 0x0003,
     SDLine4                 = 0x0004,
     SDLine5                 = 0x0005,
-    SDUp                    = 0x8000,
-    SDDown                  = 0x8001,
+    SDUp                    = 0x0006,
+    SDDown                  = 0x0007,
 
     LevelingPoint1          = 0x0001,
     LevelingPoint2          = 0x0002,
@@ -207,7 +211,6 @@ enum class KeyValue: uint16_t
     SensorReset             = 0x0002,
     SensorDeploy            = 0x0003,
     SensorStow              = 0x0004,
-    SensorZHeight           = 0x0005,
 
     ZHeight01               = 0x0001,
     ZHeight05               = 0x0002,
