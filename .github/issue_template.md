@@ -4,7 +4,7 @@ Please be sure to review the checklists below before submitting and use one of t
 
 **It is mandatory**. If you do not comply with these rules, I will **delete** your issue.
 
-- [ ] This issue is **NOT** about support. This is not the right place for support (there is an [ADVI3++ Facebook page](https://www.facebook.com/advi3pp/) for that)
+- [ ] This issue is **NOT** about support. **This is not the right place to ask for support**. You **may** get support from the [ADVI3++ Facebook page](https://www.facebook.com/advi3pp/). You can get support from the developer of ADVi3++ from its [Patreon page](https://www.patreon.com/andrivet).
 
 ------------------------------------------------------------
 ### Feature Request
