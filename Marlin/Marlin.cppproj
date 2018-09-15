@@ -435,6 +435,12 @@
     <Compile Include="advi3pp_defines.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="advi3pp_dgus.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="advi3pp_dgus.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="advi3pp_enums.h">
       <SubType>compile</SubType>
     </Compile>
@@ -444,13 +450,16 @@
     <Compile Include="advi3pp_handlers.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="advi3pp_log.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="advi3pp_log.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="advi3pp_pages.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="advi3pp_utils.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="advi3pp_utils.h">
+    <Compile Include="advi3pp_stack.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="ADVstd.h">
