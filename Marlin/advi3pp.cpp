@@ -262,9 +262,8 @@ void ADVi3pp_::init()
 
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     send_sponsors();
-
-    versions.get_advi3pp_lcd_version();
-    versions.send_versions();
+    versions.get_version_from_lcd();
+    versions.send_advi3pp_version();
     graphs.clear();
     dimming.reset();
 
@@ -313,11 +312,12 @@ void ADVi3pp_::send_status_data(bool force_update)
           << Uint16(Temperature::degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
           << Uint16(lround(LOGICAL_Z_POSITION(current_position[Z_AXIS]) * 100.0))
-          << FixedSizeString(get_message(), 40)
-          << FixedSizeString(get_progress(), 40)
-          << FixedSizeString(get_message(), 44, true)
           << Uint16(progress_bar_low)
           << Uint16(progress_var_high);
+    frame.send(false);
+
+    frame.reset(Variable::Message);
+    frame << message_ << centered_ << progress_;
     frame.send(false);
 }
 
@@ -448,8 +448,8 @@ void ADVi3pp_::show_print()
         return;
     }
 
-    wait.show(F("Try to access the SD card..."));
-    task.set_background_task(BackgroundTask(this, &ADVi3pp_::show_sd_or_temp_page));
+    wait.show(F("Try to access the SD card..."));;
+    task.set_background_task(BackgroundTask{this, &ADVi3pp_::show_sd_or_temp_page});
 }
 
 void ADVi3pp_::show_sd_or_temp_page()
@@ -532,12 +532,12 @@ void ADVi3pp_::check_and_fix()
 
 bool ADVi3pp_::has_status()
 {
-    return message_.length() > 0;
+    return message_.is_empty();
 }
 
 void ADVi3pp_::set_status(const char* message)
 {
-    Log::log() << F("STATUS: ") << message << Log::endl();
+    Log::log() << F("=== STATUS: ") << message << Log::endl();
     message_ = message;
 }
 
@@ -545,82 +545,54 @@ void ADVi3pp_::set_status(const __FlashStringHelper* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    advi3pp.set_status(fmt, args);
+    message_.set(fmt, args);
     va_end(args);
 }
 
-void ADVi3pp_::set_status_PGM(const char* message)
+void ADVi3pp_::set_status(const char * const fmt, va_list& args)
 {
-    message_ = String{reinterpret_cast<const __FlashStringHelper*>(message)};
-    Log::log() << F("STATUS PGM: ") << message_ << Log::endl();
+    message_.set(fmt, args);
 }
 
-void ADVi3pp_::set_alert_status_PGM(const char* message)
+void ADVi3pp_::queue_message(const char* message)
 {
-    set_status_PGM(message);
+    ADVString<100> string{F("M117 ")}; string << message;
+    enqueue_and_echo_command(string.get());
 }
 
-void ADVi3pp_::status_printf_P(const char * fmt, va_list args)
+void ADVi3pp_::queue_message(const __FlashStringHelper* message)
 {
-    static const size_t MAX_SIZE = 100;
-    static char buffer[MAX_SIZE + 1];
-
-    vsnprintf_P(buffer, MAX_SIZE, fmt, args);
-    message_ = String{buffer};
-    Log::log() << F("STATUS V: ") << message_ << Log::endl();
-}
-
-void ADVi3pp_::set_status(const __FlashStringHelper* fmt, va_list args)
-{
-    static const size_t MAX_SIZE = 100;
-    static char buffer[MAX_SIZE + 1];
-
-    vsnprintf_P(buffer, MAX_SIZE, reinterpret_cast<const char*>(fmt), args);
-    message_ = String{buffer};
-    Log::log() << F("STATUS V: ") << message_ << Log::endl();
-}
-
-const String& ADVi3pp_::get_message() const
-{
-    return message_;
-}
-
-void ADVi3pp_::queue_message(const String &message)
-{
-    String msg{F("M117 ")}; msg << message;
-    enqueue_and_echo_command(msg.c_str());
+    ADVString<100> string{F("M117 ")}; string << message;
+    enqueue_and_echo_command(string.get());
 }
 
 void ADVi3pp_::reset_message()
 {
-    message_ = "";
+    message_.reset();
 }
 
-void ADVi3pp_::set_progress_name(const String& name)
+void ADVi3pp_::set_progress_name(const char* name)
 {
     progress_name_ = name;
-    progress_percent_ = "";
+    progress_.reset();
     percent_ = -1;
+    compute_progress();
 }
 
-const String& ADVi3pp_::get_progress() const
+void ADVi3pp_::compute_progress()
 {
-    if(progress_name_.length() <= 0)
-        return progress_name_; // i.e. empty
-
     auto done = card.percentDone();
-    if(done != percent_)
-    {
-        progress_percent_ = progress_name_ + " " + done + "%";
-        percent_ = done;
-    }
-    return progress_percent_;
+    if(done == percent_)
+        return;
+
+    progress_ = progress_name_ << " " << done << "%";
+    percent_ = done;
 }
 
 void ADVi3pp_::reset_progress()
 {
-    progress_name_ = "";
-    progress_percent_ = "";
+    progress_name_.reset();
+    progress_.reset();
     percent_ = -1;
 }
 
@@ -754,10 +726,8 @@ bool Task::is_update_time()
 //! Set the next background task and its delay
 //! @param task     The next background task
 //! @param delta    Duration to be added to the current time to execute the background task
-void Task::set_background_task(BackgroundTask task, unsigned int delta)
+void Task::set_background_task(const BackgroundTask& task, unsigned int delta)
 {
-    assert(!background_task_);
-
     op_time_delta_ = delta;
     background_task_ = task;
     next_op_time_ = millis() + delta;
@@ -787,24 +757,4 @@ bool Task::has_background_task() const
 // --------------------------------------------------------------------
 
 }
-
-// --------------------------------------------------------------------
-
-void lcd_status_printf_P(const uint8_t /*level*/, const char * const fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    advi3pp::advi3pp.status_printf_P(fmt, args);
-    va_end(args);
-}
-
-#if ENABLED(ADVANCED_PAUSE_FEATURE)
-
-void lcd_advanced_pause_show_message(const AdvancedPauseMessage message,
-                                     const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT,
-                                     const uint8_t extruder=active_extruder)
-{
-    advi3pp::advi3pp.advanced_pause_show_message(message);
-}
-#endif // ADVANCED_PAUSE_FEATURE
 

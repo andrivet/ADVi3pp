@@ -34,23 +34,29 @@
     inline void lcd_update() {  /* Nothing to do */ }
 
     inline bool lcd_hasstatus() { return advi3pp::ADVi3pp::has_status(); }
-    inline void lcd_setstatus(const char* const message, const bool persist=false) { advi3pp::ADVi3pp::set_status(message, persist); }
-    inline void lcd_setstatusPGM(const char* const message, const int8_t level=0) { advi3pp::ADVi3pp::set_status_PGM(message, level); }
-    inline void lcd_setalertstatusPGM(const char* message) { advi3pp::ADVi3pp::set_alert_status_PGM(message); }
+    inline void lcd_setstatus(const char* const message, const bool persist=false) { advi3pp::ADVi3pp::set_status(message); }
+    inline void lcd_setstatusPGM(const char* const message, const int8_t level=0) { advi3pp::ADVi3pp::set_status(reinterpret_cast<const __FlashStringHelper*>(message)); }
+    inline void lcd_setalertstatusPGM(const char* message) { advi3pp::ADVi3pp::set_status(reinterpret_cast<const __FlashStringHelper*>(message)); }
     inline void lcd_reset_alert_level() { /* Do nothing */ }
     inline void lcd_reset_status() { advi3pp::ADVi3pp::reset_message(); }
-    void lcd_status_printf_P(uint8_t level, const char * fmt, ...);
+    inline void lcd_status_printf_P(uint8_t, const char * fmt, ...) { va_list args; va_start(args, fmt);
+        advi3pp::ADVi3pp::set_status(fmt, args); va_end(args); }
+
     inline void lcd_buttons_update() { /* Do nothing */ }
     inline void lcd_refresh() { /* Do nothing */ }
     inline void lcd_buzz(const long duration, const uint16_t freq) { advi3pp::ADVi3pp::buzz(duration, freq); }
 
     #if ENABLED(ADVANCED_PAUSE_FEATURE)
     extern uint8_t active_extruder;
-    void lcd_advanced_pause_show_message(AdvancedPauseMessage message,
+    inline void lcd_advanced_pause_show_message(AdvancedPauseMessage message,
                                          AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT,
-                                         uint8_t extruder=active_extruder);
+                                         uint8_t extruder=active_extruder)
+    {
+        advi3pp::ADVi3pp::advanced_pause_show_message(message);
+    }
 
-    #if ENABLED(LCD_SET_PROGRESS_MANUALLY)
+
+#if ENABLED(LCD_SET_PROGRESS_MANUALLY)
     extern uint8_t progress_bar_percent;
     #endif
 

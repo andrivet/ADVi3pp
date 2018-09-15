@@ -45,9 +45,15 @@ Log& Log::error()
     return log();
 }
 
-Log& Log::operator<<(const String& data)
+Log& Log::operator<<(const char* data)
 {
-    SERIAL_ECHO(data.c_str());
+    SERIAL_ECHO(data);
+    return log();
+}
+
+Log& Log::operator<<(const FlashChar* data)
+{
+    serialprintPGM(reinterpret_cast<const char*>(data));
     return log();
 }
 
@@ -104,8 +110,8 @@ void Log::dump(const uint8_t* bytes, size_t size)
 
 void __assert(const char *msg, const char *file, uint16_t line)
 {
-    asm("break \n");
     Log::log() << F("### ASSERTION FAILED: ") << msg << " in file " << file << ", line " << line << Log::endl();
+    asm("break \n");
 }
 
 #endif

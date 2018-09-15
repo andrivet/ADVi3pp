@@ -26,6 +26,7 @@
 #define ADV_I3_PLUS_PLUS_STACK_H
 
 #include <stddef.h>
+#include "advi3pp_log.h"
 
 namespace advi3pp {
 

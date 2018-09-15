@@ -25,9 +25,15 @@
 #ifndef ADV_I3_PLUS_PLUS_LOG_H
 #define ADV_I3_PLUS_PLUS_LOG_H
 
+#ifdef __CLION_IDE__
+#define ADVi3PP_LOG
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
-class String;
+
+class __FlashStringHelper;
+using FlashChar = __FlashStringHelper;
 
 namespace advi3pp {
 
@@ -36,11 +42,14 @@ namespace advi3pp {
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_LOG
+
 struct Log
 {
     struct EndOfLine {};
 
-    Log& operator<<(const String& data);
+    Log& operator<<(const char* data);
+    Log& operator<<(const FlashChar* data);
+    //Log& operator<<(const String& data);
     Log& operator<<(uint8_t data);
     Log& operator<<(uint16_t data);
     Log& operator<<(uint32_t data);
@@ -64,7 +73,8 @@ struct Log
 {
     struct EndOfLine {};
 
-    inline Log& operator<<(const String& data) { return log(); }
+    inline Log& operator<<(const char* data) { return log(); }
+    //inline Log& operator<<(const String& data) { return log(); }
     inline Log& operator<<(uint8_t data) { return log(); }
     inline Log& operator<<(uint16_t data) { return log(); }
     inline Log& operator<<(uint32_t data) { return log(); }

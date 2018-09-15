@@ -132,19 +132,24 @@ bool ADVi3pp::has_status()
     return advi3pp.has_status();
 }
 
-void ADVi3pp::set_status(const char* message, bool /*persist*/)
+void ADVi3pp::set_status(const char* message)
 {
     advi3pp.set_status(message);
 }
 
-void ADVi3pp::set_status_PGM(const char* message, int8_t /*level*/)
+void ADVi3pp::set_status(const __FlashStringHelper* message)
 {
-    advi3pp.set_status_PGM(message);
+    advi3pp.set_status(message);
 }
 
-void ADVi3pp::set_alert_status_PGM(const char* message)
+void  ADVi3pp::set_status(const char * const fmt, va_list& args)
 {
-    advi3pp.set_alert_status_PGM(message);
+    advi3pp.set_status(fmt, args);
+}
+
+void  ADVi3pp::advanced_pause_show_message(AdvancedPauseMessage message)
+{
+    advi3pp.advanced_pause_show_message(message);
 }
 
 void ADVi3pp::reset_message()

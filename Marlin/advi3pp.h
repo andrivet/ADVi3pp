@@ -27,11 +27,11 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include "enum.h"
 #include "advi3pp_pages.h"
 
 class MarlinSettings;
 class GCodeParser;
-class String;
 class __FlashStringHelper;
 
 using eeprom_write = void (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
@@ -56,9 +56,10 @@ struct ADVi3pp
     static void process_command();
     static void set_brightness(int16_t britghness);
     static bool has_status();
-    static void set_status(const char* message, bool persist);
-    static void set_status_PGM(const char* message, int8_t level = 0);
-    static void set_alert_status_PGM(const char* message);
+    static void set_status(const char* message);
+    static void set_status(const __FlashStringHelper* message);
+    static void set_status(const char * const fmt, va_list& args);
+    static void advanced_pause_show_message(AdvancedPauseMessage message);
     static void reset_message();
     static void buzz(long duration, uint16_t frequency = 0);
 };

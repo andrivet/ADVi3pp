@@ -38,7 +38,7 @@
 
 #include <HardwareSerial.h>
 
-// Used directly by Marlin
+// From Marlin
 uint8_t progress_bar_percent;
 int16_t lcd_contrast;
 
@@ -49,7 +49,6 @@ namespace
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x400;
 
     const uint16_t nb_visible_sd_files = 5;
-	const uint8_t  nb_visible_sd_file_chars = 48;
     const uint16_t tuning_extruder_filament = 100; // 10 cm
 	const uint16_t tuning_extruder_delta = 20; // 2 cm
 
@@ -298,31 +297,31 @@ uint16_t Handler::size_of_eeprom_data() const
 
 void Wait::show(const __FlashStringHelper* message, bool save_back)
 {
-    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
+    advi3pp.set_status(message);
     back_ = nullptr;
     continue_ = nullptr;
     pages.show_page(Page::Waiting, save_back);
 }
 
-void Wait::show(const __FlashStringHelper* message, WaitCalllback back, bool save_back)
+void Wait::show(const __FlashStringHelper* message, const WaitCallback& back, bool save_back)
 {
-    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
+    advi3pp.set_status(message);
     back_ = back;
     continue_ = nullptr;
     pages.show_page(Page::WaitBack, save_back);
 }
 
-void Wait::show(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back)
+void Wait::show(const __FlashStringHelper* message, const WaitCallback& back, const WaitCallback& cont, bool save_back)
 {
-    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
+    advi3pp.set_status(message);
     back_ = back;
     continue_ = cont;
     pages.show_page(Page::WaitBackContinue, save_back);
 }
 
-void Wait::show_continue(const __FlashStringHelper* message, WaitCalllback cont, bool save_back)
+void Wait::show_continue(const __FlashStringHelper* message, const WaitCallback& cont, bool save_back)
 {
-    advi3pp.set_status_PGM(reinterpret_cast<const char*>(message));
+    advi3pp.set_status(message);
     back_ = nullptr;
     continue_ = cont;
     pages.show_page(Page::WaitContinue, save_back);
@@ -419,11 +418,11 @@ void SdCard::show_current_page()
 {
     WriteRamDataRequest frame{Variable::LongText0};
 
-    String name;
+    ADVString<sd_file_length> name;
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
-        frame << FixedSizeString(name, nb_visible_sd_file_chars); // Important to truncate, there is only limited space
+        frame << name; // Important to truncate, there is only limited space
     }
     frame.send(true);
 }
@@ -431,9 +430,9 @@ void SdCard::show_current_page()
 //! Get a filename with a given index.
 //! @param index    Index of the filename
 //! @param name     Copy the filename into this Chars
-void SdCard::get_file_name(uint8_t index_in_page, String& name)
+void SdCard::get_file_name(uint8_t index_in_page, ADVString<sd_file_length>& name)
 {
-    name = "";
+    name.reset();
 	if(last_file_index_ >= index_in_page)
 	{
 		card.getfilename(last_file_index_ - index_in_page);
@@ -457,14 +456,14 @@ void SdCard::select_file(uint16_t file_index)
     if(card.filenameIsDir)
         return;
 
-    String longName{(card.longFilename[0] == 0) ? card.filename : card.longFilename};
-    if(longName.length() <= 0) // If the SD card is not readable
+    const char* filename = (card.longFilename[0] == 0) ? card.filename : card.longFilename;
+    if(filename == nullptr) // If the SD card is not readable
         return;
 
-    advi3pp.set_progress_name(longName);
+    advi3pp.set_progress_name(filename);
 
     WriteRamDataRequest frame{Variable::FileName};
-    frame << FixedSizeString{longName, 26};
+    frame << ADVString<26>(filename);
     frame.send(true);
 
     card.openFile(card.filename, true); // use always short filename so it will work even if the filename is long
@@ -637,7 +636,7 @@ Page LoadUnload::do_show()
     return Page::LoadUnload;
 }
 
-void LoadUnload::prepare()
+void LoadUnload::prepare(const BackgroundTask& background)
 {
     ReadRamData frame{Variable::Value0, 1};
     if(!frame.send_and_receive())
@@ -651,40 +650,32 @@ void LoadUnload::prepare()
     Temperature::setTargetHotend(hotend.word, 0);
     enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
+    task.set_background_task(background);
+    wait.show(F("Wait until the target temp is reached..."), WaitCallback(this, &LoadUnload::stop));
 }
 
 //! Start Load action.
 void LoadUnload::load()
 {
-    prepare();
-
-    task.set_background_task(BackgroundTask(this, &LoadUnload::load_start_task));
-    wait.show(F("Wait until the target temp is reached..."),
-              WaitCalllback(this, &LoadUnload::stop));
+    prepare(BackgroundTask(this, &LoadUnload::load_start_task));
 }
 
 //! Start Load action.
 void LoadUnload::unload()
 {
-    prepare();
-
-    task.set_background_task(BackgroundTask(this, &LoadUnload::unload_start_task));
-    wait.show(F("Wait until the target temp is reached..."),
-              WaitCalllback(this, &LoadUnload::stop));
+    prepare(BackgroundTask(this, &LoadUnload::unload_start_task));
 }
-
 
 //! Handle back from the Load on Unload LCD screen.
 void LoadUnload::stop()
 {
-    Log::log() << F("Load/Unload Stop");
+    Log::log() << F("Load/Unload Stop") << Log::endl();
 
     advi3pp.reset_message();
     task.set_background_task(BackgroundTask(this, &LoadUnload::stop_task));
     clear_command_queue();
     Temperature::setTargetHotend(0, 0);
-
-    pages.show_back_page();
 }
 
 void LoadUnload::stop_task()
@@ -693,24 +684,28 @@ void LoadUnload::stop_task()
         return;
 
     task.clear_background_task();
-    advi3pp.reset_message();
+
     // Do this asynchronously to avoid race conditions
     enqueue_and_echo_commands_P(PSTR("M82"));       // absolute E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+}
 
+void LoadUnload::start_task(const char* command, const BackgroundTask& back_task)
+{
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
+    {
+        Log::log() << F("Load/Unload Filament") << Log::endl();
+        advi3pp.buzz(100); // Inform the user that the extrusion starts
+        enqueue_and_echo_commands_P(command);
+        task.set_background_task(back_task);
+        advi3pp.set_status(F("Press Back when the filament comes out..."));
+    }
 }
 
 //! Load the filament if the temperature is high enough.
 void LoadUnload::load_start_task()
 {
-    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
-    {
-        Log::log() << F("Load Filament") << Log::endl();
-        advi3pp.buzz(100); // Inform the user that the extrusion starts
-        enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
-        task.set_background_task(BackgroundTask(this, &LoadUnload::load_task));
-        advi3pp.set_status(F("Wait until the filament comes out..."));
-    }
+    start_task(PSTR("G1 E1 F120"), BackgroundTask(this, &LoadUnload::load_task));
 }
 
 //! Load the filament if the temperature is high enough.
@@ -720,18 +715,10 @@ void LoadUnload::load_task()
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
 }
 
-
 //! Unload the filament if the temperature is high enough.
 void LoadUnload::unload_start_task()
 {
-    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
-    {
-        Log::log() << F("Unload Filament") << Log::endl();
-        advi3pp.buzz(100); // Inform the user that the un-extrusion starts
-        enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
-        task.set_background_task(BackgroundTask(this, &LoadUnload::unload_task));
-        advi3pp.set_status(F("Wait until the filament comes out..."));
-    }
+    start_task(PSTR("G1 E-1 F120"), BackgroundTask(this, &LoadUnload::unload_task));
 }
 
 //! Unload the filament if the temperature is high enough.
@@ -1003,97 +990,29 @@ Page Statistics::do_show()
 
 void Statistics::send_stats()
 {
-    printStatistics stats = print_job_timer.getStats();
+    printStatistics stats = PrintCounter::getStats();
 
-    WriteRamDataRequest frame{Variable::ShortText0};
+    ADVString<16> filament_used;
+    filament_used << static_cast<unsigned int>(stats.filamentUsed / 1000)
+                  << "."
+                  << (static_cast<unsigned int>(stats.filamentUsed / 100) % 10)
+                  << "m";
+
+    ADVString<16> printTime{stats.printTime};
+    ADVString<16> longestPrint{stats.longestPrint};
+
+    WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(stats.totalPrints) << Uint16(stats.finishedPrints);
     frame.send();
 
-    duration_t duration = stats.printTime;
-    frame.reset(Variable::ShortText1);
-    frame << FixedSizeString{duration, 16};
-    frame.send();
-
-    duration = stats.longestPrint;
-    frame.reset(Variable::ShortText2);
-    frame << FixedSizeString{duration, 16};
-    frame.send();
-
-    String filament_used;
-    filament_used << static_cast<unsigned int>(stats.filamentUsed / 1000)
-                  << "."
-                  << static_cast<unsigned int>(stats.filamentUsed / 100) % 10
-                  << "m";
-    frame.reset(Variable::ShortText3);
-    frame << FixedSizeString{filament_used, 16};
+    frame.reset(Variable::ShortText0);
+    frame << printTime << longestPrint << filament_used;
     frame.send();
 }
 
 // --------------------------------------------------------------------
 // Versions
 // --------------------------------------------------------------------
-
-void Versions::get_advi3pp_lcd_version()
-{
-    ReadRamData response{Variable::ADVi3ppLCDversion, 1};
-    if(!response.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
-        return;
-    }
-
-    Uint16 version; response >> version;
-    Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
-    lcd_version_ = version.word;
-}
-
-//! Get the current LCD firmware version.
-//! @return     The version as a string.
-String Versions::get_lcd_firmware_version()
-{
-    ReadRegister response{Register::Version, 1};
-    if(!response.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Version)") << Log::endl();
-        return F("Unknown");
-    }
-
-    Uint8 version; response >> version;
-    String lcd_version; lcd_version << (version.byte / 0x10) << "." << (version.byte % 0x10);
-    Log::log() << F("LCD Firmware raw version = ") << version.byte << Log::endl();
-    return lcd_version;
-}
-
-//! Convert a version from its hexadecimal representation.
-//! @param hex_version  Hexadecimal representation of the version
-//! @return             Version as a string
-String convert_version(uint16_t hex_version)
-{
-    String version;
-    version << hex_version / 0x0100 << "." << (hex_version % 0x100) / 0x10 << "." << hex_version % 0x10;
-    return version;
-}
-
-//! Send the different versions to the LCD screen.
-void Versions::send_versions()
-{
-    String marlin_version{SHORT_BUILD_VERSION};
-    String motherboard_version = convert_version(advi3_pp_version);
-    String advi3pp_lcd_version = convert_version(lcd_version_);
-    String lcd_firmware_version = get_lcd_firmware_version();
-
-    WriteRamDataRequest frame{Variable::ShortText0};
-    frame << FixedSizeString(motherboard_version, 16)
-          << FixedSizeString(advi3pp_lcd_version, 16)
-          << FixedSizeString(lcd_firmware_version, 16)
-		  << FixedSizeString(marlin_version, 16);
-    frame.send();
-}
-
-bool Versions::is_lcd_version_valid() const
-{
-    return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
-}
 
 bool Versions::dispatch(KeyValue key_value)
 {
@@ -1109,6 +1028,88 @@ bool Versions::dispatch(KeyValue key_value)
     return true;
 }
 
+void Versions::get_version_from_lcd()
+{
+    ReadRamData response{Variable::ADVi3ppLCDversion, 1};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
+        return;
+    }
+
+    Uint16 version; response >> version;
+    Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
+    lcd_version_ = version.word;
+}
+
+//! Get the current LCD firmware version.
+//! @return     The version as a string.
+void Versions::get_lcd_firmware_version(ADVString<16>& lcd_version)
+{
+    ReadRegister response{Register::Version, 1};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Version)") << Log::endl();
+        return;
+    }
+
+    Uint8 version; response >> version;
+    Log::log() << F("LCD Firmware raw version = ") << version.byte << Log::endl();
+
+    lcd_version.reset();
+    lcd_version << (version.byte / 0x10)
+                << "."
+                << (version.byte % 0x10);
+}
+
+//! Convert a version from its hexadecimal representation.
+//! @param hex_version  Hexadecimal representation of the version
+//! @return             Version as a string
+void convert_version(ADVString<16>& version, uint16_t hex_version)
+{
+    version.reset();
+    version << hex_version / 0x0100
+            << "."
+            << (hex_version % 0x100) / 0x10
+            << "."
+            << hex_version % 0x10;
+}
+
+//! Send the different versions to the LCD screen.
+void Versions::send_versions()
+{
+    ADVString<16> marlin_version{SHORT_BUILD_VERSION};
+    ADVString<16> motherboard_version;
+    ADVString<16> advi3pp_lcd_version;
+    ADVString<16> lcd_firmware_version;
+
+    convert_version(motherboard_version, advi3_pp_version);
+    convert_version(advi3pp_lcd_version, lcd_version_);
+    get_lcd_firmware_version(lcd_firmware_version);
+
+    WriteRamDataRequest frame{Variable::ShortText0};
+    frame << motherboard_version
+          << advi3pp_lcd_version
+          << lcd_firmware_version
+		  << marlin_version;
+    frame.send();
+}
+
+void Versions::send_advi3pp_version()
+{
+    ADVString<16> motherboard_version;
+    convert_version(motherboard_version, advi3_pp_version);
+
+    WriteRamDataRequest frame{Variable::ADVi3ppversion};
+    frame << motherboard_version;
+    frame.send();
+}
+
+bool Versions::is_lcd_version_valid() const
+{
+    return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
+}
+
 void Versions::versions_mismatch_forward()
 {
     pages.show_page(Page::Main, false);
@@ -1116,6 +1117,7 @@ void Versions::versions_mismatch_forward()
 
 Page Versions::do_show()
 {
+    send_versions();
     return Page::Versions;
 }
 
@@ -1150,8 +1152,10 @@ bool PidTuning::dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::PidTuningStep2:   pid_tuning_step2(); break;
-        default:                         return false;
+        case KeyValue::PidTuningStep2:  step2(); break;
+        case KeyValue::PidTuningHotend: hotend(); break;
+        case KeyValue::PidTuningBed:  bed(); break;
+        default:                        return false;
     }
 
     return true;
@@ -1168,7 +1172,7 @@ Page PidTuning::do_show()
 }
 
 //! Show step #2 of PID tuning
-void PidTuning::pid_tuning_step2()
+void PidTuning::step2()
 {
     ReadRamData frame{Variable::Value0, 1};
     if(!frame.send_and_receive())
@@ -1180,8 +1184,9 @@ void PidTuning::pid_tuning_step2()
     Uint16 hotend; frame >> hotend;
 
     enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
-    String auto_pid_command; auto_pid_command << F("M303 S") << hotend.word << F("E0 C8 U1");
-    enqueue_and_echo_command(auto_pid_command.c_str());
+    ADVString<20> auto_pid_command;
+    auto_pid_command << F("M303 S") << hotend.word << F(" E0 C8 U1");
+    enqueue_and_echo_command(auto_pid_command.get());
 
     pages.show_page(Page::PidTuning2);
 };
@@ -1193,6 +1198,17 @@ void PidTuning::finished()
     enqueue_and_echo_commands_P(PSTR("M106 S0"));
     pid_settings.show(false, false);
 }
+
+void PidTuning::hotend()
+{
+    // TODO
+}
+
+void PidTuning::bed()
+{
+    // TODO
+}
+
 
 // --------------------------------------------------------------------
 // Manual Leveling
@@ -1388,8 +1404,8 @@ void ExtruderTuning::heating_task()
     enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
 
-    String command; command << F("G1 E") << tuning_extruder_filament << " F50"; // Extrude slowly
-    enqueue_and_echo_command(command.c_str());
+    ADVString<20> command; command << F("G1 E") << tuning_extruder_filament << " F50"; // Extrude slowly
+    enqueue_and_echo_command(command.get());
 
     task.set_background_task(BackgroundTask(this, &ExtruderTuning::extruding_task));
 }
@@ -1470,6 +1486,21 @@ void ExtruderTuning::settings()
 // Sensor Settings
 // --------------------------------------------------------------------
 
+bool SensorSettings::dispatch(KeyValue key_value)
+{
+    if(Handler::dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::SensorSettingsPrevious:  previous(); break;
+        case KeyValue::SensorSettingsNext:      next(); break;
+        default:                                return false;
+    }
+
+    return true;
+}
+
 Page SensorSettings::do_show()
 {
     send_z_height_to_lcd(zprobe_zoffset);
@@ -1480,6 +1511,43 @@ Page SensorSettings::do_show()
 void SensorSettings::do_save()
 {
     save_lcd_z_height();
+}
+
+void SensorSettings::previous()
+{
+    // TODO
+}
+
+void SensorSettings::next()
+{
+    // TODO
+}
+
+void SensorSettings::send_z_height_to_lcd(double z_height)
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(z_height * 100);
+    frame.send();
+}
+
+void SensorSettings::save_lcd_z_height()
+{
+    ReadRamData response{Variable::Value0, 1};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
+        return;
+    }
+
+    Uint16 offsetZ; response >> offsetZ;
+    save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
+}
+
+void SensorSettings::save_z_height(double height)
+{
+    ADVString<20> command; command << F("M851 Z") << height;
+    enqueue_and_echo_command(command.get());
+    advi3pp.save_settings();
 }
 
 // --------------------------------------------------------------------
@@ -1497,7 +1565,6 @@ bool SensorTuning::dispatch(KeyValue key_value)
         case KeyValue::SensorReset:     reset(); break;
         case KeyValue::SensorDeploy:    deploy(); break;
         case KeyValue::SensorStow:      stow(); break;
-        //case KeyValue::SensorZHeight:   z_height(); break;
         default:                        return false;
     }
 
@@ -1528,7 +1595,7 @@ void SensorTuning::g29_leveling_finished(bool success)
             SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
 
         if(sensor_interactive_leveling_)
-            wait.show(F("Leveling failed"), WaitCalllback(this, &SensorTuning::g29_leveling_failed), false);
+            wait.show(F("Leveling failed"), WaitCallback(this, &SensorTuning::g29_leveling_failed), false);
         else
             advi3pp.set_status(F("Leveling failed"));
 
@@ -1600,6 +1667,23 @@ void SensorGrid::do_save()
 // Sensor Z-Height
 // --------------------------------------------------------------------
 
+bool SensorZHeight::dispatch(KeyValue key_value)
+{
+    if(Handler::dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::ZHeight01:       multiplier01(); break;
+        case KeyValue::ZHeight05:       multiplier05(); break;
+        case KeyValue::ZHeight10:       multiplier10(); break;
+        default:                        return false;
+    }
+
+    return true;
+}
+
+
 Page SensorZHeight::do_show()
 {
     pages.save_forward_page();
@@ -1645,6 +1729,21 @@ void SensorZHeight::save()
 {
     wait.show(F("Measure Z-height"));
     enqueue_and_echo_commands_P(PSTR("I0")); // measure z-height
+}
+
+void SensorZHeight::multiplier01()
+{
+    // TODO
+}
+
+void SensorZHeight::multiplier05()
+{
+    // TODO
+}
+
+void SensorZHeight::multiplier10()
+{
+    // TODO
 }
 
 #else
@@ -1718,6 +1817,7 @@ bool FirmwareSettings::dispatch(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::ThermalProtection:   thermal_protection(); break;
+        case KeyValue::RunoutSensor:        runout_sensor(); break;
         case KeyValue::USBBaudrateMinus:    baudrate_minus(); break;
         case KeyValue::USBBaudratePlus:     baudrate_plus(); break;
         default:                            return false;
@@ -1743,6 +1843,12 @@ void FirmwareSettings::thermal_protection()
     send_features();
 }
 
+void FirmwareSettings::runout_sensor()
+{
+    flip_bits(features_, Feature::RunoutSensor);
+    send_features();
+}
+
 void FirmwareSettings::do_save()
 {
     advi3pp.change_usb_baudrate(usb_baudrate_);
@@ -1751,10 +1857,10 @@ void FirmwareSettings::do_save()
 
 void FirmwareSettings::send_usb_baudrate()
 {
-    String value; value << usb_baudrate_;
+    ADVString<6> value; value << usb_baudrate_;
 
     WriteRamDataRequest frame{Variable::ShortText0};
-    frame << FixedSizeString{value, 6};
+    frame << value;
     frame.send();
 }
 
@@ -1794,7 +1900,7 @@ bool LcdSettings::dispatch(KeyValue key_value)
     switch(key_value)
     {
         case KeyValue::LCDDimming:          dim(); break;
-        case KeyValue::Buzzer:              buzzer(); break;
+        case KeyValue::BuzzerOnAction:      buzz_on_action(); break;
         case KeyValue::BuzzOnPress:         buzz_on_press(); break;
         default:                            return false;
     }
@@ -1817,7 +1923,7 @@ void LcdSettings::dim()
     advi3pp.save_settings();
 }
 
-void LcdSettings::buzzer()
+void LcdSettings::buzz_on_action()
 {
     flip_bits(features_, Feature::Buzzer);
     advi3pp.enable_buzzer(test_one_bit(features_, Feature::Buzzer));
@@ -1848,9 +1954,9 @@ bool PrintSettings::dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::Baby001:     [this]{ multiplier_ = 0.01; }; break;
-        case KeyValue::Baby005:     [this]{ multiplier_ = 0.05; }; break;
-        case KeyValue::Baby010:     [this]{ multiplier_ = 0.10; }; break;
+        case KeyValue::Baby001:     multiplier_ = 0.01; break;
+        case KeyValue::Baby005:     multiplier_ = 0.05; break;
+        case KeyValue::Baby010:     multiplier_ = 0.10; break;
         default:                    return false;
     }
 
@@ -1891,19 +1997,56 @@ void PrintSettings::do_save()
 
 void PrintSettings::baby_minus()
 {
-    String auto_pid_command; auto_pid_command << F("M290 Z-") << multiplier_;
-    enqueue_and_echo_command(auto_pid_command.c_str());
+    ADVString<20> auto_pid_command; auto_pid_command << F("M290 Z-") << multiplier_;
+    enqueue_and_echo_command(auto_pid_command.get());
 }
 
 void PrintSettings::baby_plus()
 {
-    String auto_pid_command; auto_pid_command << F("M290 Z") << multiplier_;
-    enqueue_and_echo_command(auto_pid_command.c_str());
+    ADVString<20> auto_pid_command; auto_pid_command << F("M290 Z") << multiplier_;
+    enqueue_and_echo_command(auto_pid_command.get());
 }
 
 // --------------------------------------------------------------------
 // PidSettings
 // --------------------------------------------------------------------
+
+bool PidSettings::dispatch(KeyValue key_value)
+{
+    if(Handler::dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::PidSettingsHotend:   hotend(); break;
+        case KeyValue::PidSettingsBed:      bed(); break;
+        case KeyValue::PidSettingPrevious:  previous(); break;
+        case KeyValue::PidSettingNext:      next(); break;
+        default:                            return false;
+    }
+
+    return true;
+}
+
+void PidSettings::hotend()
+{
+    // TODO
+}
+
+void PidSettings::bed()
+{
+    // TODO
+}
+
+void PidSettings::previous()
+{
+    // TODO
+}
+
+void PidSettings::next()
+{
+    // TODO
+}
 
 void PidSettings::do_backup()
 {
@@ -1937,16 +2080,6 @@ void PidSettings::set(uint16_t temperature, bool bed)
         pid_[bed_][i] = pid_[bed_][i - 1];
 }
 
-void PidSettings::next()
-{
- // TODO
-}
-
-void PidSettings::previous()
-{
-    // TODO
-}
-
 //! Show the PID settings
 Page PidSettings::do_show()
 {
@@ -1964,7 +2097,7 @@ Page PidSettings::do_show()
 //! Save the PID settings
 void PidSettings::do_save()
 {
-    Pid& pid = pid_[bed_][index_];
+    //Pid& pid = pid_[bed_][index_];
 
     ReadRamData response{Variable::Value0, 4};
     if(!response.send_and_receive())
@@ -2259,7 +2392,7 @@ void Dimming::set_next_dimmming_time()
 
 uint8_t Dimming::get_adjusted_brightness()
 {
-    uint16_t brightness = ::lcd_contrast;
+    int16_t brightness = ::lcd_contrast;
     if(dimming_)
         brightness = brightness * DIMMING_RATIO / 100;
     if(brightness < BRIGHTNESS_MIN)
@@ -2321,41 +2454,6 @@ void Dimming::change_brightness(int16_t brightness)
 }
 
 // --------------------------------------------------------------------
-// BLTouch
-// --------------------------------------------------------------------
-
-#ifdef ADVi3PP_BLTOUCH
-
-void SensorSettings::send_z_height_to_lcd(double z_height)
-{
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(z_height * 100);
-    frame.send();
-}
-
-void SensorSettings::save_lcd_z_height()
-{
-    ReadRamData response{Variable::Value0, 1};
-    if(!response.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
-        return;
-    }
-
-    Uint16 offsetZ; response >> offsetZ;
-    save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
-}
-
-void SensorSettings::save_z_height(double height)
-{
-    String command; command << F("M851 Z") << height;
-    enqueue_and_echo_command(command.c_str());
-    advi3pp.save_settings();
-}
-
-#endif
-
-// --------------------------------------------------------------------
 // Advance pause
 // --------------------------------------------------------------------
 
@@ -2394,7 +2492,7 @@ void AdvancedPause::init()
 void AdvancedPause::insert_filament()
 {
     wait.show_continue(F("Insert filament and press continue..."),
-        WaitCalllback(this, &AdvancedPause::filament_inserted), false);
+        WaitCallback(this, &AdvancedPause::filament_inserted), false);
 }
 
 void AdvancedPause::filament_inserted()

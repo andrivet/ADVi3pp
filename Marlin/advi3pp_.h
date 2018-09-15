@@ -35,13 +35,19 @@
 #include "advi3pp_enums.h"
 #include "advi3pp.h"
 #include "advi3pp_stack.h"
+#include "advi3pp_dgus.h"
 #include "ADVcallback.h"
 
 namespace advi3pp {
 
+const size_t message_length = 40;
+const size_t progress_name_length = 40;
+const size_t progress_percent_length = progress_name_length + 4;
+const uint8_t sd_file_length = 48;
+
 using andrivet::Callback;
 using BackgroundTask = Callback<void(*)()>;
-using WaitCalllback = Callback<void(*)()>;
+using WaitCallback = Callback<void(*)()>;
 
 // --------------------------------------------------------------------
 
@@ -126,6 +132,9 @@ private:
 
 struct Handler
 {
+    Handler() = default;
+    virtual ~Handler() = default;
+
     void handle(KeyValue value);
     void show(bool save_forward = false, bool save_back = true);
     virtual void store_eeprom_data(EepromWrite& eeprom);
@@ -152,16 +161,16 @@ protected:
 struct Wait: Handler
 {
     void show(const __FlashStringHelper* message, bool save_back = true);
-    void show(const __FlashStringHelper* message, WaitCalllback back, bool save_back = true);
-    void show(const __FlashStringHelper* message, WaitCalllback back, WaitCalllback cont, bool save_back = true);
-    void show_continue(const __FlashStringHelper* message, WaitCalllback cont, bool save_back = true);
+    void show(const __FlashStringHelper* message, const WaitCallback& back, bool save_back = true);
+    void show(const __FlashStringHelper* message, const WaitCallback& back, const WaitCallback& cont, bool save_back = true);
+    void show_continue(const __FlashStringHelper* message, const WaitCallback& cont, bool save_back = true);
 
 private:
     void do_save() override;
     void do_rollback() override;
 
-    WaitCalllback back_;
-    WaitCalllback continue_;
+    WaitCallback back_;
+    WaitCallback continue_;
 };
 
 // --------------------------------------------------------------------
@@ -173,7 +182,7 @@ struct LoadUnload: Handler
 private:
     bool dispatch(KeyValue key_value) override;
     Page do_show() override;
-    void prepare();
+    void prepare(const BackgroundTask& background);
     void load();
     void unload();
     void stop();
@@ -182,6 +191,7 @@ private:
     void load_task();
     void unload_start_task();
     void unload_task();
+    void start_task(const char* command,  const BackgroundTask& back_task);
 };
 
 // --------------------------------------------------------------------
@@ -262,7 +272,7 @@ private:
     bool dispatch(KeyValue value) override;
     Page do_show() override;
     void show_current_page();
-    void get_file_name(uint8_t index_in_page, String& name);
+    void get_file_name(uint8_t index_in_page, ADVString<sd_file_length>& name);
     void up();
     void down();
     void select_file(uint16_t file_index);
@@ -382,7 +392,9 @@ struct PidTuning: Handler
 private:
     bool dispatch(KeyValue value) override;
     Page do_show() override;
-    void pid_tuning_step2();
+    void step2();
+    void hotend();
+    void bed();
 };
 
 #ifdef ADVi3PP_BLTOUCH
@@ -397,9 +409,12 @@ struct SensorSettings: Handler
     void save_lcd_z_height();
 
 private:
+    bool dispatch(KeyValue value) override;
     Page do_show() override;
     void save_z_height(double height);
     void do_save() override;
+    void previous();
+    void next();
 };
 
 // --------------------------------------------------------------------
@@ -419,7 +434,6 @@ private:
     void reset();
     void deploy();
     void stow();
-    //void z_height();
 
 private:
     bool sensor_interactive_leveling_ = false;
@@ -443,11 +457,15 @@ private:
 struct SensorZHeight: Handler
 {
 private:
+    bool dispatch(KeyValue key_value) override;
     Page do_show() override;
     void do_rollback() override;
     void save() override;
     void home_task();
     void center_task();
+    void multiplier01();
+    void multiplier05();
+    void multiplier10();
 };
 
 #else // No sensor
@@ -517,6 +535,7 @@ private:
     Page do_show() override;
     void do_save() override;
     void thermal_protection();
+    void runout_sensor();
     void send_usb_baudrate();
     void baudrate_minus();
     void baudrate_plus();
@@ -534,7 +553,7 @@ private:
     bool dispatch(KeyValue key_value) override;
     Page do_show() override;
     void dim();
-    void buzzer();
+    void buzz_on_action();
     void buzz_on_press();
 };
 
@@ -555,15 +574,16 @@ private:
 
 struct Versions: Handler
 {
-    String get_lcd_firmware_version();
+    void get_version_from_lcd();
+    void send_advi3pp_version();
     bool is_lcd_version_valid() const;
-    void get_advi3pp_lcd_version();
-    void send_versions();
 
 private:
     bool dispatch(KeyValue key_value) override;
     Page do_show() override;
     void versions_mismatch_forward();
+    void get_lcd_firmware_version(ADVString<16>& lcd_version);
+    void send_versions();
 
     uint16_t lcd_version_ = 0x0000;
 };
@@ -602,14 +622,17 @@ struct PidSettings: Handler
 {
 public:
     void set(uint16_t temperature, bool bed);
-    void next();
-    void previous();
 
 private:
+    bool dispatch(KeyValue key_value) override;
     void do_backup() override;
     void do_rollback() override;
     Page do_show() override;
     void do_save() override;
+    void hotend();
+    void bed();
+    void previous();
+    void next();
 
 private:
     static const size_t NB_PIDs = 5;
@@ -828,7 +851,7 @@ private:
 
 struct Task
 {
-    void set_background_task(BackgroundTask task, unsigned int delta = 500);
+    void set_background_task(const BackgroundTask& task, unsigned int delta = 500);
     void clear_background_task();
     void execute_background_task();
     bool has_background_task() const;
@@ -871,16 +894,12 @@ struct ADVi3pp_
     bool has_status();
     void set_status(const char* message);
     void set_status(const __FlashStringHelper* fmt, ...);
-    void set_status_PGM(const char* message);
-    void set_alert_status_PGM(const char* message);
-    void status_printf_P(const char* fmt, va_list argp);
-    void set_status(const __FlashStringHelper* fmt, va_list argp);
-    const String& get_message() const;
-    void queue_message(const String& message);
+    void set_status(const char * const fmt, va_list& args);
+    void queue_message(const char* message);
+    void queue_message(const __FlashStringHelper* message);
     void reset_message();
 
-    void set_progress_name(const String& name);
-    const String& get_progress() const;
+    void set_progress_name(const char* name);
     void reset_progress();
 
     void enable_buzzer(bool enable);
@@ -913,16 +932,19 @@ private:
 
     void print_command(KeyValue key_value);
 
+    void compute_progress();
+
 private:
     bool init_ = true;
-    uint32_t usb_baudrate_;
-    Feature features_;
+    uint32_t usb_baudrate_ = BAUDRATE;
+    Feature features_ = Feature::None;
     uint16_t last_used_hotend_temperature_ = 200;
     uint16_t last_used_bed_temperature_ = 50;
-    String message_;
-    String progress_name_;
-    mutable String progress_percent_;
-    mutable int percent_ = -1;
+    ADVString<message_length> message_;
+    ADVString<message_length> centered_;
+    ADVString<progress_name_length> progress_name_;
+    ADVString<progress_percent_length> progress_;
+    int percent_ = -1;
     bool buzzer_enabled_ = true;
     bool buzz_on_press_enabled_ = false;
 };

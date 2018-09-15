@@ -28,6 +28,7 @@
 
 #include "Marlin.h"
 #include "duration_t.h"
+#include "ADVstring.h"
 
 namespace advi3pp {
 
@@ -88,22 +89,6 @@ enum class KeyValue: uint16_t;
 enum class Page: uint8_t;
 
 // --------------------------------------------------------------------
-// String operators
-// --------------------------------------------------------------------
-
-#ifndef UNIT_TEST
-inline String& operator<<(String& rhs, const __FlashStringHelper* lhs) { rhs += lhs; return rhs; }
-inline String& operator<<(String& rhs, const String& lhs) { rhs += lhs; return rhs; }
-
-template<typename T>
-inline String& operator<<(String& rhs, T lhs) { rhs += lhs; return rhs; }
-
-String& operator<<(String& rhs, Command lhs);
-String& operator<<(String& rhs, Register lhs);
-String& operator<<(String& rhs, Variable lhs);
-#endif
-
-// --------------------------------------------------------------------
 // Uint8
 // --------------------------------------------------------------------
 
@@ -153,27 +138,6 @@ struct Uint32
 //! An unsigned 32 bits literal such as: 0_u32.
 constexpr Uint32 operator "" _u32(unsigned long long int dword) { return Uint32(static_cast<uint32_t>(dword)); }
 
-// --------------------------------------------------------------------
-// FixedSizeString
-// --------------------------------------------------------------------
-
-class Frame;
-
-struct FixedSizeString
-{
-    FixedSizeString(const String& str, size_t size, bool center = false);
-    explicit FixedSizeString(duration_t duration, size_t size, bool center = false);
-
-    inline size_t length() const { return string_.length(); }
-
-    friend Frame& operator<<(Frame& frame, const FixedSizeString& data);
-
-private:
-	void assign(const String& str, size_t size, bool center);
-
-private:
-    String string_;
-};
 
 // --------------------------------------------------------------------
 // Frame
@@ -193,9 +157,9 @@ struct Frame
     friend Frame& operator<<(Frame& frame, const Uint8& data);
     friend Frame& operator<<(Frame& frame, const Uint16& data);
     friend Frame& operator<<(Frame& frame, const Uint32& data);
-    friend Frame& operator<<(Frame& frame, const String& data);
-    friend Frame& operator<<(Frame& frame, const FixedSizeString& data);
     friend Frame& operator<<(Frame& frame, Page page);
+    friend Frame& operator<<(Frame& frame, const char* s);
+	template<size_t L> friend Frame& operator<<(Frame& frame, const ADVString<L>& data) { frame << data.get(); return frame; }
 
     friend Frame& operator>>(Frame& frame, Uint8& data);
     friend Frame& operator>>(Frame& frame, Uint16& data);

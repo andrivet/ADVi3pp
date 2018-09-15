@@ -33,80 +33,6 @@ namespace advi3pp {
 namespace { const size_t MAX_GARBAGE_BYTES = 5; }
 
 // --------------------------------------------------------------------
-// FixedSizeString
-// --------------------------------------------------------------------
-
-//! Construct a fixed-size string from a string and a size
-//! @param str      The string
-//! @param size     The size
-FixedSizeString::FixedSizeString(const String& str, size_t size, bool center)
-{
-    if(str.length() <= size)
-        assign(str.c_str(), size, center);
-    else
-        string_ = str.substring(0, size);
-}
-
-//! Construct a fixed-size string from a duration and a size
-//! @param duration     The duration
-//! @param size         The size
-FixedSizeString::FixedSizeString(duration_t duration, size_t size, bool center)
-{
-    char buffer[21 + 1]; // 21, from the doc
-    duration.toString(buffer);
-    assign(buffer, size, center);
-}
-
-//! Assign a fixed-size string from a string and a size
-//! @param str      The string
-//! @param size     The size
-void FixedSizeString::assign(const String& str, size_t size, bool center)
-{
-    string_.reserve(size);
-    string_ = "";
-
-    if(center)
-    {
-        size_t pad = (size - str.length()) / 2;
-        for(size_t i = 0; i < pad; ++i)
-            string_ += ' ';
-    }
-
-    string_ += str;
-
-    while(string_.length() < size)
-        string_ += ' ';
-}
-
-// --------------------------------------------------------------------
-// String
-// --------------------------------------------------------------------
-
-//! Append a Command to this String..
-//! @param command      The command to be append to this String (after transformation into a string)
-//! @return             Itself
-String& operator<<(String& str, Command command)
-{
-    return (str << static_cast<uint8_t>(command));
-}
-
-//! Append a Register to this String.
-//! @param reg          The register to be append to this String (after transformation into a string)
-//! @return             Itself
-String& operator<<(String& str, Register reg)
-{
-    return (str << static_cast<uint8_t>(reg));
-}
-
-//! Append a Variable to this String.
-//! @param var          The variable to be append to this String (after transformation into a string)
-//! @return             Itself
-String& operator<<(String& str, Variable var)
-{
-    return (str << static_cast<uint16_t>(var));
-}
-
-// --------------------------------------------------------------------
 // Frame
 // --------------------------------------------------------------------
 
@@ -209,23 +135,12 @@ Frame& operator<<(Frame& frame, Variable var)
     return frame;
 }
 
-//! Append a FixedSizeString to this frame.
-//! @param frame    The frame
-//! @param data     The FixedSizeString to append
-//! @return         Itself
-Frame& operator<<(Frame& frame, const FixedSizeString& data)
-{
-    return frame << data.string_;
-}
 
-//! Append a String to this frame.
-//! @param frame    The frame
-//! @param data     The String to append
-//! @return         Itself
-Frame& operator<<(Frame& frame, const String& data)
+Frame& operator<<(Frame& frame, const char* s)
 {
-    size_t length = frame.position_ + data.length() < Frame::FRAME_BUFFER_SIZE ? data.length() : Frame::FRAME_BUFFER_SIZE - frame.position_;
-    memcpy(frame.buffer_ + frame.position_, data.c_str(), length);
+    auto l = strlen(s);
+    size_t length = frame.position_ + l < Frame::FRAME_BUFFER_SIZE ? l : Frame::FRAME_BUFFER_SIZE - frame.position_;
+    memcpy(frame.buffer_ + frame.position_, s, length);
     frame.position_ += length;
     frame.buffer_[Frame::Position::Length] += length;
     return frame;

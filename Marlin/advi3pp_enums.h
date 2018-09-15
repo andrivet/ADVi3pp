@@ -148,9 +148,9 @@ enum class KeyValue: uint16_t
     Motors                  = 0x0006,
     Leveling                = 0x0007,
 
-    PrintStop               = 0x0000,
-    PrintPauseResume        = 0x0001,
-    PrintAdvancedPause      = 0x0002,
+    PrintStop               = 0x0001,
+    PrintPauseResume        = 0x0002,
+    PrintAdvancedPause      = 0x0003,
 
     Load                    = 0x0001,
     Unload                  = 0x0002,
@@ -199,13 +199,15 @@ enum class KeyValue: uint16_t
     RunoutSensor            = 0x0004,
 
     LCDDimming              = 0x0001,
-    Buzzer                  = 0x0002,
+    BuzzerOnAction          = 0x0002,
     BuzzOnPress             = 0x0003,
 
     MismatchForward         = 0x0001,
 
     PidSettingsHotend       = 0x0001,
     PidSettingsBed          = 0x0002,
+    PidSettingPrevious      = 0x0003,
+    PidSettingNext          = 0x0004,
 
     SensorSelfTest          = 0x0001,
     SensorReset             = 0x0002,
