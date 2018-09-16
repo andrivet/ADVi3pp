@@ -22,8 +22,9 @@
 #define ADVSTRING_H
 
 #include <stdlib.h>
-#include "Marlin.h"
 #include "duration_t.h"
+
+class __FlashStringHelper;
 
 namespace advi3pp {
 

@@ -49,7 +49,6 @@ struct Log
 
     Log& operator<<(const char* data);
     Log& operator<<(const FlashChar* data);
-    //Log& operator<<(const String& data);
     Log& operator<<(uint8_t data);
     Log& operator<<(uint16_t data);
     Log& operator<<(uint32_t data);
@@ -74,7 +73,7 @@ struct Log
     struct EndOfLine {};
 
     inline Log& operator<<(const char* data) { return log(); }
-    //inline Log& operator<<(const String& data) { return log(); }
+    inline Log& operator<<(const FlashChar* data) { return log(); }
     inline Log& operator<<(uint8_t data) { return log(); }
     inline Log& operator<<(uint16_t data) { return log(); }
     inline Log& operator<<(uint32_t data) { return log(); }
