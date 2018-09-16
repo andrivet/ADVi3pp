@@ -99,6 +99,11 @@ private:
 
 // --------------------------------------------------------------------
 
+template<size_t L, typename T>
+inline ADVString<L>& operator<<(ADVString<L>& rhs, T lhs) { rhs += lhs; return rhs; }
+
+// --------------------------------------------------------------------
+
 template<size_t L> inline ADVString<L>::ADVString(const char* s) { set(s); }
 template<size_t L> inline ADVString<L>::ADVString(const FlashChar* s) { set(s); }
 template<size_t L> inline ADVString<L>::ADVString(duration_t d) { set(d); }
@@ -275,12 +280,6 @@ template<size_t L> bool ADVString<L>::has_changed(bool reset)
         dirty_ = false;
     return dirty;
 }
-
-
-// --------------------------------------------------------------------
-
-template<size_t L, typename T>
-inline ADVString<L>& operator<<(ADVString<L>& rhs, T lhs) { rhs += lhs; return rhs; }
 
 // --------------------------------------------------------------------
 
