@@ -38,7 +38,7 @@
     inline void lcd_setstatusPGM(const char* const message, const int8_t level=0) { advi3pp::ADVi3pp::set_status(reinterpret_cast<const __FlashStringHelper*>(message)); }
     inline void lcd_setalertstatusPGM(const char* message) { advi3pp::ADVi3pp::set_status(reinterpret_cast<const __FlashStringHelper*>(message)); }
     inline void lcd_reset_alert_level() { /* Do nothing */ }
-    inline void lcd_reset_status() { advi3pp::ADVi3pp::reset_message(); }
+    inline void lcd_reset_status() { advi3pp::ADVi3pp::reset_status(); }
     inline void lcd_status_printf_P(uint8_t, const char * fmt, ...) { va_list args; va_start(args, fmt);
         advi3pp::ADVi3pp::set_status(fmt, args); va_end(args); }
 

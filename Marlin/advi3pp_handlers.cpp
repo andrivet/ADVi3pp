@@ -520,7 +520,7 @@ void Print::reset_messages_task()
 {
     task.clear_background_task();
     advi3pp.reset_progress();
-    advi3pp.reset_message();
+    advi3pp.reset_status();
 }
 
 //! Pause printing
@@ -531,7 +531,7 @@ void Print::pause_resume()
 
     if(is_printing())
     {
-        advi3pp.queue_message(F("Pause printing..."));
+        advi3pp.queue_status(F("Pause printing..."));
         do_pause();
         PrintCounter::pause();
 #if ENABLED(PARK_HEAD_ON_PAUSE)
@@ -542,7 +542,7 @@ void Print::pause_resume()
     {
         Log::log() << F("Resume Print") << Log::endl();
 
-        advi3pp.queue_message(F("Resume printing"));
+        advi3pp.queue_status(F("Resume printing"));
 #if ENABLED(PARK_HEAD_ON_PAUSE)
         enqueue_and_echo_commands_P(PSTR("M24"));
 #endif
@@ -672,7 +672,7 @@ void LoadUnload::stop()
 {
     Log::log() << F("Load/Unload Stop") << Log::endl();
 
-    advi3pp.reset_message();
+    advi3pp.reset_status();
     task.set_background_task(BackgroundTask(this, &LoadUnload::stop_task));
     clear_command_queue();
     Temperature::setTargetHotend(0, 0);
@@ -826,7 +826,7 @@ void Preheat::next()
 void Preheat::cooldown()
 {
     Log::log() << F("Cooldown") << Log::endl();
-    advi3pp.reset_message();
+    advi3pp.reset_status();
     Temperature::disable_all_heaters();
 }
 
@@ -992,21 +992,23 @@ void Statistics::send_stats()
 {
     printStatistics stats = PrintCounter::getStats();
 
+    ADVString<16> printTime{duration_t{stats.printTime}};
+    ADVString<16> longestPrint{duration_t{stats.longestPrint}};
+
     ADVString<16> filament_used;
     filament_used << static_cast<unsigned int>(stats.filamentUsed / 1000)
-                  << "."
+                  << '.'
                   << (static_cast<unsigned int>(stats.filamentUsed / 100) % 10)
-                  << "m";
-
-    ADVString<16> printTime{stats.printTime};
-    ADVString<16> longestPrint{stats.longestPrint};
+                  << 'm';
 
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(stats.totalPrints) << Uint16(stats.finishedPrints);
     frame.send();
 
     frame.reset(Variable::ShortText0);
-    frame << printTime << longestPrint << filament_used;
+    frame << printTime.align(Alignment::Left)
+          << longestPrint.align(Alignment::Left)
+          << filament_used.align(Alignment::Left);
     frame.send();
 }
 
@@ -1044,35 +1046,31 @@ void Versions::get_version_from_lcd()
 
 //! Get the current LCD firmware version.
 //! @return     The version as a string.
-void Versions::get_lcd_firmware_version(ADVString<16>& lcd_version)
+template<size_t L>
+ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
 {
     ReadRegister response{Register::Version, 1};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Version)") << Log::endl();
-        return;
+        return lcd_version;
     }
 
     Uint8 version; response >> version;
     Log::log() << F("LCD Firmware raw version = ") << version.byte << Log::endl();
 
-    lcd_version.reset();
-    lcd_version << (version.byte / 0x10)
-                << "."
-                << (version.byte % 0x10);
+    lcd_version << (version.byte / 0x10) << '.' << (version.byte % 0x10);
+    return lcd_version;
 }
 
 //! Convert a version from its hexadecimal representation.
 //! @param hex_version  Hexadecimal representation of the version
 //! @return             Version as a string
-void convert_version(ADVString<16>& version, uint16_t hex_version)
+template<size_t L>
+ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version)
 {
-    version.reset();
-    version << hex_version / 0x0100
-            << "."
-            << (hex_version % 0x100) / 0x10
-            << "."
-            << hex_version % 0x10;
+    version << hex_version / 0x0100 << '.' << (hex_version % 0x100) / 0x10 << '.' << hex_version % 0x10;
+    return version;
 }
 
 //! Send the different versions to the LCD screen.
@@ -1083,9 +1081,10 @@ void Versions::send_versions()
     ADVString<16> advi3pp_lcd_version;
     ADVString<16> lcd_firmware_version;
 
-    convert_version(motherboard_version, advi3_pp_version);
-    convert_version(advi3pp_lcd_version, lcd_version_);
-    get_lcd_firmware_version(lcd_firmware_version);
+    marlin_version.align(Alignment::Left);
+    convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
+    convert_version(advi3pp_lcd_version, lcd_version_).align(Alignment::Left);
+    get_lcd_firmware_version(lcd_firmware_version).align(Alignment::Left);
 
     WriteRamDataRequest frame{Variable::ShortText0};
     frame << motherboard_version
@@ -1098,7 +1097,7 @@ void Versions::send_versions()
 void Versions::send_advi3pp_version()
 {
     ADVString<16> motherboard_version;
-    convert_version(motherboard_version, advi3_pp_version);
+    convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
 
     WriteRamDataRequest frame{Variable::ADVi3ppversion};
     frame << motherboard_version;
@@ -1261,7 +1260,7 @@ void ManualLeveling::leveling_task()
         return;
 
     Log::log() << F("Leveling Homed, start process") << Log::endl();
-    advi3pp.reset_message();
+    advi3pp.reset_status();
     task.clear_background_task();
     pages.show_page(Page::ManualLeveling, false);
 }
@@ -1421,7 +1420,7 @@ void ExtruderTuning::extruding_task()
 
     Temperature::setTargetHotend(0, 0);
     task.clear_background_task();
-    advi3pp.reset_message();
+    advi3pp.reset_status();
     finished();
 }
 
@@ -1603,7 +1602,7 @@ void SensorTuning::g29_leveling_finished(bool success)
         return;
     }
 
-    advi3pp.reset_message();
+    advi3pp.reset_status();
 
     if(sensor_interactive_leveling_)
     {
@@ -1716,7 +1715,7 @@ void SensorZHeight::center_task()
         return;
     task.clear_background_task();
 
-    advi3pp.reset_message();
+    advi3pp.reset_status();
     pages.show_page(Page::ZHeightTuning, false);
 }
 

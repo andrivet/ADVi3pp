@@ -152,9 +152,9 @@ void  ADVi3pp::advanced_pause_show_message(AdvancedPauseMessage message)
     advi3pp.advanced_pause_show_message(message);
 }
 
-void ADVi3pp::reset_message()
+void ADVi3pp::reset_status()
 {
-    advi3pp.reset_message();
+    advi3pp.reset_status();
 }
 
 void ADVi3pp::buzz(long duration, uint16_t frequency)

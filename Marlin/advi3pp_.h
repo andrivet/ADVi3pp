@@ -582,7 +582,6 @@ private:
     bool dispatch(KeyValue key_value) override;
     Page do_show() override;
     void versions_mismatch_forward();
-    void get_lcd_firmware_version(ADVString<16>& lcd_version);
     void send_versions();
 
     uint16_t lcd_version_ = 0x0000;
@@ -895,9 +894,9 @@ struct ADVi3pp_
     void set_status(const char* message);
     void set_status(const __FlashStringHelper* fmt, ...);
     void set_status(const char * const fmt, va_list& args);
-    void queue_message(const char* message);
-    void queue_message(const __FlashStringHelper* message);
-    void reset_message();
+    void queue_status(const char* message);
+    void queue_status(const __FlashStringHelper* message);
+    void reset_status();
 
     void set_progress_name(const char* name);
     void reset_progress();
@@ -940,6 +939,7 @@ private:
     Feature features_ = Feature::None;
     uint16_t last_used_hotend_temperature_ = 200;
     uint16_t last_used_bed_temperature_ = 50;
+    bool has_status_ = false;
     ADVString<message_length> message_;
     ADVString<message_length> centered_;
     ADVString<progress_name_length> progress_name_;

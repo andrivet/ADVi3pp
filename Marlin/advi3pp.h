@@ -60,7 +60,7 @@ struct ADVi3pp
     static void set_status(const __FlashStringHelper* message);
     static void set_status(const char * const fmt, va_list& args);
     static void advanced_pause_show_message(AdvancedPauseMessage message);
-    static void reset_message();
+    static void reset_status();
     static void buzz(long duration, uint16_t frequency = 0);
 };
 

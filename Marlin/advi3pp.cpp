@@ -316,9 +316,12 @@ void ADVi3pp_::send_status_data(bool force_update)
           << Uint16(progress_var_high);
     frame.send(false);
 
-    frame.reset(Variable::Message);
-    frame << message_ << centered_ << progress_;
-    frame.send(false);
+    if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
+    {
+        frame.reset(Variable::Message);
+        frame << message_ << centered_ << progress_;
+        frame.send(false);
+    }
 }
 
 //! Read a frame from the LCD and act accordingly.
@@ -457,7 +460,7 @@ void ADVi3pp_::show_sd_or_temp_page()
     task.clear_background_task();
 
     card.initsd(); // Can take some time
-    ADVi3pp_::reset_message();
+    ADVi3pp_::reset_status();
     if(!card.cardOK)
     {
         // SD card not accessible so fall back to Temperatures
@@ -506,7 +509,7 @@ void ADVi3pp_::icode_0(const GCodeParser& parser)
     DEPLOY_PROBE();
     auto zHeight = run_z_probe();
     do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
-    ADVi3pp_::reset_message();
+    ADVi3pp_::reset_status();
 
     feedrate_mm_s = old_feedrate_mm_s;
 
@@ -532,43 +535,51 @@ void ADVi3pp_::check_and_fix()
 
 bool ADVi3pp_::has_status()
 {
-    return message_.is_empty();
+    return has_status_;
 }
 
 void ADVi3pp_::set_status(const char* message)
 {
     Log::log() << F("=== STATUS: ") << message << Log::endl();
-    message_ = message;
+    message_.set(message).align(Alignment::Left);
+    centered_.set(message).align(Alignment::Center);
+    has_status_ = true;
 }
 
 void ADVi3pp_::set_status(const __FlashStringHelper* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    message_.set(fmt, args);
+    message_.set(fmt, args).align(Alignment::Left);
+    centered_.set(fmt, args).align(Alignment::Center);
     va_end(args);
+    has_status_ = true;
 }
 
-void ADVi3pp_::set_status(const char * const fmt, va_list& args)
+void ADVi3pp_::set_status(const char* fmt, va_list& args)
 {
-    message_.set(fmt, args);
+    message_.set(fmt, args).align(Alignment::Left);
+    centered_.set(fmt, args).align(Alignment::Center);
+    has_status_ = true;
 }
 
-void ADVi3pp_::queue_message(const char* message)
-{
-    ADVString<100> string{F("M117 ")}; string << message;
-    enqueue_and_echo_command(string.get());
-}
-
-void ADVi3pp_::queue_message(const __FlashStringHelper* message)
+void ADVi3pp_::queue_status(const char* message)
 {
     ADVString<100> string{F("M117 ")}; string << message;
     enqueue_and_echo_command(string.get());
 }
 
-void ADVi3pp_::reset_message()
+void ADVi3pp_::queue_status(const __FlashStringHelper* message)
+{
+    ADVString<100> string{F("M117 ")}; string << message;
+    enqueue_and_echo_command(string.get());
+}
+
+void ADVi3pp_::reset_status()
 {
     message_.reset();
+    centered_.reset();
+    has_status_ = false;
 }
 
 void ADVi3pp_::set_progress_name(const char* name)
