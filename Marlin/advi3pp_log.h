@@ -41,7 +41,7 @@ namespace advi3pp {
 // Logging
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_LOG
+#if defined(ADVi3PP_LOG) && !defined(ADVi3PP_UNIT_TEST)
 
 struct Log
 {
@@ -80,13 +80,15 @@ struct Log
     inline Log& operator<<(double data) { return log(); }
     inline void operator<<(EndOfLine eol) {};
 
-    inline static Log& log() { return logging_; }
+    inline static Log& log() { static Log log; return log; }
     inline static Log& error() { return log(); }
     inline static EndOfLine endl() { return EndOfLine{}; }
     inline static void dump(const uint8_t* bytes, size_t size) {}
 
-private:
-    static Log logging_;
+#ifdef ADVi3PP_UNIT_TEST
+    inline Log& operator<<(unsigned long data) { return log(); }
+#endif
+
 };
 
 #define assert(E) (void)(false)

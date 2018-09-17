@@ -46,6 +46,7 @@ struct ADVString
     ADVString() = default;
     explicit ADVString(const char* s);
     explicit ADVString(const FlashChar* s);
+    explicit ADVString(const char c);
     explicit ADVString(duration_t d);
     explicit ADVString(int16_t n, Base b = Base::Decimal);
     explicit ADVString(int32_t n, Base b = Base::Decimal);
@@ -53,8 +54,9 @@ struct ADVString
     explicit ADVString(uint32_t n, Base b = Base::Decimal);
     explicit ADVString(double n, uint8_t decimals = 2);
 
-    ADVString& operator=(const char* str) ;
-    ADVString& operator=(const FlashChar* str) ;
+    ADVString& operator=(const char* str);
+    ADVString& operator=(const FlashChar* str);
+    ADVString& operator=(const char c);
     template<size_t L2> ADVString& operator=(const ADVString<L2>& str);
 
     void set(const char* s);
@@ -62,24 +64,27 @@ struct ADVString
     void set(const FlashChar* s);
     void set(const FlashChar* fmt, va_list& args);
     template<size_t L2> void set(const ADVString<L2>& s);
+    void set(const char c);
     void set(duration_t d);
-    void set(int16_t n, Base base);
-    void set(int32_t n, Base base);
-    void set(uint16_t n, Base base);
-    void set(uint32_t n, Base base);
+    void set(int16_t n, Base base = Base::Decimal);
+    void set(int32_t n, Base base = Base::Decimal);
+    void set(uint16_t n, Base base = Base::Decimal);
+    void set(uint32_t n, Base base = Base::Decimal);
     void set(double n, uint8_t decimals = 2);
     template<size_t L2> void set_padded(const ADVString<L2>& s, bool centered = false);
     void reset();
 
     void append(const char* s);
     void append(const FlashChar* s);
-    void append(int16_t n, Base base);
-    void append(int32_t n, Base base);
-    void append(uint16_t n, Base base);
-    void append(uint32_t n, Base base);
+    void append(const char c);
+    void append(int16_t n, Base base = Base::Decimal);
+    void append(int32_t n, Base base = Base::Decimal);
+    void append(uint16_t n, Base base = Base::Decimal);
+    void append(uint32_t n, Base base = Base::Decimal);
     void append(double n, uint8_t decimals = 2);
     void operator+=(const char* s);
     void operator+=(const FlashChar* s);
+    void operator+=(const char c);
     void operator+=(int16_t n);
     void operator+=(int32_t n);
     void operator+=(uint16_t n);
@@ -100,12 +105,13 @@ private:
 // --------------------------------------------------------------------
 
 template<size_t L, typename T>
-inline ADVString<L>& operator<<(ADVString<L>& rhs, T lhs) { rhs += lhs; return rhs; }
+inline ADVString<L>& operator<<(ADVString<L>& rhs, T lhs) { rhs.append(lhs); return rhs; }
 
 // --------------------------------------------------------------------
 
 template<size_t L> inline ADVString<L>::ADVString(const char* s) { set(s); }
 template<size_t L> inline ADVString<L>::ADVString(const FlashChar* s) { set(s); }
+template<size_t L> inline ADVString<L>::ADVString(const char c) { set(c); }
 template<size_t L> inline ADVString<L>::ADVString(duration_t d) { set(d); }
 template<size_t L> inline ADVString<L>::ADVString(int16_t n, Base b) { set(n, b); }
 template<size_t L> inline ADVString<L>::ADVString(int32_t n, Base b) { set(n, b); }
@@ -115,11 +121,22 @@ template<size_t L> inline ADVString<L>::ADVString(double n, uint8_t decimals) { 
 
 template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const char* str)  { set(str); return *this; }
 template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const FlashChar* str)  { set(str); return *this; }
+template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const char c)  { set(c); return *this; }
 template<size_t L> template<size_t L2> inline ADVString<L>& ADVString<L>::operator=(const ADVString<L2>& str) { set(str); return *this; }
 
 template<size_t L> void ADVString<L>::set(const char* s)
 {
     strlcpy(string_, s, L + 1);
+    dirty_ = true;
+}
+
+template<size_t L> void ADVString<L>::set(const char c)
+{
+    if(L < 1)
+        return;
+    string_[0] = c;
+    string_[1] = 0;
+
     dirty_ = true;
 }
 
@@ -143,7 +160,7 @@ template<size_t L> void ADVString<L>::set(const FlashChar* fmt, va_list& args)
 
 template<size_t L> template<size_t L2> inline void ADVString<L>::set(const ADVString<L2>& s)
 {
-    strlcpy(string_, s.get(), L);
+    strlcpy(string_, s.get(), L + 1);
     dirty_ = true;
 }
 
@@ -215,6 +232,7 @@ template<size_t L> inline void ADVString<L>::reset() { string_[0] = 0; dirty_ = 
 
 template<size_t L> inline void ADVString<L>::operator+=(const char* s) { append(s); }
 template<size_t L> inline void ADVString<L>::operator+=(const FlashChar* s) { append(s); }
+template<size_t L> inline void ADVString<L>::operator+=(const char c) { append(c); }
 template<size_t L> inline void ADVString<L>::operator+=(int16_t n) { append(n); }
 template<size_t L> inline void ADVString<L>::operator+=(int32_t n) { append(n); }
 template<size_t L> inline void ADVString<L>::operator+=(uint16_t n) { append(n); }
@@ -224,6 +242,17 @@ template<size_t L> inline void ADVString<L>::operator+=(double n) { append(n); }
 template<size_t L> void ADVString<L>::append(const char* s)
 {
     strlcat(string_, s, L + 1);
+    dirty_ = true;
+}
+
+template<size_t L> void ADVString<L>::append(const char c)
+{
+    auto l = length();
+    if(l >= L)
+        return;
+
+    string_[l] = c;
+    string_[l + 1] = 0;
     dirty_ = true;
 }
 
@@ -268,7 +297,7 @@ template<size_t L> void ADVString<L>::append(double n, uint8_t decimals)
     append(buffer);
 }
 
-template<size_t L> inline size_t ADVString<L>::length() const { return lstrlen(string_); }
+template<size_t L> inline size_t ADVString<L>::length() const { return strlen(string_); }
 template<size_t L> inline char ADVString<L>::operator[](size_t i) const { return string_[i]; }
 template<size_t L> inline bool ADVString<L>::is_empty() const { return string_[0] == 0; }
 template<size_t L> inline const char* ADVString<L>::get() const { return string_; }

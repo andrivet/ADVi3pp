@@ -24,6 +24,7 @@
  *
  */
 
+#include <string.h>
 #include "advi3pp_defines.h"
 #include "advi3pp_dgus.h"
 #include "advi3pp_log.h"
@@ -267,7 +268,7 @@ size_t Frame::get_length() const
     return static_cast<size_t>(buffer_[Position::Length]);
 }
 
-#ifdef UNIT_TEST
+#ifdef ADVi3PP_UNIT_TEST
 //! Return the raw data. This is used by unit testing.
 const uint8_t* Frame::get_data() const
 {

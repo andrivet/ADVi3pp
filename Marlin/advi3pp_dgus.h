@@ -26,7 +26,9 @@
 #ifndef ADV_I3_PLUS_PLUS_DGUS_H
 #define ADV_I3_PLUS_PLUS_DGUS_H
 
+#ifndef ADVi3PP_UNIT_TEST
 #include "Marlin.h"
+#endif
 #include "duration_t.h"
 #include "ADVstring.h"
 
@@ -169,7 +171,7 @@ struct Frame
     friend Frame& operator>>(Frame& frame, Register& reg);
     friend Frame& operator>>(Frame& frame, Variable& var);
 
-#ifdef UNIT_TEST
+#ifdef ADVi3PP_UNIT_TEST
     const uint8_t* get_data() const;
 #endif
 
