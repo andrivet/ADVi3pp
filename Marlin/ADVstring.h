@@ -21,7 +21,9 @@
 #ifndef ADVSTRING_H
 #define ADVSTRING_H
 
+#include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
 #include "duration_t.h"
 
 class __FlashStringHelper;
@@ -40,13 +42,18 @@ enum class Base: uint8_t
     Hexadecimal = 16
 };
 
+enum class Alignment
+{
+    None, Left, Center, Right
+};
+
 template<size_t L>
 struct ADVString
 {
     ADVString() = default;
     explicit ADVString(const char* s);
     explicit ADVString(const FlashChar* s);
-    explicit ADVString(const char c);
+    explicit ADVString(char c);
     explicit ADVString(duration_t d);
     explicit ADVString(int16_t n, Base b = Base::Decimal);
     explicit ADVString(int32_t n, Base b = Base::Decimal);
@@ -56,40 +63,38 @@ struct ADVString
 
     ADVString& operator=(const char* str);
     ADVString& operator=(const FlashChar* str);
-    ADVString& operator=(const char c);
+    ADVString& operator=(char c);
     template<size_t L2> ADVString& operator=(const ADVString<L2>& str);
 
-    void set(const char* s);
-    void set(const char* fmt, va_list& args);
-    void set(const FlashChar* s);
-    void set(const FlashChar* fmt, va_list& args);
-    template<size_t L2> void set(const ADVString<L2>& s);
-    void set(const char c);
-    void set(duration_t d);
-    void set(int16_t n, Base base = Base::Decimal);
-    void set(int32_t n, Base base = Base::Decimal);
-    void set(uint16_t n, Base base = Base::Decimal);
-    void set(uint32_t n, Base base = Base::Decimal);
-    void set(double n, uint8_t decimals = 2);
-    template<size_t L2> void set_padded(const ADVString<L2>& s, bool centered = false);
-    void reset();
+    ADVString& set(const char* s);
+    ADVString& set(const char* fmt, va_list& args);
+    ADVString& set(const FlashChar* s);
+    ADVString& set(const FlashChar* fmt, va_list& args);
+    template<size_t L2> ADVString& set(const ADVString<L2>& s);
+    ADVString& set(char c);
+    ADVString& set(duration_t d);
+    ADVString& set(int16_t n, Base base = Base::Decimal);
+    ADVString& set(int32_t n, Base base = Base::Decimal);
+    ADVString& set(uint16_t n, Base base = Base::Decimal);
+    ADVString& set(uint32_t n, Base base = Base::Decimal);
+    ADVString& set(double n, uint8_t decimals = 2);
+    ADVString& reset();
 
-    void append(const char* s);
-    void append(const FlashChar* s);
-    void append(const char c);
-    void append(int16_t n, Base base = Base::Decimal);
-    void append(int32_t n, Base base = Base::Decimal);
-    void append(uint16_t n, Base base = Base::Decimal);
-    void append(uint32_t n, Base base = Base::Decimal);
-    void append(double n, uint8_t decimals = 2);
+    ADVString& format(const char* fmt, ...);
+
+    ADVString& append(const char* s);
+    ADVString& append(const FlashChar* s);
+    ADVString& append(char c);
+    ADVString& append(int16_t n, Base base = Base::Decimal);
+    ADVString& append(int32_t n, Base base = Base::Decimal);
+    ADVString& append(uint16_t n, Base base = Base::Decimal);
+    ADVString& append(uint32_t n, Base base = Base::Decimal);
+    ADVString& append(double n, uint8_t decimals = 2);
     void operator+=(const char* s);
     void operator+=(const FlashChar* s);
-    void operator+=(const char c);
-    void operator+=(int16_t n);
-    void operator+=(int32_t n);
-    void operator+=(uint16_t n);
-    void operator+=(uint32_t n) ;
-    void operator+=(double n);
+    void operator+=(char c);
+
+    ADVString& align(Alignment alignment);
 
     size_t length() const;
     char operator[](size_t i) const;
@@ -124,13 +129,54 @@ template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const FlashChar*
 template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const char c)  { set(c); return *this; }
 template<size_t L> template<size_t L2> inline ADVString<L>& ADVString<L>::operator=(const ADVString<L2>& str) { set(str); return *this; }
 
-template<size_t L> void ADVString<L>::set(const char* s)
+template<size_t L>
+ADVString<L>& ADVString<L>::align(Alignment alignment)
+{
+    ADVString<L> tmp{*this};
+
+    auto l = tmp.length();
+    size_t pad = 0;
+
+    if(l >= L)
+        pad = 0;
+    else if(alignment == Alignment::Center)
+        pad = (L - l) / 2;
+    else if(alignment == Alignment::Right)
+        pad = L - l;
+
+    // Left part
+    size_t index = 0;
+    for(; index < pad; ++index)
+        string_[index] = ' ';
+
+    // Middle part
+    strlcpy(string_ + index, tmp.get(), L + 1 - pad);
+    index += l;
+
+    // Right part
+    if(alignment == Alignment::Left || alignment == Alignment::Center)
+    {
+        for(; index < L; ++index)
+            string_[index] = ' ';
+    }
+
+    // End of string
+    string_[index] = 0;
+
+    dirty_ = true;
+    return *this;
+}
+
+template<size_t L>
+inline ADVString<L>& ADVString<L>::set(const char* s)
 {
     strlcpy(string_, s, L + 1);
     dirty_ = true;
+    return *this;
 }
 
-template<size_t L> void ADVString<L>::set(const char c)
+template<size_t L>
+ADVString<L>& ADVString<L>::set(const char c)
 {
     if(L < 1)
         return;
@@ -138,163 +184,180 @@ template<size_t L> void ADVString<L>::set(const char c)
     string_[1] = 0;
 
     dirty_ = true;
-}
-
-template<size_t L> void ADVString<L>::set(const char* fmt, va_list& args)
-{
-    vsnprintf(string_, L + 1, fmt, args);
-    dirty_ = true;
-}
-
-template<size_t L> void ADVString<L>::set(const FlashChar* s)
-{
-    strlcpy_P(string_, reinterpret_cast<const char*>(s), L + 1);
-    dirty_ = true;
-}
-
-template<size_t L> void ADVString<L>::set(const FlashChar* fmt, va_list& args)
-{
-    vsnprintf_P(string_, L + 1, reinterpret_cast<const char*>(fmt), args);
-    dirty_ = true;
-}
-
-template<size_t L> template<size_t L2> inline void ADVString<L>::set(const ADVString<L2>& s)
-{
-    strlcpy(string_, s.get(), L + 1);
-    dirty_ = true;
-}
-
-template<size_t L> void ADVString<L>::set(duration_t d)
-{
-    char buffer[22]; // 21 + 1, from the doc
-    d.toString(buffer);
-    set(buffer);
-}
-
-template<size_t L> void ADVString<L>::set(int16_t n, Base base)
-{
-    char buffer[2 + 8 * sizeof(int16_t)];
-    itoa(n, buffer, static_cast<int>(base));
-    set(buffer);
-}
-
-template<size_t L> void ADVString<L>::set(int32_t n, Base base)
-{
-    char buffer[2 + 8 * sizeof(int32_t)];
-    ltoa(n, buffer, static_cast<int>(base));
-    set(buffer);
-}
-
-template<size_t L> void ADVString<L>::set(uint16_t n, Base base)
-{
-    char buffer[1 + 8 * sizeof(uint16_t)];
-    utoa(n, buffer, static_cast<int>(base));
-    set(buffer);
-}
-
-template<size_t L> void ADVString<L>::set(uint32_t n, Base base)
-{
-    char buffer[1 + 8 * sizeof(uint16_t)];
-    ultoa(n, buffer, static_cast<int>(base));
-    set(buffer);
-}
-
-template<size_t L> void ADVString<L>::set(double n, uint8_t decimals)
-{
-    char buffer[33];
-    dtostrf(n, decimals + 2, decimals, buffer);
-    set(buffer);
+    return *this;
 }
 
 template<size_t L>
-template<size_t L2>
-void ADVString<L>::set_padded(const ADVString<L2>& s, bool centered)
+ADVString<L>& ADVString<L>::set(const char* fmt, va_list& args)
 {
-    auto l = s.length();
-
-    if(centered)
-    {
-        size_t pad = (L - l) / 2;
-        for(size_t i = 0; i < pad; ++i)
-            string_[i] = ' ';
-        l += pad;
-    }
-
-    append(s);
-
-    for(; l < L; ++l)
-        string_[l] = ' ';
-    string_[L] = 0;
+    vsnprintf(string_, L + 1, fmt, args);
+    dirty_ = true;
+    return *this;
 }
 
+#ifndef ADVi3PP_UNIT_TEST
 
-template<size_t L> inline void ADVString<L>::reset() { string_[0] = 0; dirty_ = true; }
+template<size_t L>
+inline ADVString<L>& ADVString<L>::set(const FlashChar* s)
+{
+    strlcpy_P(string_, reinterpret_cast<const char*>(s), L + 1);
+    dirty_ = true;
+    return *this;
+}
+
+template<size_t L>
+ADVString<L>& ADVString<L>::set(const FlashChar* fmt, va_list& args)
+{
+    vsnprintf_P(string_, L + 1, reinterpret_cast<const char*>(fmt), args);
+    dirty_ = true;
+    return *this;
+}
+
+#endif
+
+template<size_t L> template<size_t L2>
+inline ADVString<L>& ADVString<L>::set(const ADVString<L2>& s)
+{
+    return set(s.get());
+}
+
+template<size_t L>
+ADVString<L>& ADVString<L>::set(duration_t d)
+{
+    char buffer[22]; // 21 + 1, from the doc
+    d.toString(buffer);
+    return set(buffer);
+}
+
+template<size_t L>
+ADVString<L>& ADVString<L>::set(int16_t n, Base base)
+{
+    char buffer[2 + 8 * sizeof(int16_t)];
+    itoa(n, buffer, static_cast<int>(base));
+    return set(buffer);
+}
+
+template<size_t L>
+ADVString<L>& ADVString<L>::set(int32_t n, Base base)
+{
+    char buffer[2 + 8 * sizeof(int32_t)];
+    ltoa(n, buffer, static_cast<int>(base));
+    return set(buffer);
+}
+
+template<size_t L>
+ADVString<L>& ADVString<L>::set(uint16_t n, Base base)
+{
+    char buffer[1 + 8 * sizeof(uint16_t)];
+    utoa(n, buffer, static_cast<int>(base));
+    return set(buffer);
+}
+
+template<size_t L>
+ADVString<L>& ADVString<L>::set(uint32_t n, Base base)
+{
+    char buffer[1 + 8 * sizeof(uint16_t)];
+    ultoa(n, buffer, static_cast<int>(base));
+    return set(buffer);
+}
+
+template<size_t L>
+ADVString<L>& ADVString<L>::set(double n, uint8_t decimals)
+{
+    char buffer[33];
+    dtostrf(n, decimals + 2, decimals, buffer);
+    return set(buffer);
+}
+
+template<size_t L>
+inline ADVString<L>& ADVString<L>::reset() { string_[0] = 0; dirty_ = true; return *this; }
+
+template<size_t L>
+ADVString<L>& ADVString<L>::format(const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    set(fmt, args);
+    va_end(args);
+    return *this;
+}
 
 template<size_t L> inline void ADVString<L>::operator+=(const char* s) { append(s); }
 template<size_t L> inline void ADVString<L>::operator+=(const FlashChar* s) { append(s); }
-template<size_t L> inline void ADVString<L>::operator+=(const char c) { append(c); }
-template<size_t L> inline void ADVString<L>::operator+=(int16_t n) { append(n); }
-template<size_t L> inline void ADVString<L>::operator+=(int32_t n) { append(n); }
-template<size_t L> inline void ADVString<L>::operator+=(uint16_t n) { append(n); }
-template<size_t L> inline void ADVString<L>::operator+=(uint32_t n) { append(n); }
-template<size_t L> inline void ADVString<L>::operator+=(double n) { append(n); }
+template<size_t L> inline void ADVString<L>::operator+=(char c) { append(c); }
 
-template<size_t L> void ADVString<L>::append(const char* s)
+template<size_t L>
+ADVString<L>& ADVString<L>::append(const char* s)
 {
     strlcat(string_, s, L + 1);
     dirty_ = true;
+    return *this;
 }
 
-template<size_t L> void ADVString<L>::append(const char c)
+template<size_t L>
+ADVString<L>& ADVString<L>::append(char c)
 {
     auto l = length();
     if(l >= L)
-        return;
+        return *this;
 
     string_[l] = c;
     string_[l + 1] = 0;
     dirty_ = true;
+    return *this;
 }
 
-template<size_t L> void ADVString<L>::append(const FlashChar* s)
+template<size_t L>
+ADVString<L>& ADVString<L>::append(const FlashChar* s)
 {
     strlcat_P(string_, reinterpret_cast<const char*>(s), L + 1);
     dirty_ = true;
+    return *this;
 }
 
-template<size_t L> void ADVString<L>::append(int16_t n, Base base)
+template<size_t L>
+ADVString<L>& ADVString<L>::append(int16_t n, Base base)
 {
     char buffer[2 + 8 * sizeof(int16_t)];
     itoa(n, buffer, static_cast<int>(base));
     append(buffer);
+    return *this;
 }
 
-template<size_t L> void ADVString<L>::append(int32_t n, Base base)
+template<size_t L>
+ADVString<L>& ADVString<L>::append(int32_t n, Base base)
 {
     char buffer[2 + 8 * sizeof(int32_t)];
     ltoa(n, buffer, static_cast<int>(base));
     append(buffer);
+    return *this;
 }
 
-template<size_t L> void ADVString<L>::append(uint16_t n, Base base)
+template<size_t L>
+ADVString<L>& ADVString<L>::append(uint16_t n, Base base)
 {
     char buffer[1 + 8 * sizeof(uint16_t)];
     utoa(n, buffer, static_cast<int>(base));
     append(buffer);
+    return *this;
 }
 
-template<size_t L> void ADVString<L>::append(uint32_t n, Base base)
+template<size_t L>
+ADVString<L>& ADVString<L>::append(uint32_t n, Base base)
 {
     char buffer[1 + 8 * sizeof(uint16_t)];
     ultoa(n, buffer, static_cast<int>(base));
     append(buffer);
+    return *this;
 }
 
-template<size_t L> void ADVString<L>::append(double n, uint8_t decimals)
+template<size_t L>
+ADVString<L>& ADVString<L>::append(double n, uint8_t decimals)
 {
     char buffer[33];
     dtostrf(n, decimals + 2, decimals, buffer);
     append(buffer);
+    return *this;
 }
 
 template<size_t L> inline size_t ADVString<L>::length() const { return strlen(string_); }
