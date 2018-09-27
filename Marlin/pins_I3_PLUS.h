@@ -43,13 +43,13 @@
 #define X_MAX_PIN          -1   // NC
 #define Y_MIN_PIN          24   // PA2 / AD2
 #define Y_MAX_PIN          -1   // NC
-#define Z_MIN_PIN          23   // PA1 / AD1
-#define Z_MAX_PIN          25   // PA3 / AD3
-#define SERVO0_PIN         40   // PG1 / !RD
+#define Z_MIN_PIN          6   // PA1 / AD1
+#define Z_MAX_PIN          19   // PA3 / AD3
+#define SERVO0_PIN         25   // PG1 / !RD
 #else
 #define X_STOP_PIN         54	// PF0 / A0
 #define Y_STOP_PIN         24	// PA2 / AD2
-#define Z_STOP_PIN         23	// PA1 / AD1
+#define Z_STOP_PIN         6	// PA1 / AD1
 #endif
 
 //
@@ -61,12 +61,12 @@
 
 #define Y_STEP_PIN         64   // PK2 / A10
 #define Y_DIR_PIN          65   // PK3 / A11
-#define Y_ENABLE_PIN       63   // PK1 / A9
+#define Y_ENABLE_PIN       2   // PK1 / A9
 
 #define Z_STEP_PIN         67   // PK5 / A13
 #define Z_DIR_PIN          69   // PK7 / A15
 #define Z_ENABLE_PIN       66   // PK4 / A12
-#define Z_MIN_PROBE_PIN    25   // PA3 / AD3
+#define Z_MIN_PROBE_PIN    6   // PA3 / AD3
 
 #define E0_STEP_PIN        58   // PF4 / A4
 #define E0_DIR_PIN         59   // PF5 / A5
@@ -91,3 +91,4 @@
 //
 #define SDSS               53   // PB0 / SS
 #define LED_PIN            13   // PB7 / PWM13
+
