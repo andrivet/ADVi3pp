@@ -74,30 +74,30 @@ void ADVi3pp::g29_leveling_finished(bool success)
 //! @param write Function to use for the actual writing
 //! @param eeprom_index
 //! @param working_crc
-void ADVi3pp::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+void ADVi3pp::write(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
-    advi3pp.store_eeprom_data(write, eeprom_index, working_crc);
+    advi3pp.write(write, eeprom_index, working_crc);
 }
 
 //! Restore presets from permanent memory.
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void ADVi3pp::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+void ADVi3pp::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
-    advi3pp.restore_eeprom_data(read, eeprom_index, working_crc);
+    advi3pp.read(read, eeprom_index, working_crc);
 }
 
 //! Reset presets.
-void ADVi3pp::reset_eeprom_data()
+void ADVi3pp::reset()
 {
-    advi3pp.reset_eeprom_data();
+    advi3pp.reset();
 }
 
 //! Return the size of data specific to ADVi3++
-uint16_t ADVi3pp::size_of_eeprom_data()
+uint16_t ADVi3pp::size_of()
 {
-    return advi3pp.size_of_eeprom_data();
+    return advi3pp.size_of();
 }
 
 //! Inform the user that the EEPROM data are not compatible and have been reset
@@ -107,7 +107,7 @@ void ADVi3pp::eeprom_settings_mismatch()
 }
 
 //! Called when a temperature error occurred and display the error on the LCD.
-void ADVi3pp::temperature_error(const __FlashStringHelper* message)
+void ADVi3pp::temperature_error(const FlashChar* message)
 {
     advi3pp.temperature_error(message);
 }
@@ -137,7 +137,7 @@ void ADVi3pp::set_status(const char* message)
     advi3pp.set_status(message);
 }
 
-void ADVi3pp::set_status(const __FlashStringHelper* message)
+void ADVi3pp::set_status(const FlashChar* message)
 {
     advi3pp.set_status(message);
 }

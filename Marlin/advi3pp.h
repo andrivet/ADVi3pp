@@ -33,6 +33,7 @@
 class MarlinSettings;
 class GCodeParser;
 class __FlashStringHelper;
+using FlashChar = __FlashStringHelper;
 
 using eeprom_write = void (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
 using eeprom_read  = void (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
@@ -46,19 +47,19 @@ struct ADVi3pp
     static void idle();
     static void auto_pid_finished();
     static void g29_leveling_finished(bool success);
-    static void store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    static void restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
-    static void reset_eeprom_data();
-    static uint16_t size_of_eeprom_data();
+    static void write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    static void read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    static void reset();
+    static uint16_t size_of();
     static void eeprom_settings_mismatch();
-    static void temperature_error(const __FlashStringHelper* message);
+    static void temperature_error(const FlashChar* message);
     static bool is_thermal_protection_enabled();
     static void process_command();
     static void set_brightness(int16_t britghness);
     static bool has_status();
     static void set_status(const char* message);
-    static void set_status(const __FlashStringHelper* message);
-    static void set_status(const char * const fmt, va_list& args);
+    static void set_status(const FlashChar* message);
+    static void set_status(const char* fmt, va_list& args);
     static void advanced_pause_show_message(AdvancedPauseMessage message);
     static void reset_status();
     static void buzz(long duration, uint16_t frequency = 0);
