@@ -173,12 +173,12 @@ void ADVi3pp_::process_command()
 //! @param write Function to use for the actual writing
 //! @param eeprom_index
 //! @param working_crc
-void ADVi3pp_::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+void ADVi3pp_::write(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
     EepromWrite eeprom{write, eeprom_index, working_crc};
 
-    preheat.store_eeprom_data(eeprom);
-    pid_settings.store_eeprom_data(eeprom);
+    preheat.write(eeprom);
+    pid_settings.write(eeprom);
     eeprom.write(features_);
     eeprom.write(usb_baudrate_);
 }
@@ -187,12 +187,12 @@ void ADVi3pp_::store_eeprom_data(eeprom_write write, int& eeprom_index, uint16_t
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void ADVi3pp_::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+void ADVi3pp_::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
     EepromRead eeprom{read, eeprom_index, working_crc};
 
-    preheat.restore_eeprom_data(eeprom);
-    pid_settings.restore_eeprom_data(eeprom);
+    preheat.read(eeprom);
+    pid_settings.read(eeprom);
     eeprom.read(features_);
     eeprom.read(usb_baudrate_);
 
@@ -204,20 +204,20 @@ void ADVi3pp_::restore_eeprom_data(eeprom_read read, int& eeprom_index, uint16_t
 }
 
 //! Reset presets.
-void ADVi3pp_::reset_eeprom_data()
+void ADVi3pp_::reset()
 {
-    preheat.reset_eeprom_data();
-    pid_settings.reset_eeprom_data();
+    preheat.reset();
+    pid_settings.reset();
     features_ = DEFAULT_FEATURES;
     usb_baudrate_ = DEFAULT_USB_BAUDRATE;
 }
 
 //! Return the size of data specific to ADVi3++
-uint16_t ADVi3pp_::size_of_eeprom_data() const
+uint16_t ADVi3pp_::size_of() const
 {
     return
-        preheat.size_of_eeprom_data() +
-        pid_settings.size_of_eeprom_data() +
+        preheat.size_of() +
+        pid_settings.size_of() +
         sizeof(features_) +
         sizeof(usb_baudrate_);
 }
@@ -388,17 +388,17 @@ void ADVi3pp_::read_lcd_serial()
         case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_value); break;
         case Action::Diagnosis:             diagnosis.handle(key_value); break;
 
-        case Action::MoveXPlus:             move.x_plus(); break;
-        case Action::MoveXMinus:            move.x_minus(); break;
-        case Action::MoveYPlus:             move.y_plus(); break;
-        case Action::MoveYMinus:            move.y_minus(); break;
-        case Action::MoveZPlus:             move.z_plus(); break;
-        case Action::MoveZMinus:            move.z_minus(); break;
-        case Action::MoveEPlus:             move.e_plus(); break;
-        case Action::MoveEMinus:            move.e_minus(); break;
+        case Action::MoveXPlus:             move.x_plus_command(); break;
+        case Action::MoveXMinus:            move.x_minus_command(); break;
+        case Action::MoveYPlus:             move.y_plus_command(); break;
+        case Action::MoveYMinus:            move.y_minus_command(); break;
+        case Action::MoveZPlus:             move.z_plus_command(); break;
+        case Action::MoveZMinus:            move.z_minus_command(); break;
+        case Action::MoveEPlus:             move.e_plus_command(); break;
+        case Action::MoveEMinus:            move.e_minus_command(); break;
         case Action::LCDBrightness:         dimming.change_brightness(static_cast<int16_t>(key_value)); break;
-        case Action::BabyMinus:             print_settings.baby_minus(); break;
-        case Action::BabyPlus:              print_settings.baby_plus(); break;
+        case Action::BabyMinus:             print_settings.baby_minus_command(); break;
+        case Action::BabyPlus:              print_settings.baby_plus_command(); break;
 
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
@@ -519,7 +519,7 @@ void ADVi3pp_::icode_0(const GCodeParser& parser)
 }
 
 //! Display the Thermal Runaway Error screen.
-void ADVi3pp_::temperature_error(const __FlashStringHelper* message)
+void ADVi3pp_::temperature_error(const FlashChar* message)
 {
     ADVi3pp_::set_status(message);
     send_status_data(true);
@@ -546,7 +546,7 @@ void ADVi3pp_::set_status(const char* message)
     has_status_ = true;
 }
 
-void ADVi3pp_::set_status(const __FlashStringHelper* fmt, ...)
+void ADVi3pp_::set_status(const FlashChar* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -569,7 +569,7 @@ void ADVi3pp_::queue_status(const char* message)
     enqueue_and_echo_command(string.get());
 }
 
-void ADVi3pp_::queue_status(const __FlashStringHelper* message)
+void ADVi3pp_::queue_status(const FlashChar* message)
 {
     ADVString<100> string{F("M117 ")}; string << message;
     enqueue_and_echo_command(string.get());
