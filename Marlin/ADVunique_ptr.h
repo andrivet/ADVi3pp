@@ -25,7 +25,7 @@
 
 #include "ADVstd.h"
 
-namespace andrivet
+namespace adv
 {
 
 template<typename T>
@@ -54,7 +54,7 @@ public:
     T* release() noexcept { T* p = ptr_; ptr_ = nullptr; return p; }
     void reset(T* p = nullptr) noexcept { if(p != ptr_) { delete ptr_; ptr_ = p; } }
     void reset(nullptr_t) noexcept { delete ptr_; ptr_ = nullptr; }
-    void swap(unique_ptr& p) noexcept { andrivet::swap(ptr_, p.ptr_); }
+    void swap(unique_ptr& p) noexcept { swap(ptr_, p.ptr_); }
 
     // Disabled
     unique_ptr(const unique_ptr&) = delete;

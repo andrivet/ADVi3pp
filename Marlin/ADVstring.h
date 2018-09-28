@@ -27,10 +27,9 @@
 #include "duration_t.h"
 
 class __FlashStringHelper;
+using FlashChar = __FlashStringHelper;
 
 namespace advi3pp {
-
-using FlashChar = __FlashStringHelper;
 
 // --------------------------------------------------------------------
 // String without dynamic allocation and a fixed maximum size

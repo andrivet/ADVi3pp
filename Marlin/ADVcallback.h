@@ -23,7 +23,7 @@
 
 #include "ADVunique_ptr.h"
 
-namespace andrivet
+namespace adv
 {
 
 template<typename R, typename...A>
