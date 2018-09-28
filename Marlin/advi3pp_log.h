@@ -31,7 +31,6 @@
 
 #include <stdint.h>
 #include <stddef.h>
-
 class __FlashStringHelper;
 using FlashChar = __FlashStringHelper;
 
