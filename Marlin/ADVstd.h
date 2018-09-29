@@ -23,6 +23,9 @@
 
 namespace adv {
 
+template <typename T, size_t N>
+constexpr size_t countof(T const (&)[N]) noexcept { return N; }
+
 using size_t = decltype(sizeof(int));
 using nullptr_t = decltype(nullptr);
 

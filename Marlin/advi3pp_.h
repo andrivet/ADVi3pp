@@ -62,9 +62,6 @@ using WaitCallback = Callback<void(*)()>;
 //! @return             The scaled value
 inline int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { return value * targetScale / valueScale; }
 
-template <typename T, size_t N>
-constexpr size_t countof(T const (&)[N]) noexcept { return N; }
-
 // --------------------------------------------------------------------
 // EEPROM Data Read & Write
 // --------------------------------------------------------------------
