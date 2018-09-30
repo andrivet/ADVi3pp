@@ -147,6 +147,8 @@ public:
     void read(EepromRead& eeprom) { this->self().do_read(eeprom); }
     void reset() { this->self().do_reset(); }
     uint16_t size_of() const { return this->self().do_size_of(); }
+    void backup() { this->self().do_backup(); }
+    void restore() { this->self().do_restore(); }
 
 protected:
     bool do_dispatch(KeyValue value);
@@ -161,6 +163,8 @@ private:
     void do_read(EepromRead& eeprom) {}
     void do_reset() {}
     uint16_t do_size_of() const { return 0; }
+    void do_backup() {}
+    void do_restore() {}
 };
 
 // --------------------------------------------------------------------
@@ -363,7 +367,7 @@ struct FactoryReset: Handler<FactoryReset>
 {
 private:
     Page do_get_page();
-    void do_save();
+    void do_save_command();
 
     friend Parent;
 };
@@ -705,7 +709,7 @@ private:
     bool do_dispatch(KeyValue key_value);
     Page do_get_page();
     void do_backup();
-    void do_rollback();
+    void do_restore();
     void do_save_command();
     void hotend_command();
     void bed_command();
@@ -731,7 +735,7 @@ struct StepSettings: Handler<StepSettings>
 private:
     Page do_get_page();
     void do_backup();
-    void do_rollback();
+    void do_restore();
     void do_save_command();
 
     float backup_[XYZE_N] = {};
@@ -749,7 +753,7 @@ private:
     Page do_get_page();
     void do_save_command();
     void do_backup();
-    void do_rollback();
+    void do_restore();
 
     float backup_max_feedrate_mm_s_[XYZE_N] = {};
     float backup_min_feedrate_mm_s_ = 0;
@@ -768,7 +772,7 @@ private:
     Page do_get_page();
     void do_save_command();
     void do_backup();
-    void do_rollback();
+    void do_restore();
 
     uint32_t backup_max_acceleration_mm_per_s2_[XYZE_N] = {};
     float backup_acceleration_ = 0;
@@ -788,7 +792,7 @@ private:
     Page do_get_page();
     void do_save_command();
     void do_backup();
-    void do_rollback();
+    void do_restore();
 
     float backup_max_jerk_[XYZE] = {};
 
