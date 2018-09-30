@@ -120,6 +120,25 @@ inline namespace singletons
     AdvancedPause pause;
 };
 
+inline namespace
+{
+    void WriteValueToDGUS(const Uint16& value, Variable variable = Variable::Value0)
+    {
+        WriteRamDataRequest frame{variable};
+        frame << value;
+        frame.send();
+    }
+
+    bool ReadValueFromDGUS(Uint16& value, Variable variable = Variable::Value0)
+    {
+        ReadRamData frame{variable, 1};
+        if(!frame.send_and_receive())
+            return(false);
+
+        frame >> value;
+        return true;
+    }
+}
 
 // --------------------------------------------------------------------
 // Pages management
@@ -290,23 +309,18 @@ bool LoadUnload::do_dispatch(KeyValue key_value)
 //! Get the Load & Unload screen.
 Page LoadUnload::do_get_page()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(advi3pp.last_used_hotend_temperature());
-    frame.send();
-
+    WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
     return Page::LoadUnload;
 }
 
 void LoadUnload::prepare(const BackgroundTask& background)
 {
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
+    Uint16 hotend;
+    if(!ReadValueFromDGUS(hotend))
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
-
-    Uint16 hotend; frame >> hotend;
 
     Temperature::setTargetHotend(hotend.word, 0);
     enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
@@ -795,7 +809,6 @@ bool UsbPrint::do_is_printing() const
 }
 
 
-
 // --------------------------------------------------------------------
 // Factory Reset
 // --------------------------------------------------------------------
@@ -805,10 +818,11 @@ Page FactoryReset::do_get_page()
     return Page::FactoryReset;
 }
 
-void FactoryReset::do_save()
+void FactoryReset::do_save_command()
 {
     enqueue_and_echo_commands_P(PSTR("M502"));
     advi3pp.save_settings();
+    Parent::do_save_command();
 }
 
 
@@ -969,10 +983,8 @@ bool ExtruderTuning::do_dispatch(KeyValue key_value)
 //! Show the extruder tuning screen.
 Page ExtruderTuning::do_get_page()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(advi3pp.last_used_hotend_temperature());
-    frame.send();
-
+    steps_settings.backup();
+    WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
     pages.save_forward_page();
     return Page::ExtruderTuningTemp;
 }
@@ -980,14 +992,12 @@ Page ExtruderTuning::do_get_page()
 //! Start extruder tuning.
 void ExtruderTuning::start_command()
 {
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
+    Uint16 hotend;
+    if(!ReadValueFromDGUS(hotend))
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
-
-    Uint16 hotend; frame >> hotend;
 
     wait.show(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend.word, 0);
@@ -1056,30 +1066,22 @@ void ExtruderTuning::do_back_command()
 //! Compute the extruder (E axis) new value and show the steps settings.
 void ExtruderTuning::settings_command()
 {
-    ReadRamData response{Variable::Value0, 1};
-    if(!response.send_and_receive())
+    Uint16 e;
+    if(!ReadValueFromDGUS(e))
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;
     }
 
-    Uint16 e; response >> e;
-    e.word /= 10;
+    auto new_value = Planner::axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + tuning_extruder_delta - e.word / 10);
 
-    // Fill all values because all 4 axis are displayed by show_steps_settings
-    // TODO
-    /*steps_settings.axis_steps_per_mm[X_AXIS] = Planner::axis_steps_per_mm[X_AXIS];
-    steps_settings.axis_steps_per_mm[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
-    steps_settings.axis_steps_per_mm[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
-    steps_settings.axis_steps_per_mm[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS]
-                                       * extruded_ / (extruded_ + tuning_extruder_delta - e.word);*/
+    Log::log()
+            << F("Adjust: old = ") << Planner::axis_steps_per_mm[E_AXIS]
+            << F(", expected = ") << extruded_
+            << F(", measured = ") << (extruded_ + tuning_extruder_delta - e.word)
+            << F(", new = ") << new_value << Log::endl();
 
-    /*Log::log() << F("Adjust: old = ")
-               << Planner::axis_steps_per_mm[E_AXIS]
-               << F(", expected = ") << extruded_
-               << F(", measured = ") << (extruded_ + tuning_extruder_delta - e.word)
-               << F(", new = ") << steps_settings.axis_steps_per_mm[E_AXIS] << Log::endl();*/
-
+    Planner::axis_steps_per_mm[E_AXIS] = new_value;
     steps_settings.show(false);
 }
 
@@ -1108,24 +1110,31 @@ bool PidTuning::do_dispatch(KeyValue key_value)
 //! Show step #1 of PID tuning
 Page PidTuning::do_get_page()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(advi3pp.last_used_hotend_temperature());
-    frame.send();
-
+    pid_settings.backup();
+    WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
     return Page::PidTuning1;
 }
+
+void PidTuning::hotend_command()
+{
+    // TODO
+}
+
+void PidTuning::bed_command()
+{
+    // TODO
+}
+
 
 //! Show step #2 of PID tuning
 void PidTuning::step2_command()
 {
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
+    Uint16 hotend;
+    if(!ReadValueFromDGUS(hotend))
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
-
-    Uint16 hotend; frame >> hotend;
 
     enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
     ADVString<20> auto_pid_command;
@@ -1143,21 +1152,12 @@ void PidTuning::finished()
     pid_settings.show(false, false);
 }
 
-void PidTuning::hotend_command()
-{
-    // TODO
-}
-
-void PidTuning::bed_command()
-{
-    // TODO
-}
-
-#ifdef ADVi3PP_BLTOUCH
 
 // --------------------------------------------------------------------
 // Sensor Settings
 // --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
 
 bool SensorSettings::do_dispatch(KeyValue key_value)
 {
@@ -1199,21 +1199,18 @@ void SensorSettings::next_command()
 
 void SensorSettings::send_z_height_to_lcd(double z_height)
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(z_height * 100);
-    frame.send();
+    WriteValueToDGUS( Uint16(z_height * 100));
 }
 
 void SensorSettings::save_lcd_z_height()
 {
-    ReadRamData response{Variable::Value0, 1};
-    if(!response.send_and_receive())
+    Uint16 offsetZ;
+    if(!ReadValueFromDGUS(offsetZ))
     {
         Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
         return;
     }
 
-    Uint16 offsetZ; response >> offsetZ;
     save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
 }
 
@@ -1460,9 +1457,7 @@ Page NoSensor::do_get_page()
 template<typename D>
 void FeaturesSettings<D>::send_features()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(static_cast<uint16_t>(features_));
-    frame.send();
+    WriteValueToDGUS(Uint16(static_cast<uint16_t>(features_)));
 }
 
 template<typename D>
@@ -1660,14 +1655,13 @@ bool Versions::do_dispatch(KeyValue key_value)
 
 void Versions::get_version_from_lcd()
 {
-    ReadRamData response{Variable::ADVi3ppLCDversion, 1};
-    if(!response.send_and_receive())
+    Uint16 version;
+    if(!ReadValueFromDGUS(version, Variable::ADVi3ppLCDversion))
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;
     }
 
-    Uint16 version; response >> version;
     Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
     lcd_version_ = version.word;
 }
@@ -1882,7 +1876,7 @@ void PidSettings::do_backup()
     backup_.Kd_ = Temperature::Kd;
 }
 
-void PidSettings::do_rollback()
+void PidSettings::do_restore()
 {
     // TODO
     Temperature::Kp = backup_.Kp_;
@@ -1957,7 +1951,7 @@ void StepSettings::do_backup()
 }
 
 //! Save temporary Step settings.
-void StepSettings::do_rollback()
+void StepSettings::do_restore()
 {
     // TODO
     Planner::axis_steps_per_mm[X_AXIS] = backup_[X_AXIS];
@@ -2018,7 +2012,7 @@ void FeedrateSettings::do_backup()
 }
 
 //! Save temporary Feedrate settings.
-void FeedrateSettings::do_rollback()
+void FeedrateSettings::do_restore()
 {
     // TODO
     Planner::max_feedrate_mm_s[X_AXIS] = backup_max_feedrate_mm_s_[X_AXIS];
@@ -2085,7 +2079,7 @@ void AccelerationSettings::do_backup()
 }
 
 //! Save temporary Acceleration settings.
-void AccelerationSettings::do_rollback()
+void AccelerationSettings::do_restore()
 {
     // TODO
     Planner::max_acceleration_mm_per_s2[X_AXIS] = backup_max_acceleration_mm_per_s2_[X_AXIS];
@@ -2152,7 +2146,7 @@ void JerkSettings::do_backup()
 }
 
 //! Save temporary Jerk settings.
-void JerkSettings::do_rollback()
+void JerkSettings::do_restore()
 {
     // TODO
     Planner::max_jerk[X_AXIS] = backup_max_jerk_[X_AXIS];
