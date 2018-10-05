@@ -222,7 +222,7 @@ void Pages::show_forward_page()
 // Wait
 // --------------------------------------------------------------------
 
-Page Wait::do_get_page()
+Page Wait::do_prepare_page()
 {
     return Page::Waiting;
 }
@@ -307,7 +307,7 @@ bool LoadUnload::do_dispatch(KeyValue key_value)
 }
 
 //! Get the Load & Unload screen.
-Page LoadUnload::do_get_page()
+Page LoadUnload::do_prepare_page()
 {
     WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
     return Page::LoadUnload;
@@ -426,7 +426,7 @@ bool Preheat::do_dispatch(KeyValue key_value)
 }
 
 //! Store presets in permanent memory.
-void Preheat::do_store(EepromWrite& eeprom) const
+void Preheat::do_write(EepromWrite& eeprom) const
 {
     for(auto& preset: presets_)
     {
@@ -439,7 +439,7 @@ void Preheat::do_store(EepromWrite& eeprom) const
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void Preheat::do_restore(EepromRead& eeprom)
+void Preheat::do_read(EepromRead& eeprom)
 {
     for(auto& preset: presets_)
     {
@@ -472,10 +472,35 @@ void Preheat::send_presets()
           << Uint16(presets_[index_].hotend)
           << Uint16(presets_[index_].fan);
     frame.send();
+
+    ADVString<8> preset;
+    preset << index_ + 1 << F(" / ") << NB_PRESETS;
+    frame.reset(Variable::ShortText0);
+    frame << preset;
+    frame.send();
+}
+
+void Preheat::retrieve_presets()
+{
+    ReadRamData frame{Variable::Value0, 3};
+    if(!frame.send_and_receive())
+    {
+        Log::error() << F("Error receiving presets") << Log::endl();
+        return;
+    }
+
+    Uint16 bed, hotend, fan;
+    frame >> bed >> hotend >> fan;
+
+    presets_[index_].bed = bed.word;
+    presets_[index_].hotend = hotend.word;
+    presets_[index_].fan = fan.word;
+
+    advi3pp.save_settings();
 }
 
 //! Get the preheat screen
-Page Preheat::do_get_page()
+Page Preheat::do_prepare_page()
 {
     send_presets();
     return Page::Preheat;
@@ -485,6 +510,7 @@ void Preheat::previous_command()
 {
     if(index_ <= 0)
         return;
+    retrieve_presets();
     --index_;
     send_presets();
 }
@@ -493,8 +519,29 @@ void Preheat::next_command()
 {
     if(index_ >= NB_PRESETS - 1)
         return;
+    retrieve_presets();
     ++index_;
     send_presets();
+}
+
+void Preheat::do_save_command()
+{
+    retrieve_presets();
+
+    const Preset& preset = presets_[index_];
+
+    ADVString<15> command;
+
+    command = F("M104 S"); command << preset.hotend;
+    enqueue_and_echo_command(command.get());
+
+    command = F("M140 S"); command << preset.bed;
+    enqueue_and_echo_command(command.get());
+
+    command = F("M106 S"); command << preset.fan;
+    enqueue_and_echo_command(command.get());
+
+    pages.show_page(Page::Temperature, false);
 }
 
 //! Cooldown the bed and the nozzle
@@ -529,7 +576,7 @@ bool Move::do_dispatch(KeyValue key_value)
     return true;
 }
 
-Page Move::do_get_page()
+Page Move::do_prepare_page()
 {
     Planner::finish_and_disable(); // To circumvent homing problems
     return Page::Move;
@@ -662,7 +709,7 @@ bool SdCard::do_dispatch(KeyValue key_value)
 	return true;
 }
 
-Page SdCard::do_get_page()
+Page SdCard::do_prepare_page()
 {
     return Page::SdCard;
 }
@@ -813,7 +860,7 @@ bool UsbPrint::do_is_printing() const
 // Factory Reset
 // --------------------------------------------------------------------
 
-Page FactoryReset::do_get_page()
+Page FactoryReset::do_prepare_page()
 {
     return Page::FactoryReset;
 }
@@ -832,7 +879,7 @@ void FactoryReset::do_save_command()
 
 bool ManualLeveling::do_dispatch(KeyValue key_value)
 {
-    if(Parent::dispatch(key_value))
+    if(Parent::do_dispatch(key_value))
         return true;
 
     switch(key_value)
@@ -859,7 +906,7 @@ void ManualLeveling::do_back_command()
 }
 
 //! Home the printer for bed leveling.
-Page ManualLeveling::do_get_page()
+Page ManualLeveling::do_prepare_page()
 {
     wait.show(F("Homing..."));
     axis_homed = 0;
@@ -881,7 +928,6 @@ void ManualLeveling::leveling_task()
     task.clear_background_task();
     pages.show_page(Page::ManualLeveling, false);
 }
-
 
 //! Handle leveling point #1.
 void ManualLeveling::point1_command()
@@ -981,7 +1027,7 @@ bool ExtruderTuning::do_dispatch(KeyValue key_value)
 }
 
 //! Show the extruder tuning screen.
-Page ExtruderTuning::do_get_page()
+Page ExtruderTuning::do_prepare_page()
 {
     steps_settings.backup();
     WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
@@ -1082,7 +1128,7 @@ void ExtruderTuning::settings_command()
             << F(", new = ") << new_value << Log::endl();
 
     Planner::axis_steps_per_mm[E_AXIS] = new_value;
-    steps_settings.show(false);
+    steps_settings.show(false, true, false);
 }
 
 // --------------------------------------------------------------------
@@ -1108,29 +1154,30 @@ bool PidTuning::do_dispatch(KeyValue key_value)
 }
 
 //! Show step #1 of PID tuning
-Page PidTuning::do_get_page()
+Page PidTuning::do_prepare_page()
 {
     pid_settings.backup();
+    hotend_ = true;
     WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
     return Page::PidTuning1;
 }
 
 void PidTuning::hotend_command()
 {
-    // TODO
+    hotend_ = true;
+    WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
 }
 
 void PidTuning::bed_command()
 {
-    // TODO
+    hotend_ = false;
+    WriteValueToDGUS(Uint16(advi3pp.last_used_bed_temperature()));
 }
-
 
 //! Show step #2 of PID tuning
 void PidTuning::step2_command()
 {
-    Uint16 hotend;
-    if(!ReadValueFromDGUS(hotend))
+    if(!ReadValueFromDGUS(temperature_))
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
@@ -1138,7 +1185,7 @@ void PidTuning::step2_command()
 
     enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
     ADVString<20> auto_pid_command;
-    auto_pid_command << F("M303 S") << hotend.word << F(" E0 C8 U1");
+    auto_pid_command << F("M303 S") << temperature_.word << (hotend_ ? F(" E0 C8 U1") : F(" E-1 C8 U1"));
     enqueue_and_echo_command(auto_pid_command.get());
 
     pages.show_page(Page::PidTuning2);
@@ -1149,7 +1196,8 @@ void PidTuning::finished()
 {
     Log::log() << F("Auto PID finished") << Log::endl();
     enqueue_and_echo_commands_P(PSTR("M106 S0"));
-    pid_settings.show(false, false);
+    pid_settings.add(hotend_, temperature_.word);
+    pid_settings.show(false, false, false);
 }
 
 
@@ -1158,6 +1206,24 @@ void PidTuning::finished()
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_BLTOUCH
+
+struct SensorPosition
+{
+    uint16_t x, y, z;
+    const char* name;
+};
+
+const char sensor_1_name[] PROGMEM = "ADVi3++ Side";
+const char sensor_2_name[] PROGMEM = "ADVi3++ Front";
+const char sensor_3_name[] PROGMEM = "Teaching Tech Side";
+const char sensor_4_name[] PROGMEM = "Teaching Tech Front";
+
+SensorPosition positions[] = {
+    {0, 0, 0, sensor_1_name},
+    {0, 0, 0, sensor_2_name},
+    {0, 0, 0, sensor_3_name},
+    {0, 0, 0, sensor_4_name},
+};
 
 bool SensorSettings::do_dispatch(KeyValue key_value)
 {
@@ -1174,7 +1240,7 @@ bool SensorSettings::do_dispatch(KeyValue key_value)
     return true;
 }
 
-Page SensorSettings::do_get_page()
+Page SensorSettings::do_prepare_page()
 {
     send_z_height_to_lcd(zprobe_zoffset);
     pages.save_forward_page();
@@ -1242,7 +1308,7 @@ bool SensorTuning::do_dispatch(KeyValue key_value)
     return true;
 }
 
-Page SensorTuning::do_get_page()
+Page SensorTuning::do_prepare_page()
 {
     return Page::SensorTuning;
 }
@@ -1317,7 +1383,7 @@ void SensorTuning::stow_command()
 // Sensor grid
 // --------------------------------------------------------------------
 
-Page SensorGrid::do_get_page()
+Page SensorGrid::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
     for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
@@ -1355,7 +1421,7 @@ bool SensorZHeight::do_dispatch(KeyValue key_value)
     return true;
 }
 
-Page SensorZHeight::do_get_page()
+Page SensorZHeight::do_prepare_page()
 {
     pages.save_forward_page();
     wait.show(F("Homing..."));
@@ -1419,22 +1485,22 @@ void SensorZHeight::multiplier10_command()
 
 #else
 
-Page SensorSettings::do_show()
+Page SensorSettings::do_prepare_page()
 {
     return Page::NoSensor;
 }
 
-Page SensorTuning::do_show()
+Page SensorTuning::do_prepare_page()
 {
     return Page::NoSensor;
 }
 
-Page SensorGrid::do_show()
+Page SensorGrid::do_prepare_page()
 {
     return Page::NoSensor;
 }
 
-Page SensorZHeight::do_show()
+Page SensorZHeight::do_prepare_page()
 {
     return Page::NoSensor;
 }
@@ -1445,7 +1511,7 @@ Page SensorZHeight::do_show()
 // No Sensor
 // --------------------------------------------------------------------
 
-Page NoSensor::do_get_page()
+Page NoSensor::do_prepare_page()
 {
     return Page::NoSensor;
 }
@@ -1488,7 +1554,7 @@ bool FirmwareSettings::do_dispatch(KeyValue key_value)
     return true;
 }
 
-Page FirmwareSettings::do_get_page()
+Page FirmwareSettings::do_prepare_page()
 {
     usb_baudrate_ = advi3pp.get_current_baudrate();
     features_ = advi3pp.get_current_features();
@@ -1570,7 +1636,7 @@ bool LcdSettings::do_dispatch(KeyValue key_value)
     return true;
 }
 
-Page LcdSettings::do_get_page()
+Page LcdSettings::do_prepare_page()
 {
     features_ = advi3pp.get_current_features();
     send_features();
@@ -1605,7 +1671,7 @@ void LcdSettings::buzz_on_press_command()
 // Statistics
 // --------------------------------------------------------------------
 
-Page Statistics::do_get_page()
+Page Statistics::do_prepare_page()
 {
     send_stats();
     return Page::Statistics;
@@ -1736,7 +1802,7 @@ void Versions::versions_mismatch_forward_command()
     pages.show_page(Page::Main, false);
 }
 
-Page Versions::do_get_page()
+Page Versions::do_prepare_page()
 {
     send_versions();
     return Page::Versions;
@@ -1746,7 +1812,7 @@ Page Versions::do_get_page()
 // Sponsors
 // --------------------------------------------------------------------
 
-Page Sponsors::do_get_page()
+Page Sponsors::do_prepare_page()
 {
     return Page::Sponsors;
 }
@@ -1755,7 +1821,7 @@ Page Sponsors::do_get_page()
 // Copyrights
 // --------------------------------------------------------------------
 
-Page Copyrights::do_get_page()
+Page Copyrights::do_prepare_page()
 {
     return Page::Copyrights;
 }
@@ -1782,7 +1848,7 @@ bool PrintSettings::do_dispatch(KeyValue key_value)
 }
 
 //! Display on the LCD screen the printing settings.
-Page PrintSettings::do_get_page()
+Page PrintSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(feedrate_percentage)
@@ -1884,12 +1950,12 @@ void PidSettings::do_restore()
     Temperature::Kd = backup_.Kd_;
 }
 
-void PidSettings::set(uint16_t temperature, bool bed)
+void PidSettings::add(bool hotend, uint16_t temperature)
 {
-    bed_ = bed;
+    hotend_ = hotend;
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
-        if(temperature == pid_[bed_][i].temperature_)
+        if(temperature == pid_[hotend_][i].temperature_)
         {
             index_ = i;
             return;
@@ -1899,15 +1965,15 @@ void PidSettings::set(uint16_t temperature, bool bed)
     // Temperature not found, so assign index 0, move PIDs and forget the last one
     index_ = 0;
     for(size_t i = 1; i < NB_PIDs; ++i)
-        pid_[bed_][i] = pid_[bed_][i - 1];
+        pid_[hotend_][i] = pid_[hotend_][i - 1];
 }
 
 //! Show the PID settings
-Page PidSettings::do_get_page()
+Page PidSettings::do_prepare_page()
 {
-    const Pid& pid = pid_[bed_][index_];
+    const Pid& pid = pid_[hotend_][index_];
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(bed_ ? 0_u16 : 1_u16)
+    frame << Uint16(hotend_ ? 1_u16 : 0_u16)
           << Uint16(pid.Kp_ * 100)
           << Uint16(unscalePID_i(pid.Ki_) * 100)
           << Uint16(unscalePID_d(pid.Kd_) * 100);
@@ -1964,7 +2030,7 @@ void StepSettings::do_restore()
 
 //! Show the Steps settings
 //! @param init     Initialize the settings are use those already set
-Page StepSettings::do_get_page()
+Page StepSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(Planner::axis_steps_per_mm[X_AXIS] * 10)
@@ -2026,7 +2092,7 @@ void FeedrateSettings::do_restore()
 }
 
 //! Show the Feedrate settings
-Page FeedrateSettings::do_get_page()
+Page FeedrateSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(Planner::max_feedrate_mm_s[X_AXIS])
@@ -2094,7 +2160,7 @@ void AccelerationSettings::do_restore()
 }
 
 //! Show the Acceleration settings
-Page AccelerationSettings::do_get_page()
+Page AccelerationSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(static_cast<uint16_t>(Planner::max_acceleration_mm_per_s2[X_AXIS]))
@@ -2158,7 +2224,7 @@ void JerkSettings::do_restore()
 }
 
 //! Show the Jerk settings
-Page JerkSettings::do_get_page()
+Page JerkSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(Planner::max_jerk[X_AXIS] * 10)
@@ -2195,7 +2261,7 @@ void JerkSettings::do_save_command()
 // Change Filament
 // --------------------------------------------------------------------
 
-Page ChangeFilament::do_get_page()
+Page ChangeFilament::do_prepare_page()
 {
     return Page::None;
 }
@@ -2358,7 +2424,7 @@ void AdvancedPause::printing()
 // EEPROM data mismatch
 // --------------------------------------------------------------------
 
-Page EepromMismatch::do_get_page()
+Page EepromMismatch::do_prepare_page()
 {
     return Page::EEPROMMismatch;
 }
@@ -2388,7 +2454,7 @@ void EepromMismatch::reset_mismatch()
 // Linear Advance Tuning
 // --------------------------------------------------------------------
 
-Page LinearAdvanceTuning::do_get_page()
+Page LinearAdvanceTuning::do_prepare_page()
 {
     return Page::LinearAdvanceTuning;
 }
@@ -2397,7 +2463,7 @@ Page LinearAdvanceTuning::do_get_page()
 // Linear Advance Settings
 // --------------------------------------------------------------------
 
-Page LinearAdvanceSettings::do_get_page()
+Page LinearAdvanceSettings::do_prepare_page()
 {
     return Page::LinearAdvanceSettings;
 }
@@ -2406,7 +2472,7 @@ Page LinearAdvanceSettings::do_get_page()
 // Diagnosis
 // --------------------------------------------------------------------
 
-Page Diagnosis::do_get_page()
+Page Diagnosis::do_prepare_page()
 {
     // TODO
     return Page::None;
