@@ -44,8 +44,8 @@
 
 namespace advi3pp {
 
-const size_t message_length = 40;
-const size_t progress_name_length = 40;
+const size_t message_length = 48;
+const size_t progress_name_length = 44;
 const size_t progress_percent_length = progress_name_length + 4;
 const uint8_t sd_file_length = 48;
 
@@ -136,13 +136,13 @@ struct Handler: adv::Crtp<Self, Handler>
 {
 public:
     void handle(KeyValue value);
-    void show(bool save_forward = false, bool save_back = true);
+    void show(bool save_forward = false, bool save_back = true, bool backup = true);
 
     bool dispatch(KeyValue value) { return this->self().do_dispatch(value); }
     void show_command() { this->self().do_show_command(); }
     void save_command() { this->self().do_save_command(); }
     void back_command() { this->self().do_back_command(); }
-    Page get_page() { return this->self().do_get_page(); }
+    Page prepare_page() { return this->self().do_prepare_page(); }
     void write(EepromWrite& eeprom) const { this->self().do_write(eeprom); }
     void read(EepromRead& eeprom) { this->self().do_read(eeprom); }
     void reset() { this->self().do_reset(); }
@@ -179,7 +179,7 @@ struct Wait: Handler<Wait>
     void show_continue(const FlashChar* message, const WaitCallback& cont, bool save_back = true);
 
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save_command();
     void do_back_command();
 
@@ -197,7 +197,7 @@ struct LoadUnload: Handler<LoadUnload>
 {
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
+    Page do_prepare_page();
     void prepare(const BackgroundTask& background);
     void load_command();
     void unload_command();
@@ -232,13 +232,15 @@ struct Preheat: Handler<Preheat>
 {
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
-    void do_store(EepromWrite& eeprom) const;
-    void do_restore(EepromRead& eeprom);
+    Page do_prepare_page();
+    void do_write(EepromWrite& eeprom) const;
+    void do_read(EepromRead& eeprom);
     void do_reset();
     uint16_t do_size_of() const;
+    void do_save_command();
 
     void send_presets();
+    void retrieve_presets();
     void previous_command();
     void next_command();
     void cooldown_command();
@@ -273,7 +275,7 @@ struct Move: Handler<Move>
 
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
+    Page do_prepare_page();
     void move(const char* command, millis_t delay);
 
 private:
@@ -292,7 +294,7 @@ struct SdCard: Handler<SdCard>
 
 private:
     bool do_dispatch(KeyValue value);
-    Page do_get_page();
+    Page do_prepare_page();
     void show_current_page();
     void get_file_name(uint8_t index_in_page, ADVString<sd_file_length>& name);
     void up_command();
@@ -315,7 +317,7 @@ struct Print: Handler<D>
 {
 private:
     bool do_dispatch(KeyValue value);
-    Page do_get_page();
+    Page do_prepare_page();
     void stop_command();
     void pause_resume_command();
     void advanced_pause_command();
@@ -366,7 +368,7 @@ private:
 struct FactoryReset: Handler<FactoryReset>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save_command();
 
     friend Parent;
@@ -380,7 +382,7 @@ struct ManualLeveling: Handler<ManualLeveling>
 {
 private:
     bool do_dispatch(KeyValue value);
-    Page do_get_page();
+    Page do_prepare_page();
     void do_back_command();
     void point1_command();
     void point2_command();
@@ -404,7 +406,7 @@ struct ExtruderTuning: Handler<ExtruderTuning>
 {
 private:
     bool do_dispatch(KeyValue value);
-    Page do_get_page();
+    Page do_prepare_page();
     void do_back_command();
     void start_command();
     void settings_command();
@@ -427,10 +429,14 @@ struct PidTuning: Handler<PidTuning>
 
 private:
     bool do_dispatch(KeyValue value);
-    Page do_get_page();
+    Page do_prepare_page();
     void step2_command();
     void hotend_command();
     void bed_command();
+
+private:
+    bool hotend_ = true;
+    Uint16 temperature_;
 
     friend Parent;
 };
@@ -448,7 +454,7 @@ struct SensorSettings: Handler<SensorSettings>
 
 private:
     bool do_dispatch(KeyValue value);
-    Page do_get_page();
+    Page do_prepare_page();
     void save_z_height(double height);
     void do_save_command();
     void previous_command();
@@ -467,7 +473,7 @@ struct SensorTuning: Handler<SensorTuning>
 
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
+    Page do_prepare_page();
     void leveling();
     void g29_leveling_failed();
     void self_test_command();
@@ -488,7 +494,7 @@ private:
 struct SensorGrid: Handler<SensorGrid>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save_command();
 
     friend Parent;
@@ -502,7 +508,7 @@ struct SensorZHeight: Handler<SensorZHeight>
 {
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
+    Page do_prepare_page();
     void do_back_command();
     void do_save_command();
     void home_task();
@@ -514,7 +520,11 @@ private:
     friend Parent;
 };
 
-#else // No sensor
+#else
+
+// --------------------------------------------------------------------
+// No Sensor
+// --------------------------------------------------------------------
 
 struct SensorSettings: Handler<SensorSettings>
 {
@@ -522,7 +532,8 @@ struct SensorSettings: Handler<SensorSettings>
 	void save_lcd_z_height() {}
 
 private:
-    Page do_show();
+    Page do_prepare_page();
+    friend Parent;
 };
 
 struct SensorTuning: Handler<SensorTuning>
@@ -530,19 +541,22 @@ struct SensorTuning: Handler<SensorTuning>
     void g29_leveling_finished(bool) {}
 
 private:
-    Page do_show();
+    Page do_prepare_page();
+    friend Parent;
 };
 
 struct SensorGrid: Handler<SensorGrid>
 {
 private:
-    Page do_show();
+    Page do_prepare_page();
+    friend Parent;
 };
 
 struct SensorZHeight: Handler<SensorZHeight>
 {
 private:
-    Page do_show();
+    Page do_prepare_page();
+    friend Parent;
 };
 
 #endif
@@ -554,7 +568,7 @@ private:
 struct NoSensor: Handler<NoSensor>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
 
     friend Parent;
 };
@@ -581,7 +595,7 @@ struct FirmwareSettings: FeaturesSettings<FirmwareSettings>
 {
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save_command();
     void thermal_protection_command();
     void runout_sensor_command();
@@ -602,7 +616,7 @@ struct LcdSettings: FeaturesSettings<LcdSettings>
 {
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
+    Page do_prepare_page();
     void dim_command();
     void buzz_on_action_command();
     void buzz_on_press_command();
@@ -617,7 +631,7 @@ private:
 struct Statistics: Handler<Statistics>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void send_stats();
 
     friend Parent;
@@ -635,7 +649,7 @@ struct Versions: Handler<Versions>
 
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
+    Page do_prepare_page();
     void versions_mismatch_forward_command();
     void send_versions();
 
@@ -651,7 +665,7 @@ private:
 struct Sponsors: Handler<Sponsors>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
 
     friend Parent;
 };
@@ -663,7 +677,7 @@ private:
 struct Copyrights: Handler<Copyrights>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
 
     friend Parent;
 };
@@ -681,7 +695,7 @@ protected:
     bool do_dispatch(KeyValue value);
 
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save_command();
 
 private:
@@ -703,11 +717,11 @@ struct Pid
 struct PidSettings: Handler<PidSettings>
 {
 public:
-    void set(uint16_t temperature, bool bed);
+    void add(bool hotend, uint16_t temperature);
 
 private:
     bool do_dispatch(KeyValue key_value);
-    Page do_get_page();
+    Page do_prepare_page();
     void do_backup();
     void do_restore();
     void do_save_command();
@@ -720,7 +734,7 @@ private:
     static const size_t NB_PIDs = 5;
     Pid backup_ = {};
     Pid pid_[2][NB_PIDs] = {};
-    bool bed_ = true;
+    bool hotend_ = true;
     size_t index_ = 0;
 
     friend Parent;
@@ -733,7 +747,7 @@ private:
 struct StepSettings: Handler<StepSettings>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_backup();
     void do_restore();
     void do_save_command();
@@ -750,7 +764,7 @@ private:
 struct FeedrateSettings: Handler<FeedrateSettings>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save_command();
     void do_backup();
     void do_restore();
@@ -769,7 +783,7 @@ private:
 struct AccelerationSettings: Handler<AccelerationSettings>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save_command();
     void do_backup();
     void do_restore();
@@ -789,7 +803,7 @@ private:
 struct JerkSettings: Handler<JerkSettings>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save_command();
     void do_backup();
     void do_restore();
@@ -807,7 +821,7 @@ private:
 struct ChangeFilament: Handler<ChangeFilament>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
 
     friend Parent;
 };
@@ -823,7 +837,7 @@ struct EepromMismatch: Handler<EepromMismatch>
     void reset_mismatch();
 
 private:
-    Page do_get_page();
+    Page do_prepare_page();
     void do_save();
 
     bool mismatch_ = false;
@@ -839,7 +853,7 @@ private:
 struct LinearAdvanceTuning: Handler<LinearAdvanceTuning>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
 
     friend Parent;
 };
@@ -851,7 +865,7 @@ private:
 struct LinearAdvanceSettings: Handler<LinearAdvanceSettings>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
 
     friend Parent;
 };
@@ -863,7 +877,7 @@ private:
 struct Diagnosis: Handler<Diagnosis>
 {
 private:
-    Page do_get_page();
+    Page do_prepare_page();
 
     friend Parent;
 };
@@ -1075,18 +1089,19 @@ bool Handler<Self>::do_dispatch(KeyValue value)
 template<typename Self>
 void Handler<Self>::invalid(KeyValue value)
 {
-    Log::error()
-            << F("Invalid key value ")
-            << static_cast<uint16_t>(value) << Log::endl();
+    Log::error() << F("Invalid key value ") << static_cast<uint16_t>(value) << Log::endl();
 }
 
 template<typename Self>
-void Handler<Self>::show(bool save_forward, bool save_back)
+void Handler<Self>::show(bool save_forward, bool save_back, bool backup)
 {
     if(save_forward)
         pages.save_forward_page();
 
-    Page page = get_page();
+    if(backup)
+        this->backup();
+
+    Page page = prepare_page();
     if(page != Page::None)
         pages.show_page(page, save_back);
 }
@@ -1100,7 +1115,8 @@ void Handler<Self>::save_settings() const
 template<typename Self>
 void Handler<Self>::do_show_command()
 {
-    Page page = get_page();
+    backup();
+    Page page = prepare_page();
     if(page != Page::None)
         pages.show_page(page);
 }
@@ -1114,6 +1130,7 @@ void Handler<Self>::do_save_command()
 template<typename Self>
 void Handler<Self>::do_back_command()
 {
+    restore();
     pages.show_back_page();
 }
 
@@ -1141,7 +1158,7 @@ bool Print<D>::do_dispatch(KeyValue value)
 }
 
 template<typename D>
-Page Print<D>::do_get_page()
+Page Print<D>::do_prepare_page()
 {
     return Page::Print;
 }
