@@ -92,6 +92,7 @@ enum class Action: uint16_t
     FactoryReset            = 0x0407,
     ManualLeveling          = 0x0408,
     ExtruderTuning          = 0x0409,
+    AutomaticLeveling       = 0x040A,
     PidTuning               = 0x040B,
     SensorSettings          = 0x040C,
     Firmware                = 0x040D,
