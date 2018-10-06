@@ -813,6 +813,22 @@ private:
     friend Parent;
 };
 
+// --------------------------------------------------------------------
+// Linear Advance Settings
+// --------------------------------------------------------------------
+
+struct LinearAdvanceSettings: Handler<LinearAdvanceSettings>
+{
+private:
+    Page do_prepare_page();
+    void do_save_command();
+    void do_backup();
+    void do_restore();
+
+    float backup_extruder_advance_K = 0;
+
+    friend Parent;
+};
 
 // --------------------------------------------------------------------
 // Change Filament
@@ -851,18 +867,6 @@ private:
 // --------------------------------------------------------------------
 
 struct LinearAdvanceTuning: Handler<LinearAdvanceTuning>
-{
-private:
-    Page do_prepare_page();
-
-    friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Linear Advance Settings
-// --------------------------------------------------------------------
-
-struct LinearAdvanceSettings: Handler<LinearAdvanceSettings>
 {
 private:
     Page do_prepare_page();
@@ -1131,6 +1135,7 @@ template<typename Self>
 void Handler<Self>::do_back_command()
 {
     restore();
+    advi3pp.save_settings();
     pages.show_back_page();
 }
 

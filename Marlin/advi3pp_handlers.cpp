@@ -1466,6 +1466,7 @@ void SensorZHeight::do_save_command()
 {
     wait.show(F("Measure Z-height"));
     enqueue_and_echo_commands_P(PSTR("I0")); // measure z-height
+    Parent::do_save_command();
 }
 
 void SensorZHeight::multiplier01_command()
@@ -1936,7 +1937,6 @@ void PidSettings::next_command()
 
 void PidSettings::do_backup()
 {
-    // TODO
     backup_.Kp_ = Temperature::Kp;
     backup_.Ki_ = Temperature::Ki;
     backup_.Kd_ = Temperature::Kd;
@@ -1944,7 +1944,6 @@ void PidSettings::do_backup()
 
 void PidSettings::do_restore()
 {
-    // TODO
     Temperature::Kp = backup_.Kp_;
     Temperature::Ki = backup_.Ki_;
     Temperature::Kd = backup_.Kd_;
@@ -2000,6 +1999,8 @@ void PidSettings::do_save_command()
     Temperature::Kp = static_cast<float>(p.word) / 100;
     Temperature::Ki = scalePID_i(static_cast<float>(i.word) / 100);
     Temperature::Kd = scalePID_d(static_cast<float>(d.word) / 100);
+
+    Parent::do_save_command();
 }
 
 // --------------------------------------------------------------------
@@ -2009,7 +2010,6 @@ void PidSettings::do_save_command()
 //! Initialize temporary Step settings.
 void StepSettings::do_backup()
 {
-    // TODO
     backup_[X_AXIS] = Planner::axis_steps_per_mm[X_AXIS];
     backup_[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
     backup_[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
@@ -2019,13 +2019,10 @@ void StepSettings::do_backup()
 //! Save temporary Step settings.
 void StepSettings::do_restore()
 {
-    // TODO
     Planner::axis_steps_per_mm[X_AXIS] = backup_[X_AXIS];
     Planner::axis_steps_per_mm[Y_AXIS] = backup_[Y_AXIS];
     Planner::axis_steps_per_mm[Z_AXIS] = backup_[Z_AXIS];
     Planner::axis_steps_per_mm[E_AXIS] = backup_[E_AXIS];
-
-    advi3pp.save_settings();
 }
 
 //! Show the Steps settings
@@ -2059,6 +2056,8 @@ void StepSettings::do_save_command()
     Planner::axis_steps_per_mm[Y_AXIS] = static_cast<float>(y.word) / 10;
     Planner::axis_steps_per_mm[Z_AXIS] = static_cast<float>(z.word) / 10;
     Planner::axis_steps_per_mm[E_AXIS] = static_cast<float>(e.word) / 10;
+
+    Parent::do_save_command();
 }
 
 // --------------------------------------------------------------------
@@ -2068,7 +2067,6 @@ void StepSettings::do_save_command()
 //! Initialize temporary Feedrate settings.
 void FeedrateSettings::do_backup()
 {
-    // TODO
     backup_max_feedrate_mm_s_[X_AXIS] = Planner::max_feedrate_mm_s[X_AXIS];
     backup_max_feedrate_mm_s_[Y_AXIS] = Planner::max_feedrate_mm_s[Y_AXIS];
     backup_max_feedrate_mm_s_[Z_AXIS] = Planner::max_feedrate_mm_s[Z_AXIS];
@@ -2080,15 +2078,12 @@ void FeedrateSettings::do_backup()
 //! Save temporary Feedrate settings.
 void FeedrateSettings::do_restore()
 {
-    // TODO
     Planner::max_feedrate_mm_s[X_AXIS] = backup_max_feedrate_mm_s_[X_AXIS];
     Planner::max_feedrate_mm_s[Y_AXIS] = backup_max_feedrate_mm_s_[Y_AXIS];
     Planner::max_feedrate_mm_s[Z_AXIS] = backup_max_feedrate_mm_s_[Z_AXIS];
     Planner::max_feedrate_mm_s[E_AXIS] = backup_max_feedrate_mm_s_[E_AXIS];
     Planner::min_feedrate_mm_s = backup_min_feedrate_mm_s_;
     Planner::min_travel_feedrate_mm_s = backup_min_travel_feedrate_mm_s_;
-
-    advi3pp.save_settings();
 }
 
 //! Show the Feedrate settings
@@ -2125,6 +2120,8 @@ void FeedrateSettings::do_save_command()
     Planner::max_feedrate_mm_s[E_AXIS] = static_cast<float>(e.word);
     Planner::min_feedrate_mm_s         = static_cast<float>(min.word);
     Planner::min_travel_feedrate_mm_s  = static_cast<float>(travel.word);
+
+    Parent::do_save_command();
 }
 
 // --------------------------------------------------------------------
@@ -2134,7 +2131,6 @@ void FeedrateSettings::do_save_command()
 //! Initialize temporary Acceleration settings.
 void AccelerationSettings::do_backup()
 {
-    // TODO
     backup_max_acceleration_mm_per_s2_[X_AXIS] = Planner::max_acceleration_mm_per_s2[X_AXIS];
     backup_max_acceleration_mm_per_s2_[Y_AXIS] = Planner::max_acceleration_mm_per_s2[Y_AXIS];
     backup_max_acceleration_mm_per_s2_[Z_AXIS] = Planner::max_acceleration_mm_per_s2[Z_AXIS];
@@ -2147,7 +2143,6 @@ void AccelerationSettings::do_backup()
 //! Save temporary Acceleration settings.
 void AccelerationSettings::do_restore()
 {
-    // TODO
     Planner::max_acceleration_mm_per_s2[X_AXIS] = backup_max_acceleration_mm_per_s2_[X_AXIS];
     Planner::max_acceleration_mm_per_s2[Y_AXIS] = backup_max_acceleration_mm_per_s2_[Y_AXIS];
     Planner::max_acceleration_mm_per_s2[Z_AXIS] = backup_max_acceleration_mm_per_s2_[Z_AXIS];
@@ -2195,6 +2190,8 @@ void AccelerationSettings::do_save_command()
     Planner::acceleration                       = static_cast<float>(print.word);
     Planner::retract_acceleration               = static_cast<float>(retract.word);
     Planner::travel_acceleration                = static_cast<float>(travel.word);
+
+    Parent::do_save_command();
 }
 
 // --------------------------------------------------------------------
@@ -2204,7 +2201,6 @@ void AccelerationSettings::do_save_command()
 //! Initialize temporary Jerk settings.
 void JerkSettings::do_backup()
 {
-    // TODO
     backup_max_jerk_[X_AXIS] = Planner::max_jerk[X_AXIS];
     backup_max_jerk_[Y_AXIS] = Planner::max_jerk[Y_AXIS];
     backup_max_jerk_[Z_AXIS] = Planner::max_jerk[Z_AXIS];
@@ -2214,13 +2210,10 @@ void JerkSettings::do_backup()
 //! Save temporary Jerk settings.
 void JerkSettings::do_restore()
 {
-    // TODO
     Planner::max_jerk[X_AXIS] = backup_max_jerk_[X_AXIS];
     Planner::max_jerk[Y_AXIS] = backup_max_jerk_[Y_AXIS];
     Planner::max_jerk[Z_AXIS] = backup_max_jerk_[Z_AXIS];
     Planner::max_jerk[E_AXIS] = backup_max_jerk_[E_AXIS];
-
-    advi3pp.save_settings();
 }
 
 //! Show the Jerk settings
@@ -2253,8 +2246,47 @@ void JerkSettings::do_save_command()
     Planner::max_jerk[Y_AXIS] = y.word / 10.0;
     Planner::max_jerk[Z_AXIS] = z.word / 10.0;
     Planner::max_jerk[E_AXIS] = e.word / 10.0;
+
+    Parent::do_save_command();
 }
 
+// --------------------------------------------------------------------
+// Linear Advance Settings
+// --------------------------------------------------------------------
+
+void LinearAdvanceSettings::do_backup()
+{
+    backup_extruder_advance_K = Planner::extruder_advance_K;
+}
+
+void LinearAdvanceSettings::do_restore()
+{
+    Planner::extruder_advance_K = backup_extruder_advance_K;
+}
+
+Page LinearAdvanceSettings::do_prepare_page()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(Planner::extruder_advance_K * 10);
+    frame.send();
+
+    return Page::LinearAdvanceSettings;
+}
+
+void LinearAdvanceSettings::do_save_command()
+{
+    ReadRamData response{Variable::Value0, 1};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Linear Advance Settings)") << Log::endl();
+        return;
+    }
+
+    Uint16 k; response >> k;
+    Planner::extruder_advance_K = k.word / 10.0;
+
+    Parent::do_save_command();
+}
 
 
 // --------------------------------------------------------------------
@@ -2459,14 +2491,6 @@ Page LinearAdvanceTuning::do_prepare_page()
     return Page::LinearAdvanceTuning;
 }
 
-// --------------------------------------------------------------------
-// Linear Advance Settings
-// --------------------------------------------------------------------
-
-Page LinearAdvanceSettings::do_prepare_page()
-{
-    return Page::LinearAdvanceSettings;
-}
 
 // --------------------------------------------------------------------
 // Diagnosis
