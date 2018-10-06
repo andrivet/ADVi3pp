@@ -196,23 +196,22 @@ void Pages::show_forward_page()
 {
     if(forward_page_ == Page::None)
     {
-        Log::error() << F("No Forward page defined") << Log::endl();
+        show_back_page();
         return;
     }
 
     if(!back_pages_.contains(forward_page_))
     {
-        show_back_page();
+        Log::error() << F("Back pages do not containt forward page") << Log::endl();
         return;
     }
 
     while(!back_pages_.is_empty())
     {
-        Page page = back_pages_.pop();
-        if(page == forward_page_)
+        Page back_page = back_pages_.pop();
+        if(back_page == forward_page_)
         {
-            forward_page_ = Page::None;
-            show_page(page, false);
+            show_page(forward_page_, false);
             return;
         }
     }
@@ -1031,7 +1030,6 @@ Page ExtruderTuning::do_prepare_page()
 {
     steps_settings.backup();
     WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
-    pages.save_forward_page();
     return Page::ExtruderTuningTemp;
 }
 
@@ -1128,7 +1126,7 @@ void ExtruderTuning::settings_command()
             << F(", new = ") << new_value << Log::endl();
 
     Planner::axis_steps_per_mm[E_AXIS] = new_value;
-    steps_settings.show(false, true, false);
+    steps_settings.show(false);
 }
 
 // --------------------------------------------------------------------
@@ -1197,7 +1195,7 @@ void PidTuning::finished()
     Log::log() << F("Auto PID finished") << Log::endl();
     enqueue_and_echo_commands_P(PSTR("M106 S0"));
     pid_settings.add(hotend_, temperature_.word);
-    pid_settings.show(false, false, false);
+    pid_settings.show(false);
 }
 
 
@@ -1561,8 +1559,6 @@ Page FirmwareSettings::do_prepare_page()
     features_ = advi3pp.get_current_features();
     send_usb_baudrate();
     send_features();
-
-    pages.save_forward_page();
     return Page::Firmware;
 }
 
@@ -2430,7 +2426,6 @@ void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage messa
 
 void AdvancedPause::init()
 {
-    pages.save_forward_page();
     wait.show(F("Pausing..."));
 }
 

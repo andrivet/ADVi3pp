@@ -118,8 +118,8 @@ struct Pages
 {
     void show_page(Page page, bool save_back = true);
     Page get_current_page();
-    void show_back_page();
     void save_forward_page();
+    void show_back_page();
     void show_forward_page();
 
 private:
@@ -136,7 +136,7 @@ struct Handler: adv::Crtp<Self, Handler>
 {
 public:
     void handle(KeyValue value);
-    void show(bool save_forward = false, bool save_back = true, bool backup = true);
+    void show(bool backup = true);
 
     bool dispatch(KeyValue value) { return this->self().do_dispatch(value); }
     void show_command() { this->self().do_show_command(); }
@@ -1097,17 +1097,14 @@ void Handler<Self>::invalid(KeyValue value)
 }
 
 template<typename Self>
-void Handler<Self>::show(bool save_forward, bool save_back, bool backup)
+void Handler<Self>::show(bool backup)
 {
-    if(save_forward)
-        pages.save_forward_page();
-
     if(backup)
         this->backup();
 
     Page page = prepare_page();
     if(page != Page::None)
-        pages.show_page(page, save_back);
+        pages.show_page(page);
 }
 
 template<typename Self>
