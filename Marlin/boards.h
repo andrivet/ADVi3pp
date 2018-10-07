@@ -105,6 +105,7 @@
 #define BOARD_GT2560_REV_A      74    // Geeetech GT2560 Rev. A
 #define BOARD_GT2560_REV_A_PLUS 75    // Geeetech GT2560 Rev. A+ (with auto level probe)
 #define BOARD_I3_PLUS           888   // Wanhao Duplicator i3 Plus @advi3++
+#define BOARD_I3_PLUS_MARK2     889   // Wanhao Duplicator i3 Plus Mark II @advi3++
 
 //
 // ATmega1281, ATmega2561

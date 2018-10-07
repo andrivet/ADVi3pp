@@ -138,9 +138,12 @@
 
 // The following define selects which electronics board you have.
 // Please choose the name from boards.h that matches your setup
-#ifndef MOTHERBOARD
-// @advi3++: Wanhao Duplicator i3 Plus motherboard
-  #define MOTHERBOARD BOARD_I3_PLUS
+//#ifndef MOTHERBOARD
+// @advi3++: Wanhao Duplicator i3 Plus or Mark II motherboard
+#ifdef ADVi3PP_MARK2
+#define MOTHERBOARD BOARD_I3_PLUS_MARK2
+#else
+#define MOTHERBOARD BOARD_I3_PLUS
 #endif
 
 // Optional custom name for your RepStrap or other custom machine
@@ -528,14 +531,14 @@
 #define USE_ZMIN_PLUG
 //#define USE_XMAX_PLUG
 //#define USE_YMAX_PLUG
-#ifdef ADVi3PP_BLTOUCH
-// @advi3++: No more used by BLTouch probe (advi3++ v4)
+// @advi3++: No more used by BLTouch probe (advi3++ v4). Also not used by Mark II
 //#define USE_ZMAX_PLUG
-#endif
 
 // Enable pullup for all endstops to prevent a floating state
-// @advi3++: Enable pullups
-//#define ENDSTOPPULLUPS
+// @advi3++: Enable pullups except for Mark II
+#ifdef ADVi3PP_MARK2
+#define ENDSTOPPULLUPS
+#endif
 #if DISABLED(ENDSTOPPULLUPS)
   // Disable ENDSTOPPULLUPS to set pullups individually
   #define ENDSTOPPULLUP_XMAX
@@ -557,7 +560,7 @@
   #define Y_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
   #define Z_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
   #define Z_MIN_PROBE_ENDSTOP_INVERTING true // set to true to invert the logic of the probe.
-#else
+#else // @advi3++: Mark II or Mark I no probe
   // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
   #define X_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
   #define Y_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
@@ -708,7 +711,7 @@
  *
  * Enable this option for a probe connected to the Z Min endstop pin.
  */
-// @advi3++: From v4, use the min probe connector for BLTouch
+// @advi3++: From v4, use the min probe connector for BLTouch. Idem for Mark II
 #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 
 /**
@@ -750,7 +753,10 @@
  * A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
  *   (e.g., an inductive probe or a nozzle-based probe-switch.)
  */
-//#define FIX_MOUNTED_PROBE
+// @advi3++: Mark II probe is fix
+#ifdef ADVi3PP_MARK2
+#define FIX_MOUNTED_PROBE
+#endif
 
 /**
  * Z Servo Probe, such as an endstop switch on a rotating arm.
