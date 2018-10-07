@@ -118,19 +118,19 @@ enum class Action: uint16_t
     Diagnosis               = 0x0421,
 
     // 6 - Moves
-    MoveXMinus              = 0x060,
-    MoveXPlus               = 0x061,
-    MoveYMinus              = 0x062,
-    MoveYPlus               = 0x063,
-    MoveZMinus              = 0x064,
-    MoveZPlus               = 0x065,
-    MoveEMinus              = 0x066,
-    MoveEPlus               = 0x067,
-    BabyMinus               = 0x068,
-    BabyPlus                = 0x069,
-    ZHeightMinus            = 0x06A,
-    ZHeightPlus             = 0x06B,
-    LCDBrightness           = 0x06C,
+    MoveXMinus              = 0x0600,
+    MoveXPlus               = 0x0601,
+    MoveYMinus              = 0x0602,
+    MoveYPlus               = 0x0603,
+    MoveZMinus              = 0x0604,
+    MoveZPlus               = 0x0605,
+    MoveEMinus              = 0x0606,
+    MoveEPlus               = 0x0607,
+    BabyMinus               = 0x0608,
+    BabyPlus                = 0x0609,
+    ZHeightMinus            = 0x060A,
+    ZHeightPlus             = 0x060B,
+    LCDBrightness           = 0x060C,
 
     Undefined               = 0xFFFF
 };
@@ -195,9 +195,9 @@ enum class KeyValue: uint16_t
     SensorSettingsNext      = 0x0002,
 
     ThermalProtection       = 0x0001,
-    USBBaudrateMinus        = 0x0002,
-    USBBaudratePlus         = 0x0003,
-    RunoutSensor            = 0x0004,
+    RunoutSensor            = 0x0002,
+    USBBaudrateMinus        = 0x0003,
+    USBBaudratePlus         = 0x0004,
 
     LCDDimming              = 0x0001,
     BuzzerOnAction          = 0x0002,
