@@ -1516,23 +1516,6 @@ Page NoSensor::do_prepare_page()
 }
 
 // --------------------------------------------------------------------
-// Features Settings
-// --------------------------------------------------------------------
-
-template<typename D>
-void FeaturesSettings<D>::send_features()
-{
-    WriteValueToDGUS(Uint16(static_cast<uint16_t>(features_)));
-}
-
-template<typename D>
-void FeaturesSettings<D>::do_save_command()
-{
-    advi3pp.change_features(features_);
-    pages.show_forward_page();
-}
-
-// --------------------------------------------------------------------
 // Firmware Settings
 // --------------------------------------------------------------------
 
@@ -1577,10 +1560,16 @@ void FirmwareSettings::runout_sensor_command()
 void FirmwareSettings::do_save_command()
 {
     advi3pp.change_usb_baudrate(usb_baudrate_);
+    advi3pp.change_features(features_);
     Parent::do_save_command();
 }
 
-void FirmwareSettings::send_usb_baudrate()
+void FirmwareSettings::send_features() const
+{
+    WriteValueToDGUS(Uint16(static_cast<uint16_t>(features_)));
+}
+
+void FirmwareSettings::send_usb_baudrate() const
 {
     ADVString<6> value; value << usb_baudrate_;
 
@@ -1624,7 +1613,7 @@ bool LcdSettings::do_dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::LCDDimming:          dim_command(); break;
+        case KeyValue::LCDDimming:          dimming_command(); break;
         case KeyValue::BuzzerOnAction:      buzz_on_action_command(); break;
         case KeyValue::BuzzOnPress:         buzz_on_press_command(); break;
         default:                            return false;
@@ -1636,23 +1625,29 @@ bool LcdSettings::do_dispatch(KeyValue key_value)
 Page LcdSettings::do_prepare_page()
 {
     features_ = advi3pp.get_current_features();
-    send_features();
+    send_data();
     return Page::LCD;
 }
 
-void LcdSettings::dim_command()
+void LcdSettings::dimming_command()
 {
     flip_bits(features_, Feature::Dimming);
     dimming.enable(test_one_bit(features_, Feature::Dimming));
-    send_features();
+    send_data();
     advi3pp.save_settings();
+}
+
+void LcdSettings::change_brightness(uint16_t brightness)
+{
+    dimming.change_brightness(brightness);
+    send_data();
 }
 
 void LcdSettings::buzz_on_action_command()
 {
     flip_bits(features_, Feature::Buzzer);
     advi3pp.enable_buzzer(test_one_bit(features_, Feature::Buzzer));
-    send_features();
+    send_data();
     advi3pp.save_settings();
 }
 
@@ -1660,8 +1655,15 @@ void LcdSettings::buzz_on_press_command()
 {
     flip_bits(features_, Feature::BuzzOnPress);
     advi3pp.enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress));
-    send_features();
+    send_data();
     advi3pp.save_settings();
+}
+
+void LcdSettings::send_data() const
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(static_cast<uint16_t>(features_)) << Uint16(::lcd_contrast);
+    frame.send();
 }
 
 // --------------------------------------------------------------------

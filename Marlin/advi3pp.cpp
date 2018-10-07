@@ -396,7 +396,7 @@ void ADVi3pp_::read_lcd_serial()
         case Action::MoveZMinus:            move.z_minus_command(); break;
         case Action::MoveEPlus:             move.e_plus_command(); break;
         case Action::MoveEMinus:            move.e_minus_command(); break;
-        case Action::LCDBrightness:         dimming.change_brightness(static_cast<int16_t>(key_value)); break;
+        case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_value)); break;
         case Action::BabyMinus:             print_settings.baby_minus_command(); break;
         case Action::BabyPlus:              print_settings.baby_plus_command(); break;
 

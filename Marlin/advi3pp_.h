@@ -574,24 +574,10 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Features Settings
-// --------------------------------------------------------------------
-
-template<typename D>
-struct FeaturesSettings: Handler<D>
-{
-protected:
-    void send_features();
-    void do_save_command();
-
-    Feature features_ = Feature::None;
-};
-
-// --------------------------------------------------------------------
 // Firmware Setting
 // --------------------------------------------------------------------
 
-struct FirmwareSettings: FeaturesSettings<FirmwareSettings>
+struct FirmwareSettings: Handler<FirmwareSettings>
 {
 private:
     bool do_dispatch(KeyValue key_value);
@@ -599,11 +585,13 @@ private:
     void do_save_command();
     void thermal_protection_command();
     void runout_sensor_command();
-    void send_usb_baudrate();
+    void send_usb_baudrate() const;
+    void send_features() const;
     void baudrate_minus_command();
     void baudrate_plus_command();
 
     uint32_t usb_baudrate_ = 0;
+    Feature features_ = Feature::None;
 
     friend Parent;
 };
@@ -612,15 +600,19 @@ private:
 // LCD Setting
 // --------------------------------------------------------------------
 
-struct LcdSettings: FeaturesSettings<LcdSettings>
+struct LcdSettings: Handler<LcdSettings>
 {
+    void change_brightness(uint16_t brightness);
+
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void dim_command();
+    void dimming_command();
     void buzz_on_action_command();
     void buzz_on_press_command();
+    void send_data() const;
 
+    Feature features_ = Feature::None;
     friend Parent;
 };
 
