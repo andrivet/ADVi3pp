@@ -837,7 +837,6 @@ bool UsbPrint::do_is_printing() const
     return PrintCounter::isRunning();
 }
 
-
 // --------------------------------------------------------------------
 // Factory Reset
 // --------------------------------------------------------------------
@@ -853,7 +852,6 @@ void FactoryReset::do_save_command()
     advi3pp.save_settings();
     Parent::do_save_command();
 }
-
 
 // --------------------------------------------------------------------
 // Manual Leveling
@@ -891,8 +889,8 @@ void ManualLeveling::do_back_command()
 Page ManualLeveling::do_prepare_page()
 {
     wait.show(F("Homing..."));
-    axis_homed = 0;
-    axis_known_position = 0;
+    ::axis_homed = 0;
+    ::axis_known_position = 0;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
     enqueue_and_echo_commands_P((PSTR("G28"))); // homing
     task.set_background_task(BackgroundTask(this, &ManualLeveling::leveling_task), 200);
