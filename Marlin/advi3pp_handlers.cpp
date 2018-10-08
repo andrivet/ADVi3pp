@@ -120,25 +120,6 @@ inline namespace singletons
     AdvancedPause pause;
 };
 
-inline namespace
-{
-    void WriteValueToDGUS(const Uint16& value, Variable variable = Variable::Value0)
-    {
-        WriteRamDataRequest frame{variable};
-        frame << value;
-        frame.send();
-    }
-
-    bool ReadValueFromDGUS(Uint16& value, Variable variable = Variable::Value0)
-    {
-        ReadRamData frame{variable, 1};
-        if(!frame.send_and_receive())
-            return(false);
-
-        frame >> value;
-        return true;
-    }
-}
 
 // --------------------------------------------------------------------
 // Pages management
@@ -308,18 +289,20 @@ bool LoadUnload::do_dispatch(KeyValue key_value)
 //! Get the Load & Unload screen.
 Page LoadUnload::do_prepare_page()
 {
-    WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_hotend_temperature()); frame.send();
     return Page::LoadUnload;
 }
 
 void LoadUnload::prepare(const BackgroundTask& background)
 {
-    Uint16 hotend;
-    if(!ReadValueFromDGUS(hotend))
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
+
+    Uint16 hotend; frame >> hotend;
 
     Temperature::setTargetHotend(hotend.word, 0);
     enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
@@ -1029,19 +1012,21 @@ bool ExtruderTuning::do_dispatch(KeyValue key_value)
 Page ExtruderTuning::do_prepare_page()
 {
     steps_settings.backup();
-    WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_hotend_temperature()); frame.send();
     return Page::ExtruderTuningTemp;
 }
 
 //! Start extruder tuning.
 void ExtruderTuning::start_command()
 {
-    Uint16 hotend;
-    if(!ReadValueFromDGUS(hotend))
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
+
+    Uint16 hotend; frame >> hotend;
 
     wait.show(F("Heating the extruder..."));
     Temperature::setTargetHotend(hotend.word, 0);
@@ -1110,12 +1095,14 @@ void ExtruderTuning::do_back_command()
 //! Compute the extruder (E axis) new value and show the steps settings.
 void ExtruderTuning::settings_command()
 {
-    Uint16 e;
-    if(!ReadValueFromDGUS(e))
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;
     }
+
+    Uint16 e; frame >> e;
 
     auto new_value = Planner::axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + tuning_extruder_delta - e.word / 10);
 
@@ -1155,31 +1142,33 @@ bool PidTuning::do_dispatch(KeyValue key_value)
 Page PidTuning::do_prepare_page()
 {
     pid_settings.backup();
-    hotend_ = true;
-    WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
+    hotend_command();
     return Page::PidTuning1;
 }
 
 void PidTuning::hotend_command()
 {
     hotend_ = true;
-    WriteValueToDGUS(Uint16(advi3pp.last_used_hotend_temperature()));
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_hotend_temperature()); frame.send();
 }
 
 void PidTuning::bed_command()
 {
     hotend_ = false;
-    WriteValueToDGUS(Uint16(advi3pp.last_used_bed_temperature()));
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_bed_temperature()); frame.send();
 }
 
 //! Show step #2 of PID tuning
 void PidTuning::step2_command()
 {
-    if(!ReadValueFromDGUS(temperature_))
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
+
+    frame >> temperature_;
 
     enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
     ADVString<20> auto_pid_command;
@@ -1263,18 +1252,19 @@ void SensorSettings::next_command()
 
 void SensorSettings::send_z_height_to_lcd(double z_height)
 {
-    WriteValueToDGUS( Uint16(z_height * 100));
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(z_height * 100); frame.send();
 }
 
 void SensorSettings::save_lcd_z_height()
 {
-    Uint16 offsetZ;
-    if(!ReadValueFromDGUS(offsetZ))
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
         return;
     }
 
+    Uint16 offsetZ; frame >> offsetZ;
     save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
 }
 
@@ -1566,7 +1556,7 @@ void FirmwareSettings::do_save_command()
 
 void FirmwareSettings::send_features() const
 {
-    WriteValueToDGUS(Uint16(static_cast<uint16_t>(features_)));
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(static_cast<uint16_t>(features_)); frame.send();
 }
 
 void FirmwareSettings::send_usb_baudrate() const
@@ -1720,13 +1710,14 @@ bool Versions::do_dispatch(KeyValue key_value)
 
 void Versions::get_version_from_lcd()
 {
-    Uint16 version;
-    if(!ReadValueFromDGUS(version, Variable::ADVi3ppLCDversion))
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;
     }
 
+    Uint16 version; frame >> version;
     Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
     lcd_version_ = version.word;
 }
