@@ -106,8 +106,8 @@ inline namespace singletons
     AccelerationSettings accelerations_settings;
     JerkSettings jerks_settings;
     Copyrights copyrights;
-    SensorTuning sensor_tuning;
-    SensorGrid sensor_grid;
+    AutomaticLeveling automatic_leveling;
+    LevelingGrid leveling_grid;
     SensorZHeight sensor_z_height;
     ChangeFilament change_filament;
     EepromMismatch eeprom_mismatch;
@@ -1276,10 +1276,10 @@ void SensorSettings::save_z_height(double height)
 }
 
 // --------------------------------------------------------------------
-// Sensor Tuning
+// Automatic Leveling
 // --------------------------------------------------------------------
 
-bool SensorTuning::do_dispatch(KeyValue key_value)
+bool AutomaticLeveling::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
         return true;
@@ -1296,12 +1296,12 @@ bool SensorTuning::do_dispatch(KeyValue key_value)
     return true;
 }
 
-Page SensorTuning::do_prepare_page()
+Page AutomaticLeveling::do_prepare_page()
 {
     return Page::SensorTuning;
 }
 
-void SensorTuning::leveling()
+void AutomaticLeveling::leveling()
 {
     sensor_interactive_leveling_ = true;
     pages.save_forward_page();
@@ -1312,7 +1312,7 @@ void SensorTuning::leveling()
     enqueue_and_echo_commands_P(PSTR("G1 X0 Y0 F3000"));        // go back to corner
 }
 
-void SensorTuning::g29_leveling_finished(bool success)
+void AutomaticLeveling::g29_leveling_finished(bool success)
 {
     if(!success)
     {
@@ -1320,7 +1320,7 @@ void SensorTuning::g29_leveling_finished(bool success)
             SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
 
         if(sensor_interactive_leveling_)
-            wait.show(F("Leveling failed"), WaitCallback(this, &SensorTuning::g29_leveling_failed), false);
+            wait.show(F("Leveling failed"), WaitCallback(this, &AutomaticLeveling::g29_leveling_failed), false);
         else
             advi3pp.set_status(F("Leveling failed"));
 
@@ -1333,7 +1333,7 @@ void SensorTuning::g29_leveling_finished(bool success)
     if(sensor_interactive_leveling_)
     {
         sensor_interactive_leveling_ = false;
-        sensor_grid.show();
+        leveling_grid.show();
     }
     else
     {
@@ -1342,36 +1342,36 @@ void SensorTuning::g29_leveling_finished(bool success)
     }
 }
 
-void SensorTuning::g29_leveling_failed()
+void AutomaticLeveling::g29_leveling_failed()
 {
     pages.show_back_page();
 }
 
-void SensorTuning::self_test_command()
+void AutomaticLeveling::self_test_command()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
 }
 
-void SensorTuning::reset_command()
+void AutomaticLeveling::reset_command()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
 }
 
-void SensorTuning::deploy_command()
+void AutomaticLeveling::deploy_command()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
 }
 
-void SensorTuning::stow_command()
+void AutomaticLeveling::stow_command()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
 
 // --------------------------------------------------------------------
-// Sensor grid
+// Leveling Grid
 // --------------------------------------------------------------------
 
-Page SensorGrid::do_prepare_page()
+Page LevelingGrid::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
     for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
@@ -1382,7 +1382,7 @@ Page SensorGrid::do_prepare_page()
     return Page::SensorGrid;
 }
 
-void SensorGrid::do_save_command()
+void LevelingGrid::do_save_command()
 {
     enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
     enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)

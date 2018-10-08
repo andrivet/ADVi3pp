@@ -87,8 +87,8 @@ inline namespace singletons
     extern FirmwareSettings firmware_settings;
     extern SensorSettings sensor_settings;
     extern NoSensor no_sensor;
-    extern SensorTuning sensor_tuning;
-    extern SensorGrid sensor_grid;
+    extern AutomaticLeveling automatic_leveling;
+    extern LevelingGrid leveling_grid;
     extern SensorZHeight sensor_z_height;
     extern LcdSettings lcd_settings;
     extern Statistics statistics;
@@ -378,8 +378,8 @@ void ADVi3pp_::read_lcd_serial()
         case Action::AccelerationSettings:  accelerations_settings.handle(key_value); break;
         case Action::JerkSettings:          jerks_settings.handle(key_value); break;
         case Action::Copyrights:            copyrights.handle(key_value); break;
-        case Action::SensorTuning:          sensor_tuning.handle(key_value); break;
-        case Action::SensorGrid:            sensor_grid.handle(key_value); break;
+        case Action::SensorTuning:          automatic_leveling.handle(key_value); break;
+        case Action::SensorGrid:            leveling_grid.handle(key_value); break;
         case Action::SensorZHeight:         sensor_z_height.handle(key_value); break;
         case Action::ChangeFilament:        change_filament.handle(key_value); break;
         case Action::EEPROMMismatch:        eeprom_mismatch.handle(key_value); break;

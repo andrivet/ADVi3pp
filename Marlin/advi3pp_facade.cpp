@@ -40,7 +40,7 @@ inline namespace singletons
 {
     extern ADVi3pp_ advi3pp;
     extern PidTuning pid_tuning;
-    extern SensorTuning sensor_tuning;
+    extern AutomaticLeveling automatic_leveling;
 }
 
 // --------------------------------------------------------------------
@@ -67,7 +67,7 @@ void ADVi3pp::auto_pid_finished()
 
 void ADVi3pp::g29_leveling_finished(bool success)
 {
-    sensor_tuning.g29_leveling_finished(success);
+    automatic_leveling.g29_leveling_finished(success);
 }
 
 //! Store presets in permanent memory.

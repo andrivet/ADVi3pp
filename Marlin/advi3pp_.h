@@ -285,6 +285,87 @@ private:
 };
 
 // --------------------------------------------------------------------
+// Automatic Leveling
+// --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
+struct AutomaticLeveling: Handler<AutomaticLeveling>
+{
+    void g29_leveling_finished(bool success);
+
+private:
+    bool do_dispatch(KeyValue key_value);
+    Page do_prepare_page();
+    void leveling();
+    void g29_leveling_failed();
+    void self_test_command();
+    void reset_command();
+    void deploy_command();
+    void stow_command();
+
+private:
+    bool sensor_interactive_leveling_ = false;
+
+    friend Parent;
+};
+#else
+struct AutomaticLeveling: Handler<AutomaticLeveling>
+{
+    void g29_leveling_finished(bool) {}
+
+private:
+    Page do_prepare_page();
+    friend Parent;
+};
+#endif
+
+// --------------------------------------------------------------------
+// Leveling Grid
+// --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
+struct LevelingGrid: Handler<LevelingGrid>
+{
+private:
+    Page do_prepare_page();
+    void do_save_command();
+
+    friend Parent;
+};
+#else
+struct LevelingGrid: Handler<LevelingGrid>
+{
+private:
+    Page do_prepare_page();
+    friend Parent;
+};
+#endif
+
+// --------------------------------------------------------------------
+// Manual Leveling
+// --------------------------------------------------------------------
+
+struct ManualLeveling: Handler<ManualLeveling>
+{
+private:
+    bool do_dispatch(KeyValue value);
+    Page do_prepare_page();
+    void do_back_command();
+    void point1_command();
+    void point2_command();
+    void point3_command();
+    void point4_command();
+    void point5_command();
+    void pointA_command();
+    void pointB_command();
+    void pointC_command();
+    void pointD_command();
+    void leveling_task();
+
+    friend Parent;
+};
+
+// --------------------------------------------------------------------
 // SD Card
 // --------------------------------------------------------------------
 
@@ -362,41 +443,53 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Factory Reset
+// Advanced Pause
 // --------------------------------------------------------------------
 
-struct FactoryReset: Handler<FactoryReset>
+struct AdvancedPause: Handler<AdvancedPause>
 {
+    void advanced_pause_show_message(AdvancedPauseMessage message);
+
 private:
-    Page do_prepare_page();
-    void do_save_command();
+    void init();
+    void insert_filament();
+    void printing();
+    void filament_inserted();
+
+private:
+    AdvancedPauseMessage last_advanced_pause_message_ = static_cast<AdvancedPauseMessage>(-1);
 
     friend Parent;
 };
 
 // --------------------------------------------------------------------
-// Manual Leveling
+// Sensor Z Height Tuning
 // --------------------------------------------------------------------
 
-struct ManualLeveling: Handler<ManualLeveling>
+#ifdef ADVi3PP_BLTOUCH
+struct SensorZHeight: Handler<SensorZHeight>
 {
 private:
-    bool do_dispatch(KeyValue value);
+    bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_back_command();
-    void point1_command();
-    void point2_command();
-    void point3_command();
-    void point4_command();
-    void point5_command();
-    void pointA_command();
-    void pointB_command();
-    void pointC_command();
-    void pointD_command();
-    void leveling_task();
+    void do_save_command();
+    void home_task();
+    void center_task();
+    void multiplier01_command();
+    void multiplier05_command();
+    void multiplier10_command();
 
     friend Parent;
 };
+#else
+struct SensorZHeight: Handler<SensorZHeight>
+{
+private:
+    Page do_prepare_page();
+    friend Parent;
+};
+#endif
 
 // --------------------------------------------------------------------
 // Extruder Tuning
@@ -441,12 +534,36 @@ private:
     friend Parent;
 };
 
-#ifdef ADVi3PP_BLTOUCH
+// --------------------------------------------------------------------
+// Linear Advance Tuning
+// --------------------------------------------------------------------
+
+struct LinearAdvanceTuning: Handler<LinearAdvanceTuning>
+{
+private:
+    Page do_prepare_page();
+
+    friend Parent;
+};
+
+// --------------------------------------------------------------------
+// Diagnosis
+// --------------------------------------------------------------------
+
+struct Diagnosis: Handler<Diagnosis>
+{
+private:
+    Page do_prepare_page();
+
+    friend Parent;
+};
+
 
 // --------------------------------------------------------------------
 // Sensor Settings
 // --------------------------------------------------------------------
 
+#ifdef ADVi3PP_BLTOUCH
 struct SensorSettings: Handler<SensorSettings>
 {
     void send_z_height_to_lcd(double height);
@@ -462,70 +579,7 @@ private:
 
     friend Parent;
 };
-
-// --------------------------------------------------------------------
-// Sensor Tuning
-// --------------------------------------------------------------------
-
-struct SensorTuning: Handler<SensorTuning>
-{
-    void g29_leveling_finished(bool success);
-
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void leveling();
-    void g29_leveling_failed();
-    void self_test_command();
-    void reset_command();
-    void deploy_command();
-    void stow_command();
-
-private:
-    bool sensor_interactive_leveling_ = false;
-
-    friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Sensor Grid
-// --------------------------------------------------------------------
-
-struct SensorGrid: Handler<SensorGrid>
-{
-private:
-    Page do_prepare_page();
-    void do_save_command();
-
-    friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Sensor Z Height
-// --------------------------------------------------------------------
-
-struct SensorZHeight: Handler<SensorZHeight>
-{
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void do_back_command();
-    void do_save_command();
-    void home_task();
-    void center_task();
-    void multiplier01_command();
-    void multiplier05_command();
-    void multiplier10_command();
-
-    friend Parent;
-};
-
 #else
-
-// --------------------------------------------------------------------
-// No Sensor
-// --------------------------------------------------------------------
-
 struct SensorSettings: Handler<SensorSettings>
 {
     void send_z_height_to_lcd(double) {}
@@ -535,43 +589,8 @@ private:
     Page do_prepare_page();
     friend Parent;
 };
-
-struct SensorTuning: Handler<SensorTuning>
-{
-    void g29_leveling_finished(bool) {}
-
-private:
-    Page do_prepare_page();
-    friend Parent;
-};
-
-struct SensorGrid: Handler<SensorGrid>
-{
-private:
-    Page do_prepare_page();
-    friend Parent;
-};
-
-struct SensorZHeight: Handler<SensorZHeight>
-{
-private:
-    Page do_prepare_page();
-    friend Parent;
-};
-
 #endif
 
-// --------------------------------------------------------------------
-// No Sensor
-// --------------------------------------------------------------------
-
-struct NoSensor: Handler<NoSensor>
-{
-private:
-    Page do_prepare_page();
-
-    friend Parent;
-};
 
 // --------------------------------------------------------------------
 // Firmware Setting
@@ -613,64 +632,6 @@ private:
     void send_data() const;
 
     Feature features_ = Feature::None;
-    friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Statistics
-// --------------------------------------------------------------------
-
-struct Statistics: Handler<Statistics>
-{
-private:
-    Page do_prepare_page();
-    void send_stats();
-
-    friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Versions
-// --------------------------------------------------------------------
-
-struct Versions: Handler<Versions>
-{
-    void get_version_from_lcd();
-    void send_advi3pp_version();
-    bool is_lcd_version_valid() const;
-
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void versions_mismatch_forward_command();
-    void send_versions();
-
-    uint16_t lcd_version_ = 0x0000;
-
-    friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Sponsors
-// --------------------------------------------------------------------
-
-struct Sponsors: Handler<Sponsors>
-{
-private:
-    Page do_prepare_page();
-
-    friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Copyrights
-// --------------------------------------------------------------------
-
-struct Copyrights: Handler<Copyrights>
-{
-private:
-    Page do_prepare_page();
-
     friend Parent;
 };
 
@@ -823,6 +784,79 @@ private:
 };
 
 // --------------------------------------------------------------------
+// Factory Reset
+// --------------------------------------------------------------------
+
+struct FactoryReset: Handler<FactoryReset>
+{
+private:
+    Page do_prepare_page();
+    void do_save_command();
+
+    friend Parent;
+};
+
+
+// --------------------------------------------------------------------
+// Statistics
+// --------------------------------------------------------------------
+
+struct Statistics: Handler<Statistics>
+{
+private:
+    Page do_prepare_page();
+    void send_stats();
+
+    friend Parent;
+};
+
+// --------------------------------------------------------------------
+// Versions
+// --------------------------------------------------------------------
+
+struct Versions: Handler<Versions>
+{
+    void get_version_from_lcd();
+    void send_advi3pp_version();
+    bool is_lcd_version_valid() const;
+
+private:
+    bool do_dispatch(KeyValue key_value);
+    Page do_prepare_page();
+    void versions_mismatch_forward_command();
+    void send_versions();
+
+    uint16_t lcd_version_ = 0x0000;
+
+    friend Parent;
+};
+
+// --------------------------------------------------------------------
+// Sponsors
+// --------------------------------------------------------------------
+
+struct Sponsors: Handler<Sponsors>
+{
+private:
+    Page do_prepare_page();
+
+    friend Parent;
+};
+
+// --------------------------------------------------------------------
+// Copyrights
+// --------------------------------------------------------------------
+
+struct Copyrights: Handler<Copyrights>
+{
+private:
+    Page do_prepare_page();
+
+    friend Parent;
+};
+
+
+// --------------------------------------------------------------------
 // Change Filament
 // --------------------------------------------------------------------
 
@@ -854,47 +888,16 @@ private:
 };
 
 
+
+
 // --------------------------------------------------------------------
-// Linear Advance Tuning
+// No Sensor
 // --------------------------------------------------------------------
 
-struct LinearAdvanceTuning: Handler<LinearAdvanceTuning>
+struct NoSensor: Handler<NoSensor>
 {
 private:
     Page do_prepare_page();
-
-    friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Diagnosis
-// --------------------------------------------------------------------
-
-struct Diagnosis: Handler<Diagnosis>
-{
-private:
-    Page do_prepare_page();
-
-    friend Parent;
-};
-
-
-// --------------------------------------------------------------------
-// Advanced Pause
-// --------------------------------------------------------------------
-
-struct AdvancedPause: Handler<AdvancedPause>
-{
-    void advanced_pause_show_message(AdvancedPauseMessage message);
-
-private:
-    void init();
-    void insert_filament();
-    void printing();
-    void filament_inserted();
-
-private:
-    AdvancedPauseMessage last_advanced_pause_message_ = static_cast<AdvancedPauseMessage>(-1);
 
     friend Parent;
 };
