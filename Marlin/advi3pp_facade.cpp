@@ -60,9 +60,9 @@ void ADVi3pp::idle()
 }
 
 //! PID automatic tuning is finished.
-void ADVi3pp::auto_pid_finished()
+void ADVi3pp::auto_pid_finished(bool success)
 {
-    pid_tuning.finished();
+    pid_tuning.finished(success);
 }
 
 void ADVi3pp::g29_leveling_finished(bool success)

@@ -499,11 +499,12 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
             _SET_BED_PID();
           #endif
         }
-        advi3pp::ADVi3pp::auto_pid_finished(); // @advi3++: PID tuning finished
+        advi3pp::ADVi3pp::auto_pid_finished(true); // @advi3++: PID tuning finished
         return;
       }
       lcd_update();
     }
+    advi3pp::ADVi3pp::auto_pid_finished(false); // @advi3++: PID tuning failed and cancelled
     disable_all_heaters();
   }
 
