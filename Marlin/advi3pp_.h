@@ -168,7 +168,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Load and Unload
+// Wait
 // --------------------------------------------------------------------
 
 struct Wait: Handler<Wait>
@@ -185,6 +185,24 @@ private:
 
     WaitCallback back_;
     WaitCallback continue_;
+
+    friend Parent;
+};
+
+// --------------------------------------------------------------------
+// Temperatures Graph
+// --------------------------------------------------------------------
+
+struct Temperatures: Handler<Temperatures>
+{
+    void show(const WaitCallback& back, bool save_back = true);
+    void show(bool save_back = true);
+
+private:
+    Page do_prepare_page();
+    void do_back_command();
+
+    WaitCallback back_;
 
     friend Parent;
 };
@@ -518,18 +536,20 @@ private:
 
 struct PidTuning: Handler<PidTuning>
 {
-    void finished();
+    void finished(bool success);
 
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void step2_command();
+    void cancel_pid();
     void hotend_command();
     void bed_command();
+    void send_data();
 
 private:
-    bool hotend_ = true;
-    Uint16 temperature_;
+    uint16_t temperature_;
+    bool hotend_;
 
     friend Parent;
 };

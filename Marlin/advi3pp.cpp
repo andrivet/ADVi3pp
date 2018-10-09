@@ -76,6 +76,7 @@ inline namespace singletons
     Graphs graphs;
 
     extern Wait wait;
+    extern Temperatures temperatures;
     extern LoadUnload load_unload;
     extern Preheat preheat;
     extern Move move;
@@ -387,6 +388,7 @@ void ADVi3pp_::read_lcd_serial()
         case Action::LinearAdvanceTuning:   linear_advance_tuning.handle(key_value); break;
         case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_value); break;
         case Action::Diagnosis:             diagnosis.handle(key_value); break;
+        case Action::Temperatures:          temperatures.handle(key_value); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;
@@ -431,7 +433,7 @@ void ADVi3pp_::show_temps()
 {
     if(!PrintCounter::isRunning() && !PrintCounter::isPaused())
     {
-        pages.show_page(Page::Temperature);
+        temperatures.show();
         return;
     }
 
@@ -464,7 +466,7 @@ void ADVi3pp_::show_sd_or_temp_page()
     if(!card.cardOK)
     {
         // SD card not accessible so fall back to Temperatures
-        pages.show_page(Page::Temperature, false);
+        temperatures.show(false);
         return;
     }
 

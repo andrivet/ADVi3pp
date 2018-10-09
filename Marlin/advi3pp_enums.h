@@ -116,6 +116,7 @@ enum class Action: uint16_t
     LinearAdvanceTuning     = 0x041F,
     LinearAdvanceSettings   = 0x0420,
     Diagnosis               = 0x0421,
+    Temperatures            = 0x0422,
 
     // 6 - Moves
     MoveXMinus              = 0x0600,

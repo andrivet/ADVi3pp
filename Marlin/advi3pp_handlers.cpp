@@ -85,6 +85,7 @@ inline namespace singletons
     extern Graphs graphs;
 
     Wait wait;
+    Temperatures temperatures;
     LoadUnload load_unload;
     Preheat preheat;
     Move move;
@@ -263,6 +264,38 @@ void Wait::do_save_command()
     }
 
     Parent::do_save_command();
+}
+
+// --------------------------------------------------------------------
+// Temperatures Graph
+// --------------------------------------------------------------------
+
+Page Temperatures::do_prepare_page()
+{
+    return Page::Temperature;
+}
+
+void Temperatures::show(const WaitCallback& back, bool save_back)
+{
+    back_ = back;
+    pages.show_page(Page::Temperature, save_back);
+}
+
+void Temperatures::show(bool save_back)
+{
+    back_ = nullptr;
+    pages.show_page(Page::Temperature, save_back);
+}
+
+void Temperatures::do_back_command()
+{
+    if(back_)
+    {
+        back_();
+        back_ = nullptr;
+    }
+
+    Parent::do_back_command();
 }
 
 // --------------------------------------------------------------------
@@ -1405,51 +1438,72 @@ Page PidTuning::do_prepare_page()
 {
     pid_settings.backup();
     hotend_command();
-    return Page::PidTuning1;
+    return Page::PidTuning;
+}
+
+void PidTuning::send_data()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(temperature_)
+          << Uint16(!hotend_);
+    frame.send();
 }
 
 void PidTuning::hotend_command()
 {
+    temperature_ = advi3pp.last_used_hotend_temperature();
     hotend_ = true;
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(advi3pp.last_used_hotend_temperature())
-          << Uint16(hotend_);
-    frame.send();
+    send_data();
 }
 
 void PidTuning::bed_command()
 {
+    temperature_ = advi3pp.last_used_bed_temperature();
     hotend_ = false;
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_bed_temperature()); frame.send();
+    send_data();
 }
 
 //! Show step #2 of PID tuning
 void PidTuning::step2_command()
 {
-    ReadRamData frame{Variable::Value0, 1};
+    ReadRamData frame{Variable::Value0, 2};
     if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
 
-    frame >> temperature_;
+    Uint16 temperature; frame >> temperature; temperature_ = temperature.word;
 
     enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
     ADVString<20> auto_pid_command;
-    auto_pid_command << F("M303 S") << temperature_.word << (hotend_ ? F(" E0 C8 U1") : F(" E-1 C8 U1"));
+    auto_pid_command << F("M303 S") << temperature_ << (hotend_ ? F(" E0 C8 U1") : F(" E-1 C8 U1"));
     enqueue_and_echo_command(auto_pid_command.get());
 
-    pages.show_page(Page::PidTuning2);
-};
+    temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
+}
+
+void PidTuning::cancel_pid()
+{
+    enqueue_and_echo_commands_P(PSTR("M108"));
+}
 
 //! PID automatic tuning is finished.
-void PidTuning::finished()
+void PidTuning::finished(bool success)
 {
-    Log::log() << F("Auto PID finished") << Log::endl();
+    Log::log() << F("Auto PID finished: ") << (success ? F("success") : F("failed")) << Log::endl();
     enqueue_and_echo_commands_P(PSTR("M106 S0"));
-    pid_settings.add(hotend_, temperature_.word);
-    pid_settings.show(false);
+    if(success)
+    {
+        advi3pp.reset_status();
+        pid_settings.add(hotend_, temperature_);
+        pid_settings.show(false);
+    }
+    else
+    {
+        advi3pp.set_status(F("PID tuning failed"));
+        pages.show_back_page();
+    }
 }
 
 // --------------------------------------------------------------------
@@ -2253,7 +2307,7 @@ bool Versions::do_dispatch(KeyValue key_value)
 
 void Versions::get_version_from_lcd()
 {
-    ReadRamData frame{Variable::Value0, 1};
+    ReadRamData frame{Variable::ADVi3ppLCDversion, 1};
     if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
