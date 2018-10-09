@@ -118,6 +118,7 @@ struct Uint16
     constexpr explicit Uint16(int16_t value) : word{static_cast<uint16_t>(value)} {}
     constexpr explicit Uint16(long value) : word{static_cast<uint16_t>(value)} {}
     constexpr explicit Uint16(double value) : word{static_cast<uint16_t>(value)} {}
+	constexpr explicit Uint16(bool value) : word{static_cast<uint16_t>(value)} {}
     constexpr explicit Uint16(Variable var) : word{static_cast<uint16_t>(var)} {}
 };
 
