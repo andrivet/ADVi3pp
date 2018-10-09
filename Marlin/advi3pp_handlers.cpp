@@ -668,6 +668,262 @@ void Move::all_home_command()
 }
 
 // --------------------------------------------------------------------
+// Automatic Leveling
+// --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
+
+bool AutomaticLeveling::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::SensorSelfTest:  self_test_command(); break;
+        case KeyValue::SensorReset:     reset_command(); break;
+        case KeyValue::SensorDeploy:    deploy_command(); break;
+        case KeyValue::SensorStow:      stow_command(); break;
+        default:                        return false;
+    }
+
+    return true;
+}
+
+Page AutomaticLeveling::do_prepare_page()
+{
+    return Page::SensorTuning;
+}
+
+void AutomaticLeveling::leveling()
+{
+    sensor_interactive_leveling_ = true;
+    pages.save_forward_page();
+    wait.show(F("Homing..."));
+    enqueue_and_echo_commands_P(PSTR("G28"));                   // homing
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
+    enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
+    enqueue_and_echo_commands_P(PSTR("G1 X0 Y0 F3000"));        // go back to corner
+}
+
+void AutomaticLeveling::g29_leveling_finished(bool success)
+{
+    if(!success)
+    {
+        if(!sensor_interactive_leveling_ && !IS_SD_FILE_OPEN) // i.e. USB print
+            SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
+
+        if(sensor_interactive_leveling_)
+            wait.show(F("Leveling failed"), WaitCallback(this, &AutomaticLeveling::g29_leveling_failed), false);
+        else
+            advi3pp.set_status(F("Leveling failed"));
+
+        sensor_interactive_leveling_ = false;
+        return;
+    }
+
+    advi3pp.reset_status();
+
+    if(sensor_interactive_leveling_)
+    {
+        sensor_interactive_leveling_ = false;
+        leveling_grid.show();
+    }
+    else
+    {
+        enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
+        enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
+    }
+}
+
+void AutomaticLeveling::g29_leveling_failed()
+{
+    pages.show_back_page();
+}
+
+void AutomaticLeveling::self_test_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
+}
+
+void AutomaticLeveling::reset_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
+}
+
+void AutomaticLeveling::deploy_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
+}
+
+void AutomaticLeveling::stow_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
+}
+
+#endif
+
+// --------------------------------------------------------------------
+// Leveling Grid
+// --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
+
+Page LevelingGrid::do_prepare_page()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
+        for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
+            frame << Uint16(static_cast<int16_t>(z_values[x][y] * 1000));
+    frame.send();
+
+    return Page::SensorGrid;
+}
+
+void LevelingGrid::do_save_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
+    enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
+    Parent::do_save_command();
+}
+
+#endif
+
+// --------------------------------------------------------------------
+// Manual Leveling
+// --------------------------------------------------------------------
+
+bool ManualLeveling::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::LevelingPoint1:  point1_command(); break;
+        case KeyValue::LevelingPoint2:  point2_command(); break;
+        case KeyValue::LevelingPoint3:  point3_command(); break;
+        case KeyValue::LevelingPoint4:  point4_command(); break;
+        case KeyValue::LevelingPoint5:  point5_command(); break;
+        case KeyValue::LevelingPointA:  pointA_command(); break;
+        case KeyValue::LevelingPointB:  pointB_command(); break;
+        case KeyValue::LevelingPointC:  pointC_command(); break;
+        case KeyValue::LevelingPointD:  pointD_command(); break;
+        default:                        return false;
+    }
+
+    return true;
+}
+
+void ManualLeveling::do_back_command()
+{
+    enqueue_and_echo_commands_P(PSTR("G1 Z30 F2000"));
+    Parent::do_back_command();
+}
+
+//! Home the printer for bed leveling.
+Page ManualLeveling::do_prepare_page()
+{
+    wait.show(F("Homing..."));
+    ::axis_homed = 0;
+    ::axis_known_position = 0;
+    enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
+    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
+    task.set_background_task(BackgroundTask(this, &ManualLeveling::leveling_task), 200);
+    return Page::None;
+}
+
+//! Leveling Background task.
+void ManualLeveling::leveling_task()
+{
+    if(!TEST(axis_homed, X_AXIS) || !TEST(axis_homed, Y_AXIS) || !TEST(axis_homed, Z_AXIS))
+        return;
+
+    Log::log() << F("Leveling Homed, start process") << Log::endl();
+    advi3pp.reset_status();
+    task.clear_background_task();
+    pages.show_page(Page::ManualLeveling, false);
+}
+
+//! Handle leveling point #1.
+void ManualLeveling::point1_command()
+{
+    Log::log() << F("Level point 1") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X30 Y30 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+//! Handle leveling point #2.
+void ManualLeveling::point2_command()
+{
+    Log::log() << F("Level point 2") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X170 Y170 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+//! Handle leveling point #3.
+void ManualLeveling::point3_command()
+{
+    Log::log() << F("Level point 3") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X170 Y30 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+//! Handle leveling point #4.
+void ManualLeveling::point4_command()
+{
+    Log::log() << F("Level point 4") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X30 Y170 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+//! Handle leveling point #5.
+void ManualLeveling::point5_command()
+{
+    Log::log() << F("Level point 5") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+void ManualLeveling::pointA_command()
+{
+    Log::log() << F("Level point A") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y30 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+void ManualLeveling::pointB_command()
+{
+    Log::log() << F("Level point B") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X30 Y100 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+void ManualLeveling::pointC_command()
+{
+    Log::log() << F("Level point C") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y170 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+void ManualLeveling::pointD_command()
+{
+    Log::log() << F("Level point D") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X170 Y100 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+}
+
+
+// --------------------------------------------------------------------
 // SD Card
 // --------------------------------------------------------------------
 
@@ -838,558 +1094,63 @@ bool UsbPrint::do_is_printing() const
 }
 
 // --------------------------------------------------------------------
-// Factory Reset
+// Advance pause
 // --------------------------------------------------------------------
 
-Page FactoryReset::do_prepare_page()
+void ADVi3pp_::advanced_pause_show_message(const AdvancedPauseMessage message)
 {
-    return Page::FactoryReset;
+    pause.advanced_pause_show_message(message);
 }
 
-void FactoryReset::do_save_command()
+void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage message)
 {
-    enqueue_and_echo_commands_P(PSTR("M502"));
-    advi3pp.save_settings();
-    Parent::do_save_command();
-}
-
-// --------------------------------------------------------------------
-// Manual Leveling
-// --------------------------------------------------------------------
-
-bool ManualLeveling::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::LevelingPoint1:  point1_command(); break;
-        case KeyValue::LevelingPoint2:  point2_command(); break;
-        case KeyValue::LevelingPoint3:  point3_command(); break;
-        case KeyValue::LevelingPoint4:  point4_command(); break;
-        case KeyValue::LevelingPoint5:  point5_command(); break;
-        case KeyValue::LevelingPointA:  pointA_command(); break;
-        case KeyValue::LevelingPointB:  pointB_command(); break;
-        case KeyValue::LevelingPointC:  pointC_command(); break;
-        case KeyValue::LevelingPointD:  pointD_command(); break;
-        default:                        return false;
-    }
-
-    return true;
-}
-
-void ManualLeveling::do_back_command()
-{
-    enqueue_and_echo_commands_P(PSTR("G1 Z30 F2000"));
-    Parent::do_back_command();
-}
-
-//! Home the printer for bed leveling.
-Page ManualLeveling::do_prepare_page()
-{
-    wait.show(F("Homing..."));
-    ::axis_homed = 0;
-    ::axis_known_position = 0;
-    enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
-    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
-    task.set_background_task(BackgroundTask(this, &ManualLeveling::leveling_task), 200);
-    return Page::None;
-}
-
-//! Leveling Background task.
-void ManualLeveling::leveling_task()
-{
-    if(!TEST(axis_homed, X_AXIS) || !TEST(axis_homed, Y_AXIS) || !TEST(axis_homed, Z_AXIS))
+    if(message == last_advanced_pause_message_)
         return;
+    last_advanced_pause_message_ = message;
 
-    Log::log() << F("Leveling Homed, start process") << Log::endl();
-    advi3pp.reset_status();
-    task.clear_background_task();
-    pages.show_page(Page::ManualLeveling, false);
-}
-
-//! Handle leveling point #1.
-void ManualLeveling::point1_command()
-{
-    Log::log() << F("Level point 1") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X30 Y30 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-//! Handle leveling point #2.
-void ManualLeveling::point2_command()
-{
-    Log::log() << F("Level point 2") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X170 Y170 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-//! Handle leveling point #3.
-void ManualLeveling::point3_command()
-{
-    Log::log() << F("Level point 3") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X170 Y30 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-//! Handle leveling point #4.
-void ManualLeveling::point4_command()
-{
-    Log::log() << F("Level point 4") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X30 Y170 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-//! Handle leveling point #5.
-void ManualLeveling::point5_command()
-{
-    Log::log() << F("Level point 5") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-void ManualLeveling::pointA_command()
-{
-    Log::log() << F("Level point A") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y30 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-void ManualLeveling::pointB_command()
-{
-    Log::log() << F("Level point B") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X30 Y100 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-void ManualLeveling::pointC_command()
-{
-    Log::log() << F("Level point C") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y170 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-void ManualLeveling::pointD_command()
-{
-    Log::log() << F("Level point D") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X170 Y100 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
-}
-
-
-// --------------------------------------------------------------------
-// Extruder tuning
-// --------------------------------------------------------------------
-
-bool ExtruderTuning::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
+    switch (message)
     {
-        case KeyValue::TuningStart:     start_command(); break;
-        case KeyValue::TuningSettings:  settings_command(); break;
-        default:                        return false;
-    }
-
-    return true;
-}
-
-//! Show the extruder tuning screen.
-Page ExtruderTuning::do_prepare_page()
-{
-    steps_settings.backup();
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_hotend_temperature()); frame.send();
-    return Page::ExtruderTuningTemp;
-}
-
-//! Start extruder tuning.
-void ExtruderTuning::start_command()
-{
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
-        return;
-    }
-
-    Uint16 hotend; frame >> hotend;
-
-    wait.show(F("Heating the extruder..."));
-    Temperature::setTargetHotend(hotend.word, 0);
-
-    task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
-}
-
-//! Extruder tuning background task.
-void ExtruderTuning::heating_task()
-{
-    if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
-        return;
-    task.clear_background_task();
-
-    advi3pp.set_status(F("Wait until the extrusion is finished..."));
-    enqueue_and_echo_commands_P(PSTR("G1 Z20 F240"));   // raise head
-    enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
-
-    ADVString<20> command; command << F("G1 E") << tuning_extruder_filament << " F50"; // Extrude slowly
-    enqueue_and_echo_command(command.get());
-
-    task.set_background_task(BackgroundTask(this, &ExtruderTuning::extruding_task));
-}
-
-//! Extruder tuning background task.
-void ExtruderTuning::extruding_task()
-{
-    if(current_position[E_AXIS] < tuning_extruder_filament || advi3pp.is_busy())
-        return;
-    task.clear_background_task();
-
-    extruded_ = current_position[E_AXIS];
-
-    Temperature::setTargetHotend(0, 0);
-    task.clear_background_task();
-    advi3pp.reset_status();
-    finished();
-}
-
-//! Record the amount of filament extruded.
-void ExtruderTuning::finished()
-{
-    Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("M82"));       // absolute E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
-
-    task.clear_background_task();
-    pages.show_page(Page::ExtruderTuningMeasure, false);
-}
-
-//! Cancel the extruder tuning.
-void ExtruderTuning::do_back_command()
-{
-    task.clear_background_task();
-
-    Temperature::setTargetHotend(0, 0);
-
-    enqueue_and_echo_commands_P(PSTR("M82"));       // absolute E mode
-    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
-
-    Parent::do_back_command();
-}
-
-
-//! Compute the extruder (E axis) new value and show the steps settings.
-void ExtruderTuning::settings_command()
-{
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
-        return;
-    }
-
-    Uint16 e; frame >> e;
-
-    auto new_value = Planner::axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + tuning_extruder_delta - e.word / 10);
-
-    Log::log()
-            << F("Adjust: old = ") << Planner::axis_steps_per_mm[E_AXIS]
-            << F(", expected = ") << extruded_
-            << F(", measured = ") << (extruded_ + tuning_extruder_delta - e.word)
-            << F(", new = ") << new_value << Log::endl();
-
-    Planner::axis_steps_per_mm[E_AXIS] = new_value;
-    steps_settings.show(false);
-}
-
-// --------------------------------------------------------------------
-// PID Tuning
-// --------------------------------------------------------------------
-
-//! Handle PID tuning.
-//! @param key_value    The step of the PID tuning
-bool PidTuning::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::PidTuningStep2:  step2_command(); break;
-        case KeyValue::PidTuningHotend: hotend_command(); break;
-        case KeyValue::PidTuningBed:    bed_command(); break;
-        default:                        return false;
-    }
-
-    return true;
-}
-
-//! Show step #1 of PID tuning
-Page PidTuning::do_prepare_page()
-{
-    pid_settings.backup();
-    hotend_command();
-    return Page::PidTuning1;
-}
-
-void PidTuning::hotend_command()
-{
-    hotend_ = true;
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_hotend_temperature()); frame.send();
-}
-
-void PidTuning::bed_command()
-{
-    hotend_ = false;
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_bed_temperature()); frame.send();
-}
-
-//! Show step #2 of PID tuning
-void PidTuning::step2_command()
-{
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
-        return;
-    }
-
-    frame >> temperature_;
-
-    enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
-    ADVString<20> auto_pid_command;
-    auto_pid_command << F("M303 S") << temperature_.word << (hotend_ ? F(" E0 C8 U1") : F(" E-1 C8 U1"));
-    enqueue_and_echo_command(auto_pid_command.get());
-
-    pages.show_page(Page::PidTuning2);
-};
-
-//! PID automatic tuning is finished.
-void PidTuning::finished()
-{
-    Log::log() << F("Auto PID finished") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("M106 S0"));
-    pid_settings.add(hotend_, temperature_.word);
-    pid_settings.show(false);
-}
-
-
-// --------------------------------------------------------------------
-// Sensor Settings
-// --------------------------------------------------------------------
-
-#ifdef ADVi3PP_BLTOUCH
-
-struct SensorPosition
-{
-    uint16_t x, y, z;
-    const char* name;
-};
-
-const char sensor_1_name[] PROGMEM = "ADVi3++ Side";
-const char sensor_2_name[] PROGMEM = "ADVi3++ Front";
-const char sensor_3_name[] PROGMEM = "Teaching Tech Side";
-const char sensor_4_name[] PROGMEM = "Teaching Tech Front";
-
-SensorPosition positions[] = {
-    {0, 0, 0, sensor_1_name},
-    {0, 0, 0, sensor_2_name},
-    {0, 0, 0, sensor_3_name},
-    {0, 0, 0, sensor_4_name},
-};
-
-bool SensorSettings::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::SensorSettingsPrevious:  previous_command(); break;
-        case KeyValue::SensorSettingsNext:      next_command(); break;
-        default:                                return false;
-    }
-
-    return true;
-}
-
-Page SensorSettings::do_prepare_page()
-{
-    send_z_height_to_lcd(zprobe_zoffset);
-    pages.save_forward_page();
-    return Page::SensorSettings;
-}
-
-void SensorSettings::do_save_command()
-{
-    save_lcd_z_height();
-    Parent::do_save_command();
-}
-
-void SensorSettings::previous_command()
-{
-    // TODO
-}
-
-void SensorSettings::next_command()
-{
-    // TODO
-}
-
-void SensorSettings::send_z_height_to_lcd(double z_height)
-{
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(z_height * 100); frame.send();
-}
-
-void SensorSettings::save_lcd_z_height()
-{
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
-        return;
-    }
-
-    Uint16 offsetZ; frame >> offsetZ;
-    save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
-}
-
-void SensorSettings::save_z_height(double height)
-{
-    ADVString<20> command; command << F("M851 Z") << height;
-    enqueue_and_echo_command(command.get());
-    advi3pp.save_settings();
-}
-
-// --------------------------------------------------------------------
-// Automatic Leveling
-// --------------------------------------------------------------------
-
-bool AutomaticLeveling::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::SensorSelfTest:  self_test_command(); break;
-        case KeyValue::SensorReset:     reset_command(); break;
-        case KeyValue::SensorDeploy:    deploy_command(); break;
-        case KeyValue::SensorStow:      stow_command(); break;
-        default:                        return false;
-    }
-
-    return true;
-}
-
-Page AutomaticLeveling::do_prepare_page()
-{
-    return Page::SensorTuning;
-}
-
-void AutomaticLeveling::leveling()
-{
-    sensor_interactive_leveling_ = true;
-    pages.save_forward_page();
-    wait.show(F("Homing..."));
-    enqueue_and_echo_commands_P(PSTR("G28"));                   // homing
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
-    enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
-    enqueue_and_echo_commands_P(PSTR("G1 X0 Y0 F3000"));        // go back to corner
-}
-
-void AutomaticLeveling::g29_leveling_finished(bool success)
-{
-    if(!success)
-    {
-        if(!sensor_interactive_leveling_ && !IS_SD_FILE_OPEN) // i.e. USB print
-            SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
-
-        if(sensor_interactive_leveling_)
-            wait.show(F("Leveling failed"), WaitCallback(this, &AutomaticLeveling::g29_leveling_failed), false);
-        else
-            advi3pp.set_status(F("Leveling failed"));
-
-        sensor_interactive_leveling_ = false;
-        return;
-    }
-
-    advi3pp.reset_status();
-
-    if(sensor_interactive_leveling_)
-    {
-        sensor_interactive_leveling_ = false;
-        leveling_grid.show();
-    }
-    else
-    {
-        enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
-        enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
+        case ADVANCED_PAUSE_MESSAGE_INIT:                       init(); break;
+        case ADVANCED_PAUSE_MESSAGE_UNLOAD:                     advi3pp.set_status(F("Unloading filament...")); break;
+        case ADVANCED_PAUSE_MESSAGE_INSERT:                     insert_filament(); break;
+        case ADVANCED_PAUSE_MESSAGE_EXTRUDE:                    advi3pp.set_status(F("Extruding some filament...")); break;
+        case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:       advi3pp.set_status(F("Press continue to heat")); break;
+        case ADVANCED_PAUSE_MESSAGE_RESUME:                     advi3pp.set_status(F("Resuming print...")); break;
+        case ADVANCED_PAUSE_MESSAGE_STATUS:                     printing(); break;
+        case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:   advi3pp.set_status(F("Waiting for heat...")); break;
+        case ADVANCED_PAUSE_MESSAGE_OPTION:                     advanced_pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
+        default: advi3pp::Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << advi3pp::Log::endl(); break;
     }
 }
 
-void AutomaticLeveling::g29_leveling_failed()
+void AdvancedPause::init()
 {
-    pages.show_back_page();
+    wait.show(F("Pausing..."));
 }
 
-void AutomaticLeveling::self_test_command()
+void AdvancedPause::insert_filament()
 {
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
+    wait.show_continue(F("Insert filament and press continue..."),
+                       WaitCallback(this, &AdvancedPause::filament_inserted), false);
 }
 
-void AutomaticLeveling::reset_command()
+void AdvancedPause::filament_inserted()
 {
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
+    ::wait_for_user = false;
+    wait.show(F("Filament inserted.."), false);
 }
 
-void AutomaticLeveling::deploy_command()
+void AdvancedPause::printing()
 {
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
-}
-
-void AutomaticLeveling::stow_command()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
-}
-
-// --------------------------------------------------------------------
-// Leveling Grid
-// --------------------------------------------------------------------
-
-Page LevelingGrid::do_prepare_page()
-{
-    WriteRamDataRequest frame{Variable::Value0};
-    for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
-        for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
-            frame << Uint16(static_cast<int16_t>(z_values[x][y] * 1000));
-    frame.send();
-
-    return Page::SensorGrid;
-}
-
-void LevelingGrid::do_save_command()
-{
-    enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
-    enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
-    Parent::do_save_command();
+    advi3pp.set_status(F("Printing"));
+    pages.show_forward_page();
 }
 
 // --------------------------------------------------------------------
 // Sensor Z-Height
 // --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
 
 bool SensorZHeight::do_dispatch(KeyValue key_value)
 {
@@ -1495,13 +1256,314 @@ Page SensorZHeight::do_prepare_page()
 #endif
 
 // --------------------------------------------------------------------
-// No Sensor
+// Extruder tuning
 // --------------------------------------------------------------------
 
-Page NoSensor::do_prepare_page()
+bool ExtruderTuning::do_dispatch(KeyValue key_value)
 {
-    return Page::NoSensor;
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::TuningStart:     start_command(); break;
+        case KeyValue::TuningSettings:  settings_command(); break;
+        default:                        return false;
+    }
+
+    return true;
 }
+
+//! Show the extruder tuning screen.
+Page ExtruderTuning::do_prepare_page()
+{
+    steps_settings.backup();
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_hotend_temperature()); frame.send();
+    return Page::ExtruderTuningTemp;
+}
+
+//! Start extruder tuning.
+void ExtruderTuning::start_command()
+{
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
+        return;
+    }
+
+    Uint16 hotend; frame >> hotend;
+    wait.show(F("Heating the extruder..."));
+    Temperature::setTargetHotend(hotend.word, 0);
+
+    task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
+}
+
+//! Extruder tuning background task.
+void ExtruderTuning::heating_task()
+{
+    if(Temperature::current_temperature[0] < Temperature::target_temperature[0] - 10)
+        return;
+    task.clear_background_task();
+
+    advi3pp.set_status(F("Wait until the extrusion is finished..."));
+    enqueue_and_echo_commands_P(PSTR("G1 Z20 F240"));   // raise head
+    enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
+
+    ADVString<20> command; command << F("G1 E") << tuning_extruder_filament << " F50"; // Extrude slowly
+    enqueue_and_echo_command(command.get());
+
+    task.set_background_task(BackgroundTask(this, &ExtruderTuning::extruding_task));
+}
+
+//! Extruder tuning background task.
+void ExtruderTuning::extruding_task()
+{
+    if(current_position[E_AXIS] < tuning_extruder_filament || advi3pp.is_busy())
+        return;
+    task.clear_background_task();
+
+    extruded_ = current_position[E_AXIS];
+
+    Temperature::setTargetHotend(0, 0);
+    task.clear_background_task();
+    advi3pp.reset_status();
+    finished();
+}
+
+//! Record the amount of filament extruded.
+void ExtruderTuning::finished()
+{
+    Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("M82"));       // absolute E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
+    task.clear_background_task();
+    pages.show_page(Page::ExtruderTuningMeasure, false);
+}
+
+//! Cancel the extruder tuning.
+void ExtruderTuning::do_back_command()
+{
+    task.clear_background_task();
+
+    Temperature::setTargetHotend(0, 0);
+
+    enqueue_and_echo_commands_P(PSTR("M82"));       // absolute E mode
+    enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
+
+    Parent::do_back_command();
+}
+
+//! Compute the extruder (E axis) new value and show the steps settings.
+void ExtruderTuning::settings_command()
+{
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
+        return;
+    }
+
+    Uint16 e; frame >> e;
+    auto new_value = Planner::axis_steps_per_mm[E_AXIS] * extruded_ / (extruded_ + tuning_extruder_delta - e.word / 10.0);
+
+    Log::log()
+            << F("Adjust: old = ") << Planner::axis_steps_per_mm[E_AXIS]
+            << F(", expected = ") << extruded_
+            << F(", measured = ") << (extruded_ + tuning_extruder_delta - e.word)
+            << F(", new = ") << new_value << Log::endl();
+
+    Planner::axis_steps_per_mm[E_AXIS] = new_value;
+    steps_settings.show(false);
+}
+
+// --------------------------------------------------------------------
+// PID Tuning
+// --------------------------------------------------------------------
+
+//! Handle PID tuning.
+//! @param key_value    The step of the PID tuning
+bool PidTuning::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::PidTuningStep2:  step2_command(); break;
+        case KeyValue::PidTuningHotend: hotend_command(); break;
+        case KeyValue::PidTuningBed:    bed_command(); break;
+        default:                        return false;
+    }
+
+    return true;
+}
+
+//! Show step #1 of PID tuning
+Page PidTuning::do_prepare_page()
+{
+    pid_settings.backup();
+    hotend_command();
+    return Page::PidTuning1;
+}
+
+void PidTuning::hotend_command()
+{
+    hotend_ = true;
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(advi3pp.last_used_hotend_temperature())
+          << Uint16(hotend_);
+    frame.send();
+}
+
+void PidTuning::bed_command()
+{
+    hotend_ = false;
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_bed_temperature()); frame.send();
+}
+
+//! Show step #2 of PID tuning
+void PidTuning::step2_command()
+{
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
+        return;
+    }
+
+    frame >> temperature_;
+
+    enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
+    ADVString<20> auto_pid_command;
+    auto_pid_command << F("M303 S") << temperature_.word << (hotend_ ? F(" E0 C8 U1") : F(" E-1 C8 U1"));
+    enqueue_and_echo_command(auto_pid_command.get());
+
+    pages.show_page(Page::PidTuning2);
+};
+
+//! PID automatic tuning is finished.
+void PidTuning::finished()
+{
+    Log::log() << F("Auto PID finished") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("M106 S0"));
+    pid_settings.add(hotend_, temperature_.word);
+    pid_settings.show(false);
+}
+
+// --------------------------------------------------------------------
+// Linear Advance Tuning
+// --------------------------------------------------------------------
+
+Page LinearAdvanceTuning::do_prepare_page()
+{
+    return Page::LinearAdvanceTuning;
+}
+
+
+// --------------------------------------------------------------------
+// Diagnosis
+// --------------------------------------------------------------------
+
+Page Diagnosis::do_prepare_page()
+{
+    // TODO
+    return Page::None;
+}
+
+
+// --------------------------------------------------------------------
+// Sensor Settings
+// --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
+
+struct SensorPosition
+{
+    uint16_t x, y, z;
+    const char* name;
+};
+
+const char sensor_1_name[] PROGMEM = "ADVi3++ Side";
+const char sensor_2_name[] PROGMEM = "ADVi3++ Front";
+const char sensor_3_name[] PROGMEM = "Teaching Tech Side";
+const char sensor_4_name[] PROGMEM = "Teaching Tech Front";
+
+SensorPosition positions[] = {
+    {0, 0, 0, sensor_1_name},
+    {0, 0, 0, sensor_2_name},
+    {0, 0, 0, sensor_3_name},
+    {0, 0, 0, sensor_4_name},
+};
+
+bool SensorSettings::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::SensorSettingsPrevious:  previous_command(); break;
+        case KeyValue::SensorSettingsNext:      next_command(); break;
+        default:                                return false;
+    }
+
+    return true;
+}
+
+Page SensorSettings::do_prepare_page()
+{
+    send_z_height_to_lcd(zprobe_zoffset);
+    pages.save_forward_page();
+    return Page::SensorSettings;
+}
+
+void SensorSettings::do_save_command()
+{
+    save_lcd_z_height();
+    Parent::do_save_command();
+}
+
+void SensorSettings::previous_command()
+{
+    // TODO
+}
+
+void SensorSettings::next_command()
+{
+    // TODO
+}
+
+void SensorSettings::send_z_height_to_lcd(double z_height)
+{
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(z_height * 100); frame.send();
+}
+
+void SensorSettings::save_lcd_z_height()
+{
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
+        return;
+    }
+
+    Uint16 offsetZ; frame >> offsetZ;
+    save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
+}
+
+void SensorSettings::save_z_height(double height)
+{
+    ADVString<20> command; command << F("M851 Z") << height;
+    enqueue_and_echo_command(command.get());
+    advi3pp.save_settings();
+}
+
+#endif
+
+
 
 // --------------------------------------------------------------------
 // Firmware Settings
@@ -1652,166 +1714,6 @@ void LcdSettings::send_data() const
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(static_cast<uint16_t>(features_)) << Uint16(::lcd_contrast);
     frame.send();
-}
-
-// --------------------------------------------------------------------
-// Statistics
-// --------------------------------------------------------------------
-
-Page Statistics::do_prepare_page()
-{
-    send_stats();
-    return Page::Statistics;
-}
-
-void Statistics::send_stats()
-{
-    printStatistics stats = PrintCounter::getStats();
-
-    ADVString<16> printTime{duration_t{stats.printTime}};
-    ADVString<16> longestPrint{duration_t{stats.longestPrint}};
-
-    ADVString<16> filament_used;
-    filament_used << static_cast<unsigned int>(stats.filamentUsed / 1000)
-                  << '.'
-                  << (static_cast<unsigned int>(stats.filamentUsed / 100) % 10)
-                  << 'm';
-
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(stats.totalPrints) << Uint16(stats.finishedPrints);
-    frame.send();
-
-    frame.reset(Variable::ShortText0);
-    frame << printTime.align(Alignment::Left)
-          << longestPrint.align(Alignment::Left)
-          << filament_used.align(Alignment::Left);
-    frame.send();
-}
-
-// --------------------------------------------------------------------
-// Versions
-// --------------------------------------------------------------------
-
-bool Versions::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::MismatchForward:         versions_mismatch_forward_command(); break;
-        default:								return false;
-    }
-
-    return true;
-}
-
-void Versions::get_version_from_lcd()
-{
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
-        return;
-    }
-
-    Uint16 version; frame >> version;
-    Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
-    lcd_version_ = version.word;
-}
-
-//! Get the current LCD firmware version.
-//! @return     The version as a string.
-template<size_t L>
-ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
-{
-    ReadRegister response{Register::Version, 1};
-    if(!response.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Version)") << Log::endl();
-        return lcd_version;
-    }
-
-    Uint8 version; response >> version;
-    Log::log() << F("LCD Firmware raw version = ") << version.byte << Log::endl();
-
-    lcd_version << (version.byte / 0x10) << '.' << (version.byte % 0x10);
-    return lcd_version;
-}
-
-//! Convert a version from its hexadecimal representation.
-//! @param hex_version  Hexadecimal representation of the version
-//! @return             Version as a string
-template<size_t L>
-ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version)
-{
-    version << hex_version / 0x0100 << '.' << (hex_version % 0x100) / 0x10 << '.' << hex_version % 0x10;
-    return version;
-}
-
-//! Send the different versions to the LCD screen.
-void Versions::send_versions()
-{
-    ADVString<16> marlin_version{SHORT_BUILD_VERSION};
-    ADVString<16> motherboard_version;
-    ADVString<16> advi3pp_lcd_version;
-    ADVString<16> lcd_firmware_version;
-
-    marlin_version.align(Alignment::Left);
-    convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
-    convert_version(advi3pp_lcd_version, lcd_version_).align(Alignment::Left);
-    get_lcd_firmware_version(lcd_firmware_version).align(Alignment::Left);
-
-    WriteRamDataRequest frame{Variable::ShortText0};
-    frame << motherboard_version
-          << advi3pp_lcd_version
-          << lcd_firmware_version
-		  << marlin_version;
-    frame.send();
-}
-
-void Versions::send_advi3pp_version()
-{
-    ADVString<16> motherboard_version;
-    convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
-
-    WriteRamDataRequest frame{Variable::ADVi3ppversion};
-    frame << motherboard_version;
-    frame.send();
-}
-
-bool Versions::is_lcd_version_valid() const
-{
-    return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
-}
-
-void Versions::versions_mismatch_forward_command()
-{
-    pages.show_page(Page::Main, false);
-}
-
-Page Versions::do_prepare_page()
-{
-    send_versions();
-    return Page::Versions;
-}
-
-// --------------------------------------------------------------------
-// Sponsors
-// --------------------------------------------------------------------
-
-Page Sponsors::do_prepare_page()
-{
-    return Page::Sponsors;
-}
-
-// --------------------------------------------------------------------
-// Copyrights
-// --------------------------------------------------------------------
-
-Page Copyrights::do_prepare_page()
-{
-    return Page::Copyrights;
 }
 
 
@@ -2275,6 +2177,181 @@ void LinearAdvanceSettings::do_save_command()
     Parent::do_save_command();
 }
 
+// --------------------------------------------------------------------
+// Factory Reset
+// --------------------------------------------------------------------
+
+Page FactoryReset::do_prepare_page()
+{
+    return Page::FactoryReset;
+}
+
+void FactoryReset::do_save_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M502"));
+    advi3pp.save_settings();
+    Parent::do_save_command();
+}
+
+// --------------------------------------------------------------------
+// Statistics
+// --------------------------------------------------------------------
+
+Page Statistics::do_prepare_page()
+{
+    send_stats();
+    return Page::Statistics;
+}
+
+void Statistics::send_stats()
+{
+    printStatistics stats = PrintCounter::getStats();
+
+    ADVString<16> printTime{duration_t{stats.printTime}};
+    ADVString<16> longestPrint{duration_t{stats.longestPrint}};
+
+    ADVString<16> filament_used;
+    filament_used << static_cast<unsigned int>(stats.filamentUsed / 1000)
+                  << '.'
+                  << (static_cast<unsigned int>(stats.filamentUsed / 100) % 10)
+                  << 'm';
+
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(stats.totalPrints) << Uint16(stats.finishedPrints);
+    frame.send();
+
+    frame.reset(Variable::ShortText0);
+    frame << printTime.align(Alignment::Left)
+          << longestPrint.align(Alignment::Left)
+          << filament_used.align(Alignment::Left);
+    frame.send();
+}
+
+// --------------------------------------------------------------------
+// Versions
+// --------------------------------------------------------------------
+
+bool Versions::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::MismatchForward:         versions_mismatch_forward_command(); break;
+        default:								return false;
+    }
+
+    return true;
+}
+
+void Versions::get_version_from_lcd()
+{
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
+        return;
+    }
+
+    Uint16 version; frame >> version;
+    Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
+    lcd_version_ = version.word;
+}
+
+//! Get the current LCD firmware version.
+//! @return     The version as a string.
+template<size_t L>
+ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
+{
+    ReadRegister response{Register::Version, 1};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Version)") << Log::endl();
+        return lcd_version;
+    }
+
+    Uint8 version; response >> version;
+    Log::log() << F("LCD Firmware raw version = ") << version.byte << Log::endl();
+
+    lcd_version << (version.byte / 0x10) << '.' << (version.byte % 0x10);
+    return lcd_version;
+}
+
+//! Convert a version from its hexadecimal representation.
+//! @param hex_version  Hexadecimal representation of the version
+//! @return             Version as a string
+template<size_t L>
+ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version)
+{
+    version << hex_version / 0x0100 << '.' << (hex_version % 0x100) / 0x10 << '.' << hex_version % 0x10;
+    return version;
+}
+
+//! Send the different versions to the LCD screen.
+void Versions::send_versions()
+{
+    ADVString<16> marlin_version{SHORT_BUILD_VERSION};
+    ADVString<16> motherboard_version;
+    ADVString<16> advi3pp_lcd_version;
+    ADVString<16> lcd_firmware_version;
+
+    marlin_version.align(Alignment::Left);
+    convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
+    convert_version(advi3pp_lcd_version, lcd_version_).align(Alignment::Left);
+    get_lcd_firmware_version(lcd_firmware_version).align(Alignment::Left);
+
+    WriteRamDataRequest frame{Variable::ShortText0};
+    frame << motherboard_version
+          << advi3pp_lcd_version
+          << lcd_firmware_version
+          << marlin_version;
+    frame.send();
+}
+
+void Versions::send_advi3pp_version()
+{
+    ADVString<16> motherboard_version;
+    convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
+
+    WriteRamDataRequest frame{Variable::ADVi3ppversion};
+    frame << motherboard_version;
+    frame.send();
+}
+
+bool Versions::is_lcd_version_valid() const
+{
+    return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
+}
+
+void Versions::versions_mismatch_forward_command()
+{
+    pages.show_page(Page::Main, false);
+}
+
+Page Versions::do_prepare_page()
+{
+    send_versions();
+    return Page::Versions;
+}
+
+// --------------------------------------------------------------------
+// Sponsors
+// --------------------------------------------------------------------
+
+Page Sponsors::do_prepare_page()
+{
+    return Page::Sponsors;
+}
+
+// --------------------------------------------------------------------
+// Copyrights
+// --------------------------------------------------------------------
+
+Page Copyrights::do_prepare_page()
+{
+    return Page::Copyrights;
+}
 
 // --------------------------------------------------------------------
 // Change Filament
@@ -2287,8 +2364,43 @@ Page ChangeFilament::do_prepare_page()
 
 
 // --------------------------------------------------------------------
-// Linear Advance
+// EEPROM data mismatch
 // --------------------------------------------------------------------
+
+Page EepromMismatch::do_prepare_page()
+{
+    return Page::EEPROMMismatch;
+}
+
+void EepromMismatch::do_save()
+{
+    advi3pp.save_settings();
+    pages.show_page(Page::Main);
+}
+
+bool EepromMismatch::does_mismatch() const
+{
+    return mismatch_;
+}
+
+void EepromMismatch::set_mismatch()
+{
+    mismatch_ = true;
+}
+
+void EepromMismatch::reset_mismatch()
+{
+    mismatch_ = false;
+}
+
+// --------------------------------------------------------------------
+// No Sensor
+// --------------------------------------------------------------------
+
+Page NoSensor::do_prepare_page()
+{
+    return Page::NoSensor;
+}
 
 
 // --------------------------------------------------------------------
@@ -2385,108 +2497,6 @@ void Dimming::change_brightness(int16_t brightness)
     send_brightness();
 }
 
-// --------------------------------------------------------------------
-// Advance pause
-// --------------------------------------------------------------------
-
-void ADVi3pp_::advanced_pause_show_message(const AdvancedPauseMessage message)
-{
-    pause.advanced_pause_show_message(message);
-}
-
-void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage message)
-{
-    if(message == last_advanced_pause_message_)
-        return;
-    last_advanced_pause_message_ = message;
-
-    switch (message)
-    {
-        case ADVANCED_PAUSE_MESSAGE_INIT:                       init(); break;
-        case ADVANCED_PAUSE_MESSAGE_UNLOAD:                     advi3pp.set_status(F("Unloading filament...")); break;
-        case ADVANCED_PAUSE_MESSAGE_INSERT:                     insert_filament(); break;
-        case ADVANCED_PAUSE_MESSAGE_EXTRUDE:                    advi3pp.set_status(F("Extruding some filament...")); break;
-        case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:       advi3pp.set_status(F("Press continue to heat")); break;
-        case ADVANCED_PAUSE_MESSAGE_RESUME:                     advi3pp.set_status(F("Resuming print...")); break;
-        case ADVANCED_PAUSE_MESSAGE_STATUS:                     printing(); break;
-        case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:   advi3pp.set_status(F("Waiting for heat...")); break;
-        case ADVANCED_PAUSE_MESSAGE_OPTION:                     advanced_pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
-        default: advi3pp::Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << advi3pp::Log::endl(); break;
-    }
-}
-
-void AdvancedPause::init()
-{
-    wait.show(F("Pausing..."));
-}
-
-void AdvancedPause::insert_filament()
-{
-    wait.show_continue(F("Insert filament and press continue..."),
-        WaitCallback(this, &AdvancedPause::filament_inserted), false);
-}
-
-void AdvancedPause::filament_inserted()
-{
-    ::wait_for_user = false;
-    wait.show(F("Filament inserted.."), false);
-}
-
-void AdvancedPause::printing()
-{
-    advi3pp.set_status(F("Printing"));
-    pages.show_forward_page();
-}
-
-// --------------------------------------------------------------------
-// EEPROM data mismatch
-// --------------------------------------------------------------------
-
-Page EepromMismatch::do_prepare_page()
-{
-    return Page::EEPROMMismatch;
-}
-
-void EepromMismatch::do_save()
-{
-    advi3pp.save_settings();
-    pages.show_page(Page::Main);
-}
-
-bool EepromMismatch::does_mismatch() const
-{
-    return mismatch_;
-}
-
-void EepromMismatch::set_mismatch()
-{
-    mismatch_ = true;
-}
-
-void EepromMismatch::reset_mismatch()
-{
-    mismatch_ = false;
-}
-
-// --------------------------------------------------------------------
-// Linear Advance Tuning
-// --------------------------------------------------------------------
-
-Page LinearAdvanceTuning::do_prepare_page()
-{
-    return Page::LinearAdvanceTuning;
-}
-
-
-// --------------------------------------------------------------------
-// Diagnosis
-// --------------------------------------------------------------------
-
-Page Diagnosis::do_prepare_page()
-{
-    // TODO
-    return Page::None;
-}
 
 // --------------------------------------------------------------------
 
