@@ -761,6 +761,13 @@ void AutomaticLeveling::stow_command()
     enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
 
+#else
+
+Page AutomaticLeveling::do_prepare_page()
+{
+    return Page::NoSensor;
+}
+
 #endif
 
 // --------------------------------------------------------------------
@@ -785,6 +792,13 @@ void LevelingGrid::do_save_command()
     enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
     enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
     Parent::do_save_command();
+}
+
+#else
+
+Page LevelingGrid::do_prepare_page()
+{
+    return Page::NoSensor;
 }
 
 #endif
@@ -1233,21 +1247,6 @@ void SensorZHeight::multiplier10_command()
 
 #else
 
-Page SensorSettings::do_prepare_page()
-{
-    return Page::NoSensor;
-}
-
-Page SensorTuning::do_prepare_page()
-{
-    return Page::NoSensor;
-}
-
-Page SensorGrid::do_prepare_page()
-{
-    return Page::NoSensor;
-}
-
 Page SensorZHeight::do_prepare_page()
 {
     return Page::NoSensor;
@@ -1559,6 +1558,13 @@ void SensorSettings::save_z_height(double height)
     ADVString<20> command; command << F("M851 Z") << height;
     enqueue_and_echo_command(command.get());
     advi3pp.save_settings();
+}
+
+#else
+
+Page SensorSettings::do_prepare_page()
+{
+    return Page::NoSensor;
 }
 
 #endif
