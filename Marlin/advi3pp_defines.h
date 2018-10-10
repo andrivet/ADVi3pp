@@ -33,10 +33,11 @@
 #ifdef DEBUG
 
 // To log various aspects of ADVi3++
-//#define ADVi3PP_LOG
+#define ADVi3PP_LOG
 
 // To log the content of frames, uncomment the following line. Very chatty, but useful to debug tough bugs
-//#define ADVi3PP_LOG_FRAMES
+#define ADVi3PP_LOG_FRAMES
+#define ADVi3PP_LOG_ALL_FRAMES
 
 #endif
 #endif

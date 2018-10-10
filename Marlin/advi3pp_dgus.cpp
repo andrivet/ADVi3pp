@@ -151,12 +151,18 @@ Frame& operator<<(Frame& frame, const char* s)
 //! @param logging  Enable logging in DEBUG release
 bool Frame::send(bool logging)
 {
+#ifdef ADVi3PP_LOG_ALL_FRAMES
+    logging = true;
+#endif
+
     if(logging)
     {
-        Log::log() << F("<=S= 0x") << get_length() << F(" bytes, cmd = 0x") << static_cast<uint8_t>(get_command())
-                   << Log::endl();
+        Log::log() << F("<=S= 0x") << get_length() << F(" bytes, cmd = 0x") << static_cast<uint8_t>(get_command());
 #ifdef ADVi3PP_LOG_FRAMES
+        Log::log() << F(" ");
         Log::dump(buffer_, get_length() + 3);
+#else
+        Log::log() << Log::endl();
 #endif
     }
     size_t size = 3 + buffer_[Position::Length];
@@ -205,6 +211,10 @@ bool Frame::receive(bool log)
     //      2 |      1 |       1 |    N  bytes
     //  5A A5 |     06 |      83 |  ...
 
+#ifdef ADVi3PP_LOG_ALL_FRAMES
+    log = true;
+#endif
+
     uint8_t header0 = 0;
     for(size_t index = 0; index < MAX_GARBAGE_BYTES; ++index)
     {
@@ -247,7 +257,7 @@ bool Frame::receive(bool log)
 #ifdef ADVi3PP_LOG_FRAMES
     if(log)
     {
-        Log::log() << F("<<< ") << length << F(" bytes.") << Log::endl();
+        Log::log() << F("=R=> ") << length << F(" bytes. ");
         Log::dump(buffer_, length + 3);
     }
 #endif
