@@ -269,6 +269,7 @@ void ADVi3pp_::init()
     dimming.reset();
 
     show_boot_page();
+    set_status(F("ADVi3++ is ready"));
 }
 
 //! Background idle tasks
@@ -277,8 +278,8 @@ void ADVi3pp_::idle()
     if(init_)
         init();
 
-    dimming.check();
     read_lcd_serial();
+    dimming.check();
     task.execute_background_task();
     update_progress();
     send_status_data();
