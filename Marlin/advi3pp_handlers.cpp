@@ -1485,7 +1485,7 @@ void PidTuning::step2_command()
 
 void PidTuning::cancel_pid()
 {
-    enqueue_and_echo_commands_P(PSTR("M108"));
+    ::wait_for_user = ::wait_for_heatup = false;
 }
 
 //! PID automatic tuning is finished.
@@ -1502,7 +1502,6 @@ void PidTuning::finished(bool success)
     else
     {
         advi3pp.set_status(F("PID tuning failed"));
-        pages.show_back_page();
     }
 }
 
