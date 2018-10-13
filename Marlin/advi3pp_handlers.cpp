@@ -2504,7 +2504,7 @@ Page EepromMismatch::do_prepare_page()
     return Page::EEPROMMismatch;
 }
 
-void EepromMismatch::do_save()
+void EepromMismatch::do_save_command()
 {
     advi3pp.save_settings();
     pages.show_page(Page::Main);

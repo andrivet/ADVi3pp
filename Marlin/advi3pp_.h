@@ -917,7 +917,7 @@ struct EepromMismatch: Handler<EepromMismatch>
 
 private:
     Page do_prepare_page();
-    void do_save();
+    void do_save_command();
 
     bool mismatch_ = false;
 
