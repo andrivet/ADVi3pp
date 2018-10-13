@@ -75,6 +75,7 @@ inline namespace singletons
     Dimming dimming;
     Graphs graphs;
 
+    extern Screens screens;
     extern Wait wait;
     extern Temperatures temperatures;
     extern LoadUnload load_unload;
@@ -268,6 +269,7 @@ void ADVi3pp_::init()
     graphs.clear();
     dimming.reset();
 
+    reset_status();
     show_boot_page();
     set_status(F("ADVi3++ is ready"));
 }
@@ -279,7 +281,7 @@ void ADVi3pp_::idle()
         init();
 
     read_lcd_serial();
-    dimming.check();
+    //dimming.check();
     task.execute_background_task();
     update_progress();
     send_status_data();
@@ -346,6 +348,7 @@ void ADVi3pp_::read_lcd_serial()
     }
 
     buzz_on_press();
+    dimming.reset();
 
     Command command; Action action; Uint8 nb_words; Uint16 value;
     frame >> command >> action >> nb_words >> value;
@@ -356,7 +359,7 @@ void ADVi3pp_::read_lcd_serial()
 
     switch(action)
     {
-        case Action::Screen:                screen(key_value); break;
+        case Action::Screen:                screens.handle(key_value); break;
         case Action::PrintCommand:          print_command(key_value); break;
         case Action::Wait:                  wait.handle(key_value); break;
         case Action::LoadUnload:            load_unload.handle(key_value); break;
@@ -410,75 +413,6 @@ void ADVi3pp_::read_lcd_serial()
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Screens
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-void ADVi3pp_::screen(KeyValue key_value)
-{
-    switch(key_value)
-    {
-        case KeyValue::Temps:           show_temps(); break;
-        case KeyValue::Print:           show_print(); break;
-        case KeyValue::Controls:        pages.show_page(Page::Controls); break;
-        case KeyValue::Tuning:          pages.show_page(Page::Tuning); break;
-        case KeyValue::Settings:        pages.show_page(Page::Settings); break;
-        case KeyValue::Infos:           pages.show_page(Page::Infos); break;
-        case KeyValue::Motors:          pages.show_page(Page::MotorsSettings); break;
-        case KeyValue::Leveling:        pages.show_page(Page::Leveling); break;
-        case KeyValue::Back:            back(); break;
-        default:                        Log::error() << F("Invalid key value ") << static_cast<uint16_t>(key_value) << Log::endl(); break;
-    }
-}
-
-//! Show one of the temperature graph screens depending of the context: either the SD printing screen,
-//! the printing screen or the temperature screen.
-void ADVi3pp_::show_temps()
-{
-    if(!PrintCounter::isRunning() && !PrintCounter::isPaused())
-    {
-        temperatures.show();
-        return;
-    }
-
-    // If there is a print running (or paused), display the print screen.
-    pages.show_page(Page::Print);
-}
-
-//! Show one of the Printing screens depending of the context:
-//! - If a print is running, display the Print screen
-//! - Otherwise, try to access the SD card. Depending of the result, display the SD card Page or the Temperatures page
-void ADVi3pp_::show_print()
-{
-    // If there is a print running (or paused), display the SD or USB print screen
-    if(PrintCounter::isRunning() || PrintCounter::isPaused())
-    {
-        pages.show_page(Page::Print);
-        return;
-    }
-
-    wait.show(F("Try to access the SD card..."));;
-    task.set_background_task(BackgroundTask{this, &ADVi3pp_::show_sd_or_temp_page});
-}
-
-void ADVi3pp_::show_sd_or_temp_page()
-{
-    task.clear_background_task();
-
-    card.initsd(); // Can take some time
-    ADVi3pp_::reset_status();
-    if(!card.cardOK)
-    {
-        // SD card not accessible so fall back to Temperatures
-        temperatures.show(false);
-        return;
-    }
-
-    pages.show_page(Page::SdCard, false);
-    sd_card.show_first_page();
-}
-
-void ADVi3pp_::back()
-{
-    pages.show_back_page();
-}
 
 //! Handle print commands.
 //! @param key_value    The sub-action to handle
@@ -580,8 +514,8 @@ void ADVi3pp_::queue_status(const FlashChar* message)
 
 void ADVi3pp_::reset_status()
 {
-    message_.reset();
-    centered_.reset();
+    message_.reset().align(Alignment::Left);
+    centered_.reset().align(Alignment::Left);
     has_status_ = false;
 }
 

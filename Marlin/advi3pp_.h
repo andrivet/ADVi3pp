@@ -151,6 +151,7 @@ public:
     void restore() { this->self().do_restore(); }
 
 protected:
+    Page do_prepare_page();
     bool do_dispatch(KeyValue value);
     void do_show_command();
     void do_save_command();
@@ -166,6 +167,22 @@ private:
     void do_backup() {}
     void do_restore() {}
 };
+
+// --------------------------------------------------------------------
+// Screens
+// --------------------------------------------------------------------
+
+struct Screens: Handler<Screens>
+{
+private:
+    bool do_dispatch(KeyValue value);
+    void show_temps();
+    void show_print();
+    void show_sd_or_temp_page();
+
+    friend Parent;
+};
+
 
 // --------------------------------------------------------------------
 // Wait
@@ -1040,12 +1057,6 @@ private:
 
     void icode_0(const GCodeParser& parser);
 
-    void screen(KeyValue key_value);
-    void show_temps();
-    void show_print();
-    void show_sd_or_temp_page();
-    void back();
-
     void print_command(KeyValue key_value);
 
     void compute_progress();
@@ -1080,6 +1091,12 @@ inline namespace singletons
 // --------------------------------------------------------------------
 // Handler implementation
 // --------------------------------------------------------------------
+
+template<typename Self>
+Page Handler<Self>::do_prepare_page()
+{
+    return Page::None;
+}
 
 template<typename Self>
 void Handler<Self>::handle(KeyValue value)

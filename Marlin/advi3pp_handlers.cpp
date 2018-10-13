@@ -84,6 +84,7 @@ inline namespace singletons
     extern Dimming dimming;
     extern Graphs graphs;
 
+    Screens screens;
     Wait wait;
     Temperatures temperatures;
     LoadUnload load_unload;
@@ -197,6 +198,78 @@ void Pages::show_forward_page()
             return;
         }
     }
+}
+
+// --------------------------------------------------------------------
+// Screens
+// --------------------------------------------------------------------
+
+bool Screens::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::Temps:           show_temps(); break;
+        case KeyValue::Print:           show_print(); break;
+        case KeyValue::Controls:        pages.show_page(Page::Controls); break;
+        case KeyValue::Tuning:          pages.show_page(Page::Tuning); break;
+        case KeyValue::Settings:        pages.show_page(Page::Settings); break;
+        case KeyValue::Infos:           pages.show_page(Page::Infos); break;
+        case KeyValue::Motors:          pages.show_page(Page::MotorsSettings); break;
+        case KeyValue::Leveling:        pages.show_page(Page::Leveling); break;
+        default:                        return false;
+    }
+
+    return true;
+}
+
+//! Show one of the temperature graph screens depending of the context: either the SD printing screen,
+//! the printing screen or the temperature screen.
+void Screens::show_temps()
+{
+    if(!PrintCounter::isRunning() && !PrintCounter::isPaused())
+    {
+        temperatures.show();
+        return;
+    }
+
+    // If there is a print running (or paused), display the print screen.
+    pages.show_page(Page::Print);
+}
+
+//! Show one of the Printing screens depending of the context:
+//! - If a print is running, display the Print screen
+//! - Otherwise, try to access the SD card. Depending of the result, display the SD card Page or the Temperatures page
+void Screens::show_print()
+{
+    // If there is a print running (or paused), display the SD or USB print screen
+    if(PrintCounter::isRunning() || PrintCounter::isPaused())
+    {
+        pages.show_page(Page::Print);
+        return;
+    }
+
+    wait.show(F("Try to access the SD card..."));;
+    task.set_background_task(BackgroundTask{this, &Screens::show_sd_or_temp_page});
+}
+
+void Screens::show_sd_or_temp_page()
+{
+    task.clear_background_task();
+
+    card.initsd(); // Can take some time
+    advi3pp.reset_status();
+    if(!card.cardOK)
+    {
+        // SD card not accessible so fall back to Temperatures
+        temperatures.show(false);
+        return;
+    }
+
+    pages.show_page(Page::SdCard, false);
+    sd_card.show_first_page();
 }
 
 // --------------------------------------------------------------------
