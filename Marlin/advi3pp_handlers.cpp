@@ -1068,6 +1068,7 @@ bool SdCard::do_dispatch(KeyValue key_value)
 
 Page SdCard::do_prepare_page()
 {
+    show_first_page();
     return Page::SdCard;
 }
 
