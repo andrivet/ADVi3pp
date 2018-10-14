@@ -1510,6 +1510,7 @@ Page PidTuning::do_prepare_page()
 {
     pid_settings.backup();
     hotend_command();
+    advi3pp.reset_status();
     return Page::PidTuning;
 }
 
@@ -2338,10 +2339,10 @@ void Statistics::send_stats()
 {
     printStatistics stats = PrintCounter::getStats();
 
-    ADVString<16> printTime{duration_t{stats.printTime}};
-    ADVString<16> longestPrint{duration_t{stats.longestPrint}};
+    ADVString<48> printTime{duration_t{stats.printTime}};
+    ADVString<48> longestPrint{duration_t{stats.longestPrint}};
 
-    ADVString<16> filament_used;
+    ADVString<48> filament_used;
     filament_used << static_cast<unsigned int>(stats.filamentUsed / 1000)
                   << '.'
                   << (static_cast<unsigned int>(stats.filamentUsed / 100) % 10)
@@ -2351,7 +2352,7 @@ void Statistics::send_stats()
     frame << Uint16(stats.totalPrints) << Uint16(stats.finishedPrints);
     frame.send();
 
-    frame.reset(Variable::ShortText0);
+    frame.reset(Variable::LongText0);
     frame << printTime.align(Alignment::Left)
           << longestPrint.align(Alignment::Left)
           << filament_used.align(Alignment::Left);
