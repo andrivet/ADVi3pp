@@ -222,6 +222,7 @@ bool Screens::do_dispatch(KeyValue key_value)
         default:                        return false;
     }
 
+    advi3pp.reset_status();
     return true;
 }
 

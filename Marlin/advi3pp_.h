@@ -1154,7 +1154,6 @@ template<typename Self>
 void Handler<Self>::do_back_command()
 {
     restore();
-    advi3pp.reset_status();
     pages.show_back_page();
 }
 
