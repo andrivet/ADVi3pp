@@ -58,7 +58,7 @@ namespace
     const uint8_t DIMMING_RATIO = 25; // in percent
     const uint16_t DIMMING_DELAY = 1 * 60;
 
-    const uint16_t DEFAULT_PREHEAT_PRESET[5][3] = {
+    const advi3pp::Preset DEFAULT_PREHEAT_PRESET[5] = {
         {180, 50, 0},
         {200, 60, 0},
         {220, 70, 0},
@@ -540,9 +540,9 @@ void Preheat::do_reset()
 {
     for(size_t i = 0; i < NB_PRESETS; ++i)
     {
-        presets_[i].hotend  = DEFAULT_PREHEAT_PRESET[i][0];
-        presets_[i].bed     = DEFAULT_PREHEAT_PRESET[i][1];
-        presets_[i].fan     = DEFAULT_PREHEAT_PRESET[i][2];
+        presets_[i].hotend  = DEFAULT_PREHEAT_PRESET[i].hotend;
+        presets_[i].bed     = DEFAULT_PREHEAT_PRESET[i].bed;
+        presets_[i].fan     = DEFAULT_PREHEAT_PRESET[i].fan;
     }
 }
 
@@ -555,8 +555,8 @@ void Preheat::send_presets()
 {
     Log::log() << F("Preheat page") << Log::endl();
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(presets_[index_].bed)
-          << Uint16(presets_[index_].hotend)
+    frame << Uint16(presets_[index_].hotend)
+          << Uint16(presets_[index_].bed)
           << Uint16(presets_[index_].fan);
     frame.send();
 
@@ -576,11 +576,11 @@ void Preheat::retrieve_presets()
         return;
     }
 
-    Uint16 bed, hotend, fan;
-    frame >> bed >> hotend >> fan;
+    Uint16 hotend, bed, fan;
+    frame >> hotend >> bed >> fan;
 
-    presets_[index_].bed = bed.word;
     presets_[index_].hotend = hotend.word;
+    presets_[index_].bed = bed.word;
     presets_[index_].fan = fan.word;
 
     advi3pp.save_settings();

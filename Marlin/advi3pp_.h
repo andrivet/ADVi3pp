@@ -53,6 +53,14 @@ using adv::Callback;
 using BackgroundTask = Callback<void(*)()>;
 using WaitCallback = Callback<void(*)()>;
 
+//! Hotend, bed temperature and fan speed preset.
+struct Preset
+{
+    uint16_t hotend;
+    uint16_t bed;
+    uint16_t fan;
+};
+
 // --------------------------------------------------------------------
 
 //! Transform a value from a scale to another one.
@@ -245,18 +253,6 @@ private:
     void start_task(const char* command,  const BackgroundTask& back_task);
 
     friend Parent;
-};
-
-// --------------------------------------------------------------------
-// Preset
-// --------------------------------------------------------------------
-
-//! Hostend and bad temperature preset.
-struct Preset
-{
-    uint16_t hotend;
-    uint16_t bed;
-    uint16_t fan;
 };
 
 // --------------------------------------------------------------------
