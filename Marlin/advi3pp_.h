@@ -853,14 +853,13 @@ private:
 
 struct Versions: Handler<Versions>
 {
+    bool check();
     void get_version_from_lcd();
     void send_advi3pp_version();
-    bool is_lcd_version_valid() const;
 
 private:
-    bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void versions_mismatch_forward_command();
+    bool is_lcd_version_valid();
     void send_versions();
 
     uint16_t lcd_version_ = 0x0000;
@@ -911,11 +910,12 @@ private:
 
 struct EepromMismatch: Handler<EepromMismatch>
 {
-    bool does_mismatch() const;
+    bool check();
     void set_mismatch();
     void reset_mismatch();
 
 private:
+    bool does_mismatch() const;
     Page do_prepare_page();
     void do_save_command();
 
@@ -1145,10 +1145,7 @@ void Handler<Self>::save_settings() const
 template<typename Self>
 void Handler<Self>::do_show_command()
 {
-    backup();
-    Page page = prepare_page();
-    if(page != Page::None)
-        pages.show_page(page);
+    show();
 }
 
 template<typename Self>

@@ -130,17 +130,11 @@ void ADVi3pp_::setup()
 
 void ADVi3pp_::show_boot_page()
 {
-    if(eeprom_mismatch.does_mismatch())
-    {
-        pages.show_page(Page::EEPROMMismatch);
+    if(!eeprom_mismatch.check())
         return;
-    }
 
-    if(!versions.is_lcd_version_valid())
-    {
-        pages.show_page(Page::VersionsMismatch, false);
+    if(!versions.check())
         return;
-    }
 
     Page page = pages.get_current_page();
     if(page > Page::Main)
@@ -451,7 +445,7 @@ void ADVi3pp_::icode_0(const GCodeParser& parser)
     feedrate_mm_s = old_feedrate_mm_s;
 
     sensor_settings.send_z_height_to_lcd(-zHeight);
-    pages.show_page(Page::SensorSettings, false);
+    sensor_settings.show(false);
 #endif
 }
 

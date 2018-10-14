@@ -268,8 +268,7 @@ void Screens::show_sd_or_temp_page()
         return;
     }
 
-    pages.show_page(Page::SdCard, false);
-    sd_card.show_first_page();
+    sd_card.show(false);
 }
 
 // --------------------------------------------------------------------
@@ -351,13 +350,13 @@ Page Temperatures::do_prepare_page()
 void Temperatures::show(const WaitCallback& back, bool save_back)
 {
     back_ = back;
-    pages.show_page(Page::Temperature, save_back);
+    Parent::show(save_back);
 }
 
 void Temperatures::show(bool save_back)
 {
     back_ = nullptr;
-    pages.show_page(Page::Temperature, save_back);
+    Parent::show(save_back);
 }
 
 void Temperatures::do_back_command()
@@ -629,7 +628,7 @@ void Preheat::do_save_command()
     command = F("M106 S"); command << preset.fan;
     enqueue_and_echo_command(command.get());
 
-    pages.show_page(Page::Temperature, false);
+    temperatures.show(false);
 }
 
 //! Cooldown the bed and the nozzle
@@ -962,7 +961,7 @@ void ManualLeveling::leveling_task()
     Log::log() << F("Leveling Homed, start process") << Log::endl();
     advi3pp.reset_status();
     task.clear_background_task();
-    pages.show_page(Page::ManualLeveling, false);
+    manual_leveling.show(false);
 }
 
 //! Handle leveling point #1.
@@ -1321,7 +1320,7 @@ void SensorZHeight::center_task()
     task.clear_background_task();
 
     advi3pp.reset_status();
-    pages.show_page(Page::ZHeightTuning, false);
+    sensor_z_height.show(false);
 }
 
 void SensorZHeight::do_back_command()
@@ -2363,15 +2362,13 @@ void Statistics::send_stats()
 // Versions
 // --------------------------------------------------------------------
 
-bool Versions::do_dispatch(KeyValue key_value)
+bool Versions::check()
 {
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
+    if(!is_lcd_version_valid())
     {
-        case KeyValue::MismatchForward:         versions_mismatch_forward_command(); break;
-        default:								return false;
+        send_versions();
+        pages.show_page(Page::VersionsMismatch, false);
+        return false;
     }
 
     return true;
@@ -2451,14 +2448,9 @@ void Versions::send_advi3pp_version()
     frame.send();
 }
 
-bool Versions::is_lcd_version_valid() const
+bool Versions::is_lcd_version_valid()
 {
     return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
-}
-
-void Versions::versions_mismatch_forward_command()
-{
-    pages.show_page(Page::Main, false);
 }
 
 Page Versions::do_prepare_page()
@@ -2498,6 +2490,17 @@ Page ChangeFilament::do_prepare_page()
 // --------------------------------------------------------------------
 // EEPROM data mismatch
 // --------------------------------------------------------------------
+
+bool EepromMismatch::check()
+{
+    if(does_mismatch())
+    {
+        show(false);
+        return false;
+    }
+
+    return true;
+}
 
 Page EepromMismatch::do_prepare_page()
 {
