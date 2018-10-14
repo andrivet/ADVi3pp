@@ -206,8 +206,7 @@ void Pages::show_forward_page()
 
 bool Screens::do_dispatch(KeyValue key_value)
 {
-    if(Parent::do_dispatch(key_value))
-        return true;
+    // Do not call Parent::do_dispatch
 
     switch(key_value)
     {
@@ -219,6 +218,7 @@ bool Screens::do_dispatch(KeyValue key_value)
         case KeyValue::Infos:           pages.show_page(Page::Infos); break;
         case KeyValue::Motors:          pages.show_page(Page::MotorsSettings); break;
         case KeyValue::Leveling:        pages.show_page(Page::Leveling); break;
+        case KeyValue::Back:            back_command(); break;
         default:                        return false;
     }
 
