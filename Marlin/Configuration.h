@@ -1306,7 +1306,9 @@
 //
 // M100 Free Memory Watcher
 //
-//#define M100_FREE_MEMORY_WATCHER    // Add M100 (Free Memory Watcher) to debug memory usage
+#if DEBUG // @advi3++: Enable M100 in Debug Release
+#define M100_FREE_MEMORY_WATCHER    // Add M100 (Free Memory Watcher) to debug memory usage
+#endif
 
 //
 // G20/G21 Inch mode support
