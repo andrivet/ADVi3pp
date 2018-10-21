@@ -28,7 +28,7 @@ _Version.h
 #
 applet/
 *.DS_Store
-
+._*
 
 #
 # Misc
