@@ -1,7 +1,8 @@
 /**
- * ADVcallback - Helpers to implement compile-time polymorphism
+ * ADVcrtp - Helpers to implement compile-time polymorphism
  *
  * Copyright (C) 2018 Sebastien Andrivet [https://github.com/andrivet/]
+ * Copyright (C) 2017 Jonathan Boccara [https://www.fluentcpp.com/2017/05/19/crtp-helper/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +28,7 @@ namespace adv {
 
 // --------------------------------------------------------------------
 // Curiously Recurring Template Pattern
-// From: https://www.fluentcpp.com/2017/05/19/crtp-helper/
+// More or less from: https://www.fluentcpp.com/2017/05/19/crtp-helper/
 // --------------------------------------------------------------------
 
 template <typename Self, template<typename> class P>
@@ -41,7 +42,7 @@ protected:
 
 private:
     Crtp() = default;
-    friend P<Self>;
+    friend Parent;
 };
 
 }
