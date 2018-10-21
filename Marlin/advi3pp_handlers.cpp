@@ -224,7 +224,6 @@ bool Screens::do_dispatch(KeyValue key_value)
         default:                        return false;
     }
 
-    advi3pp.reset_status();
     return true;
 }
 
@@ -254,7 +253,7 @@ void Screens::show_print()
         return;
     }
 
-    wait.show(F("Try to access the SD card..."));;
+    wait.show(F("Try to access the SD card..."));
     task.set_background_task(BackgroundTask{this, &Screens::show_sd_or_temp_page});
 }
 
@@ -271,7 +270,7 @@ void Screens::show_sd_or_temp_page()
         return;
     }
 
-    sd_card.show(false);
+    sd_card.show(ShowOptions::None);
 }
 
 // --------------------------------------------------------------------
@@ -353,13 +352,13 @@ Page Temperatures::do_prepare_page()
 void Temperatures::show(const WaitCallback& back, bool save_back)
 {
     back_ = back;
-    Parent::show(save_back);
+    Parent::show(save_back ? ShowOptions::SaveBack : ShowOptions::None);
 }
 
 void Temperatures::show(bool save_back)
 {
     back_ = nullptr;
-    Parent::show(save_back);
+    Parent::show(save_back ? ShowOptions::SaveBack : ShowOptions::None);
 }
 
 void Temperatures::do_back_command()
@@ -417,7 +416,7 @@ void LoadUnload::prepare(const BackgroundTask& background)
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
     task.set_background_task(background);
-    wait.show(F("Wait until the target temp is reached..."), WaitCallback(this, &LoadUnload::stop));
+    wait.show(F("Wait until the target temp is reached..."), WaitCallback{this, &LoadUnload::stop});
 }
 
 //! Start Load action.
@@ -822,7 +821,7 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
             SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
 
         if(sensor_interactive_leveling_)
-            wait.show(F("Leveling failed"), WaitCallback(this, &AutomaticLeveling::g29_leveling_failed), false);
+            wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::g29_leveling_failed}, false);
         else
             advi3pp.set_status(F("Leveling failed"));
 
@@ -835,7 +834,7 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
     if(sensor_interactive_leveling_)
     {
         sensor_interactive_leveling_ = false;
-        leveling_grid.show();
+        leveling_grid.show(ShowOptions::None);
     }
     else
     {
@@ -1254,7 +1253,7 @@ void AdvancedPause::init()
 void AdvancedPause::insert_filament()
 {
     wait.show_continue(F("Insert filament and press continue..."),
-                       WaitCallback(this, &AdvancedPause::filament_inserted), false);
+                       WaitCallback{this, &AdvancedPause::filament_inserted}, false);
 }
 
 void AdvancedPause::filament_inserted()
@@ -1324,7 +1323,7 @@ void SensorZHeight::center_task()
     task.clear_background_task();
 
     advi3pp.reset_status();
-    sensor_z_height.show(false);
+    sensor_z_height.show(ShowOptions::SaveBack);
 }
 
 void SensorZHeight::do_back_command()
@@ -1401,7 +1400,7 @@ void ExtruderTuning::start_command()
     }
 
     Uint16 hotend; frame >> hotend;
-    wait.show(F("Heating the extruder..."));
+    wait.show(F("Heating the extruder..."), WaitCallback{this, &ExtruderTuning::cancel}, false);
     Temperature::setTargetHotend(hotend.word, 0);
 
     task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
@@ -1451,6 +1450,13 @@ void ExtruderTuning::finished()
     pages.show_page(Page::ExtruderTuningMeasure, false);
 }
 
+void ExtruderTuning::cancel()
+{
+    ::wait_for_user = ::wait_for_heatup = false;
+    task.clear_background_task();
+    Temperature::setTargetHotend(0, 0);
+}
+
 //! Cancel the extruder tuning.
 void ExtruderTuning::do_back_command()
 {
@@ -1484,7 +1490,7 @@ void ExtruderTuning::settings_command()
             << F(", new = ") << new_value << Log::endl();
 
     Planner::axis_steps_per_mm[E_AXIS] = new_value;
-    steps_settings.show(false);
+    steps_settings.show(ShowOptions::None);
 }
 
 // --------------------------------------------------------------------
@@ -1563,6 +1569,7 @@ void PidTuning::step2_command()
 void PidTuning::cancel_pid()
 {
     ::wait_for_user = ::wait_for_heatup = false;
+    wait.show(F("Canceling PID..."));
 }
 
 //! PID automatic tuning is finished.
@@ -1574,7 +1581,7 @@ void PidTuning::finished(bool success)
     {
         advi3pp.reset_status();
         pid_settings.add(hotend_, temperature_);
-        pid_settings.show(false);
+        pid_settings.show(ShowOptions::None);
     }
     else
     {
@@ -2500,7 +2507,7 @@ bool EepromMismatch::check()
 {
     if(does_mismatch())
     {
-        show(false);
+        show(ShowOptions::None);
         return false;
     }
 

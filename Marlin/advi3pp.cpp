@@ -445,7 +445,7 @@ void ADVi3pp_::icode_0(const GCodeParser& parser)
     feedrate_mm_s = old_feedrate_mm_s;
 
     sensor_settings.send_z_height_to_lcd(-zHeight);
-    sensor_settings.show(false);
+    sensor_settings.show(ShowOptions::SaveBack);
 #endif
 }
 

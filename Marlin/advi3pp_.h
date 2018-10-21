@@ -40,6 +40,7 @@
 #include "advi3pp_dgus.h"
 #include "ADVcallback.h"
 #include "ADVcrtp.h"
+#include "advi3pp_bitmasks.h"
 
 
 namespace advi3pp {
@@ -139,12 +140,20 @@ private:
 // Handler - Handle inputs from the LCD Panel
 // --------------------------------------------------------------------
 
+enum class ShowOptions
+{
+    None     = 0x00,
+    Backup   = 0x01,
+    SaveBack = 0x02
+};
+ENABLE_BITMASK_OPERATOR(ShowOptions);
+
 template<typename Self>
 struct Handler: adv::Crtp<Self, Handler>
 {
 public:
     void handle(KeyValue value);
-    void show(bool backup = true);
+    void show(ShowOptions options);
 
     bool dispatch(KeyValue value) { return this->self().do_dispatch(value); }
     void show_command() { this->self().do_show_command(); }
@@ -537,6 +546,7 @@ private:
     void heating_task();
     void extruding_task();
     void finished();
+    void cancel();
 
 private:
     double extruded_ = 0.0;
@@ -1122,14 +1132,14 @@ void Handler<Self>::invalid(KeyValue value)
 }
 
 template<typename Self>
-void Handler<Self>::show(bool backup)
+void Handler<Self>::show(ShowOptions options)
 {
-    if(backup)
+    if(test_one_bit(options, ShowOptions::Backup))
         this->backup();
 
     Page page = prepare_page();
     if(page != Page::None)
-        pages.show_page(page);
+        pages.show_page(page, test_one_bit(options, ShowOptions::SaveBack));
 }
 
 template<typename Self>
@@ -1141,7 +1151,7 @@ void Handler<Self>::save_settings() const
 template<typename Self>
 void Handler<Self>::do_show_command()
 {
-    show();
+    show(ShowOptions::SaveBack);
 }
 
 template<typename Self>
