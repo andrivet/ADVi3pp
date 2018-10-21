@@ -23,9 +23,6 @@
 
 namespace adv {
 
-template <typename T, size_t N>
-constexpr size_t countof(T const (&)[N]) noexcept { return N; }
-
 using size_t = decltype(sizeof(int));
 using nullptr_t = decltype(nullptr);
 
@@ -40,7 +37,7 @@ struct integral_constant
     typedef T value_type;
     typedef integral_constant type;
     inline constexpr explicit operator value_type() const noexcept {return value;}
-    inline constexpr value_type operator()() const noexcept {return value;}
+    inline constexpr value_type operator ()() const noexcept {return value;}
 };
 
 template<bool B>
@@ -104,6 +101,18 @@ template<bool, typename T = void> struct enable_if {};
 template<typename T> struct enable_if<true, T> { using type = T; };
 template< bool B, typename T = void > using enable_if_t = typename enable_if<B, T>::type;
 
+template<typename I, typename O>
+O copy(I first, I last, O d_first)
+{
+    while(first != last)
+        *d_first++ = *first++;
+    return d_first;
 }
+
+} // namespace adv
+
+// Default placement new
+inline void* operator new(size_t, void* p) noexcept { return p; }
+inline void* operator new[](size_t, void* p) noexcept { return p; }
 
 #endif
