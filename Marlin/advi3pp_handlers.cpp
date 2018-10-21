@@ -122,6 +122,8 @@ inline namespace singletons
     AdvancedPause pause;
 };
 
+template <typename T, size_t N>
+constexpr size_t countof(T const (&)[N]) noexcept { return N; }
 
 // --------------------------------------------------------------------
 // Pages management
@@ -962,7 +964,7 @@ void ManualLeveling::leveling_task()
     Log::log() << F("Leveling Homed, start process") << Log::endl();
     advi3pp.reset_status();
     task.clear_background_task();
-    manual_leveling.show(false);
+    pages.show_page(Page::ManualLeveling, false);
 }
 
 //! Handle leveling point #1.
@@ -1764,7 +1766,7 @@ void FirmwareSettings::send_usb_baudrate() const
 
 static size_t UsbBaudrateIndex(uint32_t baudrate)
 {
-    size_t nb = adv::countof(usb_baudrates);
+    size_t nb = countof(usb_baudrates);
     for(size_t i = 0; i < nb; ++i)
         if(baudrate == usb_baudrates[i])
             return i;
@@ -1781,7 +1783,7 @@ void FirmwareSettings::baudrate_minus_command()
 void FirmwareSettings::baudrate_plus_command()
 {
     auto index = UsbBaudrateIndex(usb_baudrate_);
-    static const auto max = adv::countof(usb_baudrates) - 1;
+    static const auto max = countof(usb_baudrates) - 1;
     usb_baudrate_ = index < max ? usb_baudrates[index + 1] : usb_baudrates[max];
     send_usb_baudrate();
 }
