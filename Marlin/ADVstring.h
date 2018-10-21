@@ -178,7 +178,7 @@ template<size_t L>
 ADVString<L>& ADVString<L>::set(const char c)
 {
     if(L < 1)
-        return;
+        return *this;
     string_[0] = c;
     string_[1] = 0;
 
