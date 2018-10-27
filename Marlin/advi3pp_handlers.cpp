@@ -2098,6 +2098,12 @@ void PidSettings::send_data() const
           << Uint16(unscalePID_i(pid.Ki_) * 100)
           << Uint16(unscalePID_d(pid.Kd_) * 100);
     frame.send();
+
+    ADVString<8> indexes;
+    indexes << index_ + 1 << F(" / ") << NB_PIDs;
+    frame.reset(Variable::ShortText0);
+    frame << indexes;
+    frame.send();
 }
 
 //! Show the PID settings
