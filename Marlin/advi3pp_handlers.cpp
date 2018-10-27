@@ -2003,8 +2003,8 @@ void PidSettings::do_write(EepromWrite& eeprom) const
 {
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
-        eeprom.write(pid_[0][i]);
-        eeprom.write(pid_[1][i]);
+        eeprom.write(bed_pid_[i]);
+        eeprom.write(hotend_pid_[i]);
     }
 }
 
@@ -2012,24 +2012,34 @@ void PidSettings::do_read(EepromRead& eeprom)
 {
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
-        eeprom.read(pid_[0][i]);
-        eeprom.read(pid_[1][i]);
+        eeprom.read(bed_pid_[i]);
+        eeprom.read(hotend_pid_[i]);
     }
 }
 
 void PidSettings::do_reset()
 {
-    for(size_t i = 0; i < NB_PIDs; ++i)
-    {
-        pid_[0][i].temperature_ = default_bed_temperature;
-        pid_[0][i].Kp_ = DEFAULT_bedKp;
-        pid_[0][i].Ki_ = DEFAULT_bedKi;
-        pid_[0][i].Kd_ = DEFAULT_bedKd;
+    bed_pid_[0].temperature_ = default_bed_temperature;
+    bed_pid_[0].Kp_ = DEFAULT_bedKp;
+    bed_pid_[0].Ki_ = DEFAULT_bedKi;
+    bed_pid_[0].Kd_ = DEFAULT_bedKd;
 
-        pid_[1][i].temperature_ = default_hotend_temperature;
-        pid_[1][i].Kp_ = DEFAULT_Kp;
-        pid_[1][i].Ki_ = DEFAULT_Ki;
-        pid_[1][i].Kd_ = DEFAULT_Kd;
+    hotend_pid_[0].temperature_ = default_hotend_temperature;
+    hotend_pid_[0].Kp_ = DEFAULT_Kp;
+    hotend_pid_[0].Ki_ = DEFAULT_Ki;
+    hotend_pid_[0].Kd_ = DEFAULT_Kd;
+
+    for(size_t i = 1; i < NB_PIDs; ++i)
+    {
+        bed_pid_[i].temperature_ = 0;
+        bed_pid_[i].Kp_ = 0;
+        bed_pid_[i].Ki_ = 0;
+        bed_pid_[i].Kd_ = 0;
+
+        hotend_pid_[i].temperature_ = 0;
+        hotend_pid_[i].Kp_ = 0;
+        hotend_pid_[i].Ki_ = 0;
+        hotend_pid_[i].Kd_ = 0;
     }
 }
 
@@ -2041,9 +2051,10 @@ uint16_t PidSettings::do_size_of() const
 void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
 {
     kind_ = kind;
+    Pid* pid = kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_;
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
-        if(temperature == pid_[kind_ == TemperatureKind::Hotend][i].temperature_)
+        if(temperature == pid[i].temperature_)
         {
             index_ = i;
             return;
@@ -2053,16 +2064,18 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
     // Temperature not found, so assign index 0, move PIDs and forget the last one
     index_ = 0;
     for(size_t i = 1; i < NB_PIDs; ++i)
-        pid_[kind_ == TemperatureKind::Hotend][i] = pid_[kind_ == TemperatureKind::Hotend][i - 1];
+        pid[i] = pid[i - 1];
 }
 
 void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
 {
     size_t best_index = 0;
     uint16_t best_difference = 500;
+    Pid* pid = kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_;
+
     for(size_t i = 1; i < NB_PIDs; ++i)
     {
-        auto difference = abs(temperature - pid_[kind == TemperatureKind::Hotend][i].temperature_);
+        auto difference = abs(temperature - pid[i].temperature_);
         if(difference < best_difference)
         {
             best_difference = difference;
@@ -2070,14 +2083,14 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
         }
     }
 
-    Temperature::Kp = pid_[kind == TemperatureKind::Hotend][best_index].Kp_;
-    Temperature::Ki = pid_[kind == TemperatureKind::Hotend][best_index].Ki_;
-    Temperature::Kd = pid_[kind == TemperatureKind::Hotend][best_index].Kd_;
+    Temperature::Kp = pid[best_index].Kp_;
+    Temperature::Ki = pid[best_index].Ki_;
+    Temperature::Kd = pid[best_index].Kd_;
 }
 
 void PidSettings::send_data() const
 {
-    const Pid& pid = pid_[kind_ == TemperatureKind::Hotend][index_];
+    const Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
     WriteRamDataRequest frame{Variable::Value0};
     frame << (kind_ == TemperatureKind::Hotend ? 0_u16 : 1_u16)
           << Uint16(pid.temperature_)
@@ -2097,7 +2110,7 @@ Page PidSettings::do_prepare_page()
 //! Save the PID settings
 void PidSettings::do_save_command()
 {
-    Pid& pid = pid_[kind_ == TemperatureKind::Hotend][index_];
+    Pid& pid =(kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
 
     ReadRamData response{Variable::Value0, 4};
     if(!response.send_and_receive())

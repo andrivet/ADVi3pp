@@ -739,7 +739,8 @@ private:
 private:
     static const size_t NB_PIDs = 5;
     Pid backup_ = {};
-    Pid pid_[2][NB_PIDs] = {};
+    Pid hotend_pid_[NB_PIDs] = {};
+    Pid bed_pid_[NB_PIDs] = {};
     TemperatureKind kind_ = TemperatureKind::Hotend;
     size_t index_ = 0;
 
