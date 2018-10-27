@@ -1959,22 +1959,30 @@ bool PidSettings::do_dispatch(KeyValue key_value)
 
 void PidSettings::hotend_command()
 {
-    // TODO
+    kind_ = TemperatureKind::Hotend;
+    send_data();
 }
 
 void PidSettings::bed_command()
 {
-    // TODO
+    kind_ = TemperatureKind::Bed;
+    send_data();
 }
 
 void PidSettings::previous_command()
 {
-    // TODO
+    if(index_ <= 0)
+        return;
+    index_ -= 1;
+    send_data();
 }
 
 void PidSettings::next_command()
 {
-    // TODO
+    if(index_ >= NB_PIDs - 1)
+        return;
+    index_ += 1;
+    send_data();
 }
 
 void PidSettings::do_backup()
@@ -2013,16 +2021,21 @@ void PidSettings::do_reset()
 {
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
-        pid_[0]->temperature_ = default_bed_temperature;
-        pid_[0]->Kp_ = DEFAULT_bedKp;
-        pid_[0]->Ki_ = DEFAULT_bedKi;
-        pid_[0]->Kd_ = DEFAULT_bedKd;
+        pid_[0][i].temperature_ = default_bed_temperature;
+        pid_[0][i].Kp_ = DEFAULT_bedKp;
+        pid_[0][i].Ki_ = DEFAULT_bedKi;
+        pid_[0][i].Kd_ = DEFAULT_bedKd;
 
-        pid_[1]->temperature_ = default_hotend_temperature;
-        pid_[1]->Kp_ = DEFAULT_Kp;
-        pid_[1]->Ki_ = DEFAULT_Ki;
-        pid_[1]->Kd_ = DEFAULT_Kd;
+        pid_[1][i].temperature_ = default_hotend_temperature;
+        pid_[1][i].Kp_ = DEFAULT_Kp;
+        pid_[1][i].Ki_ = DEFAULT_Ki;
+        pid_[1][i].Kd_ = DEFAULT_Kd;
     }
+}
+
+uint16_t PidSettings::do_size_of() const
+{
+    return NB_PIDs * 2 * sizeof(Pid);
 }
 
 void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
@@ -2062,24 +2075,29 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
     Temperature::Kd = pid_[kind == TemperatureKind::Hotend][best_index].Kd_;
 }
 
-//! Show the PID settings
-Page PidSettings::do_prepare_page()
+void PidSettings::send_data() const
 {
     const Pid& pid = pid_[kind_ == TemperatureKind::Hotend][index_];
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(kind_ == TemperatureKind::Hotend ? 1_u16 : 0_u16)
+    frame << (kind_ == TemperatureKind::Hotend ? 0_u16 : 1_u16)
+          << Uint16(pid.temperature_)
           << Uint16(pid.Kp_ * 100)
           << Uint16(unscalePID_i(pid.Ki_) * 100)
           << Uint16(unscalePID_d(pid.Kd_) * 100);
     frame.send();
+}
 
+//! Show the PID settings
+Page PidSettings::do_prepare_page()
+{
+    send_data();
     return Page::PidSettings;
 }
 
 //! Save the PID settings
 void PidSettings::do_save_command()
 {
-    //Pid& pid = pid_[bed_][index_];
+    Pid& pid = pid_[kind_ == TemperatureKind::Hotend][index_];
 
     ReadRamData response{Variable::Value0, 4};
     if(!response.send_and_receive())
@@ -2091,9 +2109,13 @@ void PidSettings::do_save_command()
     Uint16 temperature, p, i, d;
     response >> temperature >> p >> i >> d;
 
-    Temperature::Kp = static_cast<float>(p.word) / 100;
-    Temperature::Ki = scalePID_i(static_cast<float>(i.word) / 100);
-    Temperature::Kd = scalePID_d(static_cast<float>(d.word) / 100);
+    pid.Kp_ = static_cast<float>(p.word) / 100;
+    pid.Ki_ = scalePID_i(static_cast<float>(i.word) / 100);
+    pid.Kd_ = scalePID_d(static_cast<float>(d.word) / 100);
+
+    Temperature::Kp = pid.Kp_;
+    Temperature::Ki = pid.Ki_;
+    Temperature::Kd = pid.Kd_;
 
     Parent::do_save_command();
 }
