@@ -980,7 +980,7 @@ void ManualLeveling::point2_command()
 {
     Log::log() << F("Level point 2") << Log::endl();
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X170 Y170 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X30 Y170 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
 
@@ -989,7 +989,7 @@ void ManualLeveling::point3_command()
 {
     Log::log() << F("Level point 3") << Log::endl();
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X170 Y30 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X170 Y170 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
 
@@ -998,7 +998,7 @@ void ManualLeveling::point4_command()
 {
     Log::log() << F("Level point 4") << Log::endl();
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X30 Y170 F6000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X170 Y30 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
 
