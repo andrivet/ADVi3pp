@@ -275,7 +275,7 @@ void ADVi3pp_::idle()
         init();
 
     read_lcd_serial();
-    //dimming.check();
+    dimming.check();
     task.execute_background_task();
     update_progress();
     send_status_data();

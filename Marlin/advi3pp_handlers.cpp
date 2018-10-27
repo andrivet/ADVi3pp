@@ -2608,14 +2608,18 @@ void Dimming::check()
 
     Uint8 value; read >> value;
     if(value.byte == 0x5A)
-	{
-		WriteRegisterDataRequest request{Register::TouchPanelFlag};
-		request << 00_u8;
-		request.send();
-        reset();
-	}
-    else if(!dimming_ && ELAPSED(millis(), next_dimming_time_))
     {
+        Log::log() << F("Panel touched, reset dimming") << Log::endl();
+        WriteRegisterDataRequest request{Register::TouchPanelFlag};
+        request << 00_u8;
+        request.send();
+        reset();
+        return;
+    }
+
+    if(!dimming_ && ELAPSED(millis(), next_dimming_time_))
+    {
+        Log::log() << F("Delay elapsed, dim the panel") << Log::endl();
         dimming_ = true;
         send_brightness();
     }
