@@ -30,6 +30,7 @@
 #include "thermistortables.h"
 
 #include "MarlinConfig.h"
+#include "advi3pp.h"
 
 #if ENABLED(AUTO_POWER_CONTROL)
   #include "power.h"
@@ -415,6 +416,7 @@ class Temperature {
         powerManager.power_on();
       #endif
       target_temperature[HOTEND_INDEX] = celsius;
+      advi3pp::ADVi3pp::on_set_temperature(advi3pp::TemperatureKind::Hotend, celsius);
       #if WATCH_HOTENDS
         start_watching_heater(HOTEND_INDEX);
       #endif
@@ -454,6 +456,7 @@ class Temperature {
             celsius
           #endif
         ;
+        advi3pp::ADVi3pp::on_set_temperature(advi3pp::TemperatureKind::Bed, target_temperature_bed);
         #if WATCH_THE_BED
           start_watching_bed();
         #endif
