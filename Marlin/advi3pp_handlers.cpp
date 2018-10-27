@@ -2056,11 +2056,16 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
     {
         if(temperature == pid[i].temperature_)
         {
+			Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID with temperature ") << temperature << F(" found, update settings") << Log::endl();
             index_ = i;
+            pid[i].Kp_ = Temperature::Kp;
+            pid[i].Ki_ = Temperature::Ki;
+            pid[i].Kd_ = Temperature::Kd;
             return;
         }
     }
 
+	Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID with temperature ") << temperature << F(" NOT found, update settings #0") << Log::endl();
     // Temperature not found, so assign index 0, move PIDs and forget the last one
     index_ = 0;
     for(size_t i = 1; i < NB_PIDs; ++i)
@@ -2073,7 +2078,7 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
     uint16_t best_difference = 500;
     Pid* pid = kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_;
 
-    for(size_t i = 1; i < NB_PIDs; ++i)
+    for(size_t i = 0; i < NB_PIDs; ++i)
     {
         auto difference = abs(temperature - pid[i].temperature_);
         if(difference < best_difference)
@@ -2082,10 +2087,14 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
             best_index = i;
         }
     }
+	
+	Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID with smallest difference (") << best_difference << F(") is at index #") << best_index << Log::endl();
 
     Temperature::Kp = pid[best_index].Kp_;
     Temperature::Ki = pid[best_index].Ki_;
     Temperature::Kd = pid[best_index].Kd_;
+
+	Log::log() << F("P = ") << Temperature::Kp << F(", I = ") << Temperature::Ki << F(", D = ") << Temperature::Kd << Log::endl();
 }
 
 void PidSettings::send_data() const
@@ -2116,17 +2125,19 @@ Page PidSettings::do_prepare_page()
 //! Save the PID settings
 void PidSettings::do_save_command()
 {
-    Pid& pid =(kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
+    Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
 
-    ReadRamData response{Variable::Value0, 4};
+    ReadRamData response{Variable::Value0, 5};
     if(!response.send_and_receive())
     {
         Log::error() << F("Receiving Frame (PID Settings)") << Log::endl();
         return;
     }
 
-    Uint16 temperature, p, i, d;
-    response >> temperature >> p >> i >> d;
+    Uint16 kind, temperature, p, i, d;
+    response >> kind >> temperature >> p >> i >> d;
+
+    assert(kind.word == (kind_ == TemperatureKind::Hotend ? 0 : 1));
 
     pid.Kp_ = static_cast<float>(p.word) / 100;
     pid.Ki_ = scalePID_i(static_cast<float>(i.word) / 100);
