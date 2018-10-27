@@ -162,6 +162,11 @@ void ADVi3pp::buzz(long duration, uint16_t frequency)
     advi3pp.buzz(duration, frequency);
 }
 
+void ADVi3pp::on_set_temperature(TemperatureKind kind, uint16_t temperature)
+{
+    advi3pp.on_set_temperature(kind, temperature);
+}
+
 // --------------------------------------------------------------------
 
 }

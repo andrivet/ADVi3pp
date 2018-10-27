@@ -396,7 +396,9 @@ bool LoadUnload::do_dispatch(KeyValue key_value)
 //! Get the Load & Unload screen.
 Page LoadUnload::do_prepare_page()
 {
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_hotend_temperature()); frame.send();
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(advi3pp.get_last_used_temperature(TemperatureKind::Hotend));
+    frame.send();
     return Page::LoadUnload;
 }
 
@@ -1385,7 +1387,9 @@ bool ExtruderTuning::do_dispatch(KeyValue key_value)
 Page ExtruderTuning::do_prepare_page()
 {
     steps_settings.backup();
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(advi3pp.last_used_hotend_temperature()); frame.send();
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(advi3pp.get_last_used_temperature(TemperatureKind::Hotend));
+    frame.send();
     return Page::ExtruderTuningTemp;
 }
 
@@ -1528,21 +1532,21 @@ void PidTuning::send_data()
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(temperature_)
-          << Uint16(!hotend_);
+          << Uint16(kind_ != TemperatureKind::Hotend);
     frame.send();
 }
 
 void PidTuning::hotend_command()
 {
-    temperature_ = advi3pp.last_used_hotend_temperature();
-    hotend_ = true;
+    temperature_ = advi3pp.get_last_used_temperature(TemperatureKind::Hotend);
+    kind_ = TemperatureKind::Hotend;
     send_data();
 }
 
 void PidTuning::bed_command()
 {
-    temperature_ = advi3pp.last_used_bed_temperature();
-    hotend_ = false;
+    temperature_ = advi3pp.get_last_used_temperature(TemperatureKind::Bed);
+    kind_ = TemperatureKind::Bed;
     send_data();
 }
 
@@ -1560,7 +1564,8 @@ void PidTuning::step2_command()
 
     enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
     ADVString<20> auto_pid_command;
-    auto_pid_command << F("M303 S") << temperature_ << (hotend_ ? F(" E0 C8 U1") : F(" E-1 C8 U1"));
+    auto_pid_command << F("M303 S") << temperature_
+                     << (kind_ == TemperatureKind::Hotend ? F(" E0 C8 U1") : F(" E-1 C8 U1"));
     enqueue_and_echo_command(auto_pid_command.get());
 
     temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
@@ -1580,7 +1585,7 @@ void PidTuning::finished(bool success)
     if(success)
     {
         advi3pp.reset_status();
-        pid_settings.add(hotend_, temperature_);
+        pid_settings.add_pid(kind_, temperature_);
         pid_settings.show(ShowOptions::None);
     }
     else
@@ -1930,6 +1935,11 @@ void PrintSettings::baby_plus_command()
 // PidSettings
 // --------------------------------------------------------------------
 
+PidSettings::PidSettings()
+{
+    do_reset();
+}
+
 bool PidSettings::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1981,12 +1991,46 @@ void PidSettings::do_restore()
     Temperature::Kd = backup_.Kd_;
 }
 
-void PidSettings::add(bool hotend, uint16_t temperature)
+void PidSettings::do_write(EepromWrite& eeprom) const
 {
-    hotend_ = hotend;
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
-        if(temperature == pid_[hotend_][i].temperature_)
+        eeprom.write(pid_[0][i]);
+        eeprom.write(pid_[1][i]);
+    }
+}
+
+void PidSettings::do_read(EepromRead& eeprom)
+{
+    for(size_t i = 0; i < NB_PIDs; ++i)
+    {
+        eeprom.read(pid_[0][i]);
+        eeprom.read(pid_[1][i]);
+    }
+}
+
+void PidSettings::do_reset()
+{
+    for(size_t i = 0; i < NB_PIDs; ++i)
+    {
+        pid_[0]->temperature_ = default_bed_temperature;
+        pid_[0]->Kp_ = DEFAULT_bedKp;
+        pid_[0]->Ki_ = DEFAULT_bedKi;
+        pid_[0]->Kd_ = DEFAULT_bedKd;
+
+        pid_[1]->temperature_ = default_hotend_temperature;
+        pid_[1]->Kp_ = DEFAULT_Kp;
+        pid_[1]->Ki_ = DEFAULT_Ki;
+        pid_[1]->Kd_ = DEFAULT_Kd;
+    }
+}
+
+void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
+{
+    kind_ = kind;
+    for(size_t i = 0; i < NB_PIDs; ++i)
+    {
+        if(temperature == pid_[kind_ == TemperatureKind::Hotend][i].temperature_)
         {
             index_ = i;
             return;
@@ -1996,15 +2040,34 @@ void PidSettings::add(bool hotend, uint16_t temperature)
     // Temperature not found, so assign index 0, move PIDs and forget the last one
     index_ = 0;
     for(size_t i = 1; i < NB_PIDs; ++i)
-        pid_[hotend_][i] = pid_[hotend_][i - 1];
+        pid_[kind_ == TemperatureKind::Hotend][i] = pid_[kind_ == TemperatureKind::Hotend][i - 1];
+}
+
+void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
+{
+    size_t best_index = 0;
+    uint16_t best_difference = 500;
+    for(size_t i = 1; i < NB_PIDs; ++i)
+    {
+        auto difference = abs(temperature - pid_[kind == TemperatureKind::Hotend][i].temperature_);
+        if(difference < best_difference)
+        {
+            best_difference = difference;
+            best_index = i;
+        }
+    }
+
+    Temperature::Kp = pid_[kind == TemperatureKind::Hotend][best_index].Kp_;
+    Temperature::Ki = pid_[kind == TemperatureKind::Hotend][best_index].Ki_;
+    Temperature::Kd = pid_[kind == TemperatureKind::Hotend][best_index].Kd_;
 }
 
 //! Show the PID settings
 Page PidSettings::do_prepare_page()
 {
-    const Pid& pid = pid_[hotend_][index_];
+    const Pid& pid = pid_[kind_ == TemperatureKind::Hotend][index_];
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(hotend_ ? 1_u16 : 0_u16)
+    frame << Uint16(kind_ == TemperatureKind::Hotend ? 1_u16 : 0_u16)
           << Uint16(pid.Kp_ * 100)
           << Uint16(unscalePID_i(pid.Ki_) * 100)
           << Uint16(unscalePID_d(pid.Kd_) * 100);

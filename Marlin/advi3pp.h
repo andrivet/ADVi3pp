@@ -40,6 +40,8 @@ using eeprom_read  = void (*)(int &pos, uint8_t* value, uint16_t size, uint16_t*
 
 namespace advi3pp {
 
+enum class TemperatureKind { Bed, Hotend };
+
 //! ADVi3++ public facade.
 struct ADVi3pp
 {
@@ -63,6 +65,7 @@ struct ADVi3pp
     static void advanced_pause_show_message(AdvancedPauseMessage message);
     static void reset_status();
     static void buzz(long duration, uint16_t frequency = 0);
+    static void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 };
 
 }

@@ -611,6 +611,19 @@ void ADVi3pp_::change_features(Feature features)
     features_ = features;
 }
 
+uint16_t  ADVi3pp_::get_last_used_temperature(TemperatureKind kind) const
+{
+    return last_used_temperature_[kind == TemperatureKind::Hotend];
+}
+
+void ADVi3pp_::on_set_temperature(TemperatureKind kind, uint16_t temperature)
+{
+    if(temperature == 0)
+        return;
+    last_used_temperature_[kind == TemperatureKind::Hotend] = temperature;
+    pid_settings.set_best_pid(kind, temperature);
+}
+
 // --------------------------------------------------------------------
 // Graphs
 // --------------------------------------------------------------------

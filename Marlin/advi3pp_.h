@@ -50,6 +50,9 @@ const size_t progress_name_length = 44;
 const size_t progress_percent_length = progress_name_length + 4;
 const uint8_t sd_file_length = 48;
 
+const uint16_t default_bed_temperature = 50;
+const uint16_t default_hotend_temperature = 200;
+
 using adv::Callback;
 using BackgroundTask = Callback<void(*)()>;
 using WaitCallback = Callback<void(*)()>;
@@ -572,7 +575,7 @@ private:
 
 private:
     uint16_t temperature_;
-    bool hotend_;
+    TemperatureKind kind_;
 
     friend Parent;
 };
@@ -712,14 +715,19 @@ struct Pid
 
 struct PidSettings: Handler<PidSettings>
 {
-public:
-    void add(bool hotend, uint16_t temperature);
+    PidSettings();
+
+    void add_pid(TemperatureKind kind, uint16_t temperature);
+    void set_best_pid(TemperatureKind kind, uint16_t temperature);
 
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_backup();
     void do_restore();
+    void do_write(EepromWrite& eeprom) const;
+    void do_read(EepromRead& eeprom);
+    void do_reset();
     void do_save_command();
     void hotend_command();
     void bed_command();
@@ -730,7 +738,7 @@ private:
     static const size_t NB_PIDs = 5;
     Pid backup_ = {};
     Pid pid_[2][NB_PIDs] = {};
-    bool hotend_ = true;
+    TemperatureKind kind_ = TemperatureKind::Hotend;
     size_t index_ = 0;
 
     friend Parent;
@@ -1025,8 +1033,6 @@ struct ADVi3pp_
     void process_command();
     void advanced_pause_show_message(AdvancedPauseMessage message);
     void set_brightness(int16_t britghness);
-    uint16_t last_used_hotend_temperature() const { return last_used_hotend_temperature_; }
-    uint16_t last_used_bed_temperature() const { return last_used_bed_temperature_; }
     void save_settings();
     bool is_busy();
 
@@ -1050,6 +1056,9 @@ struct ADVi3pp_
     Feature get_current_features() const { return features_; }
     void change_features(Feature features);
 
+    uint16_t get_last_used_temperature(TemperatureKind kind) const;
+    void on_set_temperature(TemperatureKind kind, uint16_t temperature);
+
 private:
     void buzz_(long duration);
     void init();
@@ -1071,8 +1080,7 @@ private:
     bool init_ = true;
     uint32_t usb_baudrate_ = BAUDRATE;
     Feature features_ = Feature::None;
-    uint16_t last_used_hotend_temperature_ = 200;
-    uint16_t last_used_bed_temperature_ = 50;
+    uint16_t last_used_temperature_[2] = {default_bed_temperature, default_hotend_temperature};
     bool has_status_ = false;
     ADVString<message_length> message_;
     ADVString<message_length> centered_;
