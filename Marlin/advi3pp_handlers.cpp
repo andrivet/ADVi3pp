@@ -1959,12 +1959,14 @@ bool PidSettings::do_dispatch(KeyValue key_value)
 
 void PidSettings::hotend_command()
 {
+    save_data();
     kind_ = TemperatureKind::Hotend;
     send_data();
 }
 
 void PidSettings::bed_command()
 {
+    save_data();
     kind_ = TemperatureKind::Bed;
     send_data();
 }
@@ -1973,6 +1975,7 @@ void PidSettings::previous_command()
 {
     if(index_ <= 0)
         return;
+    save_data();
     index_ -= 1;
     send_data();
 }
@@ -1981,6 +1984,7 @@ void PidSettings::next_command()
 {
     if(index_ >= NB_PIDs - 1)
         return;
+    save_data();
     index_ += 1;
     send_data();
 }
@@ -2115,15 +2119,7 @@ void PidSettings::send_data() const
     frame.send();
 }
 
-//! Show the PID settings
-Page PidSettings::do_prepare_page()
-{
-    send_data();
-    return Page::PidSettings;
-}
-
-//! Save the PID settings
-void PidSettings::do_save_command()
+void PidSettings::save_data()
 {
     Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
 
@@ -2142,7 +2138,21 @@ void PidSettings::do_save_command()
     pid.Kp_ = static_cast<float>(p.word) / 100;
     pid.Ki_ = scalePID_i(static_cast<float>(i.word) / 100);
     pid.Kd_ = scalePID_d(static_cast<float>(d.word) / 100);
+}
 
+//! Show the PID settings
+Page PidSettings::do_prepare_page()
+{
+    send_data();
+    return Page::PidSettings;
+}
+
+//! Save the PID settings
+void PidSettings::do_save_command()
+{
+    save_data();
+
+    Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
     Temperature::Kp = pid.Kp_;
     Temperature::Ki = pid.Ki_;
     Temperature::Kd = pid.Kd_;

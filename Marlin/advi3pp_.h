@@ -735,6 +735,7 @@ private:
     void previous_command();
     void next_command();
     void send_data() const;
+    void save_data();
 
 private:
     static const size_t NB_PIDs = 5;
