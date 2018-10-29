@@ -1553,6 +1553,8 @@ void PidTuning::bed_command()
 //! Show step #2 of PID tuning
 void PidTuning::step2_command()
 {
+    advi3pp.reset_status();
+
     ReadRamData frame{Variable::Value0, 2};
     if(!frame.send_and_receive())
     {
@@ -1562,10 +1564,12 @@ void PidTuning::step2_command()
 
     Uint16 temperature; frame >> temperature; temperature_ = temperature.word;
 
-    enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan
+    if(kind_ == TemperatureKind::Hotend)
+        enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan (only for hotend)
+
     ADVString<20> auto_pid_command;
     auto_pid_command << F("M303 S") << temperature_
-                     << (kind_ == TemperatureKind::Hotend ? F(" E0 C8 U1") : F(" E-1 C8 U1"));
+                     << (kind_ == TemperatureKind::Hotend ? F(" E0 U1") : F(" E-1 U1"));
     enqueue_and_echo_command(auto_pid_command.get());
 
     temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
@@ -2052,6 +2056,58 @@ uint16_t PidSettings::do_size_of() const
     return NB_PIDs * 2 * sizeof(Pid);
 }
 
+void PidSettings::set_current_pid() const
+{
+    if(kind_ == TemperatureKind::Hotend)
+    {
+        const Pid& pid = hotend_pid_[index_];
+
+        Temperature::Kp = pid.Kp_;
+        Temperature::Ki = scalePID_i(pid.Ki_);
+        Temperature::Kd = scalePID_d(pid.Kd_);
+
+        Log::log() << F("Set Hotend PID #") << index_
+                   << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+    }
+    else
+    {
+        const Pid& pid = bed_pid_[index_];
+
+        Temperature::bedKp = pid.Kp_;
+        Temperature::bedKi = scalePID_i(pid.Ki_);
+        Temperature::bedKd = scalePID_d(pid.Kd_);
+
+        Log::log() << F("Set Bed PID #") << index_
+                   << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+    }
+}
+
+void PidSettings::get_current_pid()
+{
+    if(kind_ == TemperatureKind::Hotend)
+    {
+        Pid& pid = hotend_pid_[index_];
+
+        pid.Kp_ = Temperature::Kp;
+        pid.Ki_ = unscalePID_i(Temperature::Ki);
+        pid.Kd_ = unscalePID_d(Temperature::Kd);
+
+        Log::log() << F("Get Hotend PID #") << index_
+                   << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+    }
+    else
+    {
+        Pid& pid = bed_pid_[index_];
+
+        pid.Kp_ = Temperature::bedKp;
+        pid.Ki_ = unscalePID_i(Temperature::bedKi);
+        pid.Kd_ = unscalePID_d(Temperature::bedKd);
+
+        Log::log() << F("Get Hotend PID #") << index_
+                   << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+    }
+}
+
 void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
 {
     kind_ = kind;
@@ -2060,16 +2116,16 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
     {
         if(temperature == pid[i].temperature_)
         {
-			Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID with temperature ") << temperature << F(" found, update settings") << Log::endl();
+			Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
+			           << F(" PID with temperature 0x") << temperature << F(" found, update settings") << Log::endl();
             index_ = i;
-            pid[i].Kp_ = Temperature::Kp;
-            pid[i].Ki_ = Temperature::Ki;
-            pid[i].Kd_ = Temperature::Kd;
+            get_current_pid();
             return;
         }
     }
 
-	Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID with temperature ") << temperature << F(" NOT found, update settings #0") << Log::endl();
+	Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
+	           << F(" PID with temperature 0x") << temperature << F(" NOT found, update settings #0") << Log::endl();
     // Temperature not found, so assign index 0, move PIDs and forget the last one
     index_ = 0;
     for(size_t i = 1; i < NB_PIDs; ++i)
@@ -2078,7 +2134,9 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
 
 void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
 {
-    size_t best_index = 0;
+    index_ = 0;
+    kind_ = kind;
+
     uint16_t best_difference = 500;
     Pid* pid = kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_;
 
@@ -2088,28 +2146,27 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
         if(difference < best_difference)
         {
             best_difference = difference;
-            best_index = i;
+            index_ = i;
         }
     }
 	
-	Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID with smallest difference (") << best_difference << F(") is at index #") << best_index << Log::endl();
-
-    Temperature::Kp = pid[best_index].Kp_;
-    Temperature::Ki = pid[best_index].Ki_;
-    Temperature::Kd = pid[best_index].Kd_;
-
-	Log::log() << F("P = ") << Temperature::Kp << F(", I = ") << Temperature::Ki << F(", D = ") << Temperature::Kd << Log::endl();
+	Log::log() << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
+	           << F(" PID with smallest difference (") << best_difference << F(") is at index #") << index_ << Log::endl();
+    set_current_pid();
 }
 
 void PidSettings::send_data() const
 {
     const Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
+    Log::log() << F("Send ") << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID #") << index_
+               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+
     WriteRamDataRequest frame{Variable::Value0};
     frame << (kind_ == TemperatureKind::Hotend ? 0_u16 : 1_u16)
           << Uint16(pid.temperature_)
           << Uint16(pid.Kp_ * 100)
-          << Uint16(unscalePID_i(pid.Ki_) * 100)
-          << Uint16(unscalePID_d(pid.Kd_) * 100);
+          << Uint16(pid.Ki_ * 100)
+          << Uint16(pid.Kd_ * 100);
     frame.send();
 
     ADVString<8> indexes;
@@ -2136,8 +2193,10 @@ void PidSettings::save_data()
     assert(kind.word == (kind_ == TemperatureKind::Hotend ? 0 : 1));
 
     pid.Kp_ = static_cast<float>(p.word) / 100;
-    pid.Ki_ = scalePID_i(static_cast<float>(i.word) / 100);
-    pid.Kd_ = scalePID_d(static_cast<float>(d.word) / 100);
+    pid.Ki_ = static_cast<float>(i.word) / 100;
+    pid.Kd_ = static_cast<float>(d.word) / 100;
+	
+	set_current_pid();
 }
 
 //! Show the PID settings
