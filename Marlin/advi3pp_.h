@@ -734,6 +734,8 @@ private:
     void bed_command();
     void previous_command();
     void next_command();
+    void set_current_pid() const;
+    void get_current_pid();
     void send_data() const;
     void save_data();
 
