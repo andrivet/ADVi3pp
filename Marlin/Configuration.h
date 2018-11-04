@@ -1215,8 +1215,13 @@
 #define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
+#if ENABLED(ADVi3PP_BLTOUCH) // @advi3++: In the middle of the bed
   #define Z_SAFE_HOMING_X_POINT ((X_BED_SIZE) / 2)    // X point for Z homing when homing all axes (G28).
   #define Z_SAFE_HOMING_Y_POINT ((Y_BED_SIZE) / 2)    // Y point for Z homing when homing all axes (G28).
+#else // @advi3++: No probe -> in the corner
+  #define Z_SAFE_HOMING_X_POINT ((X_MIN_POS) + 10)    // X point for Z homing when homing all axes (G28).
+  #define Z_SAFE_HOMING_Y_POINT ((Y_MIN_POS) + 10)    // Y point for Z homing when homing all axes (G28).
+#endif
 #endif
 
 // Homing speeds (mm/m)
