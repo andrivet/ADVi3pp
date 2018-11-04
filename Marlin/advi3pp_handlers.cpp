@@ -2018,27 +2018,17 @@ void PidSettings::do_read(EepromRead& eeprom)
 
 void PidSettings::do_reset()
 {
-    bed_pid_[0].temperature_ = default_bed_temperature;
-    bed_pid_[0].Kp_ = DEFAULT_bedKp;
-    bed_pid_[0].Ki_ = DEFAULT_bedKi;
-    bed_pid_[0].Kd_ = DEFAULT_bedKd;
-
-    hotend_pid_[0].temperature_ = default_hotend_temperature;
-    hotend_pid_[0].Kp_ = DEFAULT_Kp;
-    hotend_pid_[0].Ki_ = DEFAULT_Ki;
-    hotend_pid_[0].Kd_ = DEFAULT_Kd;
-
-    for(size_t i = 1; i < NB_PIDs; ++i)
+    for(size_t i = 0; i < NB_PIDs; ++i)
     {
-        bed_pid_[i].temperature_ = 0;
-        bed_pid_[i].Kp_ = 0;
-        bed_pid_[i].Ki_ = 0;
-        bed_pid_[i].Kd_ = 0;
+        bed_pid_[i].temperature_ = default_bed_temperature;
+        bed_pid_[i].Kp_ = DEFAULT_bedKp;
+        bed_pid_[i].Ki_ = DEFAULT_bedKi;
+        bed_pid_[i].Kd_ = DEFAULT_bedKd;
 
-        hotend_pid_[i].temperature_ = 0;
-        hotend_pid_[i].Kp_ = 0;
-        hotend_pid_[i].Ki_ = 0;
-        hotend_pid_[i].Kd_ = 0;
+        hotend_pid_[i].temperature_ = default_hotend_temperature;
+        hotend_pid_[i].Kp_ = DEFAULT_Kp;
+        hotend_pid_[i].Ki_ = DEFAULT_Ki;
+        hotend_pid_[i].Kd_ = DEFAULT_Kd;
     }
 }
 
