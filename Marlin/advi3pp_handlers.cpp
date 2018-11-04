@@ -198,7 +198,7 @@ void Pages::show_forward_page()
         if(back_page == forward_page_)
         {
             forward_page_ = Page::None;
-            show_page(forward_page_);
+            show_page(forward_page_, ShowOptions::None);
             return;
         }
     }
@@ -284,36 +284,36 @@ Page Wait::do_prepare_page()
     return Page::Waiting;
 }
 
-void Wait::show(const FlashChar* message, bool save_back)
+void Wait::show(const FlashChar* message, ShowOptions options)
 {
     advi3pp.set_status(message);
     back_ = nullptr;
     continue_ = nullptr;
-    pages.show_page(Page::Waiting, save_back);
+    pages.show_page(Page::Waiting, options);
 }
 
-void Wait::show(const FlashChar* message, const WaitCallback& back, bool save_back)
+void Wait::show(const FlashChar* message, const WaitCallback& back, ShowOptions options)
 {
     advi3pp.set_status(message);
     back_ = back;
     continue_ = nullptr;
-    pages.show_page(Page::WaitBack, save_back);
+    pages.show_page(Page::WaitBack, options);
 }
 
-void Wait::show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, bool save_back)
+void Wait::show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options)
 {
     advi3pp.set_status(message);
     back_ = back;
     continue_ = cont;
-    pages.show_page(Page::WaitBackContinue, save_back);
+    pages.show_page(Page::WaitBackContinue, options);
 }
 
-void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, bool save_back)
+void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options)
 {
     advi3pp.set_status(message);
     back_ = nullptr;
     continue_ = cont;
-    pages.show_page(Page::WaitContinue, save_back);
+    pages.show_page(Page::WaitContinue, options);
 }
 
 void Wait::do_back_command()
@@ -967,7 +967,7 @@ void ManualLeveling::leveling_task()
     Log::log() << F("Leveling Homed, start process") << Log::endl();
     advi3pp.reset_status();
     task.clear_background_task();
-    pages.show_page(Page::ManualLeveling, false);
+    pages.show_page(Page::ManualLeveling, ShowOptions::None);
 }
 
 //! Handle leveling point #1.
@@ -1257,13 +1257,13 @@ void AdvancedPause::init()
 void AdvancedPause::insert_filament()
 {
     wait.show_continue(F("Insert filament and press continue..."),
-                       WaitCallback{this, &AdvancedPause::filament_inserted}, false);
+                       WaitCallback{this, &AdvancedPause::filament_inserted}, ShowOptions::None);
 }
 
 void AdvancedPause::filament_inserted()
 {
     ::wait_for_user = false;
-    wait.show(F("Filament inserted.."), false);
+    wait.show(F("Filament inserted.."), ShowOptions::None);
 }
 
 void AdvancedPause::printing()
@@ -1406,7 +1406,7 @@ void ExtruderTuning::start_command()
     }
 
     Uint16 hotend; frame >> hotend;
-    wait.show(F("Heating the extruder..."), WaitCallback{this, &ExtruderTuning::cancel}, false);
+    wait.show(F("Heating the extruder..."), WaitCallback{this, &ExtruderTuning::cancel}, ShowOptions::None);
     Temperature::setTargetHotend(hotend.word, 0);
 
     task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
@@ -1453,7 +1453,7 @@ void ExtruderTuning::finished()
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
     task.clear_background_task();
-    pages.show_page(Page::ExtruderTuningMeasure, false);
+    pages.show_page(Page::ExtruderTuningMeasure, ShowOptions::None);
 }
 
 void ExtruderTuning::cancel()
@@ -2551,7 +2551,7 @@ bool Versions::check()
     if(!is_lcd_version_valid())
     {
         send_versions();
-        pages.show_page(Page::VersionsMismatch, false);
+        pages.show_page(Page::VersionsMismatch, ShowOptions::None);
         return false;
     }
 

@@ -136,7 +136,7 @@ ENABLE_BITMASK_OPERATOR(ShowOptions);
 
 struct Pages
 {
-    void show_page(Page page, ShowOptions options = ShowOptions::None);
+    void show_page(Page page, ShowOptions options = ShowOptions::SaveBack);
     Page get_current_page();
     void save_forward_page();
     void show_back_page();
@@ -210,10 +210,10 @@ private:
 
 struct Wait: Handler<Wait>
 {
-    void show(const FlashChar* message, bool save_back = true);
-    void show(const FlashChar* message, const WaitCallback& back, bool save_back = true);
-    void show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, bool save_back = true);
-    void show_continue(const FlashChar* message, const WaitCallback& cont, bool save_back = true);
+    void show(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
+    void show(const FlashChar* message, const WaitCallback& back, ShowOptions options = ShowOptions::SaveBack);
+    void show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
+    void show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
 
 private:
     Page do_prepare_page();
