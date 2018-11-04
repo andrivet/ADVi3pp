@@ -12409,7 +12409,8 @@ void process_parsed_command() {
         case 49: gcode_M49(); break;                              // M49: Toggle the G26 Debug Flag
       #endif
 
-      #if ENABLED(ULTRA_LCD) && ENABLED(LCD_SET_PROGRESS_MANUALLY)
+      // @advi3++: Enable M73
+      #if (ENABLED(ULTRA_LCD) || ENABLED(I3PLUS_LCD)) && ENABLED(LCD_SET_PROGRESS_MANUALLY)
         case 73: gcode_M73(); break;                              // M73: Set Print Progress %
       #endif
       case 75: gcode_M75(); break;                                // M75: Start Print Job Timer
