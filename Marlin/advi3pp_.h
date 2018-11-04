@@ -690,15 +690,24 @@ struct PrintSettings: Handler<PrintSettings>
     void baby_minus_command();
     void baby_plus_command();
 
+    enum class Multiplier
+    {
+        M0_01 = 0,
+        M0_05 = 1,
+        M0_10 = 2
+    };
+
 protected:
     bool do_dispatch(KeyValue value);
 
 private:
     Page do_prepare_page();
     void do_save_command();
+    void send_data() const;
+    double get_multiplier_value() const;
 
 private:
-    double multiplier_ = 0.01;
+    Multiplier multiplier_ = Multiplier::M0_01;
 
     friend Parent;
 };

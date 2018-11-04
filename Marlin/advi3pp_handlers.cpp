@@ -1885,25 +1885,45 @@ bool PrintSettings::do_dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::Baby001:     multiplier_ = 0.01; break;
-        case KeyValue::Baby005:     multiplier_ = 0.05; break;
-        case KeyValue::Baby010:     multiplier_ = 0.10; break;
+        case KeyValue::Baby001:     multiplier_ = Multiplier::M0_01; break;
+        case KeyValue::Baby005:     multiplier_ = Multiplier::M0_05; break;
+        case KeyValue::Baby010:     multiplier_ = Multiplier::M0_10; break;
         default:                    return false;
     }
 
+    send_data();
     return true;
 }
 
-//! Display on the LCD screen the printing settings.
-Page PrintSettings::do_prepare_page()
+double PrintSettings::get_multiplier_value() const
+{
+    switch(multiplier_)
+    {
+        case Multiplier::M0_01: return 0.01;
+        case Multiplier::M0_05: return 0.05;
+        case Multiplier::M0_10: return 0.10;
+        default: break;
+    }
+
+    Log::error() << F("Invalid multiplier value: ") << static_cast<uint16_t >(multiplier_) << Log::endl();
+    return 0.01;
+}
+
+void PrintSettings::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(feedrate_percentage)
           << Uint16(scale(fanSpeeds[0], 255, 100))
           << Uint16(Temperature::degTargetHotend(0))
-          << Uint16(Temperature::degTargetBed());
+          << Uint16(Temperature::degTargetBed())
+          << Uint16(static_cast<uint16_t>(multiplier_));
     frame.send();
+}
 
+//! Display on the LCD screen the printing settings.
+Page PrintSettings::do_prepare_page()
+{
+    send_data();
     return Page::PrintSettings;
 }
 
@@ -1930,13 +1950,13 @@ void PrintSettings::do_save_command()
 
 void PrintSettings::baby_minus_command()
 {
-    ADVString<20> auto_pid_command; auto_pid_command << F("M290 Z-") << multiplier_;
+    ADVString<20> auto_pid_command; auto_pid_command << F("M290 Z-") << get_multiplier_value();
     enqueue_and_echo_command(auto_pid_command.get());
 }
 
 void PrintSettings::baby_plus_command()
 {
-    ADVString<20> auto_pid_command; auto_pid_command << F("M290 Z") << multiplier_;
+    ADVString<20> auto_pid_command; auto_pid_command << F("M290 Z") << get_multiplier_value();
     enqueue_and_echo_command(auto_pid_command.get());
 }
 
