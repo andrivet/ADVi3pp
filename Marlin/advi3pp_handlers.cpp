@@ -37,9 +37,18 @@
 
 #include <HardwareSerial.h>
 
+// --------------------------------------------------------------------
 // From Marlin
+// --------------------------------------------------------------------
+
 uint8_t progress_bar_percent;
 int16_t lcd_contrast;
+
+#ifdef ADVi3PP_BLTOUCH
+bool set_probe_deployed(bool);
+float run_z_probe();
+extern float zprobe_zoffset;
+#endif
 
 namespace
 {
@@ -66,12 +75,6 @@ namespace
         {200, 00, 0}
     };
 }
-
-#ifdef ADVi3PP_BLTOUCH
-bool set_probe_deployed(bool);
-float run_z_probe();
-extern float zprobe_zoffset;
-#endif
 
 namespace advi3pp {
 
