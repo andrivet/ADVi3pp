@@ -56,7 +56,7 @@ namespace
     const int8_t BRIGHTNESS_MIN = 0x01;
     const int8_t BRIGHTNESS_MAX = 0x40;
     const uint8_t DIMMING_RATIO = 5; // in percent
-    const uint16_t DIMMING_DELAY = 1 * 60;
+    const uint16_t DIMMING_DELAY = 5 * 60; // 5 minutes
 
     const advi3pp::Preset DEFAULT_PREHEAT_PRESET[5] = {
         {180, 50, 0},
