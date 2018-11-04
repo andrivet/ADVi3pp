@@ -126,9 +126,17 @@ inline void EepromRead::read(T& data)
 // Pages
 // --------------------------------------------------------------------
 
+enum class ShowOptions
+{
+    None     = 0x00,
+    Backup   = 0x01,
+    SaveBack = 0x02
+};
+ENABLE_BITMASK_OPERATOR(ShowOptions);
+
 struct Pages
 {
-    void show_page(Page page, bool save_back = true);
+    void show_page(Page page, ShowOptions options = ShowOptions::None);
     Page get_current_page();
     void save_forward_page();
     void show_back_page();
@@ -142,14 +150,6 @@ private:
 // --------------------------------------------------------------------
 // Handler - Handle inputs from the LCD Panel
 // --------------------------------------------------------------------
-
-enum class ShowOptions
-{
-    None     = 0x00,
-    Backup   = 0x01,
-    SaveBack = 0x02
-};
-ENABLE_BITMASK_OPERATOR(ShowOptions);
 
 template<typename Self>
 struct Handler: adv::Crtp<Self, Handler>
@@ -723,8 +723,6 @@ struct PidSettings: Handler<PidSettings>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void do_backup();
-    void do_restore();
     void do_write(EepromWrite& eeprom) const;
     void do_read(EepromRead& eeprom);
     void do_reset();
@@ -741,7 +739,6 @@ private:
 
 private:
     static const size_t NB_PIDs = 5;
-    Pid backup_ = {};
     Pid hotend_pid_[NB_PIDs] = {};
     Pid bed_pid_[NB_PIDs] = {};
     TemperatureKind kind_ = TemperatureKind::Hotend;
@@ -1153,7 +1150,7 @@ void Handler<Self>::show(ShowOptions options)
 
     Page page = prepare_page();
     if(page != Page::None)
-        pages.show_page(page, test_one_bit(options, ShowOptions::SaveBack));
+        pages.show_page(page, options);
 }
 
 template<typename Self>

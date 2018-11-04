@@ -138,7 +138,7 @@ void ADVi3pp_::show_boot_page()
 
     Page page = pages.get_current_page();
     if(page > Page::Main)
-        pages.show_page(Page::Main, false);
+        pages.show_page(Page::Main);
 }
 
 //! Note to forks author:

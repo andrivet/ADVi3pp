@@ -131,11 +131,11 @@ constexpr size_t countof(T const (&)[N]) noexcept { return N; }
 
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
-void Pages::show_page(Page page, bool save_back)
+void Pages::show_page(Page page, ShowOptions options)
 {
     Log::log() << F("Show page ") << static_cast<uint8_t>(page) << Log::endl();
 
-    if(save_back)
+    if(test_one_bit(options, ShowOptions::SaveBack))
         back_pages_.push(get_current_page());
 
     WriteRegisterDataRequest frame{Register::PictureID};
@@ -173,7 +173,8 @@ void Pages::show_back_page()
         return;
     }
 
-    show_page(back_pages_.pop(), false);
+    forward_page_ = Page::None;
+    show_page(back_pages_.pop(), ShowOptions::None);
 }
 
 //! Show the "Next" page on the LCD display.
@@ -187,7 +188,7 @@ void Pages::show_forward_page()
 
     if(!back_pages_.contains(forward_page_))
     {
-        Log::error() << F("Back pages do not containt forward page") << Log::endl();
+        Log::error() << F("Back pages do not contain forward page") << Log::endl();
         return;
     }
 
@@ -196,7 +197,8 @@ void Pages::show_forward_page()
         Page back_page = back_pages_.pop();
         if(back_page == forward_page_)
         {
-            show_page(forward_page_, false);
+            forward_page_ = Page::None;
+            show_page(forward_page_);
             return;
         }
     }
@@ -1522,7 +1524,7 @@ bool PidTuning::do_dispatch(KeyValue key_value)
 //! Show step #1 of PID tuning
 Page PidTuning::do_prepare_page()
 {
-    pid_settings.backup();
+    pages.save_forward_page();
     hotend_command();
     advi3pp.reset_status();
     return Page::PidTuning;
@@ -1578,7 +1580,6 @@ void PidTuning::step2_command()
 void PidTuning::cancel_pid()
 {
     ::wait_for_user = ::wait_for_heatup = false;
-    wait.show(F("Canceling PID..."));
 }
 
 //! PID automatic tuning is finished.
@@ -1586,16 +1587,17 @@ void PidTuning::finished(bool success)
 {
     Log::log() << F("Auto PID finished: ") << (success ? F("success") : F("failed")) << Log::endl();
     enqueue_and_echo_commands_P(PSTR("M106 S0"));
-    if(success)
-    {
-        advi3pp.reset_status();
-        pid_settings.add_pid(kind_, temperature_);
-        pid_settings.show(ShowOptions::None);
-    }
-    else
+    if(!success)
     {
         advi3pp.set_status(F("PID tuning failed"));
+        pages.show_back_page();
+        return;
     }
+
+    advi3pp.reset_status();
+    pid_settings.add_pid(kind_, temperature_);
+    bool inTuning = pages.get_current_page() == Page::PidTuning;
+    pid_settings.show(inTuning ? ShowOptions::None : ShowOptions::SaveBack);
 }
 
 // --------------------------------------------------------------------
@@ -1991,20 +1993,6 @@ void PidSettings::next_command()
     save_data();
     index_ += 1;
     send_data();
-}
-
-void PidSettings::do_backup()
-{
-    backup_.Kp_ = Temperature::Kp;
-    backup_.Ki_ = Temperature::Ki;
-    backup_.Kd_ = Temperature::Kd;
-}
-
-void PidSettings::do_restore()
-{
-    Temperature::Kp = backup_.Kp_;
-    Temperature::Ki = backup_.Ki_;
-    Temperature::Kd = backup_.Kd_;
 }
 
 void PidSettings::do_write(EepromWrite& eeprom) const
