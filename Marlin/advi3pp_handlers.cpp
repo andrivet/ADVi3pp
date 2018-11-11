@@ -2067,7 +2067,7 @@ void PidSettings::set_current_pid() const
         Temperature::Ki = scalePID_i(pid.Ki_);
         Temperature::Kd = scalePID_d(pid.Kd_);
 
-        Log::log() << F("Set Hotend PID #") << index_
+        Log::log() << F("Set Hotend PID #") << index_ << F(" for temperature ") << pid.temperature_
                    << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
     }
     else
@@ -2078,7 +2078,7 @@ void PidSettings::set_current_pid() const
         Temperature::bedKi = scalePID_i(pid.Ki_);
         Temperature::bedKd = scalePID_d(pid.Kd_);
 
-        Log::log() << F("Set Bed PID #") << index_
+        Log::log() << F("Set Bed PID #") << index_ << F(" for temperature ") << pid.temperature_
                    << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
     }
 }
@@ -2753,7 +2753,7 @@ Dimming::Dimming()
 void Dimming::enable(bool enable)
 {
     enabled_ = enable;
-    reset();
+    reset(true);
 }
 
 void Dimming::set_next_checking_time()
@@ -2763,7 +2763,7 @@ void Dimming::set_next_checking_time()
 
 void Dimming::set_next_dimmming_time()
 {
-    next_dimming_time_ = millis() + 1000 * DIMMING_DELAY;
+    next_dimming_time_ = millis() + 1000ul * DIMMING_DELAY;
 }
 
 uint8_t Dimming::get_adjusted_brightness()
@@ -2790,14 +2790,16 @@ void Dimming::check()
         Log::error() << F("Reading TouchPanelFlag") << Log::endl();
         return;
     }
-
     Uint8 value; read >> value;
+
+    // Reset TouchPanelFlag
+    WriteRegisterDataRequest request{Register::TouchPanelFlag};
+    request << 00_u8;
+    request.send(false);
+
     if(value.byte == 0x5A)
     {
         Log::log() << F("Panel touched, reset dimming") << Log::endl();
-        WriteRegisterDataRequest request{Register::TouchPanelFlag};
-        request << 00_u8;
-        request.send();
         reset();
         return;
     }
@@ -2810,10 +2812,13 @@ void Dimming::check()
     }
 }
 
-void Dimming::reset()
+void Dimming::reset(bool force)
 {
-    dimming_ = false;
     set_next_dimmming_time();
+    if(!force && !dimming_) // Already reset, nothing more to do (unless force is true)
+        return;
+
+    dimming_ = false;
     send_brightness();
 }
 

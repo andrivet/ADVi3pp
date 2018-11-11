@@ -261,7 +261,7 @@ void ADVi3pp_::init()
     versions.get_version_from_lcd();
     versions.send_advi3pp_version();
     graphs.clear();
-    dimming.reset();
+    dimming.reset(true);
 
     reset_status();
     show_boot_page();

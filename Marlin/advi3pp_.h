@@ -972,7 +972,7 @@ struct Dimming
 
     void enable(bool enable);
     void check();
-    void reset();
+    void reset(bool force = false);
     void change_brightness(int16_t brightness);
 
 private:
