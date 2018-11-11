@@ -225,7 +225,10 @@ bool Frame::receive(bool log)
         Log::error() << F("Garbage read: ") << header0 << Log::endl();
     }
     if(header0 != HEADER_BYTE_0)
+    {
+        Log::error() << F("Not able to locate frame in data received, abort receiving") << Log::endl();
         return false;
+    }
 
     wait_for_data(2);
 	auto header1 = static_cast<uint8_t>(Serial2.read());
@@ -247,10 +250,12 @@ bool Frame::receive(bool log)
     }
 
     buffer_[2] = length;
+
+    wait_for_data(length);
     auto read = Serial2.readBytes(buffer_ + 3, length);
     if(read != length)
     {
-        Log::error() << F("Invalid amount of bytes received") << Log::endl();
+        Log::error() << F("Invalid amount of bytes received: ") << read << F(" instead of ") << length << Log::endl();
         return false;
     }
 
