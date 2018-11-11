@@ -828,7 +828,7 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
             SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
 
         if(sensor_interactive_leveling_)
-            wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::g29_leveling_failed}, false);
+            wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::g29_leveling_failed}, ShowOptions::None);
         else
             advi3pp.set_status(F("Leveling failed"));
 
