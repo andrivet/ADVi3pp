@@ -42,20 +42,21 @@ struct Callable
     virtual ~Callable() = default;
 };
 
-template<typename FP, typename R, typename...A>
+template<typename R, typename...A>
 struct CallableFunction: public Callable<R, A...>
 {
+    using FP = R (*)(A...);
     using Super = Callable<R, A...>;
-    using Self = CallableFunction<FP, R, A...>;
+    using Self = CallableFunction<R, A...>;
 
     explicit CallableFunction(FP f): function_{f} {}
     void clone(void* dest) const override { internal::copy_data(function_, dest); }
 
-    R operator()(A...args) const override { if(is_void<R>::value) function_(args...);
-        else return function_(args...); }
+    R operator()(A&&...args) const override { if(is_void<R>::value) function_(args...);
+        else return function_(forward(args)...); }
 
 private:
-    FP function_; // In fact, pointer to function
+    FP function_;
 };
 
 template<typename O, typename R, typename...A>
@@ -68,8 +69,8 @@ struct CallableMethod: public Callable<R, A...>
     CallableMethod(O& o, const MP m): f_{o, m} {}
     void clone(void* dest) const override { internal::copy_data(f_, dest); }
 
-    R operator()(A...args) const override { if(is_void<R>::value) (f_.object_.*f_.method_)(args...);
-        else return (f_.object_.*f_.method_)(args...); }
+    R operator()(A&&...args) const override { if(is_void<R>::value) (f_.object_.*f_.method_)(args...);
+        else return (f_.object_.*f_.method_)(forward(args)...); }
 
 private:
     struct fields { O& object_; const MP method_; } f_{}; // MP: In fact, pointer to member function
@@ -85,8 +86,8 @@ struct CallableConstMethod: public Callable<R, A...>
     CallableConstMethod(const O& o, const MP m): f_{o, m} {}
     void clone(void* dest) const override { internal::copy_data(f_, dest); }
 
-    R operator()(A...args) const override { if(is_void<R>::value) (f_.object_.*f_.method_)(args...);
-        else return (f_.object_.*f_.method_)(args...); }
+    R operator()(A&&...args) const override { if(is_void<R>::value) (f_.object_.*f_.method_)(args...);
+        else return (f_.object_.*f_.method_)(forward(args)...); }
 
 private:
     struct fields { O& object_; const MP method_; } f_{}; // MP: In fact, pointer to member function
@@ -136,9 +137,9 @@ struct Callback<R(*)(A...)>
     Callback& operator=(nullptr_t) { isNull_ = true; return *this; }
 
     // Call
-    R operator()(A... args)
-        { if(is_void<R>::value) { if(!isNull_) (*callable())(args...); }
-          else { return !isNull_ ? (*callable())(args...) : R(); } }
+    R operator()(A&&... args)
+        { if(is_void<R>::value) { if(!isNull_) (*callable())(forward(args)...); }
+          else { return !isNull_ ? (*callable())(forward(args)...) : R(); } }
 
     // Boolean
     explicit operator bool() const noexcept { return !isNull_; }
