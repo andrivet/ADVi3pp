@@ -38,11 +38,14 @@
 #include <HardwareSerial.h>
 
 // --------------------------------------------------------------------
-// From Marlin
+// From Marlin / Arduino
 // --------------------------------------------------------------------
 
 uint8_t progress_bar_percent;
 int16_t lcd_contrast;
+extern char __bss_end;
+extern size_t __heap_start;
+extern char* __brkval;
 
 #ifdef ADVi3PP_BLTOUCH
 bool set_probe_deployed(bool);
@@ -2531,6 +2534,23 @@ Page Statistics::do_prepare_page()
     return Page::Statistics;
 }
 
+inline uint16_t get_heap_end()
+{
+    auto h = reinterpret_cast<uint16_t>(__brkval);
+    return h ? h : __bss_end;
+}
+
+uint16_t get_stack_top()
+{
+    char v;
+    return reinterpret_cast<uint16_t>(&v + 1);
+}
+
+inline uint16_t get_free_SRAM()
+{
+    return get_stack_top() - get_heap_end();
+}
+
 void Statistics::send_stats()
 {
     printStatistics stats = PrintCounter::getStats();
@@ -2545,7 +2565,9 @@ void Statistics::send_stats()
                   << 'm';
 
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(stats.totalPrints) << Uint16(stats.finishedPrints);
+    frame << Uint16(stats.totalPrints)
+          << Uint16(stats.finishedPrints)
+          << Uint16(get_free_SRAM());
     frame.send();
 
     frame.reset(Variable::LongText0);
