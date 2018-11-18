@@ -14,12 +14,6 @@ If you like what I am doing, [**please consider supporting me as a patron on Pat
 
 <a href="https://www.patreon.com/bePatron?u=6504486">![](https://github.com/andrivet/ADVi3pp-User-Manual/raw/master/assets/become-a-patron.png)</a>
 
-### Vote for your favorite new feature
-
-Version 3 has just been released. I do not expect version 4 to arrive before some months (with Beta releases sooner of course), but it is time to think now of what will be **version 4**. And if you are a **Sponsor** of the project on Patreon, you can participate to this.
-
-[More information](https://www.patreon.com/posts/on-road-to-4-19201225)
-
 ## Objectives
 
 The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
