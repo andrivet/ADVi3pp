@@ -75,7 +75,8 @@ enum class Page: uint8_t
     EEPROMMismatch          = 104,
     ZHeightTuning           = 106,
     LinearAdvanceTuning     = 108,
-    LinearAdvanceSettings   = 110
+    LinearAdvanceSettings   = 110,
+    Diagnosis               = 112
 };
 
 }
