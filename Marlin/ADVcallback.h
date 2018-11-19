@@ -26,13 +26,14 @@
 namespace adv
 {
 
-    namespace internal {
-        template<typename I>
-        static void copy_data(const I& i, void* o) {
-            auto p = reinterpret_cast<const char*>(&i);
-            copy(p, p + sizeof(I), reinterpret_cast<char*>(o));
-        }
+namespace internal {
+    template<typename I>
+    void copy_data(const I& i, void* o)
+    {
+        auto p = reinterpret_cast<const char*>(&i);
+        copy(p, p + sizeof(I), reinterpret_cast<char*>(o));
     }
+}
 
 template<typename R, typename...A>
 struct Callable
@@ -42,11 +43,12 @@ struct Callable
     virtual ~Callable() = default;
 };
 
-template<typename FP, typename R, typename...A>
+template<typename R, typename...A>
 struct CallableFunction: public Callable<R, A...>
 {
+    using FP = R(*)(A...);
     using Super = Callable<R, A...>;
-    using Self = CallableFunction<FP, R, A...>;
+    using Self = CallableFunction<R, A...>;
 
     explicit CallableFunction(FP f): function_{f} {}
     void clone(void* dest) const override { internal::copy_data(function_, dest); }
@@ -65,31 +67,31 @@ struct CallableMethod: public Callable<R, A...>
     using Super = Callable<R, A...>;
     using Self = CallableMethod<O, R, A...>;
 
-    CallableMethod(O& o, const MP m): f_{o, m} {}
+    CallableMethod(O& o, MP m): f_{o, m} {}
     void clone(void* dest) const override { internal::copy_data(f_, dest); }
 
     R operator()(A&&...args) const override { if(is_void<R>::value) (f_.object_.*f_.method_)(forward<A>(args)...);
         else return (f_.object_.*f_.method_)(forward<A>(args)...); }
 
 private:
-    struct fields { O& object_; const MP method_; } f_{}; // MP: In fact, pointer to member function
+    struct fields { O& object_; MP method_; } f_{};
 };
 
 template<typename O, typename R, typename...A>
 struct CallableConstMethod: public Callable<R, A...>
 {
-    using MP = R(O::*)(A...); // Pointer to member function type
+    using MP = R(O::*)(A...) const; // Pointer to member function type
     using Super = Callable<R, A...>;
     using Self = CallableMethod<O, R, A...>;
 
-    CallableConstMethod(const O& o, const MP m): f_{o, m} {}
+    CallableConstMethod(const O& o, MP m): f_{o, m} {}
     void clone(void* dest) const override { internal::copy_data(f_, dest); }
 
     R operator()(A&&...args) const override { if(is_void<R>::value) (f_.object_.*f_.method_)(forward<A>(args)...);
         else return (f_.object_.*f_.method_)(forward<A>(args)...); }
 
 private:
-    struct fields { O& object_; const MP method_; } f_{}; // MP: In fact, pointer to member function
+    struct fields { const O& object_; MP method_; } f_{};
 };
 
 template<typename>
@@ -106,7 +108,7 @@ struct Callback<R(*)(A...)>
     explicit Callback(nullptr_t) noexcept {}
 
     // From a function
-    explicit Callback(FP f): isNull_{false} { place<CallableFunction<FP, R, A...>>(f); }
+    explicit Callback(FP f): isNull_{false} { place<CallableFunction<R, A...>>(f); }
 
     // From a member function and object reference
     template <typename O>
@@ -126,7 +128,7 @@ struct Callback<R(*)(A...)>
 
     // Captured lambda specialization
     template<typename L>
-    explicit Callback(const L& l): isNull_{false}  { place<CallableFunction<decltype(l), R, A...>>(l); }
+    explicit Callback(const L& l): isNull_{false}  { place<CallableFunction<R, A...>>(l); }
 
     // From another Callback
     Callback(const Self& cb): isNull_{cb.isNull_}  { copy_buffer(cb.buffer_); }

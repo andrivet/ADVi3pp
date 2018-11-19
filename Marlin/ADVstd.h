@@ -21,6 +21,10 @@
 #ifndef ADVSTD_H
 #define ADVSTD_H
 
+// Default placement new
+inline void* operator new(size_t, void* p) noexcept { return p; }
+inline void* operator new[](size_t, void* p) noexcept { return p; }
+
 namespace adv {
 
 using size_t = decltype(sizeof(int));
@@ -102,7 +106,7 @@ template<typename T> struct enable_if<true, T> { using type = T; };
 template< bool B, typename T = void > using enable_if_t = typename enable_if<B, T>::type;
 
 template<typename I, typename O>
-O copy(I first, I last, O d_first)
+inline O copy(I first, I last, O d_first)
 {
     while(first != last)
         *d_first++ = *first++;
@@ -110,9 +114,5 @@ O copy(I first, I last, O d_first)
 }
 
 } // namespace adv
-
-// Default placement new
-inline void* operator new(size_t, void* p) noexcept { return p; }
-inline void* operator new[](size_t, void* p) noexcept { return p; }
 
 #endif
