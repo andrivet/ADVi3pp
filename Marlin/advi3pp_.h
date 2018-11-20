@@ -145,6 +145,7 @@ struct Pages
 private:
     Stack<Page, 8> back_pages_{};
     Page forward_page_ = Page::None;
+    Page current_page_ = Page::Main;
 };
 
 // --------------------------------------------------------------------

@@ -147,21 +147,14 @@ void Pages::show_page(Page page, ShowOptions options)
     WriteRegisterDataRequest frame{Register::PictureID};
     frame << 00_u8 << page;
     frame.send(true);
+
+    current_page_ = page;
 }
 
 //! Retrieve the current page on the LCD screen
 Page Pages::get_current_page()
 {
-    ReadRegister frame{Register::PictureID, 2};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Reading PictureID") << Log::endl();
-        return Page::None;
-    }
-
-    Uint16 page; frame >> page;
-    Log::log() << F("Current page index = ") << page.word << Log::endl();
-    return static_cast<Page>(page.word);
+    return current_page_;
 }
 
 //! Set page to display after the completion of an operation.
@@ -1622,8 +1615,7 @@ Page LinearAdvanceTuning::do_prepare_page()
 
 Page Diagnosis::do_prepare_page()
 {
-    // TODO
-    return Page::None;
+    return Page::Diagnosis;
 }
 
 
