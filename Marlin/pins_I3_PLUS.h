@@ -32,20 +32,14 @@
 
 #define BOARD_NAME         "Duplicator i3 Plus"
 
-#define ARDUINO_SERIAL 1
-
 //
 // Limit Switches
 //
 #ifdef ADVi3PP_BLTOUCH
-    #define X_MIN_PIN       54   // PF0 / A0
-    #define X_MAX_PIN       -1   // NC
-    #define Y_MIN_PIN       24   // PA2 / AD2
-    #define Y_MAX_PIN       -1   // NC
-    #define Z_MIN_PIN       23   // PA1 / AD1
-    #define Z_MAX_PIN       -1   // NC
-    #define Z_MIN_PROBE_PIN 25   // PA3 / AD3
-    #define SERVO0_PIN      40   // PG1 / !RD
+    #define X_STOP_PIN     54   // PF0 / A0
+    #define Y_STOP_PIN     24   // PA2 / AD2
+    #define Z_STOP_PIN     25   // PA3 / AD3
+    #define SERVO0_PIN     40   // PG1 / !RD
 #else
     #define X_STOP_PIN     54   // PF0 / A0
     #define Y_STOP_PIN     24   // PA2 / AD2

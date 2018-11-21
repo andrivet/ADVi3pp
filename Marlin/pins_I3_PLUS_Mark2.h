@@ -32,8 +32,6 @@
 
 #define BOARD_NAME         "Duplicator i3 Plus Mark II"
 
-#define ARDUINO_SERIAL 1
-
 //
 // Limit Switches
 //
