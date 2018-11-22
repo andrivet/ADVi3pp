@@ -142,7 +142,11 @@ void Pages::show_page(Page page, ShowOptions options)
     Log::log() << F("Show page ") << static_cast<uint8_t>(page) << Log::endl();
 
     if(test_one_bit(options, ShowOptions::SaveBack))
-        back_pages_.push(get_current_page());
+    {
+        auto current = get_current_page();
+        Log::log() << F("Save back page ") << static_cast<uint8_t>(current) << Log::endl();
+        back_pages_.push(current);
+    }
 
     WriteRegisterDataRequest frame{Register::PictureID};
     frame << 00_u8 << page;
@@ -154,26 +158,33 @@ void Pages::show_page(Page page, ShowOptions options)
 //! Retrieve the current page on the LCD screen
 Page Pages::get_current_page()
 {
-    return current_page_;
+    // Boot page switches automatically (animation) to the Main page
+    return current_page_ == Page::Boot ? Page::Main : current_page_;
 }
 
 //! Set page to display after the completion of an operation.
 void Pages::save_forward_page()
 {
-    forward_page_ = get_current_page();
+    auto current = get_current_page();
+    Log::log() << F("Save forward page ") << static_cast<uint8_t>(current) << Log::endl();
+    forward_page_ = current;
 }
 
 //! Show the "Back" page on the LCD display.
 void Pages::show_back_page()
 {
+    forward_page_ = Page::None;
+
     if(back_pages_.is_empty())
     {
-        Log::error() << F("No Back page defined" )<< Log::endl();
+        Log::log() << F("No back page, show Main") << Log::endl();
+        show_page(Page::Main, ShowOptions::None);
         return;
     }
 
-    forward_page_ = Page::None;
-    show_page(back_pages_.pop(), ShowOptions::None);
+    auto back = back_pages_.pop();
+    Log::log() << F("Pop back page ") << static_cast<uint8_t>(back) << Log::endl();
+    show_page(back, ShowOptions::None);
 }
 
 //! Show the "Next" page on the LCD display.
@@ -187,17 +198,19 @@ void Pages::show_forward_page()
 
     if(!back_pages_.contains(forward_page_))
     {
-        Log::error() << F("Back pages do not contain forward page") << Log::endl();
+        Log::error() << F("Back pages do not contain forward page ") << static_cast<uint8_t>(forward_page_) << Log::endl();
         return;
     }
 
     while(!back_pages_.is_empty())
     {
         Page back_page = back_pages_.pop();
+        Log::log() << F("Pop back page ") << static_cast<uint8_t>(back_page) << Log::endl();
         if(back_page == forward_page_)
         {
-            forward_page_ = Page::None;
+            Log::log() << F("Show forward page ") << static_cast<uint8_t>(forward_page_) << Log::endl();
             show_page(forward_page_, ShowOptions::None);
+            forward_page_ = Page::None;
             return;
         }
     }
