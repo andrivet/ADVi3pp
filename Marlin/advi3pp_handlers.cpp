@@ -52,6 +52,9 @@ float run_z_probe();
 extern float zprobe_zoffset;
 #endif
 
+template<typename A>
+constexpr size_t elem_of(const A& a) { return sizeof(a) / sizeof(a[0]); }
+
 namespace
 {
     const uint16_t advi3_pp_version = 0x400;
@@ -1637,23 +1640,24 @@ Page Diagnosis::do_prepare_page()
 
 #ifdef ADVi3PP_BLTOUCH
 
-struct SensorPosition
+SensorSettings::SensorSettings()
 {
-    uint16_t x, y, z;
-    const char* name;
-};
+    do_reset();
+}
 
-const char sensor_1_name[] PROGMEM = "ADVi3++ Side";
-const char sensor_2_name[] PROGMEM = "ADVi3++ Front";
-const char sensor_3_name[] PROGMEM = "Teaching Tech Side";
-const char sensor_4_name[] PROGMEM = "Teaching Tech Front";
+const FlashChar* SensorSettings::get_sensor_name() const
+{
+    switch(index_)
+    {
+        case 0: return F("ADVi3++ Side");
+        case 1: return F("ADVi3++ Front");
+        case 2: return F("Teaching Tech Side");
+        case 3: return F("Teaching Tech Front");
+        default: assert(false); break;
+    }
 
-SensorPosition positions[] = {
-    {0, 0, 0, sensor_1_name},
-    {0, 0, 0, sensor_2_name},
-    {0, 0, 0, sensor_3_name},
-    {0, 0, 0, sensor_4_name},
-};
+    return F("");
+}
 
 bool SensorSettings::do_dispatch(KeyValue key_value)
 {
@@ -1672,50 +1676,95 @@ bool SensorSettings::do_dispatch(KeyValue key_value)
 
 Page SensorSettings::do_prepare_page()
 {
-    send_z_height_to_lcd(zprobe_zoffset);
+    send_data();
     pages.save_forward_page();
     return Page::SensorSettings;
 }
 
 void SensorSettings::do_save_command()
 {
-    save_lcd_z_height();
     Parent::do_save_command();
+}
+
+void SensorSettings::do_write(EepromWrite& eeprom) const
+{
+    for(size_t i = 0; i < NB_POSITIONS; ++i)
+    {
+        eeprom.write(positions_[i].x);
+        eeprom.write(positions_[i].y);
+        eeprom.write(positions_[i].z);
+    }
+}
+
+void SensorSettings::do_read(EepromRead& eeprom)
+{
+    for(size_t i = 0; i < NB_POSITIONS; ++i)
+    {
+        eeprom.read(positions_[i].x);
+        eeprom.read(positions_[i].y);
+        eeprom.read(positions_[i].z);
+    }
+}
+
+void SensorSettings::do_reset()
+{
+    positions_[0] = { -2800, -4000, -154 };
+    positions_[1] = {  1000,  1100,  1200 };
+    positions_[2] = {  2000,  2100,  2200 };
+    positions_[3] = {  3000,  3100,  3200 };
+}
+
+uint16_t SensorSettings::do_size_of() const
+{
+    return NB_POSITIONS * sizeof(SensorPosition);
 }
 
 void SensorSettings::previous_command()
 {
-    // TODO
+    if(index_ <= 0)
+        return;
+    get_data();
+    index_ -= 1;
+    send_data();
 }
 
 void SensorSettings::next_command()
 {
-    // TODO
+    if(index_ >= NB_POSITIONS - 1)
+        return;
+    get_data();
+    index_ += 1;
+    send_data();
 }
 
-void SensorSettings::send_z_height_to_lcd(double z_height)
+void SensorSettings::send_data() const
 {
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(z_height * 100); frame.send();
+    ADVString<32> title{get_sensor_name()};
+
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(positions_[index_].x) << Uint16(positions_[index_].y) << Uint16(positions_[index_].z);
+    frame.send();
+
+    frame.reset(Variable::LongTextCentered0);
+    frame << title.align(Alignment::Center);
+    frame.send();
 }
 
-void SensorSettings::save_lcd_z_height()
+void SensorSettings::get_data()
 {
-    ReadRamData frame{Variable::Value0, 1};
+    ReadRamData frame{Variable::Value0, 3};
     if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
         return;
     }
 
-    Uint16 offsetZ; frame >> offsetZ;
-    save_z_height(static_cast<int16_t>(offsetZ.word) / 100.0);
-}
+    Uint16 x, y, z;
+    frame >> x >> y >> z;
 
-void SensorSettings::save_z_height(double height)
-{
-    ADVString<20> command; command << F("M851 Z") << height;
-    enqueue_and_echo_command(command.get());
-    advi3pp.save_settings();
+    positions_[index_].x = x.word;
+    positions_[index_].y = y.word;
+    positions_[index_].z = z.word;
 }
 
 #else

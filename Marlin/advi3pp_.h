@@ -613,16 +613,28 @@ private:
 #ifdef ADVi3PP_BLTOUCH
 struct SensorSettings: Handler<SensorSettings>
 {
-    void send_z_height_to_lcd(double height);
-    void save_lcd_z_height();
+    SensorSettings();
 
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
-    void save_z_height(double height);
+    void do_write(EepromWrite& eeprom) const;
+    void do_read(EepromRead& eeprom);
+    void do_reset();
+    uint16_t do_size_of() const;
     void do_save_command();
     void previous_command();
     void next_command();
+    void send_data() const;
+    void get_data();
+    const FlashChar* get_sensor_name() const;
+
+private:
+    struct SensorPosition { int16_t x, y, z; };
+    static const size_t NB_POSITIONS = 4;
+
+    uint16_t index_ = 0;
+    SensorPosition positions_[NB_POSITIONS];
 
     friend Parent;
 };
