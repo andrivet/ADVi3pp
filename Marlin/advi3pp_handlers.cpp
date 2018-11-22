@@ -44,7 +44,6 @@
 uint8_t progress_bar_percent;
 int16_t lcd_contrast;
 extern char __bss_end;
-extern size_t __heap_start;
 extern char* __brkval;
 
 #ifdef ADVi3PP_BLTOUCH
@@ -2539,21 +2538,28 @@ Page Statistics::do_prepare_page()
     return Page::Statistics;
 }
 
-inline uint16_t get_heap_end()
+char* get_heap_end()
 {
-    auto h = reinterpret_cast<uint16_t>(__brkval);
-    return h ? h : __bss_end;
+    return __brkval ? __brkval : &__bss_end;
 }
 
-uint16_t get_stack_top()
+char* get_stack_top()
 {
     char v;
-    return reinterpret_cast<uint16_t>(&v + 1);
+    return &v + 1;
 }
 
-inline uint16_t get_free_SRAM()
+uint16_t get_free_SRAM()
 {
-    return get_stack_top() - get_heap_end();
+	auto stack = get_stack_top();
+	auto heap = get_heap_end();
+	auto free_ram = static_cast<uint16_t>(stack - heap);
+	
+	Log::log() << F("SRAM Top/Stack = 0x") << reinterpret_cast<uint16_t>(stack)
+	           << F(", Bottom/Heap = 0x") << reinterpret_cast<uint16_t>(heap)
+	           << F(", Free = 0x") << free_ram << Log::endl();
+	
+    return free_ram;
 }
 
 void Statistics::send_stats()
