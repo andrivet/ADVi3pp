@@ -66,6 +66,9 @@ struct ADVi3pp
     static void reset_status();
     static void buzz(long duration, uint16_t frequency = 0);
     static void on_set_temperature(TemperatureKind kind, uint16_t temperature);
+    static double x_probe_offset_from_extruder();
+    static double y_probe_offset_from_extruder();
+    static double z_probe_offset_from_extruder();
 };
 
 }

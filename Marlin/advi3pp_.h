@@ -615,6 +615,10 @@ struct SensorSettings: Handler<SensorSettings>
 {
     SensorSettings();
 
+    double x_probe_offset_from_extruder() const;
+    double y_probe_offset_from_extruder() const;
+    double z_probe_offset_from_extruder() const;
+
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
@@ -1083,6 +1087,10 @@ struct ADVi3pp_
 
     uint16_t get_last_used_temperature(TemperatureKind kind) const;
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
+
+    double x_probe_offset_from_extruder() const;
+    double y_probe_offset_from_extruder() const;
+    double z_probe_offset_from_extruder() const;
 
 private:
     void buzz_(long duration);

@@ -442,8 +442,6 @@ void ADVi3pp_::icode_0(const GCodeParser& parser)
 
     feedrate_mm_s = old_feedrate_mm_s;
 
-    sensor_settings.send_z_height_to_lcd(-zHeight);
-    sensor_settings.show(ShowOptions::SaveBack);
 #endif
 }
 
@@ -620,6 +618,21 @@ void ADVi3pp_::on_set_temperature(TemperatureKind kind, uint16_t temperature)
         return;
     last_used_temperature_[kind == TemperatureKind::Hotend] = temperature;
     pid_settings.set_best_pid(kind, temperature);
+}
+
+double ADVi3pp_::x_probe_offset_from_extruder() const
+{
+    return sensor_settings.x_probe_offset_from_extruder();
+}
+
+double ADVi3pp_::y_probe_offset_from_extruder() const
+{
+    return sensor_settings.y_probe_offset_from_extruder();
+}
+
+double ADVi3pp_::z_probe_offset_from_extruder() const
+{
+    return sensor_settings.z_probe_offset_from_extruder();
 }
 
 // --------------------------------------------------------------------

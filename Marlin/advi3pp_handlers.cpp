@@ -1767,6 +1767,21 @@ void SensorSettings::get_data()
     positions_[index_].z = z.word;
 }
 
+double SensorSettings::x_probe_offset_from_extruder() const
+{
+    return positions_[index_].x / 100.0;
+}
+
+double SensorSettings::y_probe_offset_from_extruder() const
+{
+    return positions_[index_].y / 100.0;
+}
+
+double SensorSettings::z_probe_offset_from_extruder() const
+{
+    return positions_[index_].z / 100.0;
+}
+
 #else
 
 Page SensorSettings::do_prepare_page()
