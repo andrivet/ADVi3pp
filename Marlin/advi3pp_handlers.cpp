@@ -1649,9 +1649,9 @@ const FlashChar* SensorSettings::get_sensor_name() const
 {
     switch(index_)
     {
-        case 0: return F("ADVi3++ Side");
+        case 0: return F("ADVi3++ Left Side");
         case 1: return F("ADVi3++ Front");
-        case 2: return F("Teaching Tech Side");
+        case 2: return F("Teaching Tech L. Side");
         case 3: return F("Teaching Tech Front");
         default: assert(false); break;
     }
