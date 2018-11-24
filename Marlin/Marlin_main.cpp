@@ -2400,8 +2400,8 @@ void clean_up_after_endstop_or_probe_move() {
     float nx = rx, ny = ry;
     if (probe_relative) {
       if (!position_is_reachable_by_probe(rx, ry)) return NAN;  // The given position is in terms of the probe
-      nx -= (X_PROBE_OFFSET_FROM_EXTRUDER);                     // Get the nozzle position
-      ny -= (Y_PROBE_OFFSET_FROM_EXTRUDER);
+      nx -= (advi3pp::ADVi3pp::x_probe_offset_from_extruder());                     // Get the nozzle position
+      ny -= (advi3pp::ADVi3pp::y_probe_offset_from_extruder());
     }
     else if (!position_is_reachable(nx, ny)) return NAN;        // The given position is in terms of the nozzle
 
@@ -3800,33 +3800,37 @@ inline void gcode_G4() {
     #endif
 
     #if HAS_BED_PROBE
-      SERIAL_ECHOPAIR("Probe Offset X:", X_PROBE_OFFSET_FROM_EXTRUDER);
-      SERIAL_ECHOPAIR(" Y:", Y_PROBE_OFFSET_FROM_EXTRUDER);
+      SERIAL_ECHOPAIR("Probe Offset X:", advi3pp::ADVi3pp::x_probe_offset_from_extruder());
+      SERIAL_ECHOPAIR(" Y:", advi3pp::ADVi3pp::y_probe_offset_from_extruder());
       SERIAL_ECHOPAIR(" Z:", zprobe_zoffset);
-      #if X_PROBE_OFFSET_FROM_EXTRUDER > 0
+      if(advi3pp::ADVi3pp::x_probe_offset_from_extruder() > 0)
         SERIAL_ECHOPGM(" (Right");
-      #elif X_PROBE_OFFSET_FROM_EXTRUDER < 0
+      else if(advi3pp::ADVi3pp::x_probe_offset_from_extruder() < 0)
         SERIAL_ECHOPGM(" (Left");
-      #elif Y_PROBE_OFFSET_FROM_EXTRUDER != 0
+      else if(advi3pp::ADVi3pp::y_probe_offset_from_extruder() != 0)
         SERIAL_ECHOPGM(" (Middle");
       #else
         SERIAL_ECHOPGM(" (Aligned With");
-      #endif
-      #if Y_PROBE_OFFSET_FROM_EXTRUDER > 0
+
+      if(advi3pp::ADVi3pp::y_probe_offset_from_extruder() > 0)
+      {
         #if IS_SCARA
           SERIAL_ECHOPGM("-Distal");
         #else
           SERIAL_ECHOPGM("-Back");
         #endif
-      #elif Y_PROBE_OFFSET_FROM_EXTRUDER < 0
+      }
+      else if(advi3pp::ADVi3pp::y_probe_offset_from_extruder() < 0)
+      {
         #if IS_SCARA
           SERIAL_ECHOPGM("-Proximal");
         #else
           SERIAL_ECHOPGM("-Front");
         #endif
-      #elif X_PROBE_OFFSET_FROM_EXTRUDER != 0
+      }
+      else if(advi3pp::ADVi3pp::x_probe_offset_from_extruder() != 0)
         SERIAL_ECHOPGM("-Center");
-      #endif
+
       if (zprobe_zoffset < 0)
         SERIAL_ECHOPGM(" & Below");
       else if (zprobe_zoffset > 0)
@@ -4019,8 +4023,8 @@ inline void gcode_G4() {
     destination[Z_AXIS] = current_position[Z_AXIS]; // Z is already at the right height
 
     #if HOMING_Z_WITH_PROBE
-      destination[X_AXIS] -= X_PROBE_OFFSET_FROM_EXTRUDER;
-      destination[Y_AXIS] -= Y_PROBE_OFFSET_FROM_EXTRUDER;
+      destination[X_AXIS] -= advi3pp::ADVi3pp::x_probe_offset_from_extruder();
+      destination[Y_AXIS] -= advi3pp::ADVi3pp::y_probe_offset_from_extruder();
     #endif
 
     if (position_is_reachable(destination[X_AXIS], destination[Y_AXIS])) {
@@ -5489,8 +5493,8 @@ void home_all_axes() { gcode_G28(true); }
    *   E   Engage the probe for each probe (default 1)
    */
   inline void gcode_G30() {
-    const float xpos = parser.linearval('X', current_position[X_AXIS] + X_PROBE_OFFSET_FROM_EXTRUDER),
-                ypos = parser.linearval('Y', current_position[Y_AXIS] + Y_PROBE_OFFSET_FROM_EXTRUDER);
+    const float xpos = parser.linearval('X', current_position[X_AXIS] + advi3pp::ADVi3pp::x_probe_offset_from_extruder()),
+                ypos = parser.linearval('Y', current_position[Y_AXIS] + advi3pp::ADVi3pp::y_probe_offset_from_extruder());
 
     if (!position_is_reachable_by_probe(xpos, ypos)) return;
 
@@ -6339,8 +6343,8 @@ void home_all_axes() { gcode_G28(true); }
       if (hasI) destination[X_AXIS] = _GET_MESH_X(ix);
       if (hasJ) destination[Y_AXIS] = _GET_MESH_Y(iy);
       if (parser.boolval('P')) {
-        if (hasI) destination[X_AXIS] -= X_PROBE_OFFSET_FROM_EXTRUDER;
-        if (hasJ) destination[Y_AXIS] -= Y_PROBE_OFFSET_FROM_EXTRUDER;
+        if (hasI) destination[X_AXIS] -= advi3pp::ADVi3pp::x_probe_offset_from_extruder();
+        if (hasJ) destination[Y_AXIS] -= advi3pp::ADVi3pp::y_probe_offset_from_extruder();
       }
 
       const float fval = parser.linearval('F');
@@ -7715,8 +7719,8 @@ inline void gcode_M42() {
     float X_current = current_position[X_AXIS],
           Y_current = current_position[Y_AXIS];
 
-    const float X_probe_location = parser.linearval('X', X_current + X_PROBE_OFFSET_FROM_EXTRUDER),
-                Y_probe_location = parser.linearval('Y', Y_current + Y_PROBE_OFFSET_FROM_EXTRUDER);
+    const float X_probe_location = parser.linearval('X', X_current + advi3pp::ADVi3pp::x_probe_offset_from_extruder()),
+                Y_probe_location = parser.linearval('Y', Y_current + advi3pp::ADVi3pp::y_probe_offset_from_extruder());
 
     if (!position_is_reachable_by_probe(X_probe_location, Y_probe_location)) {
       SERIAL_PROTOCOLLNPGM("? (X,Y) out of bounds.");
@@ -7801,8 +7805,8 @@ inline void gcode_M42() {
             while (angle < 0.0)     // outside of this range.   It looks like they behave correctly with
               angle += 360.0;       // numbers outside of the range, but just to be safe we clamp them.
 
-            X_current = X_probe_location - (X_PROBE_OFFSET_FROM_EXTRUDER) + cos(RADIANS(angle)) * radius;
-            Y_current = Y_probe_location - (Y_PROBE_OFFSET_FROM_EXTRUDER) + sin(RADIANS(angle)) * radius;
+            X_current = X_probe_location - (advi3pp::ADVi3pp::x_probe_offset_from_extruder()) + cos(RADIANS(angle)) * radius;
+            Y_current = Y_probe_location - (advi3pp::ADVi3pp::y_probe_offset_from_extruder()) + sin(RADIANS(angle)) * radius;
 
             #if DISABLED(DELTA)
               X_current = constrain(X_current, X_MIN_POS, X_MAX_POS);

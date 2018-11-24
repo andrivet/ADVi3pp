@@ -1784,7 +1784,7 @@ void MarlinSettings::reset() {
   #endif
 
   #if HAS_BED_PROBE
-    zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
+    zprobe_zoffset = advi3pp::ADVi3pp::z_probe_offset_from_extruder();
   #endif
 
   #if ENABLED(DELTA)
