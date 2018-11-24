@@ -1647,16 +1647,15 @@ SensorSettings::SensorSettings()
 
 const FlashChar* SensorSettings::get_sensor_name() const
 {
-    switch(index_)
-    {
-        case 0: return F("ADVi3++ Left Side");
-        case 1: return F("ADVi3++ Front");
-        case 2: return F("Teaching Tech L. Side");
-        case 3: return F("Teaching Tech Front");
-        default: assert(false); break;
-    }
+    // Note: F macro can be called only in a function, this is why this is coded like this
 
-    return F("");
+    auto advi3_side          = F("ADVi3++ Left Side");
+    auto teaching_tech_side  = F("Teaching Tech L. Side");
+    auto teaching_tech_front = F("Teaching Tech Front");
+    auto custom              = F("Custom");
+
+    static const FlashChar* names[NB_POSITIONS] = {advi3_side, teaching_tech_side, teaching_tech_front, custom};
+    return names[index_];
 }
 
 bool SensorSettings::do_dispatch(KeyValue key_value)
@@ -1712,6 +1711,7 @@ void SensorSettings::do_reset()
     positions_[1] = {  1000,  1100,  1200 };
     positions_[2] = {  2000,  2100,  2200 };
     positions_[3] = {  3000,  3100,  3200 };
+    positions_[3] = {  0,  0,  0 };
 }
 
 uint16_t SensorSettings::do_size_of() const

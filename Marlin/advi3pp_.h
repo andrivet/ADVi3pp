@@ -635,7 +635,7 @@ private:
 
 private:
     struct SensorPosition { int16_t x, y, z; };
-    static const size_t NB_POSITIONS = 4;
+    static const size_t NB_POSITIONS = 5;
 
     uint16_t index_ = 0;
     SensorPosition positions_[NB_POSITIONS];
