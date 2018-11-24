@@ -353,7 +353,7 @@ void Wait::do_save_command()
         continue_ = nullptr;
     }
 
-    Parent::do_save_command();
+    pages.show_forward_page();
 }
 
 // --------------------------------------------------------------------
@@ -602,8 +602,6 @@ void Preheat::retrieve_presets()
     presets_[index_].hotend = hotend.word;
     presets_[index_].bed = bed.word;
     presets_[index_].fan = fan.word;
-
-    advi3pp.save_settings();
 }
 
 //! Get the preheat screen
@@ -648,6 +646,7 @@ void Preheat::do_save_command()
     command = F("M106 S"); command << preset.fan;
     enqueue_and_echo_command(command.get());
 
+    advi3pp.save_settings();
     temperatures.show(false);
 }
 
@@ -1680,11 +1679,6 @@ Page SensorSettings::do_prepare_page()
     return Page::SensorSettings;
 }
 
-void SensorSettings::do_save_command()
-{
-    Parent::do_save_command();
-}
-
 void SensorSettings::do_write(EepromWrite& eeprom) const
 {
     for(size_t i = 0; i < NB_POSITIONS; ++i)
@@ -2588,7 +2582,6 @@ Page FactoryReset::do_prepare_page()
 void FactoryReset::do_save_command()
 {
     enqueue_and_echo_commands_P(PSTR("M502"));
-    advi3pp.save_settings();
     Parent::do_save_command();
 }
 

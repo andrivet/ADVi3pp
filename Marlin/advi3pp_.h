@@ -626,7 +626,6 @@ private:
     void do_read(EepromRead& eeprom);
     void do_reset();
     uint16_t do_size_of() const;
-    void do_save_command();
     void previous_command();
     void next_command();
     void send_data() const;
@@ -1198,6 +1197,7 @@ void Handler<Self>::do_show_command()
 template<typename Self>
 void Handler<Self>::do_save_command()
 {
+    advi3pp.save_settings();
     pages.show_forward_page();
 }
 

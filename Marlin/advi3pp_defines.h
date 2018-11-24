@@ -36,7 +36,7 @@
 #define ADVi3PP_LOG
 
 // To log the content of frames, uncomment the following line. Very chatty, but useful to debug tough bugs
-#define ADVi3PP_LOG_FRAMES
+//#define ADVi3PP_LOG_FRAMES
 //#define ADVi3PP_LOG_ALL_FRAMES // Log all the frames, including those that are updating the status
 
 #endif
