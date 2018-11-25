@@ -1333,13 +1333,6 @@ void SensorZHeight::do_back_command()
     enqueue_and_echo_commands_P((PSTR("G28 X0 Y0"))); // homing
 }
 
-void SensorZHeight::do_save_command()
-{
-    wait.show(F("Measure Z-height"));
-    enqueue_and_echo_commands_P(PSTR("I0")); // measure z-height
-    Parent::do_save_command();
-}
-
 void SensorZHeight::multiplier01_command()
 {
     multiplier_ = 0.1;

@@ -520,7 +520,6 @@ private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_back_command();
-    void do_save_command();
     void home_task();
     void multiplier01_command();
     void multiplier05_command();
