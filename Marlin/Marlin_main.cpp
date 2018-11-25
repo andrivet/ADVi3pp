@@ -3809,7 +3809,7 @@ inline void gcode_G4() {
         SERIAL_ECHOPGM(" (Left");
       else if(advi3pp::ADVi3pp::y_probe_offset_from_extruder() != 0)
         SERIAL_ECHOPGM(" (Middle");
-      #else
+      else
         SERIAL_ECHOPGM(" (Aligned With");
 
       if(advi3pp::ADVi3pp::y_probe_offset_from_extruder() > 0)

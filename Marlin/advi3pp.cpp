@@ -620,6 +620,7 @@ void ADVi3pp_::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     pid_settings.set_best_pid(kind, temperature);
 }
 
+#ifdef ADVi3PP_BLTOUCH
 double ADVi3pp_::x_probe_offset_from_extruder() const
 {
     return sensor_settings.x_probe_offset_from_extruder();
@@ -634,6 +635,7 @@ double ADVi3pp_::z_probe_offset_from_extruder() const
 {
     return sensor_settings.z_probe_offset_from_extruder();
 }
+#endif
 
 // --------------------------------------------------------------------
 // Graphs

@@ -167,6 +167,7 @@ void ADVi3pp::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     advi3pp.on_set_temperature(kind, temperature);
 }
 
+#ifdef ADVi3PP_BLTOUCH
 double ADVi3pp::x_probe_offset_from_extruder()
 {
     return advi3pp.x_probe_offset_from_extruder();
@@ -181,6 +182,7 @@ double ADVi3pp::z_probe_offset_from_extruder()
 {
     return advi3pp.z_probe_offset_from_extruder();
 }
+#endif
 
 // --------------------------------------------------------------------
 

@@ -1087,9 +1087,11 @@ struct ADVi3pp_
     uint16_t get_last_used_temperature(TemperatureKind kind) const;
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 
+#ifdef ADVi3PP_BLTOUCH
     double x_probe_offset_from_extruder() const;
     double y_probe_offset_from_extruder() const;
     double z_probe_offset_from_extruder() const;
+#endif
 
 private:
     void buzz_(long duration);
