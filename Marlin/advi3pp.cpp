@@ -151,18 +151,6 @@ void ADVi3pp_::send_sponsors()
     SERIAL_ECHOLNPGM("Sponsored by Johnathan Chamberlain, Timothy D Hoogland, Gavin Smith, Sawtoothsquid, JeremyThePrintr, K-D Byrne");
 }
 
-//! Process command specific to this printer (I)
-void ADVi3pp_::process_command()
-{
-    switch(GCodeParser::codenum)
-    {
-        case 0: icode_0(parser); break;
-        default: Log::error() << F("Invalid I-code number ")
-                              << static_cast<uint16_t>(GCodeParser::codenum)
-                              << Log::endl(); break;
-    }
-}
-
 //! Store presets in permanent memory.
 //! @param write Function to use for the actual writing
 //! @param eeprom_index
@@ -397,6 +385,8 @@ void ADVi3pp_::read_lcd_serial()
         case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_value)); break;
         case Action::BabyMinus:             print_settings.baby_minus_command(); break;
         case Action::BabyPlus:              print_settings.baby_plus_command(); break;
+        case Action::ZHeightMinus:          sensor_z_height.minus(); break;
+        case Action::ZHeightPlus:           sensor_z_height.plus(); break;
 
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
@@ -414,35 +404,6 @@ void ADVi3pp_::print_command(KeyValue key_value)
         sd_print.handle(key_value);
     else
         usb_print.handle(key_value);
-}
-
-//! I-code 0: measure z-height
-void ADVi3pp_::icode_0(const GCodeParser& parser)
-{
-#ifdef ADVi3PP_BLTOUCH
-
-    if(axis_unhomed_error())
-    {
-        pages.show_back_page();
-        return;
-    }
-
-    const float old_feedrate_mm_s = feedrate_mm_s;
-    feedrate_mm_s = MMM_TO_MMS(XY_PROBE_SPEED);
-
-    do_blocking_move_to(X_BED_SIZE / 2 - advi3pp::ADVi3pp::x_probe_offset_from_extruder(),
-                        Y_BED_SIZE / 2 - advi3pp::ADVi3pp::y_probe_offset_from_extruder(),
-                        Z_CLEARANCE_DEPLOY_PROBE);
-
-    ADVi3pp_::set_status(F("Measuring Z-height..."));
-    DEPLOY_PROBE();
-    auto zHeight = run_z_probe();
-    do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES, MMM_TO_MMS(Z_PROBE_SPEED_FAST));
-    ADVi3pp_::reset_status();
-
-    feedrate_mm_s = old_feedrate_mm_s;
-
-#endif
 }
 
 //! Display the Thermal Runaway Error screen.
