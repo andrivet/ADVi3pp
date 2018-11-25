@@ -513,17 +513,23 @@ private:
 #ifdef ADVi3PP_BLTOUCH
 struct SensorZHeight: Handler<SensorZHeight>
 {
+    void minus();
+    void plus();
+
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_back_command();
     void do_save_command();
     void home_task();
-    void center_task();
     void multiplier01_command();
     void multiplier05_command();
     void multiplier10_command();
+    void adjust_height();
 
+private:
+    double multiplier_ = 0.1;
+    double height_ = Z_PROBE_OFFSET_FROM_EXTRUDER;
     friend Parent;
 };
 #else
@@ -1103,8 +1109,6 @@ private:
     void send_sponsors();
     void read_lcd_serial();
     void show_boot_page();
-
-    void icode_0(const GCodeParser& parser);
 
     void print_command(KeyValue key_value);
 

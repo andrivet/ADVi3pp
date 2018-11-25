@@ -1323,22 +1323,7 @@ void SensorZHeight::home_task()
     if(advi3pp.is_busy())
         return;
 
-    advi3pp.set_status(F("Going to the middle of the bed..."));
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000"));    // center of the bed
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F240"));            // lower head
-
-    task.set_background_task(BackgroundTask(this, &SensorZHeight::center_task), 200);
-}
-
-void SensorZHeight::center_task()
-{
-    if(current_position[X_AXIS] != 100 || current_position[Y_AXIS] != 100 || current_position[Z_AXIS] != 0)
-        return;
-    if(advi3pp.is_busy())
-        return;
     task.clear_background_task();
-
     advi3pp.reset_status();
     sensor_z_height.show(ShowOptions::SaveBack);
 }
@@ -1357,17 +1342,36 @@ void SensorZHeight::do_save_command()
 
 void SensorZHeight::multiplier01_command()
 {
-    // TODO
+    multiplier_ = 0.1;
 }
 
 void SensorZHeight::multiplier05_command()
 {
-    // TODO
+    multiplier_ = 0.5;
 }
 
 void SensorZHeight::multiplier10_command()
 {
-    // TODO
+    multiplier_ = 1.0;
+}
+
+void SensorZHeight::minus()
+{
+    height_ -= multiplier_;
+    adjust_height();
+}
+
+void SensorZHeight::plus()
+{
+    height_ += multiplier_;
+    adjust_height();
+}
+
+void SensorZHeight::adjust_height()
+{
+    ADVString<16> command;
+    command << F("M851 Z") << height_;
+    enqueue_and_echo_command(command.get());
 }
 
 #else
