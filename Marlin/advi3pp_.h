@@ -525,6 +525,7 @@ private:
     void multiplier05_command();
     void multiplier10_command();
     void adjust_height();
+    void send_data() const;
 
 private:
     double multiplier_ = 0.1;

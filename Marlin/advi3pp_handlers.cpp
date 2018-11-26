@@ -52,9 +52,6 @@ float run_z_probe();
 extern float zprobe_zoffset;
 #endif
 
-template<typename A>
-constexpr size_t elem_of(const A& a) { return sizeof(a) / sizeof(a[0]); }
-
 namespace
 {
     const uint16_t advi3_pp_version = 0x400;
@@ -1310,6 +1307,7 @@ bool SensorZHeight::do_dispatch(KeyValue key_value)
 Page SensorZHeight::do_prepare_page()
 {
     pages.save_forward_page();
+    send_data();
     wait.show(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
@@ -1325,7 +1323,7 @@ void SensorZHeight::home_task()
 
     task.clear_background_task();
     advi3pp.reset_status();
-    sensor_z_height.show(ShowOptions::SaveBack);
+    pages.show_page(Page::ZHeightTuning);
 }
 
 void SensorZHeight::do_back_command()
@@ -1365,6 +1363,14 @@ void SensorZHeight::adjust_height()
     ADVString<16> command;
     command << F("M851 Z") << height_;
     enqueue_and_echo_command(command.get());
+    enqueue_and_echo_commands_P(PSTR("G1 Z0"));
+}
+
+void SensorZHeight::send_data() const
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(height_);
+    frame.send();
 }
 
 #else
