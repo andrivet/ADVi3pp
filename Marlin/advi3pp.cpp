@@ -149,7 +149,7 @@ void ADVi3pp_::send_gplv3_7b_notice()
 
 void ADVi3pp_::send_sponsors()
 {
-    SERIAL_ECHOLNPGM("Sponsored by Johnathan Chamberlain, Timothy D Hoogland, Gavin Smith, Sawtoothsquid, JeremyThePrintr, K-D Byrne");
+    SERIAL_ECHOLNPGM("Sponsored by Johnathan Chamberlain, Timothy D Hoogland, Gavin Smith, Sawtoothsquid, JeremyThePrintr, K-D Byrne, RonnieL");
 }
 
 //! Store presets in permanent memory.
