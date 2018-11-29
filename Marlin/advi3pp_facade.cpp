@@ -142,6 +142,11 @@ void  ADVi3pp::set_status(const char * const fmt, va_list& args)
     advi3pp.set_status(fmt, args);
 }
 
+void  ADVi3pp::set_status(const FlashChar* const fmt, va_list& args)
+{
+    advi3pp.set_status(fmt, args);
+}
+
 void  ADVi3pp::advanced_pause_show_message(AdvancedPauseMessage message)
 {
     advi3pp.advanced_pause_show_message(message);

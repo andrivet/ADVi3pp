@@ -430,23 +430,26 @@ bool ADVi3pp_::has_status()
 
 void ADVi3pp_::set_status(const char* message)
 {
-    Log::log() << F("=== STATUS: ") << message << Log::endl();
     message_.set(message).align(Alignment::Left);
     centered_.set(message).align(Alignment::Center);
     has_status_ = true;
 }
 
-void ADVi3pp_::set_status(const FlashChar* fmt, ...)
+void ADVi3pp_::set_status(const char* fmt, va_list& args)
 {
-    va_list args;
-    va_start(args, fmt);
     message_.set(fmt, args).align(Alignment::Left);
     centered_.set(fmt, args).align(Alignment::Center);
-    va_end(args);
     has_status_ = true;
 }
 
-void ADVi3pp_::set_status(const char* fmt, va_list& args)
+void ADVi3pp_::set_status(const FlashChar* message)
+{
+    message_.set(message).align(Alignment::Left);
+    centered_.set(message).align(Alignment::Center);
+    has_status_ = true;
+}
+
+void ADVi3pp_::set_status(const FlashChar* fmt, va_list& args)
 {
     message_.set(fmt, args).align(Alignment::Left);
     centered_.set(fmt, args).align(Alignment::Center);

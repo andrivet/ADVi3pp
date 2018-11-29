@@ -40,7 +40,7 @@
     inline void lcd_reset_alert_level() { /* Do nothing */ }
     inline void lcd_reset_status() { advi3pp::ADVi3pp::reset_status(); }
     inline void lcd_status_printf_P(uint8_t, const char * fmt, ...) { va_list args; va_start(args, fmt);
-        advi3pp::ADVi3pp::set_status(fmt, args); va_end(args); }
+        advi3pp::ADVi3pp::set_status(reinterpret_cast<const FlashChar*>(fmt), args); va_end(args); }
 
     inline void lcd_buttons_update() { /* Do nothing */ }
     inline void lcd_refresh() { /* Do nothing */ }

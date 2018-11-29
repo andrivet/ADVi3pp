@@ -1096,8 +1096,9 @@ struct ADVi3pp_
 
     bool has_status();
     void set_status(const char* message);
-    void set_status(const FlashChar* fmt, ...);
-    void set_status(const char * const fmt, va_list& args);
+    void set_status(const char* fmt, va_list& args);
+    void set_status(const FlashChar* message);
+    void set_status(const FlashChar* fmt, va_list& args);
     void queue_status(const char* message);
     void queue_status(const FlashChar* message);
     void reset_status();
