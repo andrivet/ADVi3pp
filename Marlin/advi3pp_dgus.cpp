@@ -333,7 +333,7 @@ Frame& operator>>(Frame& frame, Uint32& data)
 {
     if(frame.position_ >= 3 + frame.get_length() - 3)
     {
-        Log::log() << F("Try to read a word after the end of data") << Log::endl();
+        Log::log() << F("Try to read a dword after the end of data") << Log::endl();
         return frame;
     }
 
