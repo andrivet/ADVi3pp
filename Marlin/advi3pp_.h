@@ -360,13 +360,12 @@ private:
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_BLTOUCH
-struct AutomaticLeveling: Handler<SensorTuning>
+struct AutomaticLeveling: Handler<AutomaticLeveling>
 {
     void g29_leveling_finished(bool success);
 
 private:
     Page do_prepare_page();
-    void leveling();
     void g29_leveling_failed();
 
 private:

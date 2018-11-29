@@ -365,6 +365,7 @@ void ADVi3pp_::read_lcd_serial()
         case Action::JerkSettings:          jerks_settings.handle(key_value); break;
         case Action::Copyrights:            copyrights.handle(key_value); break;
         case Action::SensorTuning:          sensor_tuning.handle(key_value); break;
+        case Action::AutomaticLeveling:     automatic_leveling.handle(key_value); break;
         case Action::SensorGrid:            leveling_grid.handle(key_value); break;
         case Action::SensorZHeight:         sensor_z_height.handle(key_value); break;
         case Action::ChangeFilament:        change_filament.handle(key_value); break;

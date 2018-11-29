@@ -854,11 +854,6 @@ Page SensorTuning::do_prepare_page()
 
 Page AutomaticLeveling::do_prepare_page()
 {
-    return Page::Waiting;
-}
-
-void AutomaticLeveling::leveling()
-{
     sensor_interactive_leveling_ = true;
     pages.save_forward_page();
     wait.show(F("Homing..."));
@@ -866,6 +861,8 @@ void AutomaticLeveling::leveling()
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
     enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
     enqueue_and_echo_commands_P(PSTR("G1 X0 Y0 F3000"));        // go back to corner
+
+    return Page::None;
 }
 
 void AutomaticLeveling::g29_leveling_finished(bool success)
