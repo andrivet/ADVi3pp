@@ -329,23 +329,45 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Automatic Leveling
+// Sensor Tuning
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_BLTOUCH
-struct AutomaticLeveling: Handler<AutomaticLeveling>
+struct SensorTuning: Handler<SensorTuning>
 {
-    void g29_leveling_finished(bool success);
-
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void leveling();
-    void g29_leveling_failed();
     void self_test_command();
     void reset_command();
     void deploy_command();
     void stow_command();
+
+private:
+    friend Parent;
+};
+#else
+struct SensorTuning: Handler<SensorTuning>
+{
+private:
+    Page do_prepare_page();
+    friend Parent;
+};
+#endif
+
+// --------------------------------------------------------------------
+// Automatic Leveling
+// --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
+struct AutomaticLeveling: Handler<SensorTuning>
+{
+    void g29_leveling_finished(bool success);
+
+private:
+    Page do_prepare_page();
+    void leveling();
+    void g29_leveling_failed();
 
 private:
     bool sensor_interactive_leveling_ = false;
@@ -535,6 +557,9 @@ private:
 #else
 struct SensorZHeight: Handler<SensorZHeight>
 {
+    void minus() {}
+    void plus() {}
+
 private:
     Page do_prepare_page();
     friend Parent;

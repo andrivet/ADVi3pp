@@ -115,6 +115,7 @@ inline namespace singletons
     Copyrights copyrights;
     AutomaticLeveling automatic_leveling;
     LevelingGrid leveling_grid;
+    SensorTuning sensor_tuning;
     SensorZHeight sensor_z_height;
     ChangeFilament change_filament;
     EepromMismatch eeprom_mismatch;
@@ -789,12 +790,12 @@ void Move::all_home_command()
 }
 
 // --------------------------------------------------------------------
-// Automatic Leveling
+// Sensor Tuning
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_BLTOUCH
 
-bool AutomaticLeveling::do_dispatch(KeyValue key_value)
+bool SensorTuning::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
         return true;
@@ -811,9 +812,49 @@ bool AutomaticLeveling::do_dispatch(KeyValue key_value)
     return true;
 }
 
-Page AutomaticLeveling::do_prepare_page()
+Page SensorTuning::do_prepare_page()
 {
     return Page::SensorTuning;
+}
+
+void SensorTuning::self_test_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
+}
+
+void SensorTuning::reset_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
+}
+
+void SensorTuning::deploy_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
+}
+
+void SensorTuning::stow_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
+}
+
+#else
+
+Page SensorTuning::do_prepare_page()
+{
+    return Page::NoSensor;
+}
+
+#endif
+
+// --------------------------------------------------------------------
+// Automatic Leveling
+// --------------------------------------------------------------------
+
+#ifdef ADVi3PP_BLTOUCH
+
+Page AutomaticLeveling::do_prepare_page()
+{
+    return Page::Waiting;
 }
 
 void AutomaticLeveling::leveling()
@@ -860,26 +901,6 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
 void AutomaticLeveling::g29_leveling_failed()
 {
     pages.show_back_page();
-}
-
-void AutomaticLeveling::self_test_command()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
-}
-
-void AutomaticLeveling::reset_command()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
-}
-
-void AutomaticLeveling::deploy_command()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
-}
-
-void AutomaticLeveling::stow_command()
-{
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
 }
 
 #else
