@@ -1327,6 +1327,8 @@ bool SensorZHeight::do_dispatch(KeyValue key_value)
 Page SensorZHeight::do_prepare_page()
 {
     pages.save_forward_page();
+
+    enqueue_and_echo_commands_P((PSTR("M851 Z0"))); // reset offset
     wait.show(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
