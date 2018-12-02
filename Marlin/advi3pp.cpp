@@ -241,6 +241,7 @@ void ADVi3pp_::init()
 
 #ifdef ADVi3PP_BLTOUCH
     Log::log() << F("This is a BLTouch build") << Log::endl();
+    enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
 #endif
 
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
@@ -249,7 +250,6 @@ void ADVi3pp_::init()
     versions.send_advi3pp_version();
     graphs.clear();
     dimming.reset(true);
-
     reset_status();
     show_boot_page();
     set_status(F("ADVi3++ is ready"));
