@@ -1335,7 +1335,7 @@ Page SensorZHeight::do_prepare_page()
 
 void SensorZHeight::reset()
 {
-    height_ = 10.0;
+    height_ = 2.0;
     multiplier_ = 0.1;
 }
 
@@ -1353,15 +1353,16 @@ void SensorZHeight::home_task()
 
     enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000")); // middle
-    enqueue_and_echo_commands_P(PSTR("M211 S0"));
+    enqueue_and_echo_commands_P(PSTR("M211 S0")); // disable soft-endstops
     adjust_height();
 
-    pages.show_page(Page::ZHeightTuning);
+    pages.show_page(Page::ZHeightTuning, ShowOptions::None);
 }
 
 void SensorZHeight::do_back_command()
 {
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G28 X0 Y0 F3000")); // homing
     Parent::do_back_command();
 }
@@ -1372,9 +1373,8 @@ void SensorZHeight::do_save_command()
     command << F("M851 Z") << height_;
     enqueue_and_echo_command(command.get());
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
-    advi3pp.save_settings();
 
-    automatic_leveling.show(ShowOptions::None);
+    Parent::do_save_command();
 }
 
 void SensorZHeight::multiplier01_command()
