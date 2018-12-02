@@ -2778,13 +2778,41 @@ void Versions::send_versions()
     frame.send();
 }
 
+#define YEAR__ ((((__DATE__ [7] - '0') * 10 + (__DATE__ [8] - '0')) * 10 \
++ (__DATE__ [9] - '0')) * 10 + (__DATE__ [10] - '0'))
+
+#define MONTH__ (__DATE__[2] == 'n' ? (__DATE__[1] == 'a' ? 0 : 5) \
+: __DATE__[2] == 'b' ? 1 \
+: __DATE__[2] == 'r' ? (__DATE__[0] == 'M' ? 2 : 3) \
+: __DATE__[2] == 'y' ? 4 \
+: __DATE__[2] == 'l' ? 6 \
+: __DATE__[2] == 'g' ? 7 \
+: __DATE__[2] == 'p' ? 8 \
+: __DATE__[2] == 't' ? 9 \
+: __DATE__[2] == 'v' ? 10 : 11)
+
+#define DAY__ ((__DATE__[4] == ' ' ? 0 : __DATE__[4] - '0') * 10 + (__DATE__[5] - '0'))
+
+#define HOUR__ (((__TIME__[0] - '0') * 10) + (__TIME__[1] - '0'))
+#define MIN__  (((__TIME__[3] - '0') * 10) + (__TIME__[4] - '0'))
+#define SEC__  (((__TIME__[6] - '0') * 10) + (__TIME__[7] - '0'))
+
+
 void Versions::send_advi3pp_version()
 {
     ADVString<16> motherboard_version;
     convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
 
-    WriteRamDataRequest frame{Variable::ADVi3ppversion};
-    frame << motherboard_version;
+    ADVString<16> build;
+    build << (YEAR__ - 2000)
+          << (MONTH__ < 10 ? "0" : "") << MONTH__
+          << (DAY__   < 10 ? "0" : "") << DAY__
+          << (HOUR__  < 10 ? "0" : "") << HOUR__
+          << (MIN__   < 10 ? "0" : "") << MIN__
+          << (SEC__   < 10 ? "0" : "") << SEC__;
+
+    WriteRamDataRequest frame{Variable::ADVi3ppVersion};
+    frame << motherboard_version << build;
     frame.send();
 }
 
