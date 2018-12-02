@@ -290,6 +290,12 @@ void ADVi3pp_::send_status_data(bool force_update)
     int16_t progress_bar_low = progress_bar_percent >= 50 ? 5 : progress_bar_percent / 10;
     int16_t progress_var_high  = progress_bar_percent < 50 ? 0 : (progress_bar_percent / 10) - 5;
 
+#ifdef ADVi3PP_BLTOUCH
+    uint16_t probe_state = planner.leveling_active ? 2 : 1;
+#else
+    uint16_t probe_state = 0;
+#endif
+
     WriteRamDataRequest frame{Variable::TargetBed};
     frame << Uint16(Temperature::target_temperature_bed)
           << Uint16(Temperature::degBed())
@@ -298,7 +304,9 @@ void ADVi3pp_::send_status_data(bool force_update)
           << Uint16(scale(fanSpeeds[0], 255, 100))
           << Uint16(lround(LOGICAL_Z_POSITION(current_position[Z_AXIS]) * 100.0))
           << Uint16(progress_bar_low)
-          << Uint16(progress_var_high);
+          << Uint16(progress_var_high)
+          << 0_u16
+          << Uint16(probe_state);
     frame.send(false);
 
     if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
