@@ -2761,18 +2761,15 @@ ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version)
 void Versions::send_versions()
 {
     ADVString<16> marlin_version{SHORT_BUILD_VERSION};
-    ADVString<16> motherboard_version;
     ADVString<16> advi3pp_lcd_version;
     ADVString<16> lcd_firmware_version;
 
     marlin_version.align(Alignment::Left);
-    convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
     convert_version(advi3pp_lcd_version, lcd_version_).align(Alignment::Left);
     get_lcd_firmware_version(lcd_firmware_version).align(Alignment::Left);
 
     WriteRamDataRequest frame{Variable::ShortText0};
-    frame << motherboard_version
-          << advi3pp_lcd_version
+    frame << advi3pp_lcd_version
           << lcd_firmware_version
           << marlin_version;
     frame.send();
