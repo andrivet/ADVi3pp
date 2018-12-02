@@ -1335,7 +1335,7 @@ Page SensorZHeight::do_prepare_page()
 
 void SensorZHeight::reset()
 {
-    height_ = 0.0;
+    height_ = 10.0;
     multiplier_ = 0.1;
 }
 
@@ -1351,8 +1351,8 @@ void SensorZHeight::home_task()
 
     reset();
 
-    enqueue_and_echo_commands_P(PSTR("G1 Z20 F240"));  // raise head
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F1000")); // middle
+    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000")); // middle
     enqueue_and_echo_commands_P(PSTR("M211 S0"));
     adjust_height();
 
@@ -1363,7 +1363,7 @@ void SensorZHeight::do_back_command()
 {
     enqueue_and_echo_commands_P(PSTR("M211 S1"));
     reset();
-    enqueue_and_echo_commands_P(PSTR("G28 X0 Y0")); // homing
+    enqueue_and_echo_commands_P(PSTR("G28 X0 Y0 F3000")); // homing
 }
 
 void SensorZHeight::do_save_command()
