@@ -540,6 +540,7 @@ struct SensorZHeight: Handler<SensorZHeight>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void do_save_command();
     void do_back_command();
     void home_task();
     void multiplier01_command();
@@ -547,9 +548,11 @@ private:
     void multiplier10_command();
     void adjust_height();
     void send_data() const;
+    void reset();
 
 private:
-    double multiplier_ = 0.1;
+    static const double multipliers_[3];
+    uint16_t multiplier_ = 0;
     double height_ = Z_PROBE_OFFSET_FROM_EXTRUDER;
     friend Parent;
 };

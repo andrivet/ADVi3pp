@@ -724,13 +724,13 @@ void Move::y_minus_command()
 //! Move the nozzle.
 void Move::z_plus_command()
 {
-    move(PSTR("G1 Z0.5 F1000"), 10);
+    move(PSTR("G1 Z0.5 F240"), 10);
 }
 
 //! Move the nozzle.
 void Move::z_minus_command()
 {
-    move(PSTR("G1 Z-0.5 F1000"), 10);
+    move(PSTR("G1 Z-0.5 F240"), 10);
 }
 
 //! Extrude some filament.
@@ -1306,6 +1306,8 @@ void AdvancedPause::printing()
 
 #ifdef ADVi3PP_BLTOUCH
 
+const double SensorZHeight::multipliers_[3] = {0.1, 0.5, 1.0};
+
 bool SensorZHeight::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1325,11 +1327,16 @@ bool SensorZHeight::do_dispatch(KeyValue key_value)
 Page SensorZHeight::do_prepare_page()
 {
     pages.save_forward_page();
-    send_data();
     wait.show(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
     return Page::None;
+}
+
+void SensorZHeight::reset()
+{
+    height_ = 0.0;
+    multiplier_ = 0.1;
 }
 
 void SensorZHeight::home_task()
@@ -1341,53 +1348,77 @@ void SensorZHeight::home_task()
 
     task.clear_background_task();
     advi3pp.reset_status();
+
+    reset();
+
+    enqueue_and_echo_commands_P(PSTR("G1 Z20 F240"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F1000")); // middle
+    enqueue_and_echo_commands_P(PSTR("M211 S0"));
+    adjust_height();
+
     pages.show_page(Page::ZHeightTuning);
 }
 
 void SensorZHeight::do_back_command()
 {
-    enqueue_and_echo_commands_P((PSTR("G28 X0 Y0"))); // homing
+    enqueue_and_echo_commands_P(PSTR("M211 S1"));
+    reset();
+    enqueue_and_echo_commands_P(PSTR("G28 X0 Y0")); // homing
+}
+
+void SensorZHeight::do_save_command()
+{
+    ADVString<10> command;
+    command << F("M851 Z") << height_;
+    enqueue_and_echo_command(command.get());
+    enqueue_and_echo_commands_P(PSTR("M211 S1"));
+
+    automatic_leveling.show(ShowOptions::None);
 }
 
 void SensorZHeight::multiplier01_command()
 {
-    multiplier_ = 0.1;
+    multiplier_ = 0;
+    send_data();
 }
 
 void SensorZHeight::multiplier05_command()
 {
-    multiplier_ = 0.5;
+    multiplier_ = 1;
+    send_data();
 }
 
 void SensorZHeight::multiplier10_command()
 {
-    multiplier_ = 1.0;
+    multiplier_ = 2;
+    send_data();
 }
 
 void SensorZHeight::minus()
 {
-    height_ -= multiplier_;
+    height_ -= multipliers_[multiplier_];
     adjust_height();
 }
 
 void SensorZHeight::plus()
 {
-    height_ += multiplier_;
+    height_ += multipliers_[multiplier_];
     adjust_height();
 }
 
 void SensorZHeight::adjust_height()
 {
-    ADVString<16> command;
-    command << F("M851 Z") << height_;
+    ADVString<10> command;
+    command << F("G1 Z") << height_ << F(" F240");
     enqueue_and_echo_command(command.get());
-    enqueue_and_echo_commands_P(PSTR("G1 Z0"));
+    send_data();
 }
 
 void SensorZHeight::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(height_);
+    frame << Uint16(height_ * 10)
+          << Uint16(multiplier_);
     frame.send();
 }
 
