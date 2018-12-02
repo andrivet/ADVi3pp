@@ -1361,9 +1361,9 @@ void SensorZHeight::home_task()
 
 void SensorZHeight::do_back_command()
 {
-    enqueue_and_echo_commands_P(PSTR("M211 S1"));
-    reset();
+    enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
     enqueue_and_echo_commands_P(PSTR("G28 X0 Y0 F3000")); // homing
+    Parent::do_back_command();
 }
 
 void SensorZHeight::do_save_command()
@@ -1371,7 +1371,8 @@ void SensorZHeight::do_save_command()
     ADVString<10> command;
     command << F("M851 Z") << height_;
     enqueue_and_echo_command(command.get());
-    enqueue_and_echo_commands_P(PSTR("M211 S1"));
+    enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
+    advi3pp.save_settings();
 
     automatic_leveling.show(ShowOptions::None);
 }
