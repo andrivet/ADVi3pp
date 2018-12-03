@@ -1048,7 +1048,10 @@
  * Normally G28 leaves leveling disabled on completion. Enable
  * this option to have G28 restore the prior leveling state.
  */
+// @advi3++: Restore leveling after G28 (only when using a sensor)
+#ifdef ADVi3PP_BLTOUCH
 #define RESTORE_LEVELING_AFTER_G28
+#endif
 
 /**
  * Enable detailed logging of G28, G29, M48, etc.
