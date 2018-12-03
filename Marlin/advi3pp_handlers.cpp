@@ -41,10 +41,9 @@
 // From Marlin / Arduino
 // --------------------------------------------------------------------
 
-uint8_t progress_bar_percent;
-int16_t lcd_contrast;
-extern char __bss_end;
-extern char* __brkval;
+extern uint8_t progress_bar_percent;
+extern int16_t lcd_contrast;
+extern int freeMemory();
 
 #ifdef ADVi3PP_BLTOUCH
 bool set_probe_deployed(bool);
@@ -2650,30 +2649,6 @@ Page Statistics::do_prepare_page()
     return Page::Statistics;
 }
 
-char* get_heap_end()
-{
-    return __brkval ? __brkval : &__bss_end;
-}
-
-char* get_stack_top()
-{
-    char v;
-    return &v + 1;
-}
-
-uint16_t get_free_SRAM()
-{
-	auto stack = get_stack_top();
-	auto heap = get_heap_end();
-	auto free_ram = static_cast<uint16_t>(stack - heap);
-	
-	Log::log() << F("SRAM Top/Stack = 0x") << reinterpret_cast<uint16_t>(stack)
-	           << F(", Bottom/Heap = 0x") << reinterpret_cast<uint16_t>(heap)
-	           << F(", Free = 0x") << free_ram << Log::endl();
-	
-    return free_ram;
-}
-
 void Statistics::send_stats()
 {
     printStatistics stats = PrintCounter::getStats();
@@ -2690,7 +2665,7 @@ void Statistics::send_stats()
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(stats.totalPrints)
           << Uint16(stats.finishedPrints)
-          << Uint16(get_free_SRAM());
+          << Uint16(static_cast<uint16_t>(freeMemory()));
     frame.send();
 
     frame.reset(Variable::LongText0);
