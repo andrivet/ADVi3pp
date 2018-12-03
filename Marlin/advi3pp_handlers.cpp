@@ -854,7 +854,7 @@ Page AutomaticLeveling::do_prepare_page()
     pages.save_forward_page();
     wait.show(F("Homing..."));
     enqueue_and_echo_commands_P(PSTR("G28"));                   // homing
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));           // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F240"));           // raise head
     enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
     enqueue_and_echo_commands_P(PSTR("G1 X0 Y0 F3000"));        // go back to corner
 
@@ -998,7 +998,7 @@ void ManualLeveling::leveling_task()
 void ManualLeveling::point1_command()
 {
     Log::log() << F("Level point 1") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X30 Y30 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1007,7 +1007,7 @@ void ManualLeveling::point1_command()
 void ManualLeveling::point2_command()
 {
     Log::log() << F("Level point 2") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X30 Y170 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1016,7 +1016,7 @@ void ManualLeveling::point2_command()
 void ManualLeveling::point3_command()
 {
     Log::log() << F("Level point 3") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X170 Y170 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1025,7 +1025,7 @@ void ManualLeveling::point3_command()
 void ManualLeveling::point4_command()
 {
     Log::log() << F("Level point 4") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X170 Y30 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1034,7 +1034,7 @@ void ManualLeveling::point4_command()
 void ManualLeveling::point5_command()
 {
     Log::log() << F("Level point 5") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1042,7 +1042,7 @@ void ManualLeveling::point5_command()
 void ManualLeveling::pointA_command()
 {
     Log::log() << F("Level point A") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y30 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1050,7 +1050,7 @@ void ManualLeveling::pointA_command()
 void ManualLeveling::pointB_command()
 {
     Log::log() << F("Level point B") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X30 Y100 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1058,7 +1058,7 @@ void ManualLeveling::pointB_command()
 void ManualLeveling::pointC_command()
 {
     Log::log() << F("Level point C") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y170 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1066,7 +1066,7 @@ void ManualLeveling::pointC_command()
 void ManualLeveling::pointD_command()
 {
     Log::log() << F("Level point D") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
     enqueue_and_echo_commands_P(PSTR("G1 X170 Y100 F6000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
 }
@@ -1349,7 +1349,7 @@ void SensorZHeight::home_task()
 
     reset();
 
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F240"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000")); // middle
     enqueue_and_echo_commands_P(PSTR("M211 S0")); // disable soft-endstops
     adjust_height();
@@ -1360,7 +1360,7 @@ void SensorZHeight::home_task()
 void SensorZHeight::do_back_command()
 {
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
-    enqueue_and_echo_commands_P(PSTR("G1 Z10 F240"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F240"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G28 X0 Y0 F3000")); // homing
     Parent::do_back_command();
 }
@@ -1371,7 +1371,8 @@ void SensorZHeight::do_save_command()
     command << F("M851 Z") << height_;
     enqueue_and_echo_command(command.get());
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
-
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F240"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G28 X0 Y0 F3000")); // homing
     Parent::do_save_command();
 }
 
