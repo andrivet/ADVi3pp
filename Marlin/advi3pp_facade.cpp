@@ -30,8 +30,10 @@
 #pragma message "This is a DEBUG build"
 #endif
 
-#ifdef ADVi3PP_BLTOUCH
+#if defined(ADVi3PP_BLTOUCH)
 #pragma message "This is a BLTouch build"
+#elif defined(ADVi3PP_MARK2)
+#pragma message "This is a Mark II build"
 #endif
 
 namespace advi3pp {
@@ -167,7 +169,7 @@ void ADVi3pp::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     advi3pp.on_set_temperature(kind, temperature);
 }
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 double ADVi3pp::x_probe_offset_from_extruder()
 {
     return advi3pp.x_probe_offset_from_extruder();

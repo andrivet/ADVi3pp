@@ -332,7 +332,7 @@ private:
 // Sensor Tuning
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 struct SensorTuning: Handler<SensorTuning>
 {
 private:
@@ -359,7 +359,7 @@ private:
 // Automatic Leveling
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 struct AutomaticLeveling: Handler<AutomaticLeveling>
 {
     void g29_leveling_finished(bool success);
@@ -388,7 +388,7 @@ private:
 // Leveling Grid
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 struct LevelingGrid: Handler<LevelingGrid>
 {
 private:
@@ -531,7 +531,7 @@ private:
 // Sensor Z Height Tuning
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 struct SensorZHeight: Handler<SensorZHeight>
 {
     void minus();
@@ -643,7 +643,7 @@ private:
 // Sensor Settings
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 struct SensorSettings: Handler<SensorSettings>
 {
     SensorSettings();
@@ -1121,7 +1121,7 @@ struct ADVi3pp_
     uint16_t get_last_used_temperature(TemperatureKind kind) const;
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
     double x_probe_offset_from_extruder() const;
     double y_probe_offset_from_extruder() const;
     double z_probe_offset_from_extruder() const;

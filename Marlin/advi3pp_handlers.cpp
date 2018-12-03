@@ -46,7 +46,7 @@ uint8_t progress_bar_percent;
 int16_t lcd_contrast;
 extern int freeMemory();
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 bool set_probe_deployed(bool);
 float run_z_probe();
 extern float zprobe_zoffset;
@@ -789,7 +789,7 @@ void Move::all_home_command()
 // Sensor Tuning
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 
 bool SensorTuning::do_dispatch(KeyValue key_value)
 {
@@ -846,7 +846,7 @@ Page SensorTuning::do_prepare_page()
 // Automatic Leveling
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 
 Page AutomaticLeveling::do_prepare_page()
 {
@@ -909,7 +909,7 @@ Page AutomaticLeveling::do_prepare_page()
 // Leveling Grid
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 
 Page LevelingGrid::do_prepare_page()
 {
@@ -1300,7 +1300,7 @@ void AdvancedPause::printing()
 // Sensor Z-Height
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 
 const double SensorZHeight::multipliers_[3] = {0.1, 0.5, 1.0};
 
@@ -1689,7 +1689,7 @@ Page Diagnosis::do_prepare_page()
 // Sensor Settings
 // --------------------------------------------------------------------
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 
 SensorSettings::SensorSettings()
 {

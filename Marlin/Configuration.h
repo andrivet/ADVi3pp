@@ -880,7 +880,7 @@
 
 // Enable the M48 repeatability test to test probe accuracy
 // @advi3++: Enable M48 when BLTouch is enabled
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 #define Z_MIN_PROBE_REPEATABILITY_TEST
 #endif
 
@@ -1035,7 +1035,7 @@
  *   leveling in steps so you can manually adjust the Z height at each grid-point.
  *   With an LCD controller the process is guided step-by-step.
  */
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
 // @advi3++: Use bilinear leveling (mesh)
@@ -1049,7 +1049,7 @@
  * this option to have G28 restore the prior leveling state.
  */
 // @advi3++: Restore leveling after G28 (only when using a sensor)
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 #define RESTORE_LEVELING_AFTER_G28
 #endif
 
@@ -1217,7 +1217,7 @@
 #define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
-#if ENABLED(ADVi3PP_BLTOUCH) // @advi3++: In the middle of the bed
+#if ENABLED(ADVi3PP_PROBE) // @advi3++: In the middle of the bed
   #define Z_SAFE_HOMING_X_POINT ((X_BED_SIZE) / 2)    // X point for Z homing when homing all axes (G28).
   #define Z_SAFE_HOMING_Y_POINT ((Y_BED_SIZE) / 2)    // Y point for Z homing when homing all axes (G28).
 #else // @advi3++: No probe -> in the corner

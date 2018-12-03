@@ -36,8 +36,10 @@
 #else
 
   // @advi3++: Change the name depending if BLTouch support is enabled or not
-  #ifdef ADVi3PP_BLTOUCH
+  #if defined(ADVi3PP_BLTOUCH)
   #define ADVi3PP_NAME "ADVi3++BLTouch"
+  #elif defined(ADVi3PP_MARK2)
+#define ADVi3PP_NAME "ADVi3++MarkII"
   #else
   #define ADVi3PP_NAME "ADVi3++"
   #endif

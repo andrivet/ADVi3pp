@@ -58,7 +58,7 @@ namespace
     const uint8_t BUZZ_ON_PRESS_DURATION = 10; // x 1 ms
 }
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 bool set_probe_deployed(bool);
 float run_z_probe();
 extern float zprobe_zoffset;
@@ -239,8 +239,10 @@ void ADVi3pp_::init()
     Log::log() << F("This is a DEBUG build") << Log::endl();
 #endif
 
-#ifdef ADVi3PP_BLTOUCH
+#if defined(ADVi3PP_BLTOUCH)
     Log::log() << F("This is a BLTouch build") << Log::endl();
+#elif defined(ADVi3PP_MARK2)
+    Log::log() << F("This is a Mark II build") << Log::endl();
 #endif
 
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
@@ -289,7 +291,7 @@ void ADVi3pp_::send_status_data(bool force_update)
     int16_t progress_bar_low = progress_bar_percent >= 50 ? 5 : progress_bar_percent / 10;
     int16_t progress_var_high  = progress_bar_percent < 50 ? 0 : (progress_bar_percent / 10) - 5;
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
     uint16_t probe_state = planner.leveling_active ? 2 : 1;
 #else
     uint16_t probe_state = 0;
@@ -593,7 +595,7 @@ void ADVi3pp_::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     pid_settings.set_best_pid(kind, temperature);
 }
 
-#ifdef ADVi3PP_BLTOUCH
+#ifdef ADVi3PP_PROBE
 double ADVi3pp_::x_probe_offset_from_extruder() const
 {
     return sensor_settings.x_probe_offset_from_extruder();

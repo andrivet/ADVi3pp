@@ -27,8 +27,13 @@
 #define ADVI3PP_DEFINES_H
 
 // The preferred way to build ADVi3++ is with PlatformIO. With PlatformIO, you can easily build BLTouch and non-BLtouch releases.
+
 // If for whatever reason, you prefer to use Arduino IDE, uncomment the following line to build a BLTouch release.
 // #define ADVi3PP_BLTOUCH
+
+// In a similar way, uncomment the following line to build a BLTouch release.
+// #define ADVi3PP_MARK2
+
 
 #ifdef DEBUG
 
@@ -40,5 +45,15 @@
 //#define ADVi3PP_LOG_ALL_FRAMES // Log all the frames, including those that are updating the status
 
 #endif
+
+// ---------------------------------------------------------------------------
+// Do not modify the following definitions
+// ---------------------------------------------------------------------------
+
+#if defined(ADVi3PP_BLTOUCH) || defined(ADVi3PP_MARK2)
+#define ADVi3PP_PROBE
 #endif
+
+
+#endif // ADVI3PP_DEFINES_H
 
