@@ -33,6 +33,7 @@
 #include "advi3pp_log.h"
 #include "advi3pp_dgus.h"
 #include "advi3pp_stack.h"
+#include "advi3pp_versions.h"
 #include "advi3pp_.h"
 
 #include <HardwareSerial.h>
@@ -53,10 +54,6 @@ extern float zprobe_zoffset;
 
 namespace
 {
-    const uint16_t advi3_pp_version = 0x400;
-    const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x400;
-    const uint16_t advi3_pp_newest_lcd_compatible_version = 0x400;
-
     const uint16_t nb_visible_sd_files = 5;
     const uint16_t tuning_extruder_filament = 100; // 10 cm
 	const uint16_t tuning_extruder_delta = 20; // 2 cm
@@ -2751,26 +2748,6 @@ void Versions::send_versions()
           << marlin_version;
     frame.send();
 }
-
-#define YEAR__ ((((__DATE__ [7] - '0') * 10 + (__DATE__ [8] - '0')) * 10 \
-+ (__DATE__ [9] - '0')) * 10 + (__DATE__ [10] - '0'))
-
-#define MONTH__ (__DATE__[2] == 'n' ? (__DATE__[1] == 'a' ? 1 : 6) \
-: __DATE__[2] == 'b' ? 2 \
-: __DATE__[2] == 'r' ? (__DATE__[0] == 'M' ? 3 : 4) \
-: __DATE__[2] == 'y' ? 5 \
-: __DATE__[2] == 'l' ? 7 \
-: __DATE__[2] == 'g' ? 8 \
-: __DATE__[2] == 'p' ? 9 \
-: __DATE__[2] == 't' ? 10 \
-: __DATE__[2] == 'v' ? 11 : 12)
-
-#define DAY__ ((__DATE__[4] == ' ' ? 0 : __DATE__[4] - '0') * 10 + (__DATE__[5] - '0'))
-
-#define HOUR__ (((__TIME__[0] - '0') * 10) + (__TIME__[1] - '0'))
-#define MIN__  (((__TIME__[3] - '0') * 10) + (__TIME__[4] - '0'))
-#define SEC__  (((__TIME__[6] - '0') * 10) + (__TIME__[7] - '0'))
-
 
 void Versions::send_advi3pp_version()
 {
