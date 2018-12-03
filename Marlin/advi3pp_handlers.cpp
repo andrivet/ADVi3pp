@@ -41,8 +41,8 @@
 // From Marlin / Arduino
 // --------------------------------------------------------------------
 
-extern uint8_t progress_bar_percent;
-extern int16_t lcd_contrast;
+uint8_t progress_bar_percent;
+int16_t lcd_contrast;
 extern int freeMemory();
 
 #ifdef ADVi3PP_BLTOUCH
