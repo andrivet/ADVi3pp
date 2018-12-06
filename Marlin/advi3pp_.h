@@ -65,6 +65,10 @@ struct Preset
     uint16_t fan;
 };
 
+//! Position of a sensor.
+struct SensorPosition { int16_t x, y, z; };
+const size_t NB_SENSOR_POSITIONS = 5;
+
 // --------------------------------------------------------------------
 
 //! Transform a value from a scale to another one.
@@ -644,6 +648,7 @@ private:
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
+
 struct SensorSettings: Handler<SensorSettings>
 {
     SensorSettings();
@@ -663,14 +668,10 @@ private:
     void next_command();
     void send_data() const;
     void get_data();
-    const FlashChar* get_sensor_name() const;
 
 private:
-    struct SensorPosition { int16_t x, y, z; };
-    static const size_t NB_POSITIONS = 4;
-
     uint16_t index_ = 0;
-    SensorPosition positions_[NB_POSITIONS];
+    SensorPosition positions_[NB_SENSOR_POSITIONS];
 
     friend Parent;
 };

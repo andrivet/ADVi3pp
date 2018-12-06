@@ -72,6 +72,43 @@ namespace
         {180, 00, 0},
         {200, 00, 0}
     };
+
+    const FlashChar* get_sensor_name(size_t index)
+    {
+        // Note: F macro can be called only in a function, this is why this is coded like this
+        auto advi3_side          = F("ADVi3++ Left Side");
+        auto teaching_tech_side  = F("Teaching Tech L. Side");
+        auto teaching_tech_front = F("Teaching Tech Front");
+        auto mark2               = F("Mark II");
+        auto custom              = F("Custom");
+
+#ifdef ADVi3PP_MARK2
+        static const FlashChar* names[advi3pp::NB_SENSOR_POSITIONS] = {advi3_side, teaching_tech_side, teaching_tech_front, mark2, custom};
+#else
+        static const FlashChar* names[advi3pp::NB_SENSOR_POSITIONS] = {mark2, advi3_side, teaching_tech_side, teaching_tech_front, custom};
+#endif
+        return names[index];
+    }
+
+    const advi3pp::SensorPosition DEFAULT_SENSOR_POSITION[advi3pp::NB_SENSOR_POSITIONS] =
+    {
+#ifdef ADVi3PP_MARK2
+        { -2800, -4000,  -154 },
+        {  1000,  1100,  1200 },
+        {  2000,  2100,  2200 },
+        {  3000,  3100,  3200 },
+        {     0,  6000,     0 }
+#else
+        {     0,  6000,     0 },
+        { -2800, -4000,  -154 },
+        {  1000,  1100,  1200 },
+        {  2000,  2100,  2200 },
+        {  3000,  3100,  3200 },
+#endif
+    };
+
+
+
 }
 
 namespace advi3pp {
@@ -764,25 +801,25 @@ void Move::disable_motors_command()
 //! Go to home on the X axis.
 void Move::x_home_command()
 {
-    enqueue_and_echo_commands_P(PSTR("G28 X0"));
+    enqueue_and_echo_commands_P(PSTR("G28 X F6000"));
 }
 
 //! Go to home on the Y axis.
 void Move::y_home_command()
 {
-    enqueue_and_echo_commands_P(PSTR("G28 Y0"));
+    enqueue_and_echo_commands_P(PSTR("G28 Y F6000"));
 }
 
 //! Go to home on the Z axis.
 void Move::z_home_command()
 {
-    enqueue_and_echo_commands_P(PSTR("G28 Z0"));
+    enqueue_and_echo_commands_P(PSTR("G28 Z F6000"));
 }
 
 //! Go to home on all axis.
 void Move::all_home_command()
 {
-    enqueue_and_echo_commands_P(PSTR("G28"));
+    enqueue_and_echo_commands_P(PSTR("G28 F6000"));
 }
 
 // --------------------------------------------------------------------
@@ -853,10 +890,11 @@ Page AutomaticLeveling::do_prepare_page()
     sensor_interactive_leveling_ = true;
     pages.save_forward_page();
     wait.show(F("Homing..."));
-    enqueue_and_echo_commands_P(PSTR("G28"));                   // homing
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F240"));           // raise head
+    enqueue_and_echo_commands_P(PSTR("G28 F6000"));             // homing
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));           // raise head
     enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
-    enqueue_and_echo_commands_P(PSTR("G1 X0 Y0 F3000"));        // go back to corner
+    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000"));         // go back to corner
+    enqueue_and_echo_commands_P(PSTR("M420 S1"));               // enable bed leveling compensation
 
     return Page::None;
 }
@@ -966,7 +1004,7 @@ bool ManualLeveling::do_dispatch(KeyValue key_value)
 
 void ManualLeveling::do_back_command()
 {
-    enqueue_and_echo_commands_P(PSTR("G1 Z30 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z30 F1200"));
     Parent::do_back_command();
 }
 
@@ -977,7 +1015,7 @@ Page ManualLeveling::do_prepare_page()
     ::axis_homed = 0;
     ::axis_known_position = 0;
     enqueue_and_echo_commands_P(PSTR("G90")); // absolute mode
-    enqueue_and_echo_commands_P((PSTR("G28"))); // homing
+    enqueue_and_echo_commands_P((PSTR("G28 F6000"))); // homing
     task.set_background_task(BackgroundTask(this, &ManualLeveling::leveling_task), 200);
     return Page::None;
 }
@@ -998,77 +1036,77 @@ void ManualLeveling::leveling_task()
 void ManualLeveling::point1_command()
 {
     Log::log() << F("Level point 1") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X30 Y30 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 //! Handle leveling point #2.
 void ManualLeveling::point2_command()
 {
     Log::log() << F("Level point 2") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X30 Y170 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 //! Handle leveling point #3.
 void ManualLeveling::point3_command()
 {
     Log::log() << F("Level point 3") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X170 Y170 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 //! Handle leveling point #4.
 void ManualLeveling::point4_command()
 {
     Log::log() << F("Level point 4") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X170 Y30 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 //! Handle leveling point #5.
 void ManualLeveling::point5_command()
 {
     Log::log() << F("Level point 5") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 void ManualLeveling::pointA_command()
 {
     Log::log() << F("Level point A") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y30 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 void ManualLeveling::pointB_command()
 {
     Log::log() << F("Level point B") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X30 Y100 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 void ManualLeveling::pointC_command()
 {
     Log::log() << F("Level point C") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y170 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 void ManualLeveling::pointD_command()
 {
     Log::log() << F("Level point D") << Log::endl();
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F2000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));
     enqueue_and_echo_commands_P(PSTR("G1 X170 Y100 F6000"));
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
 
@@ -1326,7 +1364,7 @@ Page SensorZHeight::do_prepare_page()
 
     enqueue_and_echo_commands_P((PSTR("M851 Z0"))); // reset offset
     wait.show(F("Homing..."));
-    enqueue_and_echo_commands_P((PSTR("G28")));  // homing
+    enqueue_and_echo_commands_P((PSTR("G28 F6000")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
     return Page::None;
 }
@@ -1349,8 +1387,8 @@ void SensorZHeight::home_task()
 
     reset();
 
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F240"));  // raise head
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F3000")); // middle
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F6000")); // middle
     enqueue_and_echo_commands_P(PSTR("M211 S0")); // disable soft-endstops
     adjust_height();
 
@@ -1360,8 +1398,8 @@ void SensorZHeight::home_task()
 void SensorZHeight::do_back_command()
 {
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F240"));  // raise head
-    enqueue_and_echo_commands_P(PSTR("G28 X0 Y0 F3000")); // homing
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // homing
     Parent::do_back_command();
 }
 
@@ -1371,8 +1409,8 @@ void SensorZHeight::do_save_command()
     command << F("M851 Z") << height_;
     enqueue_and_echo_command(command.get());
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F240"));  // raise head
-    enqueue_and_echo_commands_P(PSTR("G28 X0 Y0 F3000")); // homing
+    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // homing
     Parent::do_save_command();
 }
 
@@ -1409,7 +1447,7 @@ void SensorZHeight::plus()
 void SensorZHeight::adjust_height()
 {
     ADVString<10> command;
-    command << F("G1 Z") << height_ << F(" F240");
+    command << F("G1 Z") << height_ << F(" F1200");
     enqueue_and_echo_command(command.get());
     send_data();
 }
@@ -1485,7 +1523,7 @@ void ExtruderTuning::heating_task()
     task.clear_background_task();
 
     advi3pp.set_status(F("Wait until the extrusion is finished..."));
-    enqueue_and_echo_commands_P(PSTR("G1 Z20 F240"));   // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 Z20 F1200"));   // raise head
     enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
 
@@ -1696,19 +1734,6 @@ SensorSettings::SensorSettings()
     do_reset();
 }
 
-const FlashChar* SensorSettings::get_sensor_name() const
-{
-    // Note: F macro can be called only in a function, this is why this is coded like this
-
-    auto advi3_side          = F("ADVi3++ Left Side");
-    auto teaching_tech_side  = F("Teaching Tech L. Side");
-    auto teaching_tech_front = F("Teaching Tech Front");
-    auto custom              = F("Custom");
-
-    static const FlashChar* names[NB_POSITIONS] = {advi3_side, teaching_tech_side, teaching_tech_front, custom};
-    return names[index_];
-}
-
 bool SensorSettings::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1733,7 +1758,7 @@ Page SensorSettings::do_prepare_page()
 
 void SensorSettings::do_write(EepromWrite& eeprom) const
 {
-    for(size_t i = 0; i < NB_POSITIONS; ++i)
+    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
     {
         eeprom.write(positions_[i].x);
         eeprom.write(positions_[i].y);
@@ -1743,7 +1768,7 @@ void SensorSettings::do_write(EepromWrite& eeprom) const
 
 void SensorSettings::do_read(EepromRead& eeprom)
 {
-    for(size_t i = 0; i < NB_POSITIONS; ++i)
+    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
     {
         eeprom.read(positions_[i].x);
         eeprom.read(positions_[i].y);
@@ -1753,16 +1778,13 @@ void SensorSettings::do_read(EepromRead& eeprom)
 
 void SensorSettings::do_reset()
 {
-    positions_[0] = { -2800, -4000, -154 };
-    positions_[1] = {  1000,  1100,  1200 };
-    positions_[2] = {  2000,  2100,  2200 };
-    positions_[3] = {  3000,  3100,  3200 };
-    positions_[3] = {  0,  0,  0 };
+    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
+        positions_[i] = DEFAULT_SENSOR_POSITION[i];
 }
 
 uint16_t SensorSettings::do_size_of() const
 {
-    return NB_POSITIONS * sizeof(SensorPosition);
+    return NB_SENSOR_POSITIONS * sizeof(SensorPosition);
 }
 
 void SensorSettings::previous_command()
@@ -1776,7 +1798,7 @@ void SensorSettings::previous_command()
 
 void SensorSettings::next_command()
 {
-    if(index_ >= NB_POSITIONS - 1)
+    if(index_ >= NB_SENSOR_POSITIONS - 1)
         return;
     get_data();
     index_ += 1;
@@ -1785,7 +1807,7 @@ void SensorSettings::next_command()
 
 void SensorSettings::send_data() const
 {
-    ADVString<32> title{get_sensor_name()};
+    ADVString<32> title{get_sensor_name(index_)};
 
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(positions_[index_].x) << Uint16(positions_[index_].y) << Uint16(positions_[index_].z);
