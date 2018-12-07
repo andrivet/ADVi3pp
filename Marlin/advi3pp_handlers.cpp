@@ -65,7 +65,7 @@ namespace
     const uint8_t DIMMING_RATIO = 5; // in percent
     const uint16_t DIMMING_DELAY = 5 * 60; // 5 minutes
 
-    const advi3pp::Preset DEFAULT_PREHEAT_PRESET[5] = {
+    const advi3pp::Preset DEFAULT_PREHEAT_PRESET[advi3pp::Preheat::NB_PRESETS] = {
         {180, 50, 0},
         {200, 60, 0},
         {220, 70, 0},
@@ -75,7 +75,7 @@ namespace
 
     const FlashChar* get_sensor_name(size_t index)
     {
-        // Note: F macro can be called only in a function, this is why this is coded like this
+        // Note: F macro can be used only in a function, this is why this is coded like this
         auto advi3_side          = F("ADVi3++ Left Side");
         auto teaching_tech_side  = F("Teaching Tech L. Side");
         auto teaching_tech_front = F("Teaching Tech Front");
@@ -85,29 +85,28 @@ namespace
 #ifdef ADVi3PP_MARK2
         static const FlashChar* names[advi3pp::NB_SENSOR_POSITIONS] = {advi3_side, teaching_tech_side, teaching_tech_front, mark2, custom};
 #else
-        static const FlashChar* names[advi3pp::NB_SENSOR_POSITIONS] = {mark2, advi3_side, teaching_tech_side, teaching_tech_front, custom};
+        static const FlashChar* names[advi3pp::SensorSettings::NB_SENSOR_POSITIONS] =
+          {mark2, advi3_side, teaching_tech_side, teaching_tech_front, custom};
 #endif
         return names[index];
     }
 
-    const advi3pp::SensorPosition DEFAULT_SENSOR_POSITION[advi3pp::NB_SENSOR_POSITIONS] =
+    const advi3pp::SensorPosition DEFAULT_SENSOR_POSITION[advi3pp::SensorSettings::NB_SENSOR_POSITIONS] =
     {
 #ifdef ADVi3PP_MARK2
-        { -2800, -4000,  -154 },
-        {  1000,  1100,  1200 },
-        {  2000,  2100,  2200 },
-        {  3000,  3100,  3200 },
-        {     0,  6000,     0 }
+        {     0,  6000,     0 },    // Mark II
+        { -2800, -4000,  -154 },    // ADVi3++ Left Side
+        {  1000,  1100,  1200 },    // Teaching Tech L. Side
+        {   950, -3600,  2200 },    // Teaching Tech Front
+        {     0,     0,     0 }     // Custom
 #else
-        {     0,  6000,     0 },
-        { -2800, -4000,  -154 },
-        {  1000,  1100,  1200 },
-        {  2000,  2100,  2200 },
-        {  3000,  3100,  3200 },
+        { -2800, -4000,  -154 },    // ADVi3++ Left Side
+        {  1000,  1100,  1200 },    // Teaching Tech L. Side
+        {   950, -3600,     0 },    // Teaching Tech Front
+        {     0,  6000,     0 },    // Mark II
+        {     0,     0,     0 }     // Custom
 #endif
     };
-
-
 
 }
 
@@ -160,9 +159,6 @@ inline namespace singletons
     UsbPrint usb_print;
     AdvancedPause pause;
 };
-
-template <typename T, size_t N>
-constexpr size_t countof(T const (&)[N]) noexcept { return N; }
 
 // --------------------------------------------------------------------
 // Pages management
@@ -1926,7 +1922,7 @@ void FirmwareSettings::send_usb_baudrate() const
 
 static size_t UsbBaudrateIndex(uint32_t baudrate)
 {
-    size_t nb = countof(usb_baudrates);
+    size_t nb = adv::count_of(usb_baudrates);
     for(size_t i = 0; i < nb; ++i)
         if(baudrate == usb_baudrates[i])
             return i;
@@ -1943,7 +1939,7 @@ void FirmwareSettings::baudrate_minus_command()
 void FirmwareSettings::baudrate_plus_command()
 {
     auto index = UsbBaudrateIndex(usb_baudrate_);
-    static const auto max = countof(usb_baudrates) - 1;
+    static const auto max = adv::count_of(usb_baudrates) - 1;
     usb_baudrate_ = index < max ? usb_baudrates[index + 1] : usb_baudrates[max];
     send_usb_baudrate();
 }

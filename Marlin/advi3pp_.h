@@ -67,7 +67,6 @@ struct Preset
 
 //! Position of a sensor.
 struct SensorPosition { int16_t x, y, z; };
-const size_t NB_SENSOR_POSITIONS = 5;
 
 // --------------------------------------------------------------------
 
@@ -278,6 +277,8 @@ private:
 
 struct Preheat: Handler<Preheat>
 {
+    static const size_t NB_PRESETS = 5;
+
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
@@ -294,7 +295,6 @@ private:
     void cooldown_command();
 
 private:
-    static const size_t NB_PRESETS = 5;
     Preset presets_[NB_PRESETS] = {};
     size_t index_ = 0;
 
@@ -651,6 +651,8 @@ private:
 
 struct SensorSettings: Handler<SensorSettings>
 {
+    static const size_t NB_SENSOR_POSITIONS = 5;
+
     SensorSettings();
 
     double x_probe_offset_from_extruder() const;
