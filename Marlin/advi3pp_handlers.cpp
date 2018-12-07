@@ -88,6 +88,7 @@ namespace
         static const FlashChar* names[advi3pp::SensorSettings::NB_SENSOR_POSITIONS] =
           {mark2, advi3_side, teaching_tech_side, teaching_tech_front, custom};
 #endif
+        assert(index < advi3pp::SensorSettings::NB_SENSOR_POSITIONS);
         return names[index];
     }
 
