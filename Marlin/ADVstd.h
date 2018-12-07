@@ -30,6 +30,10 @@ namespace adv {
 using size_t = decltype(sizeof(int));
 using nullptr_t = decltype(nullptr);
 
+// Not in the standard, but useful
+template <typename T, size_t N>
+constexpr size_t count_of(T const (&)[N]) noexcept { return N; }
+
 template<typename T> struct remove_reference { using type = T; };
 template<typename T> struct remove_reference<T&>  { using type = T; };
 template<typename T> struct remove_reference<T&&> { using type = T; };
