@@ -108,7 +108,7 @@ void Log::dump(const uint8_t* bytes, size_t size)
     SERIAL_ECHOLN(buffer);
 }
 
-void __assert(const char *msg, const char *file, uint16_t line)
+void assert_(const char *msg, const char *file, uint16_t line)
 {
     Log::log() << F("### ASSERTION FAILED: ") << msg << " in file " << file << ", line " << line << Log::endl();
     asm("break \n");
