@@ -1756,6 +1756,7 @@ Page SensorSettings::do_prepare_page()
 
 void SensorSettings::do_write(EepromWrite& eeprom) const
 {
+    eeprom.write(index_);
     for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
     {
         eeprom.write(positions_[i].x);
@@ -1766,6 +1767,7 @@ void SensorSettings::do_write(EepromWrite& eeprom) const
 
 void SensorSettings::do_read(EepromRead& eeprom)
 {
+    eeprom.read(index_);
     for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
     {
         eeprom.read(positions_[i].x);
@@ -1776,13 +1778,14 @@ void SensorSettings::do_read(EepromRead& eeprom)
 
 void SensorSettings::do_reset()
 {
+    index_ = 0;
     for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
         positions_[i] = DEFAULT_SENSOR_POSITION[i];
 }
 
 uint16_t SensorSettings::do_size_of() const
 {
-    return NB_SENSOR_POSITIONS * sizeof(SensorPosition);
+    return sizeof(index_) + NB_SENSOR_POSITIONS * sizeof(SensorPosition);
 }
 
 void SensorSettings::previous_command()
