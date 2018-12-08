@@ -98,13 +98,13 @@ namespace
 #ifdef ADVi3PP_MARK2
         {     0,  6000,     0 },    // Mark II
         { -2800, -4000,  -154 },    // ADVi3++ Left Side
-        {  1000,  1100,  1200 },    // Teaching Tech L. Side
-        {   950, -3600,  2200 },    // Teaching Tech Front
+        {     0,     0,     0 },    // Teaching Tech L. Side
+        {   950, -3600,  -172 },    // Teaching Tech Front
         {     0,     0,     0 }     // Custom
 #else
         { -2800, -4000,  -154 },    // ADVi3++ Left Side
-        {  1000,  1100,  1200 },    // Teaching Tech L. Side
-        {   950, -3600,     0 },    // Teaching Tech Front
+        {     0,     0,     0 },    // Teaching Tech L. Side
+        {   950, -3600,  -172 },    // Teaching Tech Front
         {     0,  6000,     0 },    // Mark II
         {     0,     0,     0 }     // Custom
 #endif
@@ -1752,6 +1752,12 @@ Page SensorSettings::do_prepare_page()
     send_data();
     pages.save_forward_page();
     return Page::SensorSettings;
+}
+
+void SensorSettings::do_save_command()
+{
+    get_data();
+    Parent::do_save_command();
 }
 
 void SensorSettings::do_write(EepromWrite& eeprom) const

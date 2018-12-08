@@ -283,11 +283,11 @@ struct Preheat: Handler<Preheat>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void do_save_command();
     void do_write(EepromWrite& eeprom) const;
     void do_read(EepromRead& eeprom);
     void do_reset();
     uint16_t do_size_of() const;
-    void do_save_command();
 
     void send_presets();
     void retrieve_presets();
@@ -663,6 +663,7 @@ struct SensorSettings: Handler<SensorSettings>
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
+    void do_save_command();
     void do_write(EepromWrite& eeprom) const;
     void do_read(EepromRead& eeprom);
     void do_reset();
