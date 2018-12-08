@@ -161,6 +161,7 @@ void ADVi3pp_::write(eeprom_write write, int& eeprom_index, uint16_t& working_cr
     EepromWrite eeprom{write, eeprom_index, working_crc};
 
     preheat.write(eeprom);
+    sensor_settings.write(eeprom);
     pid_settings.write(eeprom);
     eeprom.write(features_);
     eeprom.write(usb_baudrate_);
@@ -175,6 +176,7 @@ void ADVi3pp_::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
     EepromRead eeprom{read, eeprom_index, working_crc};
 
     preheat.read(eeprom);
+    sensor_settings.read(eeprom);
     pid_settings.read(eeprom);
     eeprom.read(features_);
     eeprom.read(usb_baudrate_);
@@ -190,6 +192,7 @@ void ADVi3pp_::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 void ADVi3pp_::reset()
 {
     preheat.reset();
+    sensor_settings.reset();
     pid_settings.reset();
     features_ = DEFAULT_FEATURES;
     usb_baudrate_ = DEFAULT_USB_BAUDRATE;
@@ -200,6 +203,7 @@ uint16_t ADVi3pp_::size_of() const
 {
     return
         preheat.size_of() +
+       sensor_settings.size_of() +
         pid_settings.size_of() +
         sizeof(features_) +
         sizeof(usb_baudrate_);
