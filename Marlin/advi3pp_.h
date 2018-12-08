@@ -28,6 +28,7 @@
 // This is only to ensure that Jetbrains CLion is parsing code properly inside the IDE
 #ifdef __CLION_IDE__
 #define HAS_BED_PROBE 1
+#define ADVi3PP_PROBE
 #endif
 
 #include "Marlin.h"
