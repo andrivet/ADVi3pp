@@ -98,12 +98,12 @@ namespace
 #ifdef ADVi3PP_MARK2
         {     0,  6000,     0 },    // Mark II
         { -2800, -4000,  -154 },    // ADVi3++ Left Side
-        {     0,     0,     0 },    // Teaching Tech L. Side
+        { -2450, -4000,  -270 },    // Teaching Tech L. Side
         {   950, -3600,  -172 },    // Teaching Tech Front
         {     0,     0,     0 }     // Custom
 #else
         { -2800, -4000,  -154 },    // ADVi3++ Left Side
-        {     0,     0,     0 },    // Teaching Tech L. Side
+        { -2450, -4000,  -270 },    // Teaching Tech L. Side
         {   950, -3600,  -172 },    // Teaching Tech Front
         {     0,  6000,     0 },    // Mark II
         {     0,     0,     0 }     // Custom
@@ -1987,6 +1987,7 @@ void LcdSettings::dimming_command()
     flip_bits(features_, Feature::Dimming);
     dimming.enable(test_one_bit(features_, Feature::Dimming));
     send_data();
+    advi3pp.change_features(features_);
     advi3pp.save_settings();
 }
 
@@ -1994,6 +1995,7 @@ void LcdSettings::change_brightness(uint16_t brightness)
 {
     dimming.change_brightness(brightness);
     send_data();
+    advi3pp.save_settings();
 }
 
 void LcdSettings::buzz_on_action_command()
@@ -2001,6 +2003,7 @@ void LcdSettings::buzz_on_action_command()
     flip_bits(features_, Feature::Buzzer);
     advi3pp.enable_buzzer(test_one_bit(features_, Feature::Buzzer));
     send_data();
+    advi3pp.change_features(features_);
     advi3pp.save_settings();
 }
 
@@ -2009,6 +2012,7 @@ void LcdSettings::buzz_on_press_command()
     flip_bits(features_, Feature::BuzzOnPress);
     advi3pp.enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress));
     send_data();
+    advi3pp.change_features(features_);
     advi3pp.save_settings();
 }
 
