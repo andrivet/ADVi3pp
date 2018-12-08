@@ -83,10 +83,11 @@ namespace
         auto custom              = F("Custom");
 
 #ifdef ADVi3PP_MARK2
-        static const FlashChar* names[advi3pp::NB_SENSOR_POSITIONS] = {advi3_side, teaching_tech_side, teaching_tech_front, mark2, custom};
+        static const FlashChar* names[advi3pp::NB_SENSOR_POSITIONS] =
+          {mark2, advi3_side, teaching_tech_side, teaching_tech_front, custom};
 #else
         static const FlashChar* names[advi3pp::SensorSettings::NB_SENSOR_POSITIONS] =
-          {mark2, advi3_side, teaching_tech_side, teaching_tech_front, custom};
+          {advi3_side, teaching_tech_side, teaching_tech_front, mark2, custom};
 #endif
         assert(index < advi3pp::SensorSettings::NB_SENSOR_POSITIONS);
         return names[index];
