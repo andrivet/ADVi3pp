@@ -133,8 +133,7 @@ inline void EepromRead::read(T& data)
 enum class ShowOptions
 {
     None     = 0x00,
-    Backup   = 0x01,
-    SaveBack = 0x02
+    SaveBack = 0x01
 };
 ENABLE_BITMASK_OPERATOR(ShowOptions);
 
@@ -172,8 +171,6 @@ public:
     void read(EepromRead& eeprom) { this->self().do_read(eeprom); }
     void reset() { this->self().do_reset(); }
     uint16_t size_of() const { return this->self().do_size_of(); }
-    void backup() { this->self().do_backup(); }
-    void restore() { this->self().do_restore(); }
 
 protected:
     Page do_prepare_page();
@@ -189,8 +186,6 @@ private:
     void do_read(EepromRead& eeprom) {}
     void do_reset() {}
     uint16_t do_size_of() const { return 0; }
-    void do_backup() {}
-    void do_restore() {}
 };
 
 // --------------------------------------------------------------------
@@ -818,11 +813,8 @@ struct StepSettings: Handler<StepSettings>
 {
 private:
     Page do_prepare_page();
-    void do_backup();
-    void do_restore();
+    void do_back_command();
     void do_save_command();
-
-    float backup_[XYZE_N] = {};
 
     friend Parent;
 };
@@ -835,13 +827,8 @@ struct FeedrateSettings: Handler<FeedrateSettings>
 {
 private:
     Page do_prepare_page();
+    void do_back_command();
     void do_save_command();
-    void do_backup();
-    void do_restore();
-
-    float backup_max_feedrate_mm_s_[XYZE_N] = {};
-    float backup_min_feedrate_mm_s_ = 0;
-    float backup_min_travel_feedrate_mm_s_ = 0;
 
     friend Parent;
 };
@@ -854,14 +841,8 @@ struct AccelerationSettings: Handler<AccelerationSettings>
 {
 private:
     Page do_prepare_page();
+    void do_back_command();
     void do_save_command();
-    void do_backup();
-    void do_restore();
-
-    uint32_t backup_max_acceleration_mm_per_s2_[XYZE_N] = {};
-    float backup_acceleration_ = 0;
-    float backup_retract_acceleration_ = 0;
-    float backup_travel_acceleration_ = 0;
 
     friend Parent;
 };
@@ -874,11 +855,8 @@ struct JerkSettings: Handler<JerkSettings>
 {
 private:
     Page do_prepare_page();
+    void do_back_command();
     void do_save_command();
-    void do_backup();
-    void do_restore();
-
-    float backup_max_jerk_[XYZE] = {};
 
     friend Parent;
 };
@@ -891,11 +869,8 @@ struct LinearAdvanceSettings: Handler<LinearAdvanceSettings>
 {
 private:
     Page do_prepare_page();
+    void do_back_command();
     void do_save_command();
-    void do_backup();
-    void do_restore();
-
-    float backup_extruder_advance_K = 0;
 
     friend Parent;
 };
@@ -1100,6 +1075,7 @@ struct ADVi3pp_
     void advanced_pause_show_message(AdvancedPauseMessage message);
     void set_brightness(int16_t britghness);
     void save_settings();
+    void restore_settings();
     bool is_busy();
 
     bool has_status();
@@ -1213,9 +1189,6 @@ void Handler<Self>::invalid(KeyValue value)
 template<typename Self>
 void Handler<Self>::show(ShowOptions options)
 {
-    if(test_one_bit(options, ShowOptions::Backup))
-        this->backup();
-
     Page page = prepare_page();
     if(page != Page::None)
         pages.show_page(page, options);
@@ -1243,7 +1216,6 @@ void Handler<Self>::do_save_command()
 template<typename Self>
 void Handler<Self>::do_back_command()
 {
-    restore();
     pages.show_back_page();
 }
 

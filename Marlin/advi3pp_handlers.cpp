@@ -1489,7 +1489,6 @@ bool ExtruderTuning::do_dispatch(KeyValue key_value)
 //! Show the extruder tuning screen.
 Page ExtruderTuning::do_prepare_page()
 {
-    steps_settings.backup();
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(advi3pp.get_last_used_temperature(TemperatureKind::Hotend));
     frame.send();
@@ -2374,24 +2373,6 @@ void PidSettings::do_save_command()
 // Steps Settings
 // --------------------------------------------------------------------
 
-//! Initialize temporary Step settings.
-void StepSettings::do_backup()
-{
-    backup_[X_AXIS] = Planner::axis_steps_per_mm[X_AXIS];
-    backup_[Y_AXIS] = Planner::axis_steps_per_mm[Y_AXIS];
-    backup_[Z_AXIS] = Planner::axis_steps_per_mm[Z_AXIS];
-    backup_[E_AXIS] = Planner::axis_steps_per_mm[E_AXIS];
-}
-
-//! Save temporary Step settings.
-void StepSettings::do_restore()
-{
-    Planner::axis_steps_per_mm[X_AXIS] = backup_[X_AXIS];
-    Planner::axis_steps_per_mm[Y_AXIS] = backup_[Y_AXIS];
-    Planner::axis_steps_per_mm[Z_AXIS] = backup_[Z_AXIS];
-    Planner::axis_steps_per_mm[E_AXIS] = backup_[E_AXIS];
-}
-
 //! Show the Steps settings
 //! @param init     Initialize the settings are use those already set
 Page StepSettings::do_prepare_page()
@@ -2404,6 +2385,12 @@ Page StepSettings::do_prepare_page()
     frame.send();
 
     return Page::StepsSettings;
+}
+
+void StepSettings::do_back_command()
+{
+    advi3pp.restore_settings();
+    Parent::do_back_command();
 }
 
 //! Save the Steps settings
@@ -2431,28 +2418,6 @@ void StepSettings::do_save_command()
 // Feedrate Settings
 // --------------------------------------------------------------------
 
-//! Initialize temporary Feedrate settings.
-void FeedrateSettings::do_backup()
-{
-    backup_max_feedrate_mm_s_[X_AXIS] = Planner::max_feedrate_mm_s[X_AXIS];
-    backup_max_feedrate_mm_s_[Y_AXIS] = Planner::max_feedrate_mm_s[Y_AXIS];
-    backup_max_feedrate_mm_s_[Z_AXIS] = Planner::max_feedrate_mm_s[Z_AXIS];
-    backup_max_feedrate_mm_s_[E_AXIS] = Planner::max_feedrate_mm_s[E_AXIS];
-    backup_min_feedrate_mm_s_ = Planner::min_feedrate_mm_s;
-    backup_min_travel_feedrate_mm_s_ = Planner::min_travel_feedrate_mm_s;
-}
-
-//! Save temporary Feedrate settings.
-void FeedrateSettings::do_restore()
-{
-    Planner::max_feedrate_mm_s[X_AXIS] = backup_max_feedrate_mm_s_[X_AXIS];
-    Planner::max_feedrate_mm_s[Y_AXIS] = backup_max_feedrate_mm_s_[Y_AXIS];
-    Planner::max_feedrate_mm_s[Z_AXIS] = backup_max_feedrate_mm_s_[Z_AXIS];
-    Planner::max_feedrate_mm_s[E_AXIS] = backup_max_feedrate_mm_s_[E_AXIS];
-    Planner::min_feedrate_mm_s = backup_min_feedrate_mm_s_;
-    Planner::min_travel_feedrate_mm_s = backup_min_travel_feedrate_mm_s_;
-}
-
 //! Show the Feedrate settings
 Page FeedrateSettings::do_prepare_page()
 {
@@ -2466,6 +2431,12 @@ Page FeedrateSettings::do_prepare_page()
     frame.send();
 
     return Page::FeedrateSettings;
+}
+
+void FeedrateSettings::do_back_command()
+{
+    advi3pp.restore_settings();
+    Parent::do_back_command();
 }
 
 //! Save the Feedrate settings
@@ -2495,32 +2466,6 @@ void FeedrateSettings::do_save_command()
 // AccelerationSettings
 // --------------------------------------------------------------------
 
-//! Initialize temporary Acceleration settings.
-void AccelerationSettings::do_backup()
-{
-    backup_max_acceleration_mm_per_s2_[X_AXIS] = Planner::max_acceleration_mm_per_s2[X_AXIS];
-    backup_max_acceleration_mm_per_s2_[Y_AXIS] = Planner::max_acceleration_mm_per_s2[Y_AXIS];
-    backup_max_acceleration_mm_per_s2_[Z_AXIS] = Planner::max_acceleration_mm_per_s2[Z_AXIS];
-    backup_max_acceleration_mm_per_s2_[E_AXIS] = Planner::max_acceleration_mm_per_s2[E_AXIS];
-    backup_acceleration_ = Planner::acceleration;
-    backup_retract_acceleration_ = Planner::retract_acceleration;
-    backup_travel_acceleration_ = Planner::travel_acceleration;
-}
-
-//! Save temporary Acceleration settings.
-void AccelerationSettings::do_restore()
-{
-    Planner::max_acceleration_mm_per_s2[X_AXIS] = backup_max_acceleration_mm_per_s2_[X_AXIS];
-    Planner::max_acceleration_mm_per_s2[Y_AXIS] = backup_max_acceleration_mm_per_s2_[Y_AXIS];
-    Planner::max_acceleration_mm_per_s2[Z_AXIS] = backup_max_acceleration_mm_per_s2_[Z_AXIS];
-    Planner::max_acceleration_mm_per_s2[E_AXIS] = backup_max_acceleration_mm_per_s2_[E_AXIS];
-    Planner::acceleration = backup_acceleration_;
-    Planner::retract_acceleration = backup_retract_acceleration_;
-    Planner::travel_acceleration =  backup_travel_acceleration_;
-
-    advi3pp.save_settings();
-}
-
 //! Show the Acceleration settings
 Page AccelerationSettings::do_prepare_page()
 {
@@ -2535,6 +2480,12 @@ Page AccelerationSettings::do_prepare_page()
     frame.send();
 
     return Page::AccelerationSettings;
+}
+
+void AccelerationSettings::do_back_command()
+{
+    advi3pp.restore_settings();
+    Parent::do_back_command();
 }
 
 //! Save the Acceleration settings
@@ -2565,24 +2516,6 @@ void AccelerationSettings::do_save_command()
 // JerkSettings
 // --------------------------------------------------------------------
 
-//! Initialize temporary Jerk settings.
-void JerkSettings::do_backup()
-{
-    backup_max_jerk_[X_AXIS] = Planner::max_jerk[X_AXIS];
-    backup_max_jerk_[Y_AXIS] = Planner::max_jerk[Y_AXIS];
-    backup_max_jerk_[Z_AXIS] = Planner::max_jerk[Z_AXIS];
-    backup_max_jerk_[E_AXIS] = Planner::max_jerk[E_AXIS];
-}
-
-//! Save temporary Jerk settings.
-void JerkSettings::do_restore()
-{
-    Planner::max_jerk[X_AXIS] = backup_max_jerk_[X_AXIS];
-    Planner::max_jerk[Y_AXIS] = backup_max_jerk_[Y_AXIS];
-    Planner::max_jerk[Z_AXIS] = backup_max_jerk_[Z_AXIS];
-    Planner::max_jerk[E_AXIS] = backup_max_jerk_[E_AXIS];
-}
-
 //! Show the Jerk settings
 Page JerkSettings::do_prepare_page()
 {
@@ -2594,6 +2527,12 @@ Page JerkSettings::do_prepare_page()
     frame.send();
 
     return Page::JerkSettings;
+}
+
+void JerkSettings::do_back_command()
+{
+    advi3pp.restore_settings();
+    Parent::do_back_command();
 }
 
 //! Save the Jerk settings
@@ -2621,16 +2560,6 @@ void JerkSettings::do_save_command()
 // Linear Advance Settings
 // --------------------------------------------------------------------
 
-void LinearAdvanceSettings::do_backup()
-{
-    backup_extruder_advance_K = Planner::extruder_advance_K;
-}
-
-void LinearAdvanceSettings::do_restore()
-{
-    Planner::extruder_advance_K = backup_extruder_advance_K;
-}
-
 Page LinearAdvanceSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -2638,6 +2567,12 @@ Page LinearAdvanceSettings::do_prepare_page()
     frame.send();
 
     return Page::LinearAdvanceSettings;
+}
+
+void LinearAdvanceSettings::do_back_command()
+{
+    advi3pp.restore_settings();
+    Parent::do_back_command();
 }
 
 void LinearAdvanceSettings::do_save_command()

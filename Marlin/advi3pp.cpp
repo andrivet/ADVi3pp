@@ -224,6 +224,11 @@ void ADVi3pp_::save_settings()
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
 
+void ADVi3pp_::restore_settings()
+{
+    enqueue_and_echo_commands_P(PSTR("M501"));
+}
+
 bool ADVi3pp_::is_thermal_protection_enabled() const
 {
     return test_one_bit(features_, Feature::ThermalProtection);
