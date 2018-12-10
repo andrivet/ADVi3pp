@@ -709,8 +709,8 @@ private:
     void baudrate_minus_command();
     void baudrate_plus_command();
 
-    uint32_t usb_baudrate_ = 0;
-    Feature features_ = Feature::None;
+    uint32_t usb_baudrate_ = BAUDRATE;
+    Feature features_ = Feature::BuzzOnPress | Feature::Dimming | Feature::ThermalProtection;
 
     friend Parent;
 };

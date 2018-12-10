@@ -582,7 +582,6 @@ void ADVi3pp_::change_usb_baudrate(uint32_t baudrate)
 
 void ADVi3pp_::change_features(Feature features)
 {
-    // TODO
     features_ = features;
 }
 
