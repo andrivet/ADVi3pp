@@ -291,6 +291,15 @@ void ADVi3pp_::update_progress()
         progress_bar_percent = card.percentDone();
 }
 
+double ADVi3pp_::get_current_z_height(int multiply) const
+{
+	auto height = LOGICAL_Z_POSITION(current_position[Z_AXIS]) * multiply;
+	if(multiply != 1)
+		return round(height);
+	return height;
+}
+
+
 //! Update the status of the printer on the LCD.
 void ADVi3pp_::send_status_data(bool force_update)
 {
@@ -312,7 +321,7 @@ void ADVi3pp_::send_status_data(bool force_update)
           << Uint16(Temperature::target_temperature[0])
           << Uint16(Temperature::degHotend(0))
           << Uint16(scale(fanSpeeds[0], 255, 100))
-          << Uint16(lround(LOGICAL_Z_POSITION(current_position[Z_AXIS]) * 100.0))
+          << Uint16(get_current_z_height(100))
           << Uint16(progress_bar_low)
           << Uint16(progress_var_high)
           << 0_u16

@@ -49,7 +49,7 @@ namespace advi3pp {
 const size_t message_length = 48;
 const size_t progress_name_length = 44;
 const size_t progress_percent_length = progress_name_length + 4;
-const uint8_t sd_file_length = 48;
+const uint8_t sd_file_length = 26; // This is the maximum length handled by the SD layer (FILENAME_LENGTH)
 
 const uint16_t default_bed_temperature = 50;
 const uint16_t default_hotend_temperature = 200;
@@ -546,14 +546,13 @@ private:
     void multiplier01_command();
     void multiplier05_command();
     void multiplier10_command();
-    void adjust_height();
+    void adjust_height(double offset);
     void send_data() const;
     void reset();
 
 private:
     static const double multipliers_[3];
     uint16_t multiplier_ = 0;
-    double height_ = Z_PROBE_OFFSET_FROM_EXTRUDER;
     friend Parent;
 };
 #else
@@ -1101,6 +1100,8 @@ struct ADVi3pp_
 
     uint16_t get_last_used_temperature(TemperatureKind kind) const;
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
+
+    double get_current_z_height(int multiply = 1) const;
 
 #ifdef ADVi3PP_PROBE
     double x_probe_offset_from_extruder() const;
