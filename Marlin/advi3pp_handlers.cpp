@@ -1145,6 +1145,7 @@ void SdCard::show_first_page()
 	if(!card.cardOK)
 		return;
 
+    page_index_ = 0;
 	nb_files_ = card.getnrfilenames();
 	last_file_index_ = nb_files_ > 0 ? nb_files_ - 1 : 0;
 
@@ -1158,6 +1159,7 @@ void SdCard::down_command()
 
 	if(last_file_index_ >= nb_visible_sd_files)
     {
+        page_index_ += 1;
 		last_file_index_ -= nb_visible_sd_files;
         show_current_page();
     }
@@ -1170,6 +1172,7 @@ void SdCard::up_command()
 
 	if(last_file_index_ + nb_visible_sd_files < nb_files_)
     {
+        page_index_ -= 1;
 		last_file_index_ += nb_visible_sd_files;
         show_current_page();
     }
@@ -1190,6 +1193,10 @@ void SdCard::show_current_page()
         frame << aligned_name;
     }
     frame.send(true);
+
+    frame.reset(Variable::Value0);
+    frame << Uint16(page_index_ + 1);
+    frame.send();
 }
 
 //! Get a filename with a given index.

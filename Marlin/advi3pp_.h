@@ -450,6 +450,7 @@ private:
 private:
     uint16_t nb_files_ = 0;
     uint16_t last_file_index_ = 0;
+    uint16_t page_index_ = 0;
 
     friend Parent;
 };
