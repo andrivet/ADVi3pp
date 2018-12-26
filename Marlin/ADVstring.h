@@ -70,6 +70,7 @@ struct ADVString
     ADVString& set(const FlashChar* s);
     ADVString& set(const FlashChar* fmt, va_list& args);
     template<size_t L2> ADVString& set(const ADVString<L2>& s);
+    template<size_t L2> ADVString& set(const ADVString<L2>& s, Alignment alignment);
     ADVString& set(char c);
     ADVString& set(duration_t d);
     ADVString& set(int16_t n, Base base = Base::Decimal);
@@ -128,12 +129,9 @@ template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const FlashChar*
 template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const char c)  { set(c); return *this; }
 template<size_t L> template<size_t L2> inline ADVString<L>& ADVString<L>::operator=(const ADVString<L2>& str) { set(str); return *this; }
 
-template<size_t L>
-ADVString<L>& ADVString<L>::align(Alignment alignment)
+template<size_t L> template<size_t L2> ADVString<L>& ADVString<L>::set(const ADVString<L2>& s, Alignment alignment)
 {
-    ADVString<L> tmp{*this};
-
-    auto l = tmp.length();
+    auto l = s.length();
     size_t pad = 0;
 
     if(l >= L)
@@ -149,7 +147,7 @@ ADVString<L>& ADVString<L>::align(Alignment alignment)
         string_[index] = ' ';
 
     // Middle part
-    strlcpy(string_ + index, tmp.get(), L + 1 - pad);
+    strlcpy(string_ + index, s.get(), L + 1 - pad);
     index += l;
 
     // Right part
@@ -164,6 +162,13 @@ ADVString<L>& ADVString<L>::align(Alignment alignment)
 
     dirty_ = true;
     return *this;
+}
+
+template<size_t L>
+ADVString<L>& ADVString<L>::align(Alignment alignment)
+{
+    ADVString<L> tmp{*this};
+    return this->set(tmp, alignment);
 }
 
 template<size_t L>
