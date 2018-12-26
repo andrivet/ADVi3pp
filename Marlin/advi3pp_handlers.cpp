@@ -1146,7 +1146,7 @@ void SdCard::show_first_page()
 		return;
 
 	nb_files_ = card.getnrfilenames();
-	last_file_index_ = nb_files_ - 1;
+	last_file_index_ = nb_files_ > 0 ? nb_files_ - 1 : 0;
 
     show_current_page();
 }
@@ -1157,9 +1157,10 @@ void SdCard::down_command()
 		return;
 
 	if(last_file_index_ >= nb_visible_sd_files)
+    {
 		last_file_index_ -= nb_visible_sd_files;
-
-    show_current_page();
+        show_current_page();
+    }
 }
 
 void SdCard::up_command()
@@ -1168,9 +1169,10 @@ void SdCard::up_command()
 		return;
 
 	if(last_file_index_ + nb_visible_sd_files < nb_files_)
+    {
 		last_file_index_ += nb_visible_sd_files;
-
-    show_current_page();
+        show_current_page();
+    }
 }
 
 //! Show the list of files on SD.
@@ -1179,10 +1181,13 @@ void SdCard::show_current_page()
     WriteRamDataRequest frame{Variable::LongText0};
 
     ADVString<sd_file_length> name;
+    ADVString<48> aligned_name;
+
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
-        frame << name; // Important to truncate, there is only limited space
+        aligned_name.set(name, Alignment::Left);
+        frame << aligned_name;
     }
     frame.send(true);
 }
@@ -1371,8 +1376,7 @@ Page SensorZHeight::do_prepare_page()
 
 void SensorZHeight::reset()
 {
-    height_ = 2.0;
-    multiplier_ = 0.1;
+    multiplier_ = 0;
 }
 
 void SensorZHeight::home_task()
@@ -1390,7 +1394,7 @@ void SensorZHeight::home_task()
     enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F6000")); // middle
     enqueue_and_echo_commands_P(PSTR("M211 S0")); // disable soft-endstops
-    adjust_height();
+    send_data();
 
     pages.show_page(Page::ZHeightTuning, ShowOptions::None);
 }
@@ -1406,7 +1410,7 @@ void SensorZHeight::do_back_command()
 void SensorZHeight::do_save_command()
 {
     ADVString<10> command;
-    command << F("M851 Z") << height_;
+    command << F("M851 Z") << advi3pp.get_current_z_height();
     enqueue_and_echo_command(command.get());
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
     enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
@@ -1434,20 +1438,20 @@ void SensorZHeight::multiplier10_command()
 
 void SensorZHeight::minus()
 {
-    height_ -= multipliers_[multiplier_];
-    adjust_height();
+    adjust_height(-multipliers_[multiplier_]);
 }
 
 void SensorZHeight::plus()
 {
-    height_ += multipliers_[multiplier_];
-    adjust_height();
+    adjust_height(+multipliers_[multiplier_]);
 }
 
-void SensorZHeight::adjust_height()
+void SensorZHeight::adjust_height(double offset)
 {
+	volatile auto height = advi3pp.get_current_z_height();
+	auto new_height = height + offset;
     ADVString<10> command;
-    command << F("G1 Z") << height_ << F(" F1200");
+    command << F("G1 Z") << new_height << F(" F1200");
     enqueue_and_echo_command(command.get());
     send_data();
 }
@@ -1455,8 +1459,7 @@ void SensorZHeight::adjust_height()
 void SensorZHeight::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(height_ * 10)
-          << Uint16(multiplier_);
+    frame << Uint16(multiplier_);
     frame.send();
 }
 
