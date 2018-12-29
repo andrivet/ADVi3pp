@@ -396,10 +396,10 @@ Page Temperatures::do_prepare_page()
     return Page::Temperature;
 }
 
-void Temperatures::show(const WaitCallback& back, bool save_back)
+void Temperatures::show(const WaitCallback& back)
 {
     back_ = back;
-    Parent::show(save_back ? ShowOptions::SaveBack : ShowOptions::None);
+    Parent::show(ShowOptions::None);
 }
 
 void Temperatures::show(bool save_back)
@@ -1455,8 +1455,7 @@ void SensorZHeight::plus()
 
 void SensorZHeight::adjust_height(double offset)
 {
-	volatile auto height = advi3pp.get_current_z_height();
-	auto new_height = height + offset;
+	auto new_height = advi3pp.get_current_z_height() + offset;
     ADVString<10> command;
     command << F("G1 Z") << new_height << F(" F1200");
     enqueue_and_echo_command(command.get());
@@ -2073,11 +2072,7 @@ double PrintSettings::get_multiplier_value() const
 void PrintSettings::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(feedrate_percentage)
-          << Uint16(scale(fanSpeeds[0], 255, 100))
-          << Uint16(Temperature::degTargetHotend(0))
-          << Uint16(Temperature::degTargetBed())
-          << Uint16(static_cast<uint16_t>(multiplier_));
+    frame << Uint16(static_cast<uint16_t>(multiplier_));
     frame.send();
 }
 
@@ -2088,25 +2083,76 @@ Page PrintSettings::do_prepare_page()
     return Page::PrintSettings;
 }
 
-//! Save the printing settings.
-void PrintSettings::do_save_command()
+void PrintSettings::feedrate_minus_command()
 {
-    ReadRamData response{Variable::Value0, 5};
-    if(!response.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Print Settings)") << Log::endl();
+    if(feedrate_percentage <= 50)
         return;
-    }
 
-    Uint16 speed, fan, hotend, bed;
-    response >> speed >> hotend >> bed >> fan;
+    feedrate_percentage -= 1;
+}
 
-    feedrate_percentage = speed.word;
-    Temperature::setTargetHotend(hotend.word, 0);
-    Temperature::setTargetBed(bed.word);
-    fanSpeeds[0] = scale(fan.word, 100, 255);
+void PrintSettings::feedrate_plus_command()
+{
+    if(feedrate_percentage >= 150)
+        return;
 
-    Parent::do_save_command();
+    feedrate_percentage += 1;
+}
+
+void PrintSettings::fan_minus_command()
+{
+    auto speed = scale(fanSpeeds[0], 255, 100);
+    if(speed <= 0)
+        return;
+
+	speed = speed <= 5 ? 0 : speed - 5;
+    fanSpeeds[0] = scale(speed, 100, 255);
+}
+
+void PrintSettings::fan_plus_command()
+{
+    auto speed = scale(fanSpeeds[0], 255, 100);
+    if(speed >= 100)
+        return;
+
+    speed = speed >= 100 - 5 ? 100 : speed + 5;
+    fanSpeeds[0] = scale(speed, 100, 255);
+}
+
+void PrintSettings::hotend_minus_command()
+{
+    auto temperature = Temperature::degTargetHotend(0);
+    if(temperature <= 0)
+        return;
+
+    Temperature::setTargetHotend(temperature - 1, 0);
+}
+
+void PrintSettings::hotend_plus_command()
+{
+    auto temperature = Temperature::degTargetHotend(0);
+    if(temperature >= 300)
+        return;
+
+    Temperature::setTargetHotend(temperature + 1, 0);
+}
+
+void PrintSettings::bed_minus_command()
+{
+    auto temperature = Temperature::degTargetBed();
+    if(temperature <= 0)
+        return;
+
+    Temperature::setTargetBed(temperature - 1);
+}
+
+void PrintSettings::bed_plus_command()
+{
+    auto temperature = Temperature::degTargetBed();
+    if(temperature >= 180)
+        return;
+
+    Temperature::setTargetBed(temperature + 1);
 }
 
 void PrintSettings::baby_minus_command()
