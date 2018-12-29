@@ -232,7 +232,7 @@ private:
 
 struct Temperatures: Handler<Temperatures>
 {
-    void show(const WaitCallback& back, bool save_back = true);
+    void show(const WaitCallback& back);
     void show(bool save_back = true);
 
 private:
@@ -736,6 +736,14 @@ private:
 
 struct PrintSettings: Handler<PrintSettings>
 {
+    void feedrate_minus_command();
+    void feedrate_plus_command();
+    void fan_minus_command();
+    void fan_plus_command();
+    void hotend_minus_command();
+    void hotend_plus_command();
+    void bed_minus_command();
+    void bed_plus_command();
     void baby_minus_command();
     void baby_plus_command();
 
@@ -751,7 +759,6 @@ protected:
 
 private:
     Page do_prepare_page();
-    void do_save_command();
     void send_data() const;
     double get_multiplier_value() const;
 

@@ -133,6 +133,14 @@ enum class Action: uint16_t
     ZHeightMinus            = 0x060A,
     ZHeightPlus             = 0x060B,
     LCDBrightness           = 0x060C,
+    FeedrateMinus           = 0x060D,
+    FeedratePlus            = 0x060E,
+    FanMinus                = 0x060F,
+    FanPlus                 = 0x0610,
+    HotendMinus             = 0x0611,
+    HotendPlus              = 0x0612,
+    BedMinus                = 0x0613,
+    BedPlus                 = 0x0614,
 
     Undefined               = 0xFFFF
 };
