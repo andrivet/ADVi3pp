@@ -324,8 +324,9 @@ void ADVi3pp_::send_status_data(bool force_update)
           << Uint16(get_current_z_height(100))
           << Uint16(progress_bar_low)
           << Uint16(progress_var_high)
-          << 0_u16
-          << Uint16(probe_state);
+          << 0_u16 // TODO
+          << Uint16(probe_state)
+          << Uint16(feedrate_percentage);
     frame.send(false);
 
     if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
@@ -414,6 +415,14 @@ void ADVi3pp_::read_lcd_serial()
         case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_value)); break;
         case Action::BabyMinus:             print_settings.baby_minus_command(); break;
         case Action::BabyPlus:              print_settings.baby_plus_command(); break;
+        case Action::FeedrateMinus:         print_settings.feedrate_minus_command(); break;
+        case Action::FeedratePlus:          print_settings.feedrate_plus_command(); break;
+        case Action::FanMinus:              print_settings.fan_minus_command(); break;
+        case Action::FanPlus:               print_settings.fan_plus_command(); break;
+        case Action::HotendMinus:           print_settings.hotend_minus_command(); break;
+        case Action::HotendPlus:            print_settings.hotend_plus_command(); break;
+        case Action::BedMinus:              print_settings.bed_minus_command(); break;
+        case Action::BedPlus:               print_settings.bed_plus_command(); break;
         case Action::ZHeightMinus:          sensor_z_height.minus(); break;
         case Action::ZHeightPlus:           sensor_z_height.plus(); break;
 
