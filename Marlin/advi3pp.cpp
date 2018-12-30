@@ -329,6 +329,7 @@ void ADVi3pp_::send_status_data(bool force_update)
           << Uint16(feedrate_percentage);
     frame.send(false);
 
+    compute_progress();
     if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
     {
         frame.reset(Variable::Message);
@@ -514,7 +515,7 @@ void ADVi3pp_::reset_status()
 void ADVi3pp_::set_progress_name(const char* name)
 {
     progress_name_ = name;
-    progress_.reset();
+    progress_.reset().align(Alignment::Left);
     percent_ = -1;
     compute_progress();
 }
@@ -525,14 +526,17 @@ void ADVi3pp_::compute_progress()
     if(done == percent_)
         return;
 
-    progress_ = progress_name_ << " " << done << "%";
+    progress_ = progress_name_;
+	if(progress_.length() > 0)
+		progress_  << " " << done << "%";
+    progress_.align(Alignment::Left);
     percent_ = done;
 }
 
 void ADVi3pp_::reset_progress()
 {
     progress_name_.reset();
-    progress_.reset();
+    progress_.reset().align(Alignment::Left);
     percent_ = -1;
 }
 

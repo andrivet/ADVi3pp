@@ -46,7 +46,6 @@ enum class Variable: uint16_t
     Message                 = 0x0010,
     CenteredMessage         = 0x0028,
     Progress                = 0x0040,
-    FileName                = 0x0058,
 
     // 1 - Short Texts
     ShortText0              = 0x0100,

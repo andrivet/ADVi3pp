@@ -48,7 +48,7 @@ namespace advi3pp {
 
 const size_t message_length = 48;
 const size_t progress_name_length = 44;
-const size_t progress_percent_length = progress_name_length + 4;
+const size_t progress_percent_length = 48;
 const uint8_t sd_file_length = 26; // This is the maximum length handled by the SD layer (FILENAME_LENGTH)
 
 const uint16_t default_bed_temperature = 50;

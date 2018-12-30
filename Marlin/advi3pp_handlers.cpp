@@ -1238,10 +1238,6 @@ void SdCard::select_file_command(uint16_t file_index)
 
     advi3pp.set_progress_name(filename);
 
-    WriteRamDataRequest frame{Variable::FileName};
-    frame << ADVString<26>(filename);
-    frame.send(true);
-
     card.openFile(card.filename, true); // use always short filename so it will work even if the filename is long
     card.startFileprint();
     PrintCounter::start();
