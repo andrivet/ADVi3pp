@@ -538,22 +538,29 @@ struct SensorZHeight: Handler<SensorZHeight>
     void minus();
     void plus();
 
+    enum class Multiplier
+    {
+        M1 = 0,
+        M2 = 1,
+        M3 = 2
+    };
+
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_save_command();
     void do_back_command();
     void home_task();
-    void multiplier01_command();
-    void multiplier05_command();
-    void multiplier10_command();
+    void multiplier1_command();
+    void multiplier2_command();
+    void multiplier3_command();
+    double get_multiplier_value() const;
     void adjust_height(double offset);
     void send_data() const;
     void reset();
 
 private:
-    static const double multipliers_[3];
-    uint16_t multiplier_ = 0;
+    Multiplier multiplier_ = Multiplier::M1;
     friend Parent;
 };
 #else
@@ -749,9 +756,9 @@ struct PrintSettings: Handler<PrintSettings>
 
     enum class Multiplier
     {
-        M0_01 = 0,
-        M0_05 = 1,
-        M0_10 = 2
+        M1 = 0,
+        M2 = 1,
+        M3 = 2
     };
 
 protected:
@@ -763,7 +770,7 @@ private:
     double get_multiplier_value() const;
 
 private:
-    Multiplier multiplier_ = Multiplier::M0_01;
+    Multiplier multiplier_ = Multiplier::M1;
 
     friend Parent;
 };

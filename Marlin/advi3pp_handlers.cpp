@@ -73,7 +73,11 @@ namespace
         {200, 00, 0}
     };
 
+    const double PRINT_SETTINGS_MULTIPLIERS[] = {0.04, 0.08, 0.12};
+
 #ifdef ADVi3PP_PROBE
+    const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.04, 0.12, 1.0};
+
     const FlashChar* get_sensor_name(size_t index)
     {
         // Note: F macro can be used only in a function, this is why this is coded like this
@@ -1352,8 +1356,6 @@ void AdvancedPause::printing()
 
 #ifdef ADVi3PP_PROBE
 
-const double SensorZHeight::multipliers_[3] = {0.1, 0.5, 1.0};
-
 bool SensorZHeight::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1361,9 +1363,9 @@ bool SensorZHeight::do_dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::ZHeight01:       multiplier01_command(); break;
-        case KeyValue::ZHeight05:       multiplier05_command(); break;
-        case KeyValue::ZHeight10:       multiplier10_command(); break;
+        case KeyValue::Multiplier1:     multiplier1_command(); break;
+        case KeyValue::Multiplier2:     multiplier2_command(); break;
+        case KeyValue::Multiplier3:     multiplier3_command(); break;
         default:                        return false;
     }
 
@@ -1383,7 +1385,7 @@ Page SensorZHeight::do_prepare_page()
 
 void SensorZHeight::reset()
 {
-    multiplier_ = 0;
+    multiplier_ = Multiplier::M1;
 }
 
 void SensorZHeight::home_task()
@@ -1425,32 +1427,43 @@ void SensorZHeight::do_save_command()
     Parent::do_save_command();
 }
 
-void SensorZHeight::multiplier01_command()
+void SensorZHeight::multiplier1_command()
 {
-    multiplier_ = 0;
+    multiplier_ = Multiplier::M1;
     send_data();
 }
 
-void SensorZHeight::multiplier05_command()
+void SensorZHeight::multiplier2_command()
 {
-    multiplier_ = 1;
+    multiplier_ = Multiplier::M2;
     send_data();
 }
 
-void SensorZHeight::multiplier10_command()
+void SensorZHeight::multiplier3_command()
 {
-    multiplier_ = 2;
+    multiplier_ = Multiplier::M3;
     send_data();
 }
 
 void SensorZHeight::minus()
 {
-    adjust_height(-multipliers_[multiplier_]);
+    adjust_height(-get_multiplier_value());
 }
 
 void SensorZHeight::plus()
 {
-    adjust_height(+multipliers_[multiplier_]);
+    adjust_height(+get_multiplier_value());
+}
+
+double SensorZHeight::get_multiplier_value() const
+{
+    if(multiplier_ < Multiplier::M1 || multiplier_ > Multiplier::M3)
+    {
+        Log::error() << F("Invalid multiplier value: ") << static_cast<uint16_t >(multiplier_) << Log::endl();
+        return PRINT_SETTINGS_MULTIPLIERS[0];
+    }
+
+    return SENSOR_Z_HEIGHT_MULTIPLIERS[static_cast<uint16_t>(multiplier_)];
 }
 
 void SensorZHeight::adjust_height(double offset)
@@ -1465,7 +1478,7 @@ void SensorZHeight::adjust_height(double offset)
 void SensorZHeight::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(multiplier_);
+    frame << Uint16(static_cast<uint16_t>(multiplier_));
     frame.send();
 }
 
@@ -2045,9 +2058,9 @@ bool PrintSettings::do_dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::Baby001:     multiplier_ = Multiplier::M0_01; break;
-        case KeyValue::Baby005:     multiplier_ = Multiplier::M0_05; break;
-        case KeyValue::Baby010:     multiplier_ = Multiplier::M0_10; break;
+        case KeyValue::Baby1:       multiplier_ = Multiplier::M1; break;
+        case KeyValue::Baby2:       multiplier_ = Multiplier::M2; break;
+        case KeyValue::Baby3:       multiplier_ = Multiplier::M3; break;
         default:                    return false;
     }
 
@@ -2057,16 +2070,13 @@ bool PrintSettings::do_dispatch(KeyValue key_value)
 
 double PrintSettings::get_multiplier_value() const
 {
-    switch(multiplier_)
+    if(multiplier_ < Multiplier::M1 || multiplier_ > Multiplier::M3)
     {
-        case Multiplier::M0_01: return 0.01;
-        case Multiplier::M0_05: return 0.05;
-        case Multiplier::M0_10: return 0.10;
-        default: break;
+        Log::error() << F("Invalid multiplier value: ") << static_cast<uint16_t >(multiplier_) << Log::endl();
+        return PRINT_SETTINGS_MULTIPLIERS[0];
     }
 
-    Log::error() << F("Invalid multiplier value: ") << static_cast<uint16_t >(multiplier_) << Log::endl();
-    return 0.01;
+    return PRINT_SETTINGS_MULTIPLIERS[static_cast<uint16_t>(multiplier_)];
 }
 
 void PrintSettings::send_data() const

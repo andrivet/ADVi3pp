@@ -225,13 +225,13 @@ enum class KeyValue: uint16_t
     SensorDeploy            = 0x0003,
     SensorStow              = 0x0004,
 
-    ZHeight01               = 0x0001,
-    ZHeight05               = 0x0002,
-    ZHeight10               = 0x0003,
+    Multiplier1             = 0x0001,
+    Multiplier2             = 0x0002,
+    Multiplier3             = 0x0003,
 
-    Baby001                 = 0x0001,
-    Baby005                 = 0x0002,
-    Baby010                 = 0x0003,
+    Baby1                   = 0x0001,
+    Baby2                   = 0x0002,
+    Baby3                   = 0x0003,
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF
