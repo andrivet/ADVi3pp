@@ -62,6 +62,7 @@ struct ADVi3pp
     static void set_status(const FlashChar* message);
     static void set_status(const char* fmt, va_list& args);
     static void set_status(const FlashChar* fmt, va_list& args);
+    static void set_status_v(const FlashChar* fmt, ...);
     static void advanced_pause_show_message(AdvancedPauseMessage message);
     static void reset_status();
     static void buzz(long duration, uint16_t frequency = 0);
