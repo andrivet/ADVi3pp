@@ -403,7 +403,7 @@ Page Temperatures::do_prepare_page()
 void Temperatures::show(const WaitCallback& back)
 {
     back_ = back;
-    Parent::show(ShowOptions::None);
+    Parent::show(ShowOptions::SaveBack);
 }
 
 void Temperatures::show(bool save_back)
@@ -1694,12 +1694,14 @@ void PidTuning::step2_command()
                      << (kind_ == TemperatureKind::Hotend ? F(" E0 U1") : F(" E-1 U1"));
     enqueue_and_echo_command(auto_pid_command.get());
 
+    inTuning_ = true;
     temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
 }
 
 void PidTuning::cancel_pid()
 {
     ::wait_for_user = ::wait_for_heatup = false;
+    inTuning_ = false;
 }
 
 //! PID automatic tuning is finished.
@@ -1716,7 +1718,8 @@ void PidTuning::finished(bool success)
 
     advi3pp.reset_status();
     pid_settings.add_pid(kind_, temperature_);
-    bool inTuning = pages.get_current_page() == Page::PidTuning;
+    bool inTuning = inTuning_;
+    inTuning_ = false;
     pid_settings.show(inTuning ? ShowOptions::None : ShowOptions::SaveBack);
 }
 
@@ -2340,10 +2343,12 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
 
 	Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
 	           << F(" PID with temperature 0x") << temperature << F(" NOT found, update settings #0") << Log::endl();
-    // Temperature not found, so assign index 0, move PIDs and forget the last one
-    index_ = 0;
-    for(size_t i = 1; i < NB_PIDs; ++i)
+    // Temperature not found, so move PIDs and forget the last one, set index to 0 and update values
+    for(size_t i = NB_PIDs - 1; i > 0; --i)
         pid[i] = pid[i - 1];
+    index_ = 0;
+    pid[0].temperature_ = temperature;
+    get_current_pid();
 }
 
 void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
@@ -2431,6 +2436,13 @@ void PidSettings::do_save_command()
     Temperature::Kd = pid.Kd_;
 
     Parent::do_save_command();
+}
+
+void PidSettings::do_back_command()
+{
+    advi3pp.restore_settings();
+    pid_tuning.send_data();
+    Parent::do_back_command();
 }
 
 // --------------------------------------------------------------------

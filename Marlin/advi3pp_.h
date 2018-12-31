@@ -604,6 +604,7 @@ private:
 struct PidTuning: Handler<PidTuning>
 {
     void finished(bool success);
+    void send_data();
 
 private:
     bool do_dispatch(KeyValue value);
@@ -612,11 +613,11 @@ private:
     void cancel_pid();
     void hotend_command();
     void bed_command();
-    void send_data();
 
 private:
     uint16_t temperature_;
     TemperatureKind kind_;
+    bool inTuning_ = false;
 
     friend Parent;
 };
@@ -800,6 +801,7 @@ private:
     void do_reset();
     uint16_t do_size_of() const;
     void do_save_command();
+    void do_back_command();
     void hotend_command();
     void bed_command();
     void previous_command();
