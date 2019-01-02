@@ -267,6 +267,7 @@
 #include "types.h"
 #include "parser.h"
 #include "advi3pp.h" // @advi3++
+#include "advi3pp_log.h"
 
 // @advi3++: This is only to ensure that Jetbrains CLion is parsing code properly inside the IDE
 #ifdef __CLION_IDE__
@@ -885,6 +886,8 @@ bool enqueue_and_echo_command(const char* cmd) {
     SERIAL_EOL();
     return true;
   }
+  // @advi3++: Makes debugging easier
+  advi3pp::Log::error() << F("Command was not queued: ") << cmd << advi3pp::Log::endl();
   return false;
 }
 
