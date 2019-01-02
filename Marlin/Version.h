@@ -35,11 +35,13 @@
 
 #else
 
-  // @advi3++: Change the name depending if BLTouch support is enabled or not
+  // @advi3++: Change the name depending of the model of the printer
   #if defined(ADVi3PP_BLTOUCH)
   #define ADVi3PP_NAME "ADVi3++BLTouch"
   #elif defined(ADVi3PP_MARK2)
-#define ADVi3PP_NAME "ADVi3++MarkII"
+  #define ADVi3PP_NAME "ADVi3++MarkII"
+  #elif defined(ADVi3PP_HE180021)
+  #define ADVi3PP_NAME "ADVi3++HE180021"
   #else
   #define ADVi3PP_NAME "ADVi3++"
   #endif

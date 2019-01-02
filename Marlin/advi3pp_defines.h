@@ -31,9 +31,12 @@
 // If for whatever reason, you prefer to use Arduino IDE, uncomment the following line to build a BLTouch release.
 // #define ADVi3PP_BLTOUCH
 
-// In a similar way, uncomment the following line to build a BLTouch release.
+// In a similar way, uncomment the following line to build a Mark II release.
 // #define ADVi3PP_MARK2
 
+// In a similar way, uncomment the following line to build a Aldi UK Balco 2018 release
+// WARNING: For HE180021 models only (2018). For the 2017 models, do not use any #define
+// #define ADVi3PP_HE180021
 
 #ifdef DEBUG
 

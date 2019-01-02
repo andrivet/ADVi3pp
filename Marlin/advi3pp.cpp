@@ -252,6 +252,8 @@ void ADVi3pp_::init()
     Log::log() << F("This is a BLTouch build") << Log::endl();
 #elif defined(ADVi3PP_MARK2)
     Log::log() << F("This is a Mark II build") << Log::endl();
+#elif defined(ADVi3PP_HE180021)
+    Log::log() << F("This is a Aldi UK Balco HE180021 build") << Log::endl();
 #endif
 
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
