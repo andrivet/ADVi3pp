@@ -43,6 +43,10 @@ enum class Variable: uint16_t
     ZHeight                 = 0x0005,
     ProgressLow             = 0x0006,
     ProgressHigh            = 0x0007,
+    ZLayer                  = 0x0008,
+    SensorActive            = 0x0009,
+    Feedrate                = 0x000A,
+    Babysteps               = 0x000B,
     Message                 = 0x0010,
     CenteredMessage         = 0x0028,
     Progress                = 0x0040,
@@ -157,6 +161,7 @@ enum class KeyValue: uint16_t
     Infos                   = 0x0005,
     Motors                  = 0x0006,
     Leveling                = 0x0007,
+    PrintSettings           = 0x0008,
 
     PrintStop               = 0x0001,
     PrintPauseResume        = 0x0002,

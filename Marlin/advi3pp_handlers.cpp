@@ -271,6 +271,7 @@ bool Screens::do_dispatch(KeyValue key_value)
         case KeyValue::Infos:           pages.show_page(Page::Infos); break;
         case KeyValue::Motors:          pages.show_page(Page::MotorsSettings); break;
         case KeyValue::Leveling:        pages.show_page(Page::Leveling); break;
+        case KeyValue::PrintSettings:   show_print_settings(); break;
         case KeyValue::Back:            back_command(); break;
         default:                        return false;
     }
@@ -290,6 +291,18 @@ void Screens::show_temps()
 
     // If there is a print running (or paused), display the print screen.
     pages.show_page(Page::Print);
+}
+
+void Screens::show_print_settings()
+{
+    if(!PrintCounter::isRunning() && !PrintCounter::isPaused())
+    {
+        temperatures.show();
+        return;
+    }
+
+    // If there is a print running (or paused), display the print settings.
+    print_settings.show(ShowOptions::SaveBack);
 }
 
 //! Show one of the Printing screens depending of the context:
@@ -2166,14 +2179,14 @@ void PrintSettings::bed_plus_command()
 
 void PrintSettings::baby_minus_command()
 {
-    ADVString<20> auto_pid_command; auto_pid_command << F("M290 Z-") << get_multiplier_value();
-    enqueue_and_echo_command(auto_pid_command.get());
+    auto distance = static_cast<int16_t>(-get_multiplier_value() * planner.axis_steps_per_mm[Z_AXIS]);
+	Temperature::babystep_axis(Z_AXIS, distance);
 }
 
 void PrintSettings::baby_plus_command()
 {
-    ADVString<20> auto_pid_command; auto_pid_command << F("M290 Z") << get_multiplier_value();
-    enqueue_and_echo_command(auto_pid_command.get());
+    auto distance = static_cast<int16_t>(get_multiplier_value() * planner.axis_steps_per_mm[Z_AXIS]);
+    Temperature::babystep_axis(Z_AXIS, distance);
 }
 
 // --------------------------------------------------------------------
