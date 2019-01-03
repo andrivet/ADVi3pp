@@ -116,17 +116,17 @@ namespace
     };
 #endif
 
-    const uint8_t diagnosis_pins[] =
+    const uint8_t diagnosis_digital_pins[] =
     {
-        54,     // PF0 / A0
+        54,     // PF0 / ADC0 - A0
         24,     // PA2 / AD2
         23,     // PA1 / AD1
-         6,     // PH3 / PWM6
-         2,     // PE4 / PWM2
+         6,     // PH3 / OC4A
+         2,     // PE4 / OC3B
         25,     // PA3 / AD3
 
         40,     // PG1 / !RD
-        56,     // PF2 / A2
+        56,     // PF2 / ADC2 - A2
         36,     // PC1 / A9
         37,     // PC0 / A8
 
@@ -135,6 +135,8 @@ namespace
         32,     // PC5 / A13
         33,     // PC4 / A12
     };
+
+    const uint8_t diagnosis_analog_pins[] = {55, 68, 54, 56}; // A1, A14, A0, A2
 }
 
 namespace advi3pp {
@@ -1771,13 +1773,14 @@ Page LinearAdvanceTuning::do_prepare_page()
 
 Page Diagnosis::do_prepare_page()
 {
-    task.set_background_task(BackgroundTask{this, &Diagnosis::send_data});
+    task.set_background_task(BackgroundTask{this, &Diagnosis::send_data}, 250);
     return Page::Diagnosis;
 }
 
 void Diagnosis::do_back_command()
 {
     task.clear_background_task();
+    Parent::do_back_command();
 }
 
 Diagnosis::State Diagnosis::get_pin_state(uint8_t pin)
@@ -1802,11 +1805,18 @@ void Diagnosis::send_data()
 {
     WriteRamDataRequest request{Variable::Value0};
 
-    for(size_t i = 0; i < adv::count_of(diagnosis_pins); ++i)
+    for(size_t i = 0; i < adv::count_of(diagnosis_digital_pins); ++i)
     {
         request.reset(static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + i));
-        request << Uint16{static_cast<uint8_t>(get_pin_state(diagnosis_pins[i]))};
-        request.send();
+        request << Uint16{static_cast<uint16_t>(get_pin_state(diagnosis_digital_pins[i]))};
+        request.send(false);
+    }
+
+    for(size_t i = 0; i < adv::count_of(diagnosis_analog_pins); ++i)
+    {
+        request.reset(static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + 0x20 + i));
+        request << Uint16{static_cast<uint16_t>(analogRead(diagnosis_analog_pins[i]))};
+        request.send(false);
     }
 }
 
