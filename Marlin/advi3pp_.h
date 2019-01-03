@@ -641,8 +641,12 @@ private:
 
 struct Diagnosis: Handler<Diagnosis>
 {
+    enum class State { Off = 0, On = 1, Output = 2};
 private:
     Page do_prepare_page();
+    void do_back_command();
+    State get_pin_state(uint8_t pin);
+    void send_data();
 
     friend Parent;
 };

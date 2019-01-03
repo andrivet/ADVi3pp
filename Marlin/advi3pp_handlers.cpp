@@ -116,6 +116,25 @@ namespace
     };
 #endif
 
+    const uint8_t diagnosis_pins[] =
+    {
+        54,     // PF0 / A0
+        24,     // PA2 / AD2
+        23,     // PA1 / AD1
+         6,     // PH3 / PWM6
+         2,     // PE4 / PWM2
+        25,     // PA3 / AD3
+
+        40,     // PG1 / !RD
+        56,     // PF2 / A2
+        36,     // PC1 / A9
+        37,     // PC0 / A8
+
+        34,     // PC3 / A11
+        35,     // PC2 / A10
+        32,     // PC5 / A13
+        33,     // PC4 / A12
+    };
 }
 
 namespace advi3pp {
@@ -1752,9 +1771,44 @@ Page LinearAdvanceTuning::do_prepare_page()
 
 Page Diagnosis::do_prepare_page()
 {
+    task.set_background_task(BackgroundTask{this, &Diagnosis::send_data});
     return Page::Diagnosis;
 }
 
+void Diagnosis::do_back_command()
+{
+    task.clear_background_task();
+}
+
+Diagnosis::State Diagnosis::get_pin_state(uint8_t pin)
+{
+    uint8_t mask = digitalPinToBitMask(pin);
+    uint8_t port = digitalPinToPort(pin);
+    if(port == NOT_A_PIN)
+        return State::Off;
+
+    volatile uint8_t* reg = portModeRegister(port);
+    if(*reg & mask)
+        return State::Output;
+
+    uint8_t timer = digitalPinToTimer(pin);
+    if(timer != NOT_ON_TIMER)
+        return State::Output;
+
+    return (*portInputRegister(port) & mask) ? State::On : State::Off;
+}
+
+void Diagnosis::send_data()
+{
+    WriteRamDataRequest request{Variable::Value0};
+
+    for(size_t i = 0; i < adv::count_of(diagnosis_pins); ++i)
+    {
+        request.reset(static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + i));
+        request << Uint16{static_cast<uint8_t>(get_pin_state(diagnosis_pins[i]))};
+        request.send();
+    }
+}
 
 // --------------------------------------------------------------------
 // Sensor Settings
