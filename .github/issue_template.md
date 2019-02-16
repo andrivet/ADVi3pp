@@ -4,7 +4,8 @@ Please be sure to review our [code of conduct](code_of_conduct.md) and the check
 
 **It is mandatory**. If you do not comply with these rules, I will **delete** your issue.
 
-- [ ] This issue is **NOT** about support. **This is not the right place to ask for support**. You **may** get support from the [ADVI3++ Facebook page](https://www.facebook.com/advi3pp/). You can get support from the developer of ADVi3++ from its [Patreon page](https://www.patreon.com/andrivet).
+- [ ] This issue is **NOT** about support. **This is not the right place to ask for support**. You **may** get support from the [ADVI3++ Facebook page](https://www.facebook.com/advi3pp/) by the community. 
+You can get support from the developer of ADVi3++ from its [Patreon page](https://www.patreon.com/andrivet).
 
 ------------------------------------------------------------
 ### Feature Request

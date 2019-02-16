@@ -159,7 +159,7 @@ void check_print_job_recovery() {
         #endif
 
         dtostrf(job_recovery_info.current_position[Z_AXIS] + 2, 1, 3, str_1);
-        dtostrf(job_recovery_info.current_position[E_AXIS]
+        dtostrf(job_recovery_info.current_position[E_CART]
           #if ENABLED(SAVE_EACH_CMD_MODE)
             - 5
           #endif
@@ -276,7 +276,7 @@ void save_job_recovery_info() {
 
     // If power-loss pin was triggered, write just once then kill
     #if PIN_EXISTS(POWER_LOSS)
-      if (READ(POWER_LOSS_PIN) == POWER_LOSS_STATE) kill(MSG_POWER_LOSS_RECOVERY);
+      if (READ(POWER_LOSS_PIN) == POWER_LOSS_STATE) kill(PSTR(MSG_POWER_LOSS_RECOVERY));
     #endif
   }
 }

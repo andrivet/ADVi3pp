@@ -83,6 +83,13 @@
 // example_configurations/SCARA and customize for your machine.
 //
 
+//===========================================================================
+//============================= HANGPRINTER =================================
+//===========================================================================
+// For a Hangprinter start with the configuration file in the
+// example_configurations/hangprinter directory and customize for your machine.
+//
+
 // @section info
 
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
@@ -223,11 +230,11 @@
 
 /**
  * "Mixing Extruder"
- *   - Adds a new code, M165, to set the current mix factors.
+ *   - Adds G-codes M163 and M164 to set and "commit" the current mix factors.
  *   - Extends the stepping routines to move multiple steppers in proportion to the mix.
- *   - Optional support for Repetier Firmware M163, M164, and virtual extruder.
- *   - This implementation supports only a single extruder.
- *   - Enable DIRECT_MIXING_IN_G1 for Pia Taubert's reference implementation
+ *   - Optional support for Repetier Firmware's 'M164 S<index>' supporting virtual tools.
+ *   - This implementation supports up to two mixing extruders.
+ *   - Enable DIRECT_MIXING_IN_G1 for M165 and mixing in G1 (from Pia Taubert's reference implementation).
  */
 //#define MIXING_EXTRUDER
 #if ENABLED(MIXING_EXTRUDER)
@@ -366,12 +373,12 @@
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 300
+#define HEATER_0_MAXTEMP 300 // @advi3++
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
 #define HEATER_3_MAXTEMP 275
 #define HEATER_4_MAXTEMP 275
-#define BED_MAXTEMP 180
+#define BED_MAXTEMP 180 // @advi3++
 
 //===========================================================================
 //============================= PID Settings ================================
@@ -741,6 +748,7 @@
  * disastrous consequences. Use with caution and do your homework.
  *
  */
+//#define Z_MIN_PROBE_ENDSTOP
 
 /**
  * Probe Type
@@ -1185,6 +1193,7 @@
 
 #if ENABLED(LEVEL_BED_CORNERS)
   #define LEVEL_CORNERS_INSET 30    // (mm) An inset for corner leveling
+  #define LEVEL_CORNERS_Z_HOP  4.0  // (mm) Move nozzle up before moving between corners
   //#define LEVEL_CENTER_TOO        // Move to the center after the last corner
 #endif
 
@@ -1229,8 +1238,8 @@
 #endif
 
 // Homing speeds (mm/m)
-#define HOMING_FEEDRATE_XY 6000
-#define HOMING_FEEDRATE_Z  1200
+#define HOMING_FEEDRATE_XY 6000 // @advi3++
+#define HOMING_FEEDRATE_Z  1200 // @advi3++
 
 // @section calibrate
 
@@ -2019,9 +2028,7 @@
 // If the servo can't reach the requested position, increase it.
 #define SERVO_DELAY { 300 }
 
-// Servo deactivation
-//
-// With this option servos are powered only during movement, then turned off to prevent jitter.
+// Only power servos during movement, otherwise leave off to prevent jitter
 //#define DEACTIVATE_SERVOS_AFTER_MOVE
 
 #endif // CONFIGURATION_H
