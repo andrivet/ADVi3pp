@@ -142,7 +142,7 @@
 // @advi3++: Wanhao Duplicator i3 Plus or Mark II motherboard
 #if defined(ADVi3PP_MARK2)
 #define MOTHERBOARD BOARD_I3_PLUS_MARK2
-#elid defined(ADVi3PP_HE180021)
+#elif defined(ADVi3PP_HE180021)
 #define MOTHERBOARD BOARD_I3_PLUS_HE180021
 #else
 #define MOTHERBOARD BOARD_I3_PLUS
