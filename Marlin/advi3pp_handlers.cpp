@@ -108,8 +108,8 @@ namespace
         {     0,     0,     0 }     // Custom
 #elif defined(ADVi3PP_BLTOUCH)
         { -2800, -4000,  -154 },    // ADVi3++ Left Side
-        { -2450, -4000,  -270 },    // Teaching Tech L. Side
-        {   950, -3600,  -172 },    // Teaching Tech Front
+        { -2400, -3800,  -270 },    // Teaching Tech L. Side
+        {  1000, -3800,  -172 },    // Teaching Tech Front
         {     0,  6000,     0 },    // Mark II
         {     0,     0,     0 }     // Custom
 #endif
