@@ -10,13 +10,13 @@
 
 Working on **ADVi3++** takes a lot of time and effort. I make my best to release good quality software, useful and precise documents. I track bugs reported by users and replies to help requests. I invest also time and money to implement new hardware features.
 
-If you like what I am doing, [**please consider supporting me as a supporter on sther**]https://www.sther.co/andrivet) so I can continue and develop new releases and new documents. Supporting this project is a guaranty for you that it will continue and become better and better.
+If you like what I am doing, please consider supporting me as a supporter [on **sther**](https://www.sther.co/andrivet) so I can continue and develop new releases and new documents. Supporting this project is a guaranty for you that it will continue and become better and better.
 
 ## Objectives
 
 The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
 
-* Based on the latest version of Marlin available (currently: 1.1.8)
+* Based on the latest version of Marlin available (currently: 1.1.9 + post 1.1.9 fixes)
 * As few modifications of the Marlin code as possible. The goal is to be able to port **ADVi3++** to new versions of Marlin with only a few effort.
 * Fully open source code. Unfortunately, even if it is required by the GPL, Wanhao has not released the source code of their latest Marlin-based firmwares.
 * Object-oriented code with as few hard-coded values as possible. For example, instead of constructing a frame by hand, use instances of classes that know how to construct themselves.
