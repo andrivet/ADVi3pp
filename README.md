@@ -6,7 +6,7 @@
 
 ## Become a Sponsor of this Project
 
-![sther](https://user-images.githubusercontent.com/981049/52916591-da1ee900-32e1-11e9-9112-5bb292d7cb79.png)
+![sther](https://user-images.githubusercontent.com/981049/52916637-66311080-32e2-11e9-92e8-0523b9e15ef6.png)
 
 Working on **ADVi3++** takes a lot of time and effort. I make my best to release good quality software, useful and precise documents. I track bugs reported by users and replies to help requests. I invest also time and money to implement new hardware features.
 
