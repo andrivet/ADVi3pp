@@ -6,11 +6,11 @@
 
 ## Become a Sponsor of this Project
 
-[![sther](https://user-images.githubusercontent.com/981049/52916637-66311080-32e2-11e9-92e8-0523b9e15ef6.png)](https://www.sther.co/andrivet)
+[![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=6504486)
 
 Working on **ADVi3++** takes a lot of time and effort. I make my best to release good quality software, useful and precise documents. I track bugs reported by users and replies to help requests. I invest also time and money to implement new hardware features.
 
-If you like what I am doing, please consider supporting me as a supporter [on **sther**](https://www.sther.co/andrivet) so I can continue and develop new releases and new documents. Supporting this project is a guaranty for you that it will continue and become better and better.
+If you like what I am doing, please consider supporting me as a supporter on [**Patreon**](https://www.patreon.com/bePatron?u=6504486) so I can continue and develop new releases and new documents. Supporting this project is a guaranty for you that it will continue and become better and better.
 
 ## Objectives
 
