@@ -712,7 +712,7 @@ void Preheat::do_save_command()
     command = F("M140 S"); command << preset.bed;
     enqueue_and_echo_command(command.get());
 
-    command = F("M106 S"); command << preset.fan;
+    command = F("M106 S"); command << scale(preset.fan, 100, 255);
     enqueue_and_echo_command(command.get());
 
     advi3pp.save_settings();
