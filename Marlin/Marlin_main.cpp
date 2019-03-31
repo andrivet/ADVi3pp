@@ -3609,6 +3609,7 @@ inline void gcode_G4() {
   if (!lcd_hasstatus()) LCD_MESSAGEPGM(MSG_DWELL);
 
   dwell(dwell_ms);
+  lcd_reset_status(); // @advi3++: Reset message after G4 (otherwise, stay on screen)
 }
 
 #if ENABLED(BEZIER_CURVE_SUPPORT)
