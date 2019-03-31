@@ -36,6 +36,7 @@
 #pragma message "This is a BLTouch build"
 #elif defined(ADVi3PP_MARK2)
 #pragma message "This is a Mark II build"
+#endif
 
 #if defined(ADVi3PP_HE180021)
 #pragma message "This is a Aldi UK Balco HE180021 build"
