@@ -486,6 +486,14 @@
   #define BLTOUCH_STOW      90
   #define BLTOUCH_SELFTEST 120
   #define BLTOUCH_RESET    160
+
+  // @advi3++: Back port of BLTouch Smart V3 support
+  #if ENABLED(BLTOUCH_V3)
+    #define BLTOUCH_SW_MODE   60
+    #define BLTOUCH_5V_MODE  140
+    #define BLTOUCH_OD_MODE  150
+  #endif
+
   #define _TEST_BLTOUCH(P) (READ(P##_PIN) != P##_ENDSTOP_INVERTING)
 
   // Always disable probe pin inverting for BLTouch

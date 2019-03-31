@@ -788,9 +788,25 @@
 #define BLTOUCH
 #endif
 
+// @advi3++: BLTouch V3.0 and newer smart series. Backport from Marlin 2
+#ifdef ADVi3PP_BLTOUCH3
+#define BLTOUCH_V3
+#endif
+
 #if ENABLED(BLTOUCH)
 // @advi3++: Set delay for BLTouch
   #define BLTOUCH_DELAY 100   // (ms) Enable and increase if needed
+
+  /**
+   * BLTouch V3.0 and newer smart series
+   * For genuine BLTouch 3.0 sensors. Clones may be confused by 3.0 command angles. YMMV.
+   * If the pin trigger is not detected, first try swapping the black and white wires then toggle this.
+   */
+   //#define BLTOUCH_V3
+   #if ENABLED(BLTOUCH_V3)
+     //#define BLTOUCH_FORCE_5V_MODE
+     //#define BLTOUCH_FORCE_OPEN_DRAIN_MODE
+   #endif
 #endif
 
 /**
