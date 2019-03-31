@@ -790,6 +790,8 @@
 
 // @advi3++: BLTouch V3.0 and newer smart series. Backport from Marlin 2
 #ifdef ADVi3PP_BLTOUCH3
+#define ADVi3PP_BLTOUCH
+#define BLTOUCH
 #define BLTOUCH_V3
 #endif
 

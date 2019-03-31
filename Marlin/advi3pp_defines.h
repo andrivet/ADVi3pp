@@ -53,7 +53,7 @@
 // Do not modify the following definitions
 // ---------------------------------------------------------------------------
 
-#if defined(ADVi3PP_BLTOUCH) || defined(ADVi3PP_MARK2)
+#if defined(ADVi3PP_BLTOUCH) || defined(ADVi3PP_BLTOUCH3) || defined(ADVi3PP_MARK2)
 #define ADVi3PP_PROBE
 #endif
 
