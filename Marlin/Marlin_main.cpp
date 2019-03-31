@@ -608,13 +608,7 @@ uint8_t target_extruder;
 #endif
 
 #if HAS_POWER_SWITCH
-  bool powersupply_on = (
-    #if ENABLED(PS_DEFAULT_OFF)
-      false
-    #else
-      true
-    #endif
-  );
+  bool powersupply_on;
   #if ENABLED(AUTO_POWER_CONTROL)
     #define PSU_ON()  powerManager.power_on()
     #define PSU_OFF() powerManager.power_off()
@@ -952,9 +946,9 @@ void setup_powerhold() {
   #endif
   #if HAS_POWER_SWITCH
     #if ENABLED(PS_DEFAULT_OFF)
-      PSU_OFF();
+      powersupply_on = true;  PSU_OFF();
     #else
-      PSU_ON();
+      powersupply_on = false; PSU_ON();
     #endif
   #endif
 }
@@ -15359,8 +15353,6 @@ void loop() {
 
     card.checkautostart();
 
-    // @advi3++: ADVi3++ is like a ULTIPANEL
-    #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
       if (card.abort_sd_printing) {
         card.stopSDPrint(
           #if SD_RESORT
@@ -15379,7 +15371,6 @@ void loop() {
           card.removeJobRecoveryFile();
         #endif
       }
-    #endif
 
   #endif // SDSUPPORT
 
