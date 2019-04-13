@@ -725,6 +725,7 @@ void Preheat::cooldown_command()
     Log::log() << F("Cooldown") << Log::endl();
     advi3pp.reset_status();
     Temperature::disable_all_heaters();
+    enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn off fan
 }
 
 
@@ -1441,8 +1442,8 @@ void SensorZHeight::home_task()
 void SensorZHeight::do_back_command()
 {
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
-    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // homing
+    enqueue_and_echo_commands_P(PSTR("G28 Z F1200"));  // since we have reset the offset, Z-home
+    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // XY-homing
     Parent::do_back_command();
 }
 
