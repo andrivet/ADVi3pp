@@ -972,11 +972,11 @@
 #define Y_BED_SIZE 200
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
-// @advi3++: The bed dimensions of Wanhao i3 Plus is 200x200x180
-#define X_MIN_POS 0
+// @advi3++: The bed dimensions of Wanhao i3 Plus is 200x200x180, X offset is -6.5
+#define X_MIN_POS -6.5
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
-#define X_MAX_POS X_BED_SIZE
+#define X_MAX_POS X_MIN_POS + X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
 #define Z_MAX_POS 180
 
