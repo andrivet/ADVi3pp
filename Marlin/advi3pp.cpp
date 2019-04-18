@@ -144,12 +144,12 @@ void ADVi3pp_::show_boot_page()
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void ADVi3pp_::send_gplv3_7b_notice()
 {
-    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2018 Sebastien Andrivet");
+    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2019 Sebastien Andrivet");
 }
 
 void ADVi3pp_::send_sponsors()
 {
-    SERIAL_ECHOLNPGM("Sponsored by Johnathan Chamberlain, Gavin Smith, Sawtoothsquid, JeremyThePrintr, K-D Byrne, RonnieL");
+    SERIAL_ECHOLNPGM("Sponsored by Gavin Smith, Sawtoothsquid, Darren Williams, JeremyThePrintr, RonnieL, Austin Farley");
 }
 
 //! Store presets in permanent memory.
