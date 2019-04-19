@@ -2103,8 +2103,8 @@ void clean_up_after_endstop_or_probe_move() {
 
       // @advi3++: Back port of BLTouch Smart V3 support
       #if ENABLED(BLTOUCH_V3)
-        #if EITHER(BLTOUCH_FORCE_5V_MODE, ENDSTOPPULLUPS) \
-            || ALL(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN, ENDSTOPPULLUP_ZMIN) \
+        #if (ENABLED(BLTOUCH_FORCE_5V_MODE) || ENABLED(ENDSTOPPULLUPS)) \
+            || (ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN) && ENABLED(ENDSTOPPULLUP_ZMIN)) \
             || (USES_Z_MIN_PROBE_ENDSTOP && ENABLED(ENDSTOPPULLUP_ZMIN_PROBE))
              bltouch_command(BLTOUCH_5V_MODE);  // Assume 5V DC logic level if endstop pullup resistors are enabled
            #else
