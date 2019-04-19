@@ -67,7 +67,7 @@ struct Preset
 };
 
 //! Position of a sensor.
-struct SensorPosition { int16_t x, y, z; };
+struct SensorPosition { int16_t x, y; };
 
 // --------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ inline int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { r
 struct EepromWrite
 {
     EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    template <typename T> void write(T& data);
+    template <typename T> void write(const T& data);
 
 private:
     eeprom_write write_;
@@ -110,7 +110,7 @@ inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t&
 }
 
 template <typename T>
-inline void EepromWrite::write(T& data)
+inline void EepromWrite::write(const T& data)
 {
     write_(eeprom_index_, reinterpret_cast<const uint8_t*>(&data), sizeof(T), &working_crc_);
 }
@@ -666,7 +666,6 @@ struct SensorSettings: Handler<SensorSettings>
 
     double x_probe_offset_from_extruder() const;
     double y_probe_offset_from_extruder() const;
-    double z_probe_offset_from_extruder() const;
 
 private:
     bool do_dispatch(KeyValue value);
@@ -1124,11 +1123,11 @@ struct ADVi3pp_
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 
     double get_current_z_height(int multiply = 1) const;
+    void set_current_z_height(double z);
 
 #ifdef ADVi3PP_PROBE
     double x_probe_offset_from_extruder() const;
     double y_probe_offset_from_extruder() const;
-    double z_probe_offset_from_extruder() const;
 #endif
 
 private:

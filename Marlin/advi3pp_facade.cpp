@@ -194,10 +194,6 @@ double ADVi3pp::y_probe_offset_from_extruder()
     return advi3pp.y_probe_offset_from_extruder();
 }
 
-double ADVi3pp::z_probe_offset_from_extruder()
-{
-    return advi3pp.z_probe_offset_from_extruder();
-}
 #endif
 
 // --------------------------------------------------------------------

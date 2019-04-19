@@ -102,19 +102,19 @@ namespace
     const advi3pp::SensorPosition DEFAULT_SENSOR_POSITION[advi3pp::SensorSettings::NB_SENSOR_POSITIONS] =
     {
 #if defined(ADVi3PP_MARK2)
-        {     0,  6000,     0 },    // Mark II
-        { -2800, -4000,  -154 },    // ADVi3++ Left Side
-        {     0, -3890,  -154 },    // Baseggio Front
-        { -2400, -3800,  -270 },    // Teaching Tech L. Side
-        {   950, -3600,  -172 },    // Teaching Tech Front
-        {     0,     0,     0 }     // Custom
+        {     0,  6000 },    // Mark II
+        { -2800, -4000 },    // ADVi3++ Left Side
+        {     0, -3890 },    // Baseggio Front
+        { -2400, -3800 },    // Teaching Tech L. Side
+        {   950, -3600 },    // Teaching Tech Front
+        {     0,     0 }     // Custom
 #elif defined(ADVi3PP_BLTOUCH)
-        { -2800, -4000,  -154 },    // ADVi3++ Left Side
-        {     0, -3890,  -154 },    // Baseggio Front
-        { -2400, -3800,  -270 },    // Teaching Tech L. Side
-        {  1000, -3800,  -172 },    // Teaching Tech Front
-        {     0,  6000,     0 },    // Mark II
-        {     0,     0,     0 }     // Custom
+        { -2800, -4000 },    // ADVi3++ Left Side
+        {     0, -3890 },    // Baseggio Front
+        { -2400, -3800 },    // Teaching Tech L. Side
+        {  1000, -3800 },    // Teaching Tech Front
+        {     0,  6000 },    // Mark II
+        {     0,     0 }     // Custom
 #endif
     };
 #endif
@@ -1410,7 +1410,7 @@ Page SensorZHeight::do_prepare_page()
 {
     pages.save_forward_page();
 
-    enqueue_and_echo_commands_P((PSTR("M851 Z0"))); // reset offset
+    zprobe_zoffset = 0; // reset offset
     wait.show(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28 F6000")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
@@ -1452,9 +1452,7 @@ void SensorZHeight::do_back_command()
 
 void SensorZHeight::do_save_command()
 {
-    ADVString<10> command;
-    command << F("M851 Z") << advi3pp.get_current_z_height();
-    enqueue_and_echo_command(command.get());
+    zprobe_zoffset = advi3pp.get_current_z_height();
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
     enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // homing
@@ -1870,7 +1868,6 @@ void SensorSettings::do_write(EepromWrite& eeprom) const
     {
         eeprom.write(positions_[i].x);
         eeprom.write(positions_[i].y);
-        eeprom.write(positions_[i].z);
     }
 }
 
@@ -1881,7 +1878,6 @@ void SensorSettings::do_read(EepromRead& eeprom)
     {
         eeprom.read(positions_[i].x);
         eeprom.read(positions_[i].y);
-        eeprom.read(positions_[i].z);
     }
 }
 
@@ -1920,7 +1916,7 @@ void SensorSettings::send_data() const
     ADVString<32> title{get_sensor_name(index_)};
 
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(positions_[index_].x) << Uint16(positions_[index_].y) << Uint16(positions_[index_].z);
+    frame << Uint16(positions_[index_].x) << Uint16(positions_[index_].y) << Uint16(zprobe_zoffset * 100);
     frame.send();
 
     frame.reset(Variable::LongTextCentered0);
@@ -1942,7 +1938,7 @@ void SensorSettings::get_data()
 
     positions_[index_].x = x.word;
     positions_[index_].y = y.word;
-    positions_[index_].z = z.word;
+    zprobe_zoffset = z.word / 100.0;
 }
 
 double SensorSettings::x_probe_offset_from_extruder() const
@@ -1953,11 +1949,6 @@ double SensorSettings::x_probe_offset_from_extruder() const
 double SensorSettings::y_probe_offset_from_extruder() const
 {
     return positions_[index_].y / 100.0;
-}
-
-double SensorSettings::z_probe_offset_from_extruder() const
-{
-    return positions_[index_].z / 100.0;
 }
 
 #else

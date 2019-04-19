@@ -149,7 +149,7 @@ void ADVi3pp_::send_gplv3_7b_notice()
 
 void ADVi3pp_::send_sponsors()
 {
-    SERIAL_ECHOLNPGM("Sponsored by Gavin Smith, Sawtoothsquid, Darren Williams, JeremyThePrintr, RonnieL, Austin Farley");
+    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar, Sawtoothsquid, Darren Williams, JeremyThePrintr, RonnieL, Austin Farley");
 }
 
 //! Store presets in permanent memory.
@@ -203,7 +203,7 @@ uint16_t ADVi3pp_::size_of() const
 {
     return
         preheat.size_of() +
-       sensor_settings.size_of() +
+        sensor_settings.size_of() +
         pid_settings.size_of() +
         sizeof(features_) +
         sizeof(usb_baudrate_);
@@ -299,6 +299,11 @@ double ADVi3pp_::get_current_z_height(int multiply) const
 	if(multiply != 1)
 		return round(height);
 	return height;
+}
+
+void ADVi3pp_::set_current_z_height(double z)
+{
+    current_position[Z_AXIS] = RAW_Z_POSITION(z);
 }
 
 
@@ -638,10 +643,6 @@ double ADVi3pp_::y_probe_offset_from_extruder() const
     return sensor_settings.y_probe_offset_from_extruder();
 }
 
-double ADVi3pp_::z_probe_offset_from_extruder() const
-{
-    return sensor_settings.z_probe_offset_from_extruder();
-}
 #endif
 
 // --------------------------------------------------------------------
