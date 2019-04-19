@@ -1133,7 +1133,6 @@ struct ADVi3pp_
 private:
     void buzz_(long duration);
     void init();
-    void check_and_fix();
     void update_progress();
     void send_status_data(bool force_update = false);
     void send_gplv3_7b_notice(); // Forks: you have to keep this notice

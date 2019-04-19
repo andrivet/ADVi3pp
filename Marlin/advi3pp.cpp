@@ -184,8 +184,6 @@ void ADVi3pp_::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
     dimming.enable(test_one_bit(features_, Feature::Dimming));
     enable_buzzer(test_one_bit(features_, Feature::Buzzer));
     enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress));
-
-    check_and_fix();
 }
 
 //! Reset presets.
@@ -458,13 +456,6 @@ void ADVi3pp_::temperature_error(const FlashChar* message)
     ADVi3pp_::set_status(message);
     send_status_data(true);
     pages.show_page(advi3pp::Page::ThermalRunawayError);
-}
-
-void ADVi3pp_::check_and_fix()
-{
-    if(Planner::max_jerk[X_AXIS] == 0) Planner::max_jerk[X_AXIS] = DEFAULT_XJERK;
-    if(Planner::max_jerk[Y_AXIS] == 0) Planner::max_jerk[Y_AXIS] = DEFAULT_YJERK;
-    if(Planner::max_jerk[Z_AXIS] == 0) Planner::max_jerk[Z_AXIS] = DEFAULT_ZJERK;
 }
 
 bool ADVi3pp_::has_status()
