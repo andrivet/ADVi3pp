@@ -91,9 +91,9 @@ void ADVi3pp::write(eeprom_write write, int& eeprom_index, uint16_t& working_crc
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void ADVi3pp::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+bool ADVi3pp::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
-    advi3pp.read(read, eeprom_index, working_crc);
+    return advi3pp.read(read, eeprom_index, working_crc);
 }
 
 //! Reset presets.

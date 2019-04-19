@@ -46,6 +46,8 @@
 
 namespace advi3pp {
 
+const uint16_t settings_version = 0x0001; // Version of ADVi3++ settings stored in EEPROM
+
 const size_t message_length = 48;
 const size_t progress_name_length = 44;
 const size_t progress_percent_length = 48;
@@ -1085,7 +1087,7 @@ struct ADVi3pp_
     void setup();
     void idle();
     void write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    void read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    bool read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset();
     uint16_t size_of() const;
     void eeprom_settings_mismatch();
@@ -1145,6 +1147,7 @@ private:
     void compute_progress();
 
 private:
+    uint16_t version_ = settings_version;
     bool init_ = true;
     uint32_t usb_baudrate_ = BAUDRATE;
     Feature features_ = Feature::None;

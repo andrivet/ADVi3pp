@@ -160,6 +160,7 @@ void ADVi3pp_::write(eeprom_write write, int& eeprom_index, uint16_t& working_cr
 {
     EepromWrite eeprom{write, eeprom_index, working_crc};
 
+    eeprom.write(version_);
     preheat.write(eeprom);
     sensor_settings.write(eeprom);
     pid_settings.write(eeprom);
@@ -171,10 +172,11 @@ void ADVi3pp_::write(eeprom_write write, int& eeprom_index, uint16_t& working_cr
 //! @param read Function to use for the actual reading
 //! @param eeprom_index
 //! @param working_crc
-void ADVi3pp_::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+bool ADVi3pp_::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
     EepromRead eeprom{read, eeprom_index, working_crc};
 
+    eeprom.read(version_);
     preheat.read(eeprom);
     sensor_settings.read(eeprom);
     pid_settings.read(eeprom);
@@ -184,11 +186,14 @@ void ADVi3pp_::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
     dimming.enable(test_one_bit(features_, Feature::Dimming));
     enable_buzzer(test_one_bit(features_, Feature::Buzzer));
     enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress));
+
+    return version_ == settings_version;
 }
 
 //! Reset presets.
 void ADVi3pp_::reset()
 {
+    version_ = settings_version;
     preheat.reset();
     sensor_settings.reset();
     pid_settings.reset();
@@ -200,6 +205,7 @@ void ADVi3pp_::reset()
 uint16_t ADVi3pp_::size_of() const
 {
     return
+        sizeof(version_) +
         preheat.size_of() +
         sensor_settings.size_of() +
         pid_settings.size_of() +

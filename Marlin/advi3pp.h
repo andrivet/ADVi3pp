@@ -50,7 +50,7 @@ struct ADVi3pp
     static void auto_pid_finished(bool success);
     static void g29_leveling_finished(bool success);
     static void write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    static void read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    static bool read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     static void reset();
     static uint16_t size_of();
     static void eeprom_settings_mismatch();

@@ -1585,7 +1585,8 @@ void MarlinSettings::postprocess() {
       #endif
 
       // @advi3++: Load data specific to ADVi3++
-      advi3pp::ADVi3pp::read(&read_data, eeprom_index, working_crc);
+      if(!advi3pp::ADVi3pp::read(&read_data, eeprom_index, working_crc))
+          eeprom_error = true;
 
       eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
       if (eeprom_error) {
