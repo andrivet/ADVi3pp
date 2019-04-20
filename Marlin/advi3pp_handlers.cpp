@@ -82,7 +82,7 @@ namespace
     {
         // Note: F macro can be used only in a function, this is why this is coded like this
         auto advi3_side          = F("ADVi3++ Left Side");
-        auto baseggio            = F("Baseggio Front");
+        auto baseggio            = F("Indianagio Front");
         auto teaching_tech_side  = F("Teaching Tech L. Side");
         auto teaching_tech_front = F("Teaching Tech Front");
         auto mark2               = F("Mark II");
