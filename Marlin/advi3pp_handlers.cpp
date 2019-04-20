@@ -1410,7 +1410,7 @@ Page SensorZHeight::do_prepare_page()
 {
     pages.save_forward_page();
 
-    zprobe_zoffset = 0; // reset offset
+    enqueue_and_echo_commands_P((PSTR("M851 Z0"))); // reset offset
     wait.show(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28 F6000")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
@@ -1452,7 +1452,10 @@ void SensorZHeight::do_back_command()
 
 void SensorZHeight::do_save_command()
 {
-    zprobe_zoffset = advi3pp.get_current_z_height();
+    ADVString<10> command;
+    command << F("M851 Z") << advi3pp.get_current_z_height();
+    enqueue_and_echo_command(command.get());
+
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
     enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // homing
