@@ -305,12 +305,6 @@ double ADVi3pp_::get_current_z_height(int multiply) const
 	return height;
 }
 
-void ADVi3pp_::set_current_z_height(double z)
-{
-    current_position[Z_AXIS] = RAW_Z_POSITION(z);
-}
-
-
 //! Update the status of the printer on the LCD.
 void ADVi3pp_::send_status_data(bool force_update)
 {

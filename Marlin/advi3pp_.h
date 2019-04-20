@@ -1125,7 +1125,6 @@ struct ADVi3pp_
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 
     double get_current_z_height(int multiply = 1) const;
-    void set_current_z_height(double z);
 
 #ifdef ADVi3PP_PROBE
     double x_probe_offset_from_extruder() const;
