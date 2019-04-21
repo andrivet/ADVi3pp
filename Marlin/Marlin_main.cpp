@@ -15035,6 +15035,9 @@ void idle(
 void kill(const char* lcd_msg) {
   SERIAL_ERROR_START();
   SERIAL_ERRORLNPGM(MSG_ERR_KILLED);
+  SERIAL_PROTOCOLPGM("Reason for kill: ");  // @advi3++: Output the kill msg
+  serialprintPGM(lcd_msg);
+  SERIAL_PROTOCOLLNPGM(); // New line
 
   thermalManager.disable_all_heaters();
   disable_all_steppers();
