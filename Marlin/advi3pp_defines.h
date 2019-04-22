@@ -49,6 +49,9 @@
 
 #endif
 
+// Define only when using ADVi3++ Hardware simulator
+//#define ADVi3PP_SIMULATOR
+
 // ---------------------------------------------------------------------------
 // Do not modify the following definitions
 // ---------------------------------------------------------------------------

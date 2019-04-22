@@ -29,7 +29,10 @@
 
 #include "MarlinConfig.h"
 
+// @advi3++: Do not validate when using the Simulator
+#ifndef ADVi3PP_SIMULATOR
 #define VALIDATE_HOMING_ENDSTOPS
+#endif
 
 enum EndstopEnum : char {
   X_MIN,

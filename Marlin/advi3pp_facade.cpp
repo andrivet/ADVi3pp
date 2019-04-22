@@ -42,6 +42,10 @@
 #pragma message "This is a Aldi UK Balco HE180021 build"
 #endif
 
+#if defined(ADVi3PP_SIMULATOR)
+#pragma message "This is a ADVi3++ Simulator build"
+#endif
+
 namespace advi3pp {
 
 inline namespace singletons
