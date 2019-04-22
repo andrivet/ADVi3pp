@@ -2301,6 +2301,10 @@ void clean_up_after_endstop_or_probe_move() {
     // Move down until probe triggered
     do_blocking_move_to_z(z, fr_mm_s);
 
+      // @advi3++: In the simulator, the probe is always triggered
+    #if defined(ADVi3PP_SIMULATOR)
+    const bool probe_triggered = true;
+    #else
     // Check to see if the probe was triggered
     const bool probe_triggered = TEST(endstops.trigger_state(),
       #if ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
@@ -2309,6 +2313,13 @@ void clean_up_after_endstop_or_probe_move() {
         Z_MIN_PROBE
       #endif
     );
+    #endif
+
+    // @advi3++: Add more debug info
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING))
+            SERIAL_ECHOPAIR("Probe triggered: ", probe_triggered);
+    #endif
 
     #if QUIET_PROBING
       probing_pause(false);
