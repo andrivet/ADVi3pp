@@ -5027,7 +5027,7 @@ void home_all_axes() { gcode_G28(true); }
 
         xy_probe_feedrate_mm_s = MMM_TO_MMS(parser.linearval('S', XY_PROBE_SPEED));
 
-        // @advi3pp: Get the default values from ADVi3++ since the probe support is selectable at runtime
+        // @advi3++: Get the default values from ADVi3++ since the probe support is selectable at runtime
         left_probe_bed_position  = parser.seenval('L') ? int(RAW_X_POSITION(parser.value_linear_units())) : advi3pp::ADVi3pp::left_probe_bed_position();
         right_probe_bed_position = parser.seenval('R') ? int(RAW_X_POSITION(parser.value_linear_units())) : advi3pp::ADVi3pp::right_probe_bed_position();
         front_probe_bed_position = parser.seenval('F') ? int(RAW_Y_POSITION(parser.value_linear_units())) : advi3pp::ADVi3pp::front_probe_bed_position();
