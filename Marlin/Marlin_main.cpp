@@ -900,6 +900,10 @@ inline void _commit_command(bool say_ok) {
  * Return false for a full buffer, or if the 'command' is a comment.
  */
 inline bool _enqueuecommand(const char* cmd, bool say_ok=false) {
+  // @advi3++: Makes debugging easier
+  if(commands_in_queue >= BUFSIZE)
+    advi3pp::Log::error() << F("Command was not queued: ") << cmd << advi3pp::Log::endl();
+
   if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
   strcpy(command_queue[cmd_queue_index_w], cmd);
   _commit_command(say_ok);
@@ -917,8 +921,6 @@ bool enqueue_and_echo_command(const char* cmd) {
     SERIAL_EOL();
     return true;
   }
-  // @advi3++: Makes debugging easier
-  advi3pp::Log::error() << F("Command was not queued: ") << cmd << advi3pp::Log::endl();
   return false;
 }
 
@@ -15037,7 +15039,7 @@ void kill(const char* lcd_msg) {
   SERIAL_ERRORLNPGM(MSG_ERR_KILLED);
   SERIAL_PROTOCOLPGM("Reason for kill: ");  // @advi3++: Output the kill msg
   serialprintPGM(lcd_msg);
-  SERIAL_PROTOCOLLNPGM(); // New line
+  SERIAL_EOL();
 
   thermalManager.disable_all_heaters();
   disable_all_steppers();
