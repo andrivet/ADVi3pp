@@ -12737,6 +12737,7 @@ void process_parsed_command() {
 
   // Handle a known G, M, or T
   switch (parser.command_letter) {
+	case '\0': break;  // @advi3pp: Strangely, some software sends this (such as Cura)
     case 'G': switch (parser.codenum) {
 
       case 0: case 1: gcode_G0_G1(                                // G0: Fast Move, G1: Linear Move
