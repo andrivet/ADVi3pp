@@ -818,8 +818,8 @@
  * These options are most useful for the BLTouch probe, but may also improve
  * readings with inductive probes and piezo sensors.
  */
-// @advi3++: Disable heaters and fan during probing to minimize electronic noise
-#define PROBING_HEATERS_OFF       // Turn heaters off when probing
+// @advi3++: No more needed to disable headers to minimize electronic noise
+//#define PROBING_HEATERS_OFF       // Turn heaters off when probing
 #if ENABLED(PROBING_HEATERS_OFF)
   //#define WAIT_FOR_BED_HEATER     // Wait for bed to heat back up between probes (to improve accuracy)
 #endif
