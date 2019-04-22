@@ -623,18 +623,6 @@ void ADVi3pp_::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     pid_settings.set_best_pid(kind, temperature);
 }
 
-#ifdef ADVi3PP_PROBE
-double ADVi3pp_::x_probe_offset_from_extruder() const
-{
-    return sensor_settings.x_probe_offset_from_extruder();
-}
-
-double ADVi3pp_::y_probe_offset_from_extruder() const
-{
-    return sensor_settings.y_probe_offset_from_extruder();
-}
-
-#endif
 
 // --------------------------------------------------------------------
 // Graphs

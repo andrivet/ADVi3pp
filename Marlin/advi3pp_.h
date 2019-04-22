@@ -666,8 +666,12 @@ struct SensorSettings: Handler<SensorSettings>
 
     SensorSettings();
 
-    double x_probe_offset_from_extruder() const;
-    double y_probe_offset_from_extruder() const;
+    int x_probe_offset_from_extruder() const;
+    int y_probe_offset_from_extruder() const;
+    int left_probe_bed_position();
+    int right_probe_bed_position();
+    int front_probe_bed_position();
+    int back_probe_bed_position();
 
 private:
     bool do_dispatch(KeyValue value);
@@ -1125,11 +1129,6 @@ struct ADVi3pp_
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 
     double get_current_z_height(int multiply = 1) const;
-
-#ifdef ADVi3PP_PROBE
-    double x_probe_offset_from_extruder() const;
-    double y_probe_offset_from_extruder() const;
-#endif
 
 private:
     void buzz_(long duration);

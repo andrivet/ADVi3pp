@@ -635,10 +635,10 @@ void do_blocking_move_to_xy(const float &rx, const float &ry, const float &fr_mm
     // @advi3++: Probe position is dynamic. Min, max are based on _MIN_PROBE_, _MAX_PROBE_ macros
     inline bool position_is_reachable_by_probe(const float &rx, const float &ry) {
         using namespace advi3pp;
-        auto min_probe_x = max(X_MIN_BED + (MIN_PROBE_EDGE), X_MIN_POS + ADVi3pp::x_probe_offset_from_extruder());
-        auto min_probe_y = max(Y_MIN_BED + (MIN_PROBE_EDGE), Y_MIN_POS + ADVi3pp::x_probe_offset_from_extruder());
-        auto max_probe_x = min(X_MAX_BED - (MIN_PROBE_EDGE), X_MAX_POS + ADVi3pp::x_probe_offset_from_extruder());
-        auto max_probe_y = min(Y_MAX_BED - (MIN_PROBE_EDGE), Y_MAX_POS + ADVi3pp::x_probe_offset_from_extruder());
+        auto min_probe_x = ADVi3pp::left_probe_bed_position();
+        auto min_probe_y = ADVi3pp::front_probe_bed_position();
+        auto max_probe_x = ADVi3pp::right_probe_bed_position();
+        auto max_probe_y = ADVi3pp::back_probe_bed_position();
         return position_is_reachable(rx - ADVi3pp::x_probe_offset_from_extruder(), ry - ADVi3pp::x_probe_offset_from_extruder())
           && WITHIN(rx, min_probe_x - 0.001f, max_probe_x + 0.001f)
           && WITHIN(ry, min_probe_y - 0.001f, max_probe_y + 0.001f);

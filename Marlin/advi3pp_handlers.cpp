@@ -1943,14 +1943,34 @@ void SensorSettings::get_data()
     zprobe_zoffset = z.word / 100.0;
 }
 
-double SensorSettings::x_probe_offset_from_extruder() const
+int SensorSettings::x_probe_offset_from_extruder() const
 {
-    return positions_[index_].x / 100.0;
+    return static_cast<int>(positions_[index_].x / 100.0 + 0.5); // 0.5 for rounding
 }
 
-double SensorSettings::y_probe_offset_from_extruder() const
+int SensorSettings::y_probe_offset_from_extruder() const
 {
-    return positions_[index_].y / 100.0;
+    return static_cast<int>(positions_[index_].y / 100.0 + 0.5); // 0.5 for rounding
+}
+
+int SensorSettings::left_probe_bed_position()
+{
+    return max(X_MIN_BED + (MIN_PROBE_EDGE), X_MIN_POS + x_probe_offset_from_extruder());
+}
+
+int SensorSettings::right_probe_bed_position()
+{
+    return min(X_MAX_BED - (MIN_PROBE_EDGE), X_MAX_POS + x_probe_offset_from_extruder());
+}
+
+int SensorSettings::front_probe_bed_position()
+{
+    return max(Y_MIN_BED + (MIN_PROBE_EDGE), Y_MIN_POS + y_probe_offset_from_extruder());
+}
+
+int SensorSettings::back_probe_bed_position()
+{
+    return min(Y_MAX_BED - (MIN_PROBE_EDGE), Y_MAX_POS + y_probe_offset_from_extruder());
 }
 
 #else

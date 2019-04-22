@@ -53,6 +53,7 @@ inline namespace singletons
     extern ADVi3pp_ advi3pp;
     extern PidTuning pid_tuning;
     extern AutomaticLeveling automatic_leveling;
+    extern SensorSettings sensor_settings;
 }
 
 // --------------------------------------------------------------------
@@ -188,14 +189,35 @@ void ADVi3pp::on_set_temperature(TemperatureKind kind, uint16_t temperature)
 }
 
 #ifdef ADVi3PP_PROBE
+
 double ADVi3pp::x_probe_offset_from_extruder()
 {
-    return advi3pp.x_probe_offset_from_extruder();
+    return sensor_settings.x_probe_offset_from_extruder();
 }
 
 double ADVi3pp::y_probe_offset_from_extruder()
 {
-    return advi3pp.y_probe_offset_from_extruder();
+    return sensor_settings.y_probe_offset_from_extruder();
+}
+
+int ADVi3pp::left_probe_bed_position()
+{
+    return sensor_settings.left_probe_bed_position();
+}
+
+int ADVi3pp::right_probe_bed_position()
+{
+    return sensor_settings.right_probe_bed_position();
+}
+
+int ADVi3pp::front_probe_bed_position()
+{
+    return sensor_settings.front_probe_bed_position();
+}
+
+int ADVi3pp::back_probe_bed_position()
+{
+    return sensor_settings.back_probe_bed_position();
 }
 
 #endif

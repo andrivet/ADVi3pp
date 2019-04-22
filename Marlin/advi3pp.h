@@ -71,6 +71,10 @@ struct ADVi3pp
 #ifdef ADVi3PP_PROBE
     static double x_probe_offset_from_extruder();
     static double y_probe_offset_from_extruder();
+    static int left_probe_bed_position();
+    static int right_probe_bed_position();
+    static int front_probe_bed_position();
+    static int back_probe_bed_position();
 #endif
 };
 
