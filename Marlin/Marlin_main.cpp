@@ -2083,6 +2083,13 @@ void clean_up_after_endstop_or_probe_move() {
   #if ENABLED(BLTOUCH)
 
     void bltouch_command(int angle) {
+	  // @advi3++: Add more debug information
+	  #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) {
+          SERIAL_ECHOPAIR("bltouch move servo, angle=", angle);
+          SERIAL_EOL();
+        }
+      #endif
       MOVE_SERVO(Z_PROBE_SERVO_NR, angle);  // Give the BL-Touch the command and wait
       safe_delay(BLTOUCH_DELAY);
     }
