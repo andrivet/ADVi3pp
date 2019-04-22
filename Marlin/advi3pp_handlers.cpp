@@ -935,8 +935,7 @@ Page AutomaticLeveling::do_prepare_page()
     enqueue_and_echo_commands_P(PSTR("G28 F6000"));             // homing
     enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));           // raise head
     enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
-    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000"));         // go back to corner
-    enqueue_and_echo_commands_P(PSTR("M420 S1"));               // enable bed leveling compensation
+    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000"));         // go back to corner. Assumes RESTORE_LEVELING_AFTER_G28
 
     return Page::None;
 }
