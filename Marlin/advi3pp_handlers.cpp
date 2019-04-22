@@ -1409,7 +1409,7 @@ Page SensorZHeight::do_prepare_page()
 {
     pages.save_forward_page();
 
-    enqueue_and_echo_commands_P((PSTR("M851 Z0"))); // reset offset
+    zprobe_zoffset = 0;  // reset offset
     wait.show(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28 F6000")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
@@ -1451,10 +1451,7 @@ void SensorZHeight::do_back_command()
 
 void SensorZHeight::do_save_command()
 {
-    ADVString<10> command;
-    command << F("M851 Z") << advi3pp.get_current_z_height();
-    enqueue_and_echo_command(command.get());
-
+    zprobe_zoffset = advi3pp.get_current_z_height();
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
     enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // homing
@@ -1938,9 +1935,9 @@ void SensorSettings::get_data()
     Uint16 x, y, z;
     frame >> x >> y >> z;
 
-    positions_[index_].x = x.word;
-    positions_[index_].y = y.word;
-    zprobe_zoffset = z.word / 100.0;
+    positions_[index_].x = static_cast<int16_t>(x.word);
+    positions_[index_].y = static_cast<int16_t>(y.word);
+    zprobe_zoffset = static_cast<int16_t>(z.word) / 100.0;
 }
 
 int SensorSettings::x_probe_offset_from_extruder() const
