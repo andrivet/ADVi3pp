@@ -34,6 +34,7 @@
 #include "Marlin.h"
 #include "temperature.h"
 #include "printcounter.h"
+#include "advi3pp_versions.h"
 #include "advi3pp_bitmasks.h"
 #include "advi3pp_enums.h"
 #include "advi3pp.h"
@@ -45,8 +46,6 @@
 
 
 namespace advi3pp {
-
-const uint16_t settings_version = 0x0001; // Version of ADVi3++ settings stored in EEPROM
 
 const size_t message_length = 48;
 const size_t progress_name_length = 44;

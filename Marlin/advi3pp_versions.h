@@ -53,6 +53,7 @@ namespace advi3pp
     const uint16_t advi3_pp_version = 0x400;
     const uint16_t advi3_pp_oldest_lcd_compatible_version = 0x400;
     const uint16_t advi3_pp_newest_lcd_compatible_version = 0x400;
+    const uint16_t settings_version = 0x0002; // Version of ADVi3++ settings stored in EEPROM
 }
 
 
