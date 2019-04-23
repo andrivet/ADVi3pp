@@ -35,15 +35,25 @@
 
 #else
 
-  // @advi3++: Change the name depending of the model of the printer
-  #if defined(ADVi3PP_BLTOUCH)
-  #define ADVi3PP_NAME "ADVi3++BLTouch"
-  #elif defined(ADVi3PP_MARK2)
+  // @advi3++: Change the name depending of the model of the printer and the model of the sensor
+  #if defined(ADVi3PP_MARK2)
   #define ADVi3PP_NAME "ADVi3++MarkII"
   #elif defined(ADVi3PP_HE180021)
-  #define ADVi3PP_NAME "ADVi3++HE180021"
+    #if defined(ADVi3PP_BLTOUCH3)
+      #define ADVi3PP_NAME "ADVi3++HE180021-BLTouch3"
+    #elif defined(ADVi3PP_BLTOUCH)
+      #define ADVi3PP_NAME "ADVi3++HE180021-BLTouch"
+    #else
+      #define ADVi3PP_NAME "ADVi3++HE180021"
+    #endif
   #else
-  #define ADVi3PP_NAME "ADVi3++"
+    #if defined(ADVi3PP_BLTOUCH3)
+      #define ADVi3PP_NAME "ADVi3++BLTouch3"
+    #elif defined(ADVi3PP_BLTOUCH)
+      #define ADVi3PP_NAME "ADVi3++BLTouch"
+    #else
+      #define ADVi3PP_NAME "ADVi3++"
+    #endif
   #endif
 
   /**
@@ -64,7 +74,7 @@
    * version was tagged.
    */
   // @advi3++: Build date (set by advbumpversion) 
-  #define STRING_DISTRIBUTION_DATE "2019-02-16"
+  #define STRING_DISTRIBUTION_DATE "2019-04-23"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
