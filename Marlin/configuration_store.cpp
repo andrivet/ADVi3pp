@@ -1169,7 +1169,9 @@ void MarlinSettings::postprocess() {
       EEPROM_READ_ALWAYS(grid_max_y);                       // 1 byte
       #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
         if (grid_max_x == GRID_MAX_POINTS_X && grid_max_y == GRID_MAX_POINTS_Y) {
-          if (!validating) set_bed_leveling_enabled(false);
+          // @advi3++: Do not change leveling state. In fact, no idea why this function is called.
+          // It is since this Malrin commit .https://github.com/MarlinFirmware/Marlin/commit/e42fd7813ac253df521f2f99fb6a923321216870
+          // if (!validating) set_bed_leveling_enabled(false);
           EEPROM_READ(bilinear_grid_spacing);        // 2 ints
           EEPROM_READ(bilinear_start);               // 2 ints
           EEPROM_READ(z_values);                     // 9 to 256 floats

@@ -230,6 +230,7 @@ void ADVi3pp_::save_settings()
 
 void ADVi3pp_::restore_settings()
 {
+    // Note: Previously, M420 (bed leveling compensation) was reset by M501. It is no more the case.
     enqueue_and_echo_commands_P(PSTR("M501"));
 }
 
