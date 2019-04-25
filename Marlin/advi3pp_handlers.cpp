@@ -1622,6 +1622,12 @@ void ExtruderTuning::finished()
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
     task.clear_background_task();
+
+    // Always set ny default 20mm
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << 200_u16; // 20.0
+    frame.send();
+
     pages.show_page(Page::ExtruderTuningMeasure, ShowOptions::None);
 }
 
