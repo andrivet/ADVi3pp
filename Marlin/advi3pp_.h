@@ -216,11 +216,13 @@ struct Wait: Handler<Wait>
     void show(const FlashChar* message, const WaitCallback& back, ShowOptions options = ShowOptions::SaveBack);
     void show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
     void show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
+    void show_continue(ShowOptions options = ShowOptions::SaveBack);
 
 private:
     Page do_prepare_page();
     void do_save_command();
     void do_back_command();
+    void on_continue();
 
     WaitCallback back_;
     WaitCallback continue_;
@@ -1106,6 +1108,7 @@ struct ADVi3pp_
     void queue_status(const char* message);
     void queue_status(const FlashChar* message);
     void reset_status();
+    void stop_and_wait();
 
     void set_progress_name(const char* name);
     void reset_progress();

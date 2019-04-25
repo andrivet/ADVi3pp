@@ -6806,6 +6806,8 @@ void report_xyz_from_stepper_position() {
         #endif
       }
 
+      advi3pp::ADVi3pp::stop_and_wait(); // @advi3++: Display Wait screen
+
     #else
 
       if (has_message) {

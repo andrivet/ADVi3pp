@@ -511,6 +511,11 @@ void ADVi3pp_::reset_status()
     has_status_ = false;
 }
 
+void ADVi3pp_::stop_and_wait()
+{
+    wait.show_continue();
+}
+
 void ADVi3pp_::set_progress_name(const char* name)
 {
     progress_name_ = name;

@@ -402,6 +402,19 @@ void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, Sho
     pages.show_page(Page::WaitContinue, options);
 }
 
+void Wait::show_continue(ShowOptions options)
+{
+    back_ = nullptr;
+    continue_ = WaitCallback{this, &Wait::on_continue};
+    pages.show_page(Page::WaitContinue, options);
+}
+
+void Wait::on_continue()
+{
+    ::wait_for_user = false;
+    pages.show_back_page();
+}
+
 void Wait::do_back_command()
 {
     if(!back_)

@@ -188,6 +188,11 @@ void ADVi3pp::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     advi3pp.on_set_temperature(kind, temperature);
 }
 
+void ADVi3pp::stop_and_wait()
+{
+    advi3pp.stop_and_wait();
+}
+
 #ifdef ADVi3PP_PROBE
 
 double ADVi3pp::x_probe_offset_from_extruder()
