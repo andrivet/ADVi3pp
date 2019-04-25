@@ -838,7 +838,6 @@ struct StepSettings: Handler<StepSettings>
 {
 private:
     Page do_prepare_page();
-    void do_back_command();
     void do_save_command();
 
     friend Parent;
@@ -852,7 +851,6 @@ struct FeedrateSettings: Handler<FeedrateSettings>
 {
 private:
     Page do_prepare_page();
-    void do_back_command();
     void do_save_command();
 
     friend Parent;
@@ -866,7 +864,6 @@ struct AccelerationSettings: Handler<AccelerationSettings>
 {
 private:
     Page do_prepare_page();
-    void do_back_command();
     void do_save_command();
 
     friend Parent;
@@ -880,7 +877,6 @@ struct JerkSettings: Handler<JerkSettings>
 {
 private:
     Page do_prepare_page();
-    void do_back_command();
     void do_save_command();
 
     friend Parent;
@@ -894,7 +890,6 @@ struct LinearAdvanceSettings: Handler<LinearAdvanceSettings>
 {
 private:
     Page do_prepare_page();
-    void do_back_command();
     void do_save_command();
 
     friend Parent;
