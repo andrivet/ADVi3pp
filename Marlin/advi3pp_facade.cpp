@@ -178,9 +178,9 @@ void ADVi3pp::reset_status()
     advi3pp.reset_status();
 }
 
-void ADVi3pp::buzz(long duration, uint16_t frequency)
+void ADVi3pp::buzz(long duration, uint16_t)
 {
-    advi3pp.buzz(duration, frequency);
+    advi3pp.buzz(duration);
 }
 
 void ADVi3pp::on_set_temperature(TemperatureKind kind, uint16_t temperature)

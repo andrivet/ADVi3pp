@@ -406,6 +406,7 @@ void Wait::show_continue(ShowOptions options)
 {
     back_ = nullptr;
     continue_ = WaitCallback{this, &Wait::on_continue};
+    advi3pp.buzz();
     pages.show_page(Page::WaitContinue, options);
 }
 
@@ -562,7 +563,7 @@ void LoadUnload::start_task(const char* command, const BackgroundTask& back_task
     if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
     {
         Log::log() << F("Load/Unload Filament") << Log::endl();
-        advi3pp.buzz(100); // Inform the user that the extrusion starts
+        advi3pp.buzz(); // Inform the user that the extrusion starts
         enqueue_and_echo_commands_P(command);
         task.set_background_task(back_task);
         advi3pp.set_status(F("Press Back when the filament comes out..."));

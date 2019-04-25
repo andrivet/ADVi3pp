@@ -1115,7 +1115,7 @@ struct ADVi3pp_
 
     void enable_buzzer(bool enable);
     void enable_buzz_on_press(bool enable);
-    void buzz(long duration, uint16_t frequency = 0);
+    void buzz(long duration = 100);
     void buzz_on_press();
     uint32_t get_current_baudrate() const { return usb_baudrate_; }
     void change_usb_baudrate(uint32_t baudrate);

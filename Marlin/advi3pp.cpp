@@ -557,9 +557,9 @@ void ADVi3pp_::enable_buzz_on_press(bool enable)
 }
 
 //! Activate the LCD internal buzzer for the given duration.
-//! Note: The buzzer is not able to produce different frequencies so the 2nd parameter is ignored.
-void ADVi3pp_::buzz(long duration, uint16_t)
+void ADVi3pp_::buzz(long duration)
 {
+    dimming.reset();
     if(!buzzer_enabled_)
     {
         Log::log() << F("Silent Buzz") << Log::endl();
@@ -577,7 +577,6 @@ void ADVi3pp_::buzz_(long duration)
     request << Uint8(static_cast<uint8_t>(duration > UINT8_MAX ? UINT8_MAX : duration));
     request.send();
 }
-
 
 void ADVi3pp_::buzz_on_press()
 {
