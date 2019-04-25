@@ -2554,12 +2554,6 @@ Page StepSettings::do_prepare_page()
     return Page::StepsSettings;
 }
 
-void StepSettings::do_back_command()
-{
-    advi3pp.restore_settings();
-    Parent::do_back_command();
-}
-
 //! Save the Steps settings
 void StepSettings::do_save_command()
 {
@@ -2598,12 +2592,6 @@ Page FeedrateSettings::do_prepare_page()
     frame.send();
 
     return Page::FeedrateSettings;
-}
-
-void FeedrateSettings::do_back_command()
-{
-    advi3pp.restore_settings();
-    Parent::do_back_command();
 }
 
 //! Save the Feedrate settings
@@ -2649,12 +2637,6 @@ Page AccelerationSettings::do_prepare_page()
     return Page::AccelerationSettings;
 }
 
-void AccelerationSettings::do_back_command()
-{
-    advi3pp.restore_settings();
-    Parent::do_back_command();
-}
-
 //! Save the Acceleration settings
 void AccelerationSettings::do_save_command()
 {
@@ -2696,12 +2678,6 @@ Page JerkSettings::do_prepare_page()
     return Page::JerkSettings;
 }
 
-void JerkSettings::do_back_command()
-{
-    advi3pp.restore_settings();
-    Parent::do_back_command();
-}
-
 //! Save the Jerk settings
 void JerkSettings::do_save_command()
 {
@@ -2734,12 +2710,6 @@ Page LinearAdvanceSettings::do_prepare_page()
     frame.send();
 
     return Page::LinearAdvanceSettings;
-}
-
-void LinearAdvanceSettings::do_back_command()
-{
-    advi3pp.restore_settings();
-    Parent::do_back_command();
 }
 
 void LinearAdvanceSettings::do_save_command()
