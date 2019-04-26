@@ -55,6 +55,7 @@
         advi3pp::ADVi3pp::advanced_pause_show_message(message);
     }
 
+    inline void kill_screen(const char* msg) { advi3pp::ADVi3pp::set_status(msg); }
 
 #if ENABLED(LCD_SET_PROGRESS_MANUALLY)
     extern uint8_t progress_bar_percent;
