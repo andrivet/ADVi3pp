@@ -193,6 +193,12 @@ void ADVi3pp::stop_and_wait()
     advi3pp.stop_and_wait();
 }
 
+void ADVi3pp::process_command(const GCodeParser& parser)
+{
+    advi3pp.process_command(parser);
+}
+
+
 #ifdef ADVi3PP_PROBE
 
 double ADVi3pp::x_probe_offset_from_extruder()

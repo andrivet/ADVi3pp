@@ -1030,6 +1030,8 @@
 
   // @advi3++: Park the nozzle on pause and home before changing filament
   #define PARK_HEAD_ON_PAUSE                    // Park the nozzle during pause and filament change.
+  // @advi3++: Park the nozzle on stop
+  #define PARK_HEAD_ON_STOP
   #define HOME_BEFORE_FILAMENT_CHANGE           // Ensure homing has been completed prior to parking for filament change
 
   //#define FILAMENT_LOAD_UNLOAD_GCODES           // Add M701/M702 Load/Unload G-codes, plus Load/Unload in the LCD Prepare menu.

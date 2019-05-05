@@ -628,6 +628,43 @@ void ADVi3pp_::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     pid_settings.set_best_pid(kind, temperature);
 }
 
+void ADVi3pp_::process_command(const GCodeParser& parser)
+{
+    switch(parser.codenum)
+    {
+        case 0: process_pause_code(); break;
+        case 1: process_resume_code(); break;
+        case 2: process_stop_code(); break;
+        default: Log::error() << F("Invalid command ") << static_cast<uint16_t>(parser.codenum) << Log::endl(); break;
+    }
+}
+
+void ADVi3pp_::process_pause_code()
+{
+    queue_status(F("Pause printing..."));
+    if(card.isFileOpen())
+        sd_print.process_pause_code();
+    else
+        usb_print.process_pause_code();
+}
+
+void ADVi3pp_::process_resume_code()
+{
+    queue_status(F("Resume printing..."));
+    if(card.isFileOpen())
+        sd_print.process_resume_code();
+    else
+        usb_print.process_resume_code();
+}
+
+void ADVi3pp_::process_stop_code()
+{
+    queue_status(F("Stop printing..."));
+    if(card.isFileOpen())
+        sd_print.process_stop_code();
+    else
+        usb_print.process_stop_code();
+}
 
 // --------------------------------------------------------------------
 // Graphs

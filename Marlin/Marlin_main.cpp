@@ -7238,7 +7238,8 @@ inline void gcode_M17() {
    *
    * Returns 'true' if pause was completed, 'false' for abort
    */
-  static bool pause_print(const float &retract, const point_t &park_point, const float &unload_length=0, const bool show_lcd=false) {
+  // @advi3++: Remove static since we need to call it from ADVi3++
+  bool pause_print(const float &retract, const point_t &park_point, const float &unload_length=0, const bool show_lcd=false) {
     if (did_pause_print) return false; // already paused
 
     #ifdef ACTION_ON_PAUSE
@@ -7408,7 +7409,8 @@ inline void gcode_M17() {
    * - Send host action for resume, if configured
    * - Resume the current SD print job, if any
    */
-  static void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, const int8_t max_beep_count=0) {
+  // @advi3++: Remove static since we need to call it from ADVi3++
+  void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, const int8_t max_beep_count=0) {
     if (!did_pause_print) return;
 
     // Re-enable the heaters if they timed out
@@ -12740,6 +12742,7 @@ void process_parsed_command() {
   // Handle a known G, M, or T
   switch (parser.command_letter) {
 	case '\0': break;  // @advi3pp: Strangely, some software sends this (such as Cura)
+	case 'A': advi3pp::ADVi3pp::process_command(parser); break; // @advi3++: Put back ADVi3++ own command codes
     case 'G': switch (parser.codenum) {
 
       case 0: case 1: gcode_G0_G1(                                // G0: Fast Move, G1: Linear Move

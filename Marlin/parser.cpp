@@ -115,8 +115,8 @@ void GCodeParser::parse(char *p) {
   }
 
   // Bail if the letter is not G, M, T
-  // @advi3++: or I
-  switch (letter) { case 'G': case 'M': case 'T': case 'I': break; default: return; }
+  // @advi3++: or A
+  switch (letter) { case 'G': case 'M': case 'T': case 'A': break; default: return; }
 
   // Skip spaces to get the numeric part
   while (*p == ' ') p++;

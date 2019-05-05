@@ -34,6 +34,8 @@
 #include "Marlin.h"
 #include "temperature.h"
 #include "printcounter.h"
+#include "planner.h"
+#include "point_t.h"
 #include "advi3pp_versions.h"
 #include "advi3pp_bitmasks.h"
 #include "advi3pp_enums.h"
@@ -43,6 +45,10 @@
 #include "ADVcallback.h"
 #include "ADVcrtp.h"
 #include "advi3pp_bitmasks.h"
+
+// From Marlin
+extern bool pause_print(const float &retract, const point_t &park_point, const float &unload_length=0, const bool show_lcd=false);
+extern void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, const int8_t max_beep_count=0);
 
 
 namespace advi3pp {
@@ -466,6 +472,10 @@ private:
 template<typename D>
 struct Print: Handler<D>
 {
+    void process_pause_code();
+    void process_resume_code();
+    void process_stop_code();
+
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
@@ -1127,6 +1137,8 @@ struct ADVi3pp_
 
     double get_current_z_height(int multiply = 1) const;
 
+    void process_command(const GCodeParser& parser);
+
 private:
     void buzz_(long duration);
     void init();
@@ -1140,6 +1152,10 @@ private:
     void print_command(KeyValue key_value);
 
     void compute_progress();
+
+    void process_pause_code();
+    void process_resume_code();
+    void process_stop_code();
 
 private:
     uint16_t version_ = settings_version;
@@ -1267,20 +1283,46 @@ Page Print<D>::do_prepare_page()
     return Page::Print;
 }
 
-//! Stop printing
 template<typename D>
-void Print<D>::stop_command()
+void Print<D>::process_pause_code()
+{
+    Log::log() << F("Pause Print") << Log::endl();
+
+    pause();
+#if ENABLED(PARK_HEAD_ON_PAUSE)
+    Log::log() << F("pause_print") << Log::endl();
+    pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT);
+#endif
+}
+
+template<typename D>
+void Print<D>::process_resume_code()
+{
+    Log::log() << F("Resume Print") << Log::endl();
+
+#if ENABLED(PARK_HEAD_ON_PAUSE)
+    resume_print();
+#endif
+    resume();
+}
+
+template<typename D>
+void Print<D>::process_stop_code()
 {
     Log::log() << F("Stop Print") << Log::endl();
 
     stop();
-    clear_command_queue();
-    quickstop_stepper();
+
+    Planner::synchronize(); // Finish all movement
+#if ENABLED(PARK_HEAD_ON_STOP)
+    pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT);
+#endif
+
+    quickstop_stepper(); // Includes Planner::synchronize()
     PrintCounter::stop();
     Temperature::disable_all_heaters();
     fanSpeeds[0] = 0;
 
-    pages.show_back_page();
     task.set_background_task(BackgroundTask(this, &Print::reset_messages_task), 500);
 }
 
@@ -1292,33 +1334,21 @@ void Print<D>::reset_messages_task()
     advi3pp.reset_status();
 }
 
+//! Stop printing
+template<typename D>
+void Print<D>::stop_command()
+{
+    enqueue_and_echo_commands_P(PSTR("A2"));
+}
+
 //! Pause printing
 template<typename D>
 void Print<D>::pause_resume_command()
 {
-    // FIX
-    Log::log() << F("Pause or Resume Print") << Log::endl();
-
     if(is_printing())
-    {
-        advi3pp.queue_status(F("Pause printing..."));
-        pause();
-        PrintCounter::pause();
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-        enqueue_and_echo_commands_P(PSTR("M125"));
-#endif
-    }
+        enqueue_and_echo_commands_P(PSTR("A0"));
     else
-    {
-        Log::log() << F("Resume Print") << Log::endl();
-
-        advi3pp.queue_status(F("Resume printing"));
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-        enqueue_and_echo_commands_P(PSTR("M24"));
-#endif
-        resume();
-        PrintCounter::start(); // TODO: Check this is right
-    }
+        enqueue_and_echo_commands_P(PSTR("A1"));
 }
 
 //! Resume the current SD printing
