@@ -12741,7 +12741,6 @@ void process_parsed_command() {
 
   // Handle a known G, M, or T
   switch (parser.command_letter) {
-	case '\0': break;  // @advi3pp: Strangely, some software sends this (such as Cura)
 	case 'A': advi3pp::ADVi3pp::process_command(parser); break; // @advi3++: Put back ADVi3++ own command codes
     case 'G': switch (parser.codenum) {
 
