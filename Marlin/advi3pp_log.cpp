@@ -83,29 +83,22 @@ Log& Log::operator<<(double data)
 
 void Log::operator<<(EndOfLine)
 {
-    SERIAL_ECHOLN("");
+    SERIAL_EOL();
 }
 
 //! Dump the bytes in hexadecimal and print them (serial)
 void Log::dump(const uint8_t* bytes, size_t size)
 {
-    static const size_t MAX_LENGTH = 20;
-
     static const char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    if(size > MAX_LENGTH)
-        size = MAX_LENGTH;
 
-    // TODO: output one byte at a time
-    char buffer[MAX_LENGTH * 3 + 1];
     for(size_t index = 0; index < size; ++index)
     {
-        buffer[index * 3 + 0] = digits[bytes[index] / 16];
-        buffer[index * 3 + 1] = digits[bytes[index] % 16];
-        buffer[index * 3 + 2] = ' ';
+        SERIAL_CHAR(digits[bytes[index] / 16]);
+        SERIAL_CHAR(digits[bytes[index] % 16]);
+        SERIAL_CHAR(' ');
     }
-    buffer[size * 3] = 0;
 
-    SERIAL_ECHOLN(buffer);
+    SERIAL_EOL();
 }
 
 void assert_(const char *msg, const char *file, uint16_t line)
