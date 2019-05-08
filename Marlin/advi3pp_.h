@@ -469,11 +469,8 @@ private:
 // Printing
 // --------------------------------------------------------------------
 
-template<typename D>
-struct Print: Handler<D>
+struct Print: Handler<Print>
 {
-    void process_pause_code();
-    void process_resume_code();
     void process_stop_code();
 
 private:
@@ -482,45 +479,11 @@ private:
     void stop_command();
     void pause_resume_command();
     void advanced_pause_command();
-    void reset_messages_task();
+    bool is_printing() const;
 
-    void stop() { this->self().do_stop(); }
-    void pause() { this->self().do_pause(); }
-    void resume() { this->self().do_resume(); }
-    bool is_printing() const { return this->self().do_is_printing(); }
-
-    friend Handler<D>;
+    friend Parent;
 };
 
-// --------------------------------------------------------------------
-// SD Print
-// --------------------------------------------------------------------
-
-struct SdPrint: Print<SdPrint>
-{
-private:
-    void do_stop();
-    void do_pause();
-    void do_resume();
-    bool do_is_printing() const;
-
-    friend Print<SdPrint>;
-};
-
-// --------------------------------------------------------------------
-// USB Print
-// --------------------------------------------------------------------
-
-struct UsbPrint: Print<UsbPrint>
-{
-private:
-    void do_stop();
-    void do_pause();
-    void do_resume();
-    bool do_is_printing() const;
-
-    friend Print<UsbPrint>;
-};
 
 // --------------------------------------------------------------------
 // Advanced Pause
@@ -1149,13 +1112,7 @@ private:
     void read_lcd_serial();
     void show_boot_page();
 
-    void print_command(KeyValue key_value);
-
     void compute_progress();
-
-    void process_pause_code();
-    void process_resume_code();
-    void process_stop_code();
 
 private:
     uint16_t version_ = settings_version;
@@ -1182,6 +1139,7 @@ inline namespace singletons
     extern ADVi3pp_ advi3pp;
     extern Pages pages;
     extern Task task;
+
 }
 
 // --------------------------------------------------------------------
@@ -1254,109 +1212,6 @@ void Handler<Self>::do_back_command()
     pages.show_back_page();
 }
 
-// --------------------------------------------------------------------
-// Printing
-// --------------------------------------------------------------------
-
-//! Handle print commands.
-//! @param key_value    The sub-action to handle
-template<typename D>
-bool Print<D>::do_dispatch(KeyValue value)
-{
-    if(Handler<D>::do_dispatch(value))
-        return true;
-
-    switch(value)
-    {
-        case KeyValue::PrintStop:           stop_command(); break;
-        case KeyValue::PrintPauseResume:    pause_resume_command(); break;
-        case KeyValue::PrintAdvancedPause:  advanced_pause_command(); break;
-        default:                            return false;
-    }
-
-    return true;
-}
-
-template<typename D>
-Page Print<D>::do_prepare_page()
-{
-    return Page::Print;
-}
-
-template<typename D>
-void Print<D>::process_pause_code()
-{
-    Log::log() << F("Pause Print") << Log::endl();
-
-    pause();
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-    Log::log() << F("pause_print") << Log::endl();
-    pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT);
-#endif
-}
-
-template<typename D>
-void Print<D>::process_resume_code()
-{
-    Log::log() << F("Resume Print") << Log::endl();
-
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-    resume_print();
-#endif
-    resume();
-}
-
-template<typename D>
-void Print<D>::process_stop_code()
-{
-    Log::log() << F("Stop Print") << Log::endl();
-
-    stop();
-
-    Planner::synchronize(); // Finish all movement
-#if ENABLED(PARK_HEAD_ON_STOP)
-    pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT);
-#endif
-
-    quickstop_stepper(); // Includes Planner::synchronize()
-    PrintCounter::stop();
-    Temperature::disable_all_heaters();
-    fanSpeeds[0] = 0;
-
-    task.set_background_task(BackgroundTask(this, &Print::reset_messages_task), 500);
-}
-
-template<typename D>
-void Print<D>::reset_messages_task()
-{
-    task.clear_background_task();
-    advi3pp.reset_progress();
-    advi3pp.reset_status();
-}
-
-//! Stop printing
-template<typename D>
-void Print<D>::stop_command()
-{
-    enqueue_and_echo_commands_P(PSTR("A2"));
-}
-
-//! Pause printing
-template<typename D>
-void Print<D>::pause_resume_command()
-{
-    if(is_printing())
-        enqueue_and_echo_commands_P(PSTR("A0"));
-    else
-        enqueue_and_echo_commands_P(PSTR("A1"));
-}
-
-//! Resume the current SD printing
-template<typename D>
-void Print<D>::advanced_pause_command()
-{
-    enqueue_and_echo_commands_P(PSTR("M600"));
-}
 
 // --------------------------------------------------------------------
 

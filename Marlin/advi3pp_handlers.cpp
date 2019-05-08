@@ -187,8 +187,7 @@ inline namespace singletons
     LinearAdvanceTuning linear_advance_tuning;
     LinearAdvanceSettings linear_advance_settings;
     Diagnosis diagnosis;
-    SdPrint sd_print;
-    UsbPrint usb_print;
+    Print print;
     AdvancedPause pause;
 };
 
@@ -1297,51 +1296,76 @@ void SdCard::select_file_command(uint16_t file_index)
 }
 
 // --------------------------------------------------------------------
-// SD Printing
+// Printing
 // --------------------------------------------------------------------
 
-void SdPrint::do_stop()
+//! Handle print commands.
+//! @param key_value    The sub-action to handle
+bool Print::do_dispatch(KeyValue value)
 {
-    card.stopSDPrint();
+    if(Parent::do_dispatch(value))
+        return true;
+
+    switch(value)
+    {
+        case KeyValue::PrintStop:           stop_command(); break;
+        case KeyValue::PrintPauseResume:    pause_resume_command(); break;
+        case KeyValue::PrintAdvancedPause:  advanced_pause_command(); break;
+        default:                            return false;
+    }
+
+    return true;
 }
 
-void SdPrint::do_pause()
+Page Print::do_prepare_page()
 {
-    card.pauseSDPrint();
+    return Page::Print;
 }
 
-void SdPrint::do_resume()
+void Print::process_stop_code()
 {
-    card.startFileprint();
+    if(card.isFileOpen())
+        card.stopSDPrint();
+    else
+        SERIAL_ECHOLNPGM("//action:cancel");
+
+    quickstop_stepper(); // Includes Planner::synchronize()
+    PrintCounter::stop();
+    Temperature::disable_all_heaters();
+    fanSpeeds[0] = 0;
+
+#if ENABLED(PARK_HEAD_ON_PAUSE)
+    enqueue_and_echo_commands_P(PSTR("M125")); // Must be enqueued with pauseSDPrint set to be last in the buffer
+#endif
 }
 
-bool SdPrint::do_is_printing() const
+//! Stop printing
+void Print::stop_command()
 {
-    return card.sdprinting;
+    enqueue_and_echo_commands_P(PSTR("A0"));
 }
 
-// --------------------------------------------------------------------
-// USB Printing
-// --------------------------------------------------------------------
-
-void UsbPrint::do_stop()
+bool Print::is_printing() const
 {
-    SERIAL_ECHOLNPGM("//action:cancel");
+    if(card.isFileOpen())
+        return card.sdprinting;
+    else
+        return PrintCounter::isRunning();
 }
 
-void UsbPrint::do_pause()
+//! Pause printing
+void Print::pause_resume_command()
 {
-    SERIAL_ECHOLNPGM("//action:pause");
+    if(is_printing())
+        enqueue_and_echo_commands_P(PSTR("M25"));
+    else
+        enqueue_and_echo_commands_P(PSTR("M24"));
 }
 
-void UsbPrint::do_resume()
+//! Resume the current SD printing
+void Print::advanced_pause_command()
 {
-    SERIAL_ECHOLNPGM("//action:resume");
-}
-
-bool UsbPrint::do_is_printing() const
-{
-    return PrintCounter::isRunning();
+    enqueue_and_echo_commands_P(PSTR("M600"));
 }
 
 // --------------------------------------------------------------------

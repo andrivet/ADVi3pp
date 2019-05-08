@@ -109,8 +109,7 @@ inline namespace singletons
     extern LinearAdvanceTuning linear_advance_tuning;
     extern LinearAdvanceSettings linear_advance_settings;
     extern Diagnosis diagnosis;
-    extern SdPrint sd_print;
-    extern UsbPrint usb_print;
+    extern Print print;
     extern AdvancedPause pause;
 }
 
@@ -376,7 +375,7 @@ void ADVi3pp_::read_lcd_serial()
     switch(action)
     {
         case Action::Screen:                screens.handle(key_value); break;
-        case Action::PrintCommand:          print_command(key_value); break;
+        case Action::PrintCommand:          print.handle(key_value); break;
         case Action::Wait:                  wait.handle(key_value); break;
         case Action::LoadUnload:            load_unload.handle(key_value); break;
         case Action::Preheat:               preheat.handle(key_value); break;
@@ -440,16 +439,6 @@ void ADVi3pp_::read_lcd_serial()
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Screens
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-//! Handle print commands.
-//! @param key_value    The sub-action to handle
-void ADVi3pp_::print_command(KeyValue key_value)
-{
-    if(card.isFileOpen())
-        sd_print.handle(key_value);
-    else
-        usb_print.handle(key_value);
-}
 
 //! Display the Thermal Runaway Error screen.
 void ADVi3pp_::temperature_error(const FlashChar* message)
@@ -632,39 +621,11 @@ void ADVi3pp_::process_command(const GCodeParser& parser)
 {
     switch(parser.codenum)
     {
-        case 0: process_pause_code(); break;
-        case 1: process_resume_code(); break;
-        case 2: process_stop_code(); break;
+        case 0: print.process_stop_code(); break;
         default: Log::error() << F("Invalid command ") << static_cast<uint16_t>(parser.codenum) << Log::endl(); break;
     }
 }
 
-void ADVi3pp_::process_pause_code()
-{
-    queue_status(F("Pause printing..."));
-    if(card.isFileOpen())
-        sd_print.process_pause_code();
-    else
-        usb_print.process_pause_code();
-}
-
-void ADVi3pp_::process_resume_code()
-{
-    queue_status(F("Resume printing..."));
-    if(card.isFileOpen())
-        sd_print.process_resume_code();
-    else
-        usb_print.process_resume_code();
-}
-
-void ADVi3pp_::process_stop_code()
-{
-    queue_status(F("Stop printing..."));
-    if(card.isFileOpen())
-        sd_print.process_stop_code();
-    else
-        usb_print.process_stop_code();
-}
 
 // --------------------------------------------------------------------
 // Graphs
