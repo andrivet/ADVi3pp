@@ -164,7 +164,7 @@ enum class KeyValue: uint16_t
     PrintSettings           = 0x0008,
 
     PrintStop               = 0x0001,
-    PrintPauseResume        = 0x0002,
+    PrintPause              = 0x0002,
     PrintAdvancedPause      = 0x0003,
 
     Load                    = 0x0001,

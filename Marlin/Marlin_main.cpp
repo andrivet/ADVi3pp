@@ -7004,7 +7004,8 @@ inline void gcode_M17() {
    *
    * Returns 'true' if heating was completed, 'false' for abort
    */
-  static bool ensure_safe_temperature(const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT) {
+  // @advi3++: Remove static since we need to call it from ADVi3++
+  bool ensure_safe_temperature(const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT) {
 
     #if ENABLED(PREVENT_COLD_EXTRUSION)
       if (!DEBUGGING(DRYRUN) && thermalManager.targetTooColdToExtrude(active_extruder)) {

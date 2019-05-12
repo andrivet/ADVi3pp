@@ -49,7 +49,7 @@
 // From Marlin
 extern bool pause_print(const float &retract, const point_t &park_point, const float &unload_length=0, const bool show_lcd=false);
 extern void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, const int8_t max_beep_count=0);
-
+extern bool ensure_safe_temperature(const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT);
 
 namespace advi3pp {
 
@@ -63,7 +63,7 @@ const uint16_t default_hotend_temperature = 200;
 
 using adv::Callback;
 using BackgroundTask = Callback<void(*)()>;
-using WaitCallback = Callback<void(*)()>;
+using WaitCallback = Callback<bool(*)()>;
 
 //! Hotend, bed temperature and fan speed preset.
 struct Preset
@@ -222,13 +222,14 @@ struct Wait: Handler<Wait>
     void show(const FlashChar* message, const WaitCallback& back, ShowOptions options = ShowOptions::SaveBack);
     void show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
     void show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
+    void show_continue(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
     void show_continue(ShowOptions options = ShowOptions::SaveBack);
 
 private:
     Page do_prepare_page();
     void do_save_command();
     void do_back_command();
-    void on_continue();
+    bool on_continue();
 
     WaitCallback back_;
     WaitCallback continue_;
@@ -266,7 +267,7 @@ private:
     void prepare(const BackgroundTask& background);
     void load_command();
     void unload_command();
-    void stop();
+    bool stop();
     void stop_task();
     void load_start_task();
     void load_task();
@@ -376,7 +377,7 @@ struct AutomaticLeveling: Handler<AutomaticLeveling>
 
 private:
     Page do_prepare_page();
-    void g29_leveling_failed();
+    bool g29_leveling_failed();
 
 private:
     bool sensor_interactive_leveling_ = false;
@@ -471,13 +472,14 @@ private:
 
 struct Print: Handler<Print>
 {
+    void process_pause_code();
     void process_stop_code();
 
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void stop_command();
-    void pause_resume_command();
+    void pause_command();
     void advanced_pause_command();
     bool is_printing() const;
 
@@ -496,8 +498,7 @@ struct AdvancedPause: Handler<AdvancedPause>
 private:
     void init();
     void insert_filament();
-    void printing();
-    void filament_inserted();
+    bool filament_inserted();
 
 private:
     AdvancedPauseMessage last_advanced_pause_message_ = static_cast<AdvancedPauseMessage>(-1);
@@ -567,7 +568,7 @@ private:
     void heating_task();
     void extruding_task();
     void finished();
-    void cancel();
+    bool cancel();
 
 private:
     double extruded_ = 0.0;
@@ -587,7 +588,7 @@ private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void step2_command();
-    void cancel_pid();
+    bool cancel_pid();
     void hotend_command();
     void bed_command();
 

@@ -401,6 +401,14 @@ void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, Sho
     pages.show_page(Page::WaitContinue, options);
 }
 
+void Wait::show_continue(const FlashChar* message, ShowOptions options)
+{
+    advi3pp.set_status(message);
+    back_ = nullptr;
+    continue_ = WaitCallback{this, &Wait::on_continue};
+    pages.show_page(Page::WaitContinue, options);
+}
+
 void Wait::show_continue(ShowOptions options)
 {
     back_ = nullptr;
@@ -409,36 +417,42 @@ void Wait::show_continue(ShowOptions options)
     pages.show_page(Page::WaitContinue, options);
 }
 
-void Wait::on_continue()
+bool Wait::on_continue()
 {
     ::wait_for_user = false;
-    pages.show_back_page();
+    return false;
 }
 
 void Wait::do_back_command()
 {
+    bool continue_processing = true;
+
     if(!back_)
         Log::error() << F("No Back action defined") << Log::endl();
     else
     {
-        back_();
+        continue_processing = back_();
         back_ = nullptr;
     }
 
-    Parent::do_back_command();
+    if(continue_processing)
+        Parent::do_back_command();
 }
 
 void Wait::do_save_command()
 {
+    bool continue_processing = true;
+
     if(!continue_)
         Log::error() << F("No Continue action defined") << Log::endl();
     else
     {
-        continue_();
+        continue_processing = continue_();
         continue_ = nullptr;
     }
 
-    pages.show_forward_page();
+    if(continue_processing)
+        pages.show_forward_page();
 }
 
 // --------------------------------------------------------------------
@@ -535,7 +549,7 @@ void LoadUnload::unload_command()
 }
 
 //! Handle back from the Load on Unload LCD screen.
-void LoadUnload::stop()
+bool LoadUnload::stop()
 {
     Log::log() << F("Load/Unload Stop") << Log::endl();
 
@@ -543,6 +557,7 @@ void LoadUnload::stop()
     task.set_background_task(BackgroundTask(this, &LoadUnload::stop_task));
     clear_command_queue();
     Temperature::setTargetHotend(0, 0);
+    return false;
 }
 
 void LoadUnload::stop_task()
@@ -983,9 +998,10 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
     }
 }
 
-void AutomaticLeveling::g29_leveling_failed()
+bool AutomaticLeveling::g29_leveling_failed()
 {
     pages.show_back_page();
+    return true;
 }
 
 #else
@@ -1309,7 +1325,7 @@ bool Print::do_dispatch(KeyValue value)
     switch(value)
     {
         case KeyValue::PrintStop:           stop_command(); break;
-        case KeyValue::PrintPauseResume:    pause_resume_command(); break;
+        case KeyValue::PrintPause:          pause_command(); break;
         case KeyValue::PrintAdvancedPause:  advanced_pause_command(); break;
         default:                            return false;
     }
@@ -1322,27 +1338,82 @@ Page Print::do_prepare_page()
     return Page::Print;
 }
 
+//! Stop printing
+void Print::stop_command()
+{
+    enqueue_and_echo_commands_P(PSTR("A1"));
+}
+
+//! Pause printing
+void Print::pause_command()
+{
+    enqueue_and_echo_commands_P(PSTR("A0"));
+}
+
+//! Advanced Pause for filament change
+void Print::advanced_pause_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M600"));
+}
+
 void Print::process_stop_code()
 {
-    if(card.isFileOpen())
-        card.stopSDPrint();
-    else
-        SERIAL_ECHOLNPGM("//action:cancel");
+    if(!is_printing())
+        return;
 
-    quickstop_stepper(); // Includes Planner::synchronize()
-    PrintCounter::stop();
-    Temperature::disable_all_heaters();
-    fanSpeeds[0] = 0;
+    enqueue_and_echo_commands_P(PSTR("M108"));
+    enqueue_and_echo_commands_P(PSTR("M84"));
 
 #if ENABLED(PARK_HEAD_ON_PAUSE)
     enqueue_and_echo_commands_P(PSTR("M125")); // Must be enqueued with pauseSDPrint set to be last in the buffer
 #endif
 }
 
-//! Stop printing
-void Print::stop_command()
+void Print::process_pause_code()
 {
-    enqueue_and_echo_commands_P(PSTR("A0"));
+    if(!is_printing())
+        return;
+
+    wait.show(F("Pause printing..."), ShowOptions::SaveBack);
+    if (!pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true))
+    {
+        pages.show_back_page();
+        return;
+    }
+
+    wait.show_continue(F("Press Continue to resume printing..."), ShowOptions::None);
+
+    bool nozzle_timed_out = false;
+    const millis_t nozzle_timeout = 1000UL * static_cast<millis_t>(PAUSE_PARK_NOZZLE_TIMEOUT);
+    HOTEND_LOOP() thermalManager.start_heater_idle_timer(e, nozzle_timeout);
+    KEEPALIVE_STATE(PAUSED_FOR_USER);
+
+    wait_for_user = true;    // LCD click or M108 will clear this
+    while(wait_for_user)
+    {
+        // If the nozzle has timed out, wait for the user to press the button to re-heat the nozzle, then
+        // re-heat the nozzle, restart the idle timers, and start over
+        if (!nozzle_timed_out)
+            HOTEND_LOOP() nozzle_timed_out |= thermalManager.is_heater_idle(e);
+
+        idle(true);
+    }
+
+    wait.show(F("Resuming..."), ShowOptions::None);
+
+    KEEPALIVE_STATE(IN_HANDLER);
+
+    // Re-enable the heaters if they timed out
+    HOTEND_LOOP() thermalManager.reset_heater_idle_timer(e);
+
+    // Wait for the heaters to reach the target temperatures
+    if(!ensure_safe_temperature())
+        return;
+
+    resume_print(0, 0, ADVANCED_PAUSE_PURGE_LENGTH, 0);
+    print_job_timer.start();
+
+    pages.show_back_page();
 }
 
 bool Print::is_printing() const
@@ -1353,20 +1424,7 @@ bool Print::is_printing() const
         return PrintCounter::isRunning();
 }
 
-//! Pause printing
-void Print::pause_resume_command()
-{
-    if(is_printing())
-        enqueue_and_echo_commands_P(PSTR("M25"));
-    else
-        enqueue_and_echo_commands_P(PSTR("M24"));
-}
 
-//! Resume the current SD printing
-void Print::advanced_pause_command()
-{
-    enqueue_and_echo_commands_P(PSTR("M600"));
-}
 
 // --------------------------------------------------------------------
 // Advance pause
@@ -1391,7 +1449,7 @@ void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage messa
         case ADVANCED_PAUSE_MESSAGE_EXTRUDE:                    advi3pp.set_status(F("Extruding some filament...")); break;
         case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:       advi3pp.set_status(F("Press continue to heat")); break;
         case ADVANCED_PAUSE_MESSAGE_RESUME:                     advi3pp.set_status(F("Resuming print...")); break;
-        case ADVANCED_PAUSE_MESSAGE_STATUS:                     printing(); break;
+        case ADVANCED_PAUSE_MESSAGE_STATUS:                     advi3pp.set_status(F("Printing")); break;
         case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:   advi3pp.set_status(F("Waiting for heat...")); break;
         case ADVANCED_PAUSE_MESSAGE_OPTION:                     advanced_pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
         default: advi3pp::Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << advi3pp::Log::endl(); break;
@@ -1409,16 +1467,11 @@ void AdvancedPause::insert_filament()
                        WaitCallback{this, &AdvancedPause::filament_inserted}, ShowOptions::None);
 }
 
-void AdvancedPause::filament_inserted()
+bool AdvancedPause::filament_inserted()
 {
     ::wait_for_user = false;
     wait.show(F("Filament inserted.."), ShowOptions::None);
-}
-
-void AdvancedPause::printing()
-{
-    advi3pp.set_status(F("Printing"));
-    pages.show_forward_page();
+    return false;
 }
 
 // --------------------------------------------------------------------
@@ -1655,11 +1708,12 @@ void ExtruderTuning::finished()
     pages.show_page(Page::ExtruderTuningMeasure, ShowOptions::None);
 }
 
-void ExtruderTuning::cancel()
+bool ExtruderTuning::cancel()
 {
     ::wait_for_user = ::wait_for_heatup = false;
     task.clear_background_task();
     Temperature::setTargetHotend(0, 0);
+    return false;
 }
 
 //! Cancel the extruder tuning.
@@ -1777,10 +1831,11 @@ void PidTuning::step2_command()
     temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
 }
 
-void PidTuning::cancel_pid()
+bool PidTuning::cancel_pid()
 {
     ::wait_for_user = ::wait_for_heatup = false;
     inTuning_ = false;
+    return false;
 }
 
 //! PID automatic tuning is finished.
