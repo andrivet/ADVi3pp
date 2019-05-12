@@ -38,7 +38,7 @@
 #ifdef ADVi3PP_BLTOUCH
     #define X_STOP_PIN     54   // PF0 / A0
     #define Y_STOP_PIN     24   // PA2 / AD2
-    #define Z_STOP_PIN     25   // PA3 / AD3
+    #define Z_STOP_PIN     6    // PH3 / PWM6
     #define SERVO0_PIN     40   // PG1 / !RD
 #else
     #define X_STOP_PIN     54   // PF0 / A0
