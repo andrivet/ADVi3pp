@@ -1377,7 +1377,7 @@ void Print::process_pause_code()
     wait.show(F("Pause printing..."), ShowOptions::SaveBack);
     if (!pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true))
     {
-        pages.show_back_page();
+        pause_finished(false);
         return;
     }
 
@@ -1413,6 +1413,11 @@ void Print::process_pause_code()
     resume_print(0, 0, ADVANCED_PAUSE_PURGE_LENGTH, 0);
     print_job_timer.start();
 
+    pause_finished(true);
+}
+
+void Print::pause_finished(bool)
+{
     pages.show_back_page();
 }
 

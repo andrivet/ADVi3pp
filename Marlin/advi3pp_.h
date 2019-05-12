@@ -474,6 +474,7 @@ struct Print: Handler<Print>
 {
     void process_pause_code();
     void process_stop_code();
+    void pause_finished(bool success);
 
 private:
     bool do_dispatch(KeyValue value);
@@ -1067,7 +1068,6 @@ struct ADVi3pp_
     void eeprom_settings_mismatch();
     void temperature_error(const FlashChar* message);
     bool is_thermal_protection_enabled() const;
-    void process_command();
     void advanced_pause_show_message(AdvancedPauseMessage message);
     void set_brightness(int16_t britghness);
     void save_settings();

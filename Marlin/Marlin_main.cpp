@@ -11133,6 +11133,8 @@ inline void gcode_M502() {
 
     // Resume the print job timer if it was running
     if (job_running) print_job_timer.start();
+
+    advi3pp::ADVi3pp::pause_finished(true);
   }
 
   /**
