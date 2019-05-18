@@ -54,7 +54,7 @@ struct Log
     Log& operator<<(double data);
     void operator<<(EndOfLine eol);
 
-    inline static Log& log() { return logging_; }
+    static Log& log();
     static Log& error();
     inline static EndOfLine endl() { return EndOfLine{}; }
     static void dump(const uint8_t* bytes, size_t size);

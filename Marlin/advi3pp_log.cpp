@@ -41,7 +41,13 @@ Log Log::logging_;
 
 Log& Log::error()
 {
-    log() << F("### ERROR: ");
+    log() << F("// LOG: ");
+    return log();
+}
+
+Log& Log::error()
+{
+    log() << F("// ERROR: ");
     return log();
 }
 
