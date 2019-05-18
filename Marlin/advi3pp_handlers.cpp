@@ -1361,12 +1361,16 @@ void Print::process_stop_code()
     if(!is_printing())
         return;
 
-    enqueue_and_echo_commands_P(PSTR("M108"));
-    enqueue_and_echo_commands_P(PSTR("M84"));
+    wait.show(F("Stop printing..."), ShowOptions::SaveBack);
+    pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true);
 
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-    enqueue_and_echo_commands_P(PSTR("M125")); // Must be enqueued with pauseSDPrint set to be last in the buffer
-#endif
+    thermalManager.disable_all_heaters();
+    fanSpeeds[0] = 0;
+
+    planner.quick_stop();
+    print_job_timer.stop();
+
+    pages.show_back_page();
 }
 
 void Print::process_pause_code()
