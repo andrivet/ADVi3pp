@@ -557,7 +557,7 @@ bool LoadUnload::stop()
     task.set_background_task(BackgroundTask(this, &LoadUnload::stop_task));
     clear_command_queue();
     Temperature::setTargetHotend(0, 0);
-    return false;
+    return true;
 }
 
 void LoadUnload::stop_task()
@@ -1533,7 +1533,7 @@ void SensorZHeight::home_task()
 
     reset();
 
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
+    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));  // raise head
     enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F6000")); // middle
     enqueue_and_echo_commands_P(PSTR("M211 S0")); // disable soft-endstops
     send_data();
