@@ -972,8 +972,8 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
 {
     if(!success)
     {
-        if(!sensor_interactive_leveling_ && !IS_SD_FILE_OPEN()) // i.e. USB print
-            SERIAL_ECHOLNPGM("//action:disconnect"); // "disconnect" is the only standard command to stop an USB print
+        if(!sensor_interactive_leveling_ && print.is_usb_printing())
+            print.send_stop_usb_print();
 
         if(sensor_interactive_leveling_)
             wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::g29_leveling_failed});
@@ -1364,6 +1364,9 @@ void Print::process_stop_code()
     wait.show(F("Stop printing..."), ShowOptions::SaveBack);
     pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true);
 
+    if(is_usb_printing())
+        send_stop_usb_print();
+
     thermalManager.disable_all_heaters();
     fanSpeeds[0] = 0;
 
@@ -1430,10 +1433,19 @@ bool Print::is_printing() const
     if(card.isFileOpen())
         return card.sdprinting;
     else
-        return PrintCounter::isRunning();
+        return print_job_timer.isRunning();
 }
 
+bool Print::is_usb_printing() const
+{
+    return print_job_timer.isRunning();
+}
 
+void Print::send_stop_usb_print()
+{
+    // "disconnect" is the only standard command to stop an USB print
+    SERIAL_ECHOLNPGM("//action:disconnect");
+}
 
 // --------------------------------------------------------------------
 // Advance pause
@@ -1455,10 +1467,11 @@ void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage messa
         case ADVANCED_PAUSE_MESSAGE_INIT:                       init(); break;
         case ADVANCED_PAUSE_MESSAGE_UNLOAD:                     advi3pp.set_status(F("Unloading filament...")); break;
         case ADVANCED_PAUSE_MESSAGE_INSERT:                     insert_filament(); break;
-        case ADVANCED_PAUSE_MESSAGE_EXTRUDE:                    advi3pp.set_status(F("Extruding some filament...")); break;
+        case ADVANCED_PAUSE_MESSAGE_LOAD:                       advi3pp.set_status(F("Loading...")); break;
+        case ADVANCED_PAUSE_MESSAGE_PURGE:                      advi3pp.set_status(F("Extruding some filament...")); break;
         case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:       advi3pp.set_status(F("Press continue to heat")); break;
         case ADVANCED_PAUSE_MESSAGE_RESUME:                     advi3pp.set_status(F("Resuming print...")); break;
-        case ADVANCED_PAUSE_MESSAGE_STATUS:                     advi3pp.set_status(F("Printing")); break;
+        case ADVANCED_PAUSE_MESSAGE_STATUS:                     break;
         case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:   advi3pp.set_status(F("Waiting for heat...")); break;
         case ADVANCED_PAUSE_MESSAGE_OPTION:                     advanced_pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
         default: advi3pp::Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << advi3pp::Log::endl(); break;

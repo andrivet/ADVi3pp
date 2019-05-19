@@ -475,6 +475,9 @@ struct Print: Handler<Print>
     void process_pause_code();
     void process_stop_code();
     void pause_finished(bool success);
+    bool is_printing() const;
+    bool is_usb_printing() const;
+    void send_stop_usb_print();
 
 private:
     bool do_dispatch(KeyValue value);
@@ -482,7 +485,6 @@ private:
     void stop_command();
     void pause_command();
     void advanced_pause_command();
-    bool is_printing() const;
 
     friend Parent;
 };
