@@ -1869,7 +1869,6 @@ void PidTuning::finished(bool success)
     if(!success)
     {
         advi3pp.set_status(F("PID tuning failed"));
-        pages.show_back_page();
         return;
     }
 
