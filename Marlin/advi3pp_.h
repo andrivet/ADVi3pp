@@ -998,7 +998,7 @@ struct Dimming
 {
     Dimming();
 
-    void enable(bool enable);
+    void enable(bool enable, bool doIt = true);
     void check();
     void reset(bool force = false);
     void change_brightness(int16_t brightness);
@@ -1061,6 +1061,7 @@ private:
 
 struct ADVi3pp_
 {
+    void setup_lcd_serial();
     void setup();
     void idle();
     void write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
@@ -1089,8 +1090,8 @@ struct ADVi3pp_
     void set_progress_name(const char* name);
     void reset_progress();
 
-    void enable_buzzer(bool enable);
-    void enable_buzz_on_press(bool enable);
+    void enable_buzzer(bool enable, bool doIt = true);
+    void enable_buzz_on_press(bool enable, bool doIt = true);
     void buzz(long duration = 100);
     void buzz_on_press();
     uint32_t get_current_baudrate() const { return usb_baudrate_; }

@@ -3099,10 +3099,11 @@ Dimming::Dimming()
     set_next_dimmming_time();
 }
 
-void Dimming::enable(bool enable)
+void Dimming::enable(bool enable, bool doIt)
 {
     enabled_ = enable;
-    reset(true);
+    if(doIt)
+        reset(true);
 }
 
 void Dimming::set_next_checking_time()

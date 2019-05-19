@@ -45,6 +45,7 @@ enum class TemperatureKind { Bed, Hotend };
 //! ADVi3++ public facade.
 struct ADVi3pp
 {
+    static void setup_lcd_serial();
     static void setup();
     static void idle();
     static void auto_pid_finished(bool success);

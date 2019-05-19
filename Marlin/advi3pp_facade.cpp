@@ -67,6 +67,11 @@ void ADVi3pp::setup()
     advi3pp.setup();
 }
 
+void ADVi3pp::setup_lcd_serial()
+{
+    advi3pp.setup_lcd_serial();
+}
+
 //! Read data from the LCD and act accordingly.
 void ADVi3pp::idle()
 {

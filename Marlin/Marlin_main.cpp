@@ -15166,6 +15166,9 @@ void setup() {
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START();
 
+  // @advi3++: setup second serial (LCD panel)
+  advi3pp::ADVi3pp::setup_lcd_serial();
+
   // Prepare communication for TMC drivers
   #if HAS_DRIVER(TMC2130)
     tmc_init_cs_pins();

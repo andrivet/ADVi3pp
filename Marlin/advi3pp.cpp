@@ -118,6 +118,12 @@ inline namespace singletons
 // --------------------------------------------------------------------
 
 //! Initialize the printer and its LCD
+void ADVi3pp_::setup_lcd_serial()
+{
+    Serial2.begin(advi3_pp_baudrate);
+}
+
+//! Initialize the printer and its LCD
 void ADVi3pp_::setup()
 {
     init_ = true;
@@ -125,7 +131,7 @@ void ADVi3pp_::setup()
     if(usb_baudrate_ != BAUDRATE)
         change_usb_baudrate(usb_baudrate_);
 
-    Serial2.begin(advi3_pp_baudrate);
+    dimming.reset(true);
 }
 
 void ADVi3pp_::show_boot_page()
@@ -182,9 +188,9 @@ bool ADVi3pp_::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
     eeprom.read(features_);
     eeprom.read(usb_baudrate_);
 
-    dimming.enable(test_one_bit(features_, Feature::Dimming));
-    enable_buzzer(test_one_bit(features_, Feature::Buzzer));
-    enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress));
+    dimming.enable(test_one_bit(features_, Feature::Dimming), false);
+    enable_buzzer(test_one_bit(features_, Feature::Buzzer), false);
+    enable_buzz_on_press(test_one_bit(features_, Feature::BuzzOnPress), false);
 
     return version_ == settings_version;
 }
@@ -533,15 +539,15 @@ void ADVi3pp_::reset_progress()
     percent_ = -1;
 }
 
-void ADVi3pp_::enable_buzzer(bool enable)
+void ADVi3pp_::enable_buzzer(bool enable, bool /*doIt*/)
 {
     buzzer_enabled_ = enable;
 }
 
-void ADVi3pp_::enable_buzz_on_press(bool enable)
+void ADVi3pp_::enable_buzz_on_press(bool enable, bool doIt)
 {
     buzz_on_press_enabled_ = enable;
-    if(enable)
+    if(enable && doIt)
         buzz_(50);
 }
 
@@ -588,6 +594,8 @@ void ADVi3pp_::change_usb_baudrate(uint32_t baudrate)
 
     // wait for last transmitted data to be sent
     SERIAL_FLUSH();
+    MYSERIAL0.end();
+
     MYSERIAL0.begin(usb_baudrate_);
     // empty out possible garbage from input buffer
     while(MYSERIAL0.available())
