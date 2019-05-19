@@ -39,7 +39,7 @@ namespace advi3pp {
 
 Log Log::logging_;
 
-Log& Log::error()
+Log& Log::log()
 {
     log() << F("// LOG: ");
     return log();
