@@ -123,15 +123,16 @@ void ADVi3pp_::setup_lcd_serial()
     Serial2.begin(advi3_pp_baudrate);
 }
 
+void ADVi3pp_::change_baudrate()
+{
+    if(usb_baudrate_ != BAUDRATE)
+        change_usb_baudrate(usb_baudrate_);
+}
+
 //! Initialize the printer and its LCD
 void ADVi3pp_::setup()
 {
     init_ = true;
-
-    if(usb_baudrate_ != BAUDRATE)
-        change_usb_baudrate(usb_baudrate_);
-
-    dimming.reset(true);
 }
 
 void ADVi3pp_::show_boot_page()
@@ -587,11 +588,6 @@ void ADVi3pp_::change_usb_baudrate(uint32_t baudrate)
 {
     usb_baudrate_ = baudrate;
 
-    // We do not use Log because this message is always output (Log is only active in DEBUG)
-    SERIAL_ECHO(F("Switch USB baudrate to "));
-    SERIAL_ECHO(usb_baudrate_);
-    SERIAL_ECHO("\r\n");
-
     // wait for last transmitted data to be sent
     SERIAL_FLUSH();
     MYSERIAL0.end();
@@ -600,11 +596,6 @@ void ADVi3pp_::change_usb_baudrate(uint32_t baudrate)
     // empty out possible garbage from input buffer
     while(MYSERIAL0.available())
         MYSERIAL0.read();
-
-    // We do not use Log because this message is always output (Log is only active in DEBUG
-    SERIAL_ECHO(F("\r\nUSB baudrate switched to "));
-    SERIAL_ECHO(usb_baudrate_);
-    SERIAL_ECHO("\r\n");
 }
 
 void ADVi3pp_::change_features(Feature features)

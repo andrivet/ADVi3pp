@@ -15211,6 +15211,9 @@ void setup() {
   // This also updates variables in the planner, elsewhere
   (void)settings.load();
 
+  // @advi3++: change baudrate if necessary
+  advi3pp::ADVi3pp::change_baudrate();
+
   #if HAS_M206_COMMAND
     // Initialize current position based on home_offset
     COPY(current_position, home_offset);

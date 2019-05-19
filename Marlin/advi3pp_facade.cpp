@@ -72,6 +72,11 @@ void ADVi3pp::setup_lcd_serial()
     advi3pp.setup_lcd_serial();
 }
 
+void ADVi3pp::change_baudrate()
+{
+    advi3pp.change_baudrate();
+}
+
 //! Read data from the LCD and act accordingly.
 void ADVi3pp::idle()
 {

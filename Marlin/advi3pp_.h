@@ -1062,6 +1062,7 @@ private:
 struct ADVi3pp_
 {
     void setup_lcd_serial();
+    void change_baudrate();
     void setup();
     void idle();
     void write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
