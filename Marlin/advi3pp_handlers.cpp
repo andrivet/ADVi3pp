@@ -1362,10 +1362,10 @@ void Print::process_stop_code()
         return;
 
     wait.show(F("Stop printing..."), ShowOptions::SaveBack);
-    pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true);
-
     if(is_usb_printing())
         send_stop_usb_print();
+
+    pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true);
 
     thermalManager.disable_all_heaters();
     fanSpeeds[0] = 0;
@@ -1373,6 +1373,7 @@ void Print::process_stop_code()
     planner.quick_stop();
     print_job_timer.stop();
 
+    advi3pp.set_status(F("Print Stopped"));
     pages.show_back_page();
 }
 
