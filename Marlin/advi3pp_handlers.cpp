@@ -972,8 +972,8 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
 {
     if(!success)
     {
-        if(!sensor_interactive_leveling_ && print.is_usb_printing())
-            print.send_stop_usb_print();
+        if(!sensor_interactive_leveling_)
+            print.send_stop_usb_print(); // Send even during a SD print because you may monitor with OctoPrint
 
         if(sensor_interactive_leveling_)
             wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::g29_leveling_failed});
