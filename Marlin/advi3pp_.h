@@ -69,8 +69,8 @@ using WaitCallback = Callback<bool(*)()>;
 struct Preset
 {
     uint16_t hotend;
-    uint16_t bed;
-    uint16_t fan;
+    uint8_t bed;
+    uint8_t fan;
 };
 
 //! Position of a sensor.
@@ -137,7 +137,7 @@ inline void EepromRead::read(T& data)
 // Pages
 // --------------------------------------------------------------------
 
-enum class ShowOptions
+enum class ShowOptions: uint8_t
 {
     None     = 0x00,
     SaveBack = 0x01
@@ -519,7 +519,7 @@ struct SensorZHeight: Handler<SensorZHeight>
     void minus();
     void plus();
 
-    enum class Multiplier
+    enum class Multiplier: uint8_t
     {
         M1 = 0,
         M2 = 1,
@@ -574,7 +574,7 @@ private:
     bool cancel();
 
 private:
-    double extruded_ = 0.0;
+    float extruded_ = 0.0;
     friend Parent;
 };
 
@@ -621,7 +621,8 @@ private:
 
 struct Diagnosis: Handler<Diagnosis>
 {
-    enum class State { Off = 0, On = 1, Output = 2};
+    enum class State: uint8_t { Off = 0, On = 1, Output = 2};
+
 private:
     Page do_prepare_page();
     void do_back_command();
@@ -743,7 +744,7 @@ struct PrintSettings: Handler<PrintSettings>
     void baby_minus_command();
     void baby_plus_command();
 
-    enum class Multiplier
+    enum class Multiplier: uint8_t
     {
         M1 = 0,
         M2 = 1,

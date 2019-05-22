@@ -41,7 +41,7 @@ enum class Base: uint8_t
     Hexadecimal = 16
 };
 
-enum class Alignment
+enum class Alignment: uint8_t
 {
     None, Left, Center, Right
 };

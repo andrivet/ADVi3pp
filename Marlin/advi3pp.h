@@ -40,7 +40,7 @@ using eeprom_read  = void (*)(int &pos, uint8_t* value, uint16_t size, uint16_t*
 
 namespace advi3pp {
 
-enum class TemperatureKind { Bed, Hotend };
+enum class TemperatureKind: uint8_t { Bed, Hotend };
 
 //! ADVi3++ public facade.
 struct ADVi3pp
