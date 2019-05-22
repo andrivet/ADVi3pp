@@ -1540,9 +1540,10 @@
  * Will be sent in the form '//action:ACTION_ON_PAUSE', e.g. '//action:pause'.
  * The host must be configured to handle the action command.
  */
-// @advi3++: OctoPrint handles this correctly
-#define ACTION_ON_PAUSE "pause"
-#define ACTION_ON_RESUME "resume"
+// @advi3++: Do not define these as they interfere with OctoPrint:
+// we do not want the host to pause or resume, we do this ourselves.
+//#define ACTION_ON_PAUSE "pause"
+//#define ACTION_ON_RESUME "resume"
 
 //===========================================================================
 //====================== I2C Position Encoder Settings ======================
