@@ -52,7 +52,7 @@ struct Log
     Log& operator<<(uint16_t data);
     Log& operator<<(uint32_t data);
     Log& operator<<(double data);
-    void operator<<(EndOfLine eol);
+    Log& operator<<(EndOfLine eol);
 
     static Log& log();
     static Log& error();

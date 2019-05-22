@@ -41,55 +41,56 @@ Log Log::logging_;
 
 Log& Log::log()
 {
-    log() << F("// LOG: ");
-    return log();
+    *this << F("// LOG: ");
+    return *this;
 }
 
 Log& Log::error()
 {
-    log() << F("// ERROR: ");
-    return log();
+    *this << F("// ERROR: ");
+    return *this;
 }
 
 Log& Log::operator<<(const char* data)
 {
     SERIAL_ECHO(data);
-    return log();
+    return *this;
 }
 
 Log& Log::operator<<(const FlashChar* data)
 {
     serialprintPGM(reinterpret_cast<const char*>(data));
-    return log();
+    return *this;
 }
 
 Log& Log::operator<<(uint8_t data)
 {
     SERIAL_ECHO_F(data, HEX);
-    return log();
+    return *this;
 }
 
 Log& Log::operator<<(uint16_t data)
 {
     SERIAL_ECHO_F(data, HEX);
-    return log();
+    return *this;
 }
 
 Log& Log::operator<<(uint32_t data)
 {
     SERIAL_ECHO_F(data, HEX);
-    return log();
+    return *this;
 }
 
 Log& Log::operator<<(double data)
 {
     SERIAL_ECHO(data);
-    return log();
+    return *this;
 }
 
-void Log::operator<<(EndOfLine)
+Log& Log::operator<<(EndOfLine)
 {
     SERIAL_EOL();
+    return *this;
 }
 
 //! Dump the bytes in hexadecimal and print them (serial)
@@ -109,7 +110,7 @@ void Log::dump(const uint8_t* bytes, size_t size)
 
 void assert_(const char *msg, const char *file, uint16_t line)
 {
-    Log::log() << F("### ASSERTION FAILED: ") << msg << " in file " << file << ", line " << line << Log::endl();
+    Log::error() << F("ASSERTION FAILED: ") << msg << " in file " << file << ", line " << line << Log::endl();
     asm("break \n");
 }
 
