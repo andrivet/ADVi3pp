@@ -52,20 +52,20 @@ void Stack<T, S>::push(T e)
 {
     assert(top_ <= S);
     elements_[top_++] = e;
-};
+}
 
 template<typename T, size_t S>
 T Stack<T, S>::pop()
 {
     assert(!is_empty());
     return elements_[--top_];
-};
+}
 
 template<typename T, size_t S>
 bool Stack<T, S>::is_empty() const
 {
     return top_ == 0;
-};
+}
 
 template<typename T, size_t S>
 bool Stack<T, S>::contains(T e) const
@@ -74,7 +74,7 @@ bool Stack<T, S>::contains(T e) const
         if(elements_[top_ - i - 1] == e)
             return true;
     return false;
-};
+}
 
 
 // --------------------------------------------------------------------

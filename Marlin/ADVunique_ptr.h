@@ -54,7 +54,7 @@ public:
     T* release() noexcept { T* p = ptr_; ptr_ = nullptr; return p; }
     void reset(T* p = nullptr) noexcept { if(p != ptr_) { delete ptr_; ptr_ = p; } }
     void reset(nullptr_t) noexcept { delete ptr_; ptr_ = nullptr; }
-    void swap(unique_ptr& p) noexcept { swap(ptr_, p.ptr_); }
+    void swap(unique_ptr& p) noexcept { adv::swap(ptr_, p.ptr_); }
 
     // Disabled
     unique_ptr(const unique_ptr&) = delete;
@@ -89,40 +89,40 @@ template<typename T>
 bool operator!=(nullptr_t, const unique_ptr<T>& x) noexcept { return x.get() != nullptr; }
 
 template<typename T1, typename T2>
-bool operator<(const unique_ptr<T1>& x, const unique_ptr<T2>& y) noexcept { return x.get() < y.get(); };
+bool operator<(const unique_ptr<T1>& x, const unique_ptr<T2>& y) noexcept { return x.get() < y.get(); }
 
 template<typename T1, typename T2>
-bool operator<(const unique_ptr<T1>& x, nullptr_t) noexcept { return x.get() < nullptr; };
+bool operator<(const unique_ptr<T1>& x, nullptr_t) noexcept { return x.get() < nullptr; }
 
 template<typename T1, typename T2>
-bool operator<(nullptr_t, const unique_ptr<T2>& y) noexcept { return nullptr < y.get(); };
+bool operator<(nullptr_t, const unique_ptr<T2>& y) noexcept { return nullptr < y.get(); }
 
 template<typename T1, typename T2>
-bool operator>(const unique_ptr<T1>& x, const unique_ptr<T2>& y) noexcept { return x.get() > y.get(); };
+bool operator>(const unique_ptr<T1>& x, const unique_ptr<T2>& y) noexcept { return x.get() > y.get(); }
 
 template<typename T1, typename T2>
-bool operator>(const unique_ptr<T1>& x, nullptr_t) noexcept { return x.get() > nullptr; };
+bool operator>(const unique_ptr<T1>& x, nullptr_t) noexcept { return x.get() > nullptr; }
 
 template<typename T1, typename T2>
-bool operator>(nullptr_t, const unique_ptr<T2>& y) noexcept { return nullptr > y.get(); };
+bool operator>(nullptr_t, const unique_ptr<T2>& y) noexcept { return nullptr > y.get(); }
 
 template<typename T1, typename T2>
-bool operator<=(const unique_ptr<T1>& x, const unique_ptr<T2>& y) noexcept { return x.get() <= y.get(); };
+bool operator<=(const unique_ptr<T1>& x, const unique_ptr<T2>& y) noexcept { return x.get() <= y.get(); }
 
 template<typename T1, typename T2>
-bool operator<=(const unique_ptr<T1>& x, nullptr_t) noexcept { return x.get() <= nullptr; };
+bool operator<=(const unique_ptr<T1>& x, nullptr_t) noexcept { return x.get() <= nullptr; }
 
 template<typename T1, typename T2>
-bool operator<=(nullptr_t, const unique_ptr<T2>& y) noexcept { return nullptr <= y.get(); };
+bool operator<=(nullptr_t, const unique_ptr<T2>& y) noexcept { return nullptr <= y.get(); }
 
 template<typename T1, typename T2>
-bool operator>=(const unique_ptr<T1>& x, const unique_ptr<T2>& y) noexcept { return x.get() >= y.get(); };
+bool operator>=(const unique_ptr<T1>& x, const unique_ptr<T2>& y) noexcept { return x.get() >= y.get(); }
 
 template<typename T1, typename T2>
-bool operator>=(const unique_ptr<T1>& x, nullptr_t) noexcept { return x.get() >= nullptr; };
+bool operator>=(const unique_ptr<T1>& x, nullptr_t) noexcept { return x.get() >= nullptr; }
 
 template<typename T1, typename T2>
-bool operator>=(nullptr_t, const unique_ptr<T2>& y) noexcept { return nullptr >= y.get(); };
+bool operator>=(nullptr_t, const unique_ptr<T2>& y) noexcept { return nullptr >= y.get(); }
 
 }
 

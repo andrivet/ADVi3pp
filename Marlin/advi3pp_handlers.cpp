@@ -189,7 +189,7 @@ inline namespace singletons
     Diagnosis diagnosis;
     Print print;
     AdvancedPause pause;
-};
+}
 
 // --------------------------------------------------------------------
 // Pages management
@@ -1282,7 +1282,7 @@ void SdCard::get_file_name(uint8_t index_in_page, ADVString<sd_file_length>& nam
 		name += (card.longFilename[0] == 0) ? card.filename : card.longFilename;
 		if(card.filenameIsDir) name += "]";
 	}
-};
+}
 
 //! Select a filename as sent by the LCD screen.
 //! @param file_index    The index of the filename to select
