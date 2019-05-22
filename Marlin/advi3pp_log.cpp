@@ -41,14 +41,14 @@ Log Log::logging_;
 
 Log& Log::log()
 {
-    *this << F("// LOG: ");
-    return *this;
+    logging_ << F("// LOG: ");
+    return logging_;
 }
 
 Log& Log::error()
 {
-    *this << F("// ERROR: ");
-    return *this;
+    logging_ << F("// ERROR: ");
+    return logging_;
 }
 
 Log& Log::operator<<(const char* data)
