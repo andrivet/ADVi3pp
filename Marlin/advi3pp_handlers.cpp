@@ -2146,7 +2146,8 @@ void FirmwareSettings::runout_sensor_command()
 
 void FirmwareSettings::do_save_command()
 {
-    advi3pp.change_usb_baudrate(usb_baudrate_);
+    if(advi3pp.get_current_baudrate() != usb_baudrate_)
+        advi3pp.change_usb_baudrate(usb_baudrate_, true);
     advi3pp.change_features(features_);
     Parent::do_save_command();
 }

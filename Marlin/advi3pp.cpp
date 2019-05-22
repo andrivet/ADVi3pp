@@ -42,6 +42,7 @@
 
 extern uint8_t progress_bar_percent;
 extern int16_t lcd_contrast;
+extern void dwell(millis_t time);
 
 namespace
 {
@@ -126,7 +127,7 @@ void ADVi3pp_::setup_lcd_serial()
 void ADVi3pp_::change_baudrate()
 {
     if(usb_baudrate_ != BAUDRATE)
-        change_usb_baudrate(usb_baudrate_);
+        change_usb_baudrate(usb_baudrate_, false);
 }
 
 //! Initialize the printer and its LCD
@@ -584,18 +585,24 @@ void ADVi3pp_::buzz_on_press()
     buzz_(BUZZ_ON_PRESS_DURATION);
 }
 
-void ADVi3pp_::change_usb_baudrate(uint32_t baudrate)
+void ADVi3pp_::change_usb_baudrate(uint32_t baudrate, bool disconnect)
 {
-    usb_baudrate_ = baudrate;
+    if(disconnect)
+        SERIAL_ECHOLNPGM("//action:disconnect");
 
     // wait for last transmitted data to be sent
-    SERIAL_FLUSH();
+    MYSERIAL0.flush();
+    MYSERIAL0.flushTX();
     MYSERIAL0.end();
 
+    dwell(500);
+
+    usb_baudrate_ = baudrate;
     MYSERIAL0.begin(usb_baudrate_);
-    // empty out possible garbage from input buffer
-    while(MYSERIAL0.available())
-        MYSERIAL0.read();
+    for(auto i = 0; i < 8; ++i)
+        SERIAL_CHAR(' ');
+    SERIAL_PROTOCOLLNPGM();
+    SERIAL_PROTOCOLLNPGM("start");
 }
 
 void ADVi3pp_::change_features(Feature features)
