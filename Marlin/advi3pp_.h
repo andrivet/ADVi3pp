@@ -47,9 +47,9 @@
 #include "advi3pp_bitmasks.h"
 
 // From Marlin
-extern bool pause_print(const float &retract, const point_t &park_point, const float &unload_length=0, const bool show_lcd=false);
-extern void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, const int8_t max_beep_count=0);
-extern bool ensure_safe_temperature(const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT);
+extern bool pause_print(const float &retract, const point_t &park_point, const float &unload_length=0, bool show_lcd=false);
+extern void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, int8_t max_beep_count=0);
+extern bool ensure_safe_temperature(AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT);
 
 namespace advi3pp {
 
@@ -596,8 +596,8 @@ private:
     void bed_command();
 
 private:
-    uint16_t temperature_;
-    TemperatureKind kind_;
+    uint16_t temperature_ = 0;
+    TemperatureKind kind_ = TemperatureKind::Hotend;
     bool inTuning_ = false;
 
     friend Parent;
@@ -801,7 +801,7 @@ private:
     void save_data();
 
 private:
-    static const size_t NB_PIDs = 5;
+    static const size_t NB_PIDs = 3;
     Pid hotend_pid_[NB_PIDs] = {};
     Pid bed_pid_[NB_PIDs] = {};
     TemperatureKind kind_ = TemperatureKind::Hotend;

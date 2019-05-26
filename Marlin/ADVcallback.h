@@ -153,7 +153,7 @@ private:
     { static_assert(sizeof(T) <= BUFFER_SIZE, "Buffer is too small"); new(buffer_) T(forward<Args>(args)...); }
 
 private:
-    static const size_t BUFFER_SIZE = 32;
+    static const size_t BUFFER_SIZE = 8;
     char buffer_[BUFFER_SIZE] = {};
     bool isNull_ = true;
 };
