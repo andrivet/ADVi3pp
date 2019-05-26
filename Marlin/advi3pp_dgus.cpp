@@ -418,7 +418,7 @@ bool ReadRegisterDataResponse::receive(Register reg, uint8_t nb_bytes, bool log)
     if(!Frame::receive(log))
         return false;
 
-    Command command; Register frame_reg; Uint8 frame_nb_bytes;
+    Command command{}; Register frame_reg{}; Uint8 frame_nb_bytes;
     *this >> command >> frame_reg >> frame_nb_bytes;
     if(command != Command::ReadRegisterData)
     {
@@ -500,7 +500,7 @@ bool ReadRamDataResponse::receive(Variable var, uint8_t nb_words)
 
     if(!Frame::receive())
         return false;
-    Command command; Variable frame_var; Uint8 frame_nb_words;
+    Command command{}; Variable frame_var{}; Uint8 frame_nb_words;
     *this >> command >> frame_var >> frame_nb_words;
     if(command != Command::ReadRamData)
     {

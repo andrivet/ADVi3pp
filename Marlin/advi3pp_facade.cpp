@@ -50,7 +50,6 @@ namespace advi3pp {
 
 inline namespace singletons
 {
-    extern ADVi3pp_ advi3pp;
     extern PidTuning pid_tuning;
     extern AutomaticLeveling automatic_leveling;
     extern SensorSettings sensor_settings;

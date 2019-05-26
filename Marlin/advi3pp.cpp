@@ -373,7 +373,7 @@ void ADVi3pp_::read_lcd_serial()
     buzz_on_press();
     dimming.reset();
 
-    Command command; Action action; Uint8 nb_words; Uint16 value;
+    Command command{}; Action action{}; Uint8 nb_words; Uint16 value;
     frame >> command >> action >> nb_words >> value;
     auto key_value = static_cast<KeyValue>(value.word);
 

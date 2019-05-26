@@ -193,7 +193,7 @@ protected:
     struct Position { enum { Header0 = 0, Header1 = 1, Length = 2, Command = 3, Data = 4, Register = 4, Variable = 4,
     		NbBytes = 5, NbWords = 6 }; };
 
-    uint8_t buffer_[FRAME_BUFFER_SIZE];
+    uint8_t buffer_[FRAME_BUFFER_SIZE] = {};
     uint8_t position_ = 0;
 };
 

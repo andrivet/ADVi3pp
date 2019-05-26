@@ -138,9 +138,6 @@ namespace advi3pp {
 
 inline namespace singletons
 {
-    extern ADVi3pp_ advi3pp;
-    extern Pages pages;
-    extern Task task;
     extern Feature features;
     extern Dimming dimming;
     extern Graphs graphs;
