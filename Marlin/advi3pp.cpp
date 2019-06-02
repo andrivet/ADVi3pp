@@ -156,7 +156,7 @@ void ADVi3pp_::send_gplv3_7b_notice()
 
 void ADVi3pp_::send_sponsors()
 {
-    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar, Sawtoothsquid, Darren Williams, JeremyThePrintr, RonnieL, Austin Farley");
+    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar, Sawtoothsquid, Darren Williams, JeremyThePrintr, RonnieL");
 }
 
 //! Store presets in permanent memory.
