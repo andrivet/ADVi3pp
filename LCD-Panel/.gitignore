@@ -1,0 +1,3 @@
+*.tft
+/microSD-root/**/*.bmp
+/microSD-root/TFT/**
