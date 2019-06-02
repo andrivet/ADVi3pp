@@ -117,7 +117,6 @@ namespace
         24,     // PA2 / AD2
         23,     // PA1 / AD1
          6,     // PH3 / OC4A
-         2,     // PE4 / OC3B
         25,     // PA3 / AD3
 
         40,     // PG1 / !RD
