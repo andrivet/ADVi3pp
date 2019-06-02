@@ -1,0 +1,5 @@
+R1=07      ; baudrate:115200
+R2=0D      ; FBZ|L22_Init_En|TPSAUTO
+R3=5A      ; UART_SYNC_H
+RA=A5      ; UART_SYNC_L
+STOP_DWIN_OS;
