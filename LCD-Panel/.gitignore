@@ -1,3 +1,4 @@
 *.tft
-/microSD-root/**/*.bmp
-/microSD-root/TFT/**
+/DGUS-root/**/*.bmp
+/DGUS-root/TFT/**
+/Sketch-Export
