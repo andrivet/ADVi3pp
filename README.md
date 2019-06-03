@@ -1,4 +1,4 @@
-# ADVi3++ a Custom Marlin Firmware for Wanhao i3 Plus Printers
+# ADVi3++, an advanced and better firmware for Wanhao i3 Plus Printers
 
 ## Introduction
 
@@ -27,15 +27,31 @@ The objectives with this custom version (when compared with Wanhao stock firmwar
 
 ## ADVi3++ User Manual
 
-A complete and up to date User Manual is published on [GitHub Pages](https://andrivet.github.io/ADVi3pp-User-Manual/). This manual contains:
+A complete and up to date User Manual is published on [ADVi3++ Community Web Site](hhttps://community.advi3pp.com/c/user-manual). This manual contains:
 
-* a list of features
-* How to Flash the firmware
-* LCD Touch Screen Manual
-* BLTouch Sensor installation instructions
-* Tuning instructions
-* Default Configuration used by ADVi3++
-* Resources 
+* [A list of features and of compatible printers](https://community.advi3pp.com/t/introduction/)
+* [How to Flash the firmware](https://community.advi3pp.com/t/how-to-flash/)
+* [LCD Touch Screen Guide](https://community.advi3pp.com/t/lcd-touch-screen-guide/)
+* [BLTouch Sensor installation instructions](https://community.advi3pp.com/t/bltouch-sensor/)
+* [Tuning instructions](https://community.advi3pp.com/t/tuning/)
+* [Default Settings used by ADVi3++](https://community.advi3pp.com/t/default-settings/)
+* [Starting and Ending G-Code](https://community.advi3pp.com/t/starting-and-ending-g-code/)
+* [Resources](https://community.advi3pp.com/t/resources/)
+
+[Sponsors of the **ADVI3++** project](https://www.patreon.com/andrivet) have also access to advanced topics:
+
+* [Build ADVi3++ from Sources](https://community.advi3pp.com/t/build-advi3-from-sources/)
+* [Alternative ways to Flash](https://community.advi3pp.com/t/alternative-ways-to-flash/)
+
+## Support
+
+You can get support from various resources:
+
+* The [User Manual](https://community.advi3pp.com/c/user-manual). You may be especially interested by the [Troubleshooting part](https://community.advi3pp.com/t/troubleshooting).
+* The [ADVi3++ Community - Get Help](https://community.advi3pp.com/c/get-help). It is a forum, based on [Discourse](https://www.discourse.org). In particular, it includes a [Search page](https://community.advi3pp.com/search?expanded=true).
+I monitor this forum and try to reply to all requests, from sponsors and non-sponsors of the ADVi3++ project.
+* The [Facebook ADVi3++ Page](http://facebook.com/advi3pp). I use it mainly for announcement, but I reply from time to time.
+* The [Patreon Page](https://www.patreon.com/andrivet). it **was** the may to get help during the development of ADVi3++ version 4. But it **no more the case**. I will no more reply to support on Patreon page and will redirect everybody to [ADVi3++ Community](https://community.advi3pp.com/c/get-help), open to everybody.
 
 # Wanhao Duplicator i3 Plus
 
@@ -57,7 +73,7 @@ There are some other projects (I am aware of) on a similar topic:
 
 Thanks to [Dylan xKoldx](https://github.com/xKoldx/ADVi3pp-Marlin) and [weidercs](https://github.com/weidercs/ADVi3pp-Marlin) for their forks supporting BLTouch. Thanks to Matt Cowell [SureshotM6](https://github.com/SureshotM6/ADVi3pp-Marlin) for the fork supporting M600 and head parking.
 
-Thanks you to Leo Lüker (Silverquark) for his [i3plus+ project](https://github.com/Silverquark/i3PlusPlus). I take many ideas from his code. But the project is no more active and I do not like the screens (personal taste) so I have created the **ADVi3++** fork. It is technically a fork of Marlin, not of i3plus+.
+Thanks to Leo Lüker (Silverquark) for his [i3plus+ project](https://github.com/Silverquark/i3PlusPlus). I take many ideas from his code. But the project is no more active and I do not like the screens (personal taste) so I have created the **ADVi3++** fork. It is technically a fork of Marlin, not of i3plus+.
 
 Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 
@@ -70,7 +86,7 @@ Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 * Based on Sprinter and grbl.
 * Copyright &copy; 2011 Camiel Gubbels / Erik van der Zalm
 
-## ADVi3++** LCD Panels
+## ADVi3++ LCD Panels
 
 * Copyright &copy; 2017-2019 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
 
@@ -90,10 +106,12 @@ Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 >
 > You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-## ADVi3++** LCD Panels
+## ADVi3++ LCD Panels
 
-<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />ADVi3++ LCD Panels are licenses under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />ADVi3++ LCD Panels are licenses under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 
 ## ADVi3++ User Manual
 
-<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This manual is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This manual is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
