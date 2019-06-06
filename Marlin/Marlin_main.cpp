@@ -3133,7 +3133,7 @@ static void homeaxis(const AxisEnum axis) {
 
   #if MB(I3_PLUS)
   /* @advi3++: fix for extruder stepper noise on the X_MIN switch.
-   * See: https://github.com/andrivet/ADVi3pp-Marlin/commit/5da26d65fd23c923a3d7c16d39c7518396392a60*/
+   * See: https://github.com/andrivet/ADVi3pp/commit/5da26d65fd23c923a3d7c16d39c7518396392a60*/
   if (axis == X_AXIS)
     disable_e_steppers();
   #endif

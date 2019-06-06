@@ -66,7 +66,7 @@
    * from where the binary was downloaded or the source code was compiled.
    */
   // @advi3++: Construct build version (version number set by advbumpversion) 
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 4.0.0-dev)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 4.0.0)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
@@ -106,7 +106,7 @@
    * Marlin repository.
    */
   // @advi3++: ADVi3++ sources 
-  #define SOURCE_CODE_URL "https://github.com/andrivet/ADVi3pp-Marlin"
+  #define SOURCE_CODE_URL "https://github.com/andrivet/ADVi3pp"
 
   /**
    * Default generic printer UUID.
@@ -119,6 +119,6 @@
    * documentation about a specific Marlin release.
    */
   // @advi3++: ADVi3++ User Manual
-  #define WEBSITE_URL "https://andrivet.github.io/ADVi3pp-User-Manual/"
+  #define WEBSITE_URL "https://community.advi3pp.com/c/user-manual"
 
 #endif // USE_AUTOMATIC_VERSIONING
