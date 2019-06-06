@@ -2,10 +2,10 @@ Thank you for submitting your feedback to the ADVi3++ project.
 
 Please be sure to review our [code of conduct](code_of_conduct.md) and the checklists below before submitting and use one of the templates. 
 
-**It is mandatory**. If you do not comply with these rules, I will **delete** your issue.
+**It is mandatory**. If you do not comply with these rules, I will **delete** your issue or comment. **I will be very strict**. If you persist, I may **ban** you.
 
-- [ ] This issue is **NOT** about support. **This is not the right place to ask for support**. You **may** get support from the [ADVI3++ Facebook page](https://www.facebook.com/advi3pp/) by the community. 
-You can get support from the developer of ADVi3++ from its [Patreon page](https://www.patreon.com/andrivet).
+- [ ] This issue (or comment) is **NOT** about support. **This is not the right place to ask for support**. 
+Instead, go to [ADVI3++ Community - Get Help](https://community.advi3pp.com/c/get-help). 
 
 ------------------------------------------------------------
 ### Feature Request
@@ -24,17 +24,16 @@ _Please provide information (such as links to web sites, blogs, technical descri
 ### Bug Report
 
 - [ ] You have checked that you are not creating a **duplicate** of an existing (maybe closed) issue (use the search)
-- [ ] You have tested with the **latest** version of ADVi3++ (including Beta releases)
+- [ ] You have tested with the **latest** stable version of ADVi3++
 - [ ] You are able to reproduce the bug
 - [ ] You are able to describe step by step the process to reproduce the bug
+
+#### Description of the bug
 
 * Exact model of your **printer**:
 * **ADVi3++** exact version (Mainboard):
 * Printing using **SD card** or **USB**:
-* **For USB printing only** Software used to print with its exact version:
-
-#### Description of the bug
-
+* **For USB printing only**: Software used to print with its exact version:
 * Expected behaviour:
 * Actual behaviour:
 * Steps to reproduce:
