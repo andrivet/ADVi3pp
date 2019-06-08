@@ -1,12 +1,7 @@
 /**
  * Marlin 3D Printer Firmware For Wanhao Duplicator i3 Plus (ADVi3++)
  *
- * Copyright (C) 2017 Sebastien Andrivet [https://github.com/andrivet/]
- *
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2017-2019 Sebastien Andrivet [https://github.com/andrivet/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +34,7 @@
 #include <HardwareSerial.h>
 
 // --------------------------------------------------------------------
-// From Marlin / Arduino
+// From Marlin and Arduino
 // --------------------------------------------------------------------
 
 uint8_t progress_bar_percent;
@@ -52,19 +47,15 @@ float run_z_probe();
 extern float zprobe_zoffset;
 #endif
 
+// --------------------------------------------------------------------
+
+
 namespace
 {
-    const uint16_t nb_visible_sd_files = 5;
-    const uint16_t tuning_extruder_filament = 100; // 10 cm
-	const uint16_t tuning_extruder_delta = 20; // 2 cm
+    //! List of possible baudrates
+    constexpr uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
 
-    const uint32_t usb_baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 250000};
-
-    const int8_t BRIGHTNESS_MIN = 0x01;
-    const int8_t BRIGHTNESS_MAX = 0x40;
-    const uint8_t DIMMING_RATIO = 5; // in percent
-    const uint16_t DIMMING_DELAY = 5 * 60; // 5 minutes
-
+    //! Default preheat values
     const advi3pp::Preset DEFAULT_PREHEAT_PRESET[advi3pp::Preheat::NB_PRESETS] = {
         {180, 50, 0},
         {200, 60, 0},
@@ -73,11 +64,16 @@ namespace
         {200, 00, 0}
     };
 
+    //! List of multipliers in Print Settings
     const double PRINT_SETTINGS_MULTIPLIERS[] = {0.04, 0.08, 0.12};
 
 #ifdef ADVi3PP_PROBE
+    //! List of multipliers in Z-height Tuning
     const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.04, 0.12, 1.0};
 
+    //! Get the name of a sensor holder
+    //! @param index Index of the holder
+    //! @return The name (in Flash memory) of the holder
     const FlashChar* get_sensor_name(size_t index)
     {
         // Note: F macro can be used only in a function, this is why this is coded like this
@@ -97,6 +93,7 @@ namespace
         return names[index];
     }
 
+    //! Default position of the sensor for the different holders
     const advi3pp::SensorPosition DEFAULT_SENSOR_POSITION[advi3pp::SensorSettings::NB_SENSOR_POSITIONS] =
     {
 #if defined(ADVi3PP_MARK2)
@@ -111,6 +108,7 @@ namespace
     };
 #endif
 
+    //! List of digital pins for the Diagnosis page
     const uint8_t diagnosis_digital_pins[] =
     {
         54,     // PF0 / ADC0 - A0
@@ -130,6 +128,7 @@ namespace
         33,     // PC4 / A12
     };
 
+    //! List of analogic pins for the Diagnosis page
     const uint8_t diagnosis_analog_pins[] = {55, 68, 54, 56}; // A1, A14, A0, A2
 }
 
@@ -268,6 +267,9 @@ void Pages::show_forward_page()
 // Screens
 // --------------------------------------------------------------------
 
+//! Dispatch a key value to the right handler
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool Screens::do_dispatch(KeyValue key_value)
 {
     // Do not call Parent::do_dispatch
@@ -304,6 +306,7 @@ void Screens::show_temps()
     pages.show_page(Page::Print);
 }
 
+//! Show Print Settings page (only if a print is running or paused)
 void Screens::show_print_settings()
 {
     if(!PrintCounter::isRunning() && !PrintCounter::isPaused())
@@ -332,6 +335,7 @@ void Screens::show_print()
     task.set_background_task(BackgroundTask{this, &Screens::show_sd_or_temp_page});
 }
 
+//! Show the SD card page (if a SD card is inserted) or the Temperature page
 void Screens::show_sd_or_temp_page()
 {
     task.clear_background_task();
@@ -341,7 +345,7 @@ void Screens::show_sd_or_temp_page()
     if(!card.cardOK)
     {
         // SD card not accessible so fall back to Temperatures
-        temperatures.show(false);
+        temperatures.show(ShowOptions::None);
         return;
     }
 
@@ -352,11 +356,16 @@ void Screens::show_sd_or_temp_page()
 // Wait
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Wait::do_prepare_page()
 {
     return Page::Waiting;
 }
 
+//! Show a simple wait page with a message
+//! @param message  The message to display
+//! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show(const FlashChar* message, ShowOptions options)
 {
     advi3pp.set_status(message);
@@ -365,6 +374,10 @@ void Wait::show(const FlashChar* message, ShowOptions options)
     pages.show_page(Page::Waiting, options);
 }
 
+//! Show a simple wait page with a message
+//! @param message  The message to display
+//! @param back     Callback to be called when the back button is pressed
+//! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show(const FlashChar* message, const WaitCallback& back, ShowOptions options)
 {
     advi3pp.set_status(message);
@@ -373,6 +386,11 @@ void Wait::show(const FlashChar* message, const WaitCallback& back, ShowOptions 
     pages.show_page(Page::WaitBack, options);
 }
 
+//! Show a simple wait page with a message
+//! @param message  The message to display
+//! @param back     Callback to be called when the back button is pressed
+//! @param cont     Callback to be called when the continue button is pressed
+//! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options)
 {
     advi3pp.set_status(message);
@@ -381,6 +399,10 @@ void Wait::show(const FlashChar* message, const WaitCallback& back, const WaitCa
     pages.show_page(Page::WaitBackContinue, options);
 }
 
+//! Show a simple wait page with a message
+//! @param message  The message to display
+//! @param cont     Callback to be called when the continue button is pressed
+//! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options)
 {
     advi3pp.set_status(message);
@@ -389,6 +411,9 @@ void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, Sho
     pages.show_page(Page::WaitContinue, options);
 }
 
+//! Show a simple wait page with a message
+//! @param message  The message to display
+//! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show_continue(const FlashChar* message, ShowOptions options)
 {
     advi3pp.set_status(message);
@@ -397,6 +422,9 @@ void Wait::show_continue(const FlashChar* message, ShowOptions options)
     pages.show_page(Page::WaitContinue, options);
 }
 
+//! Show a simple wait page without a message
+//! @param message  The message to display
+//! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show_continue(ShowOptions options)
 {
     back_ = nullptr;
@@ -405,12 +433,14 @@ void Wait::show_continue(ShowOptions options)
     pages.show_page(Page::WaitContinue, options);
 }
 
+//! Default action when the continue button is pressed (inform Marlin)
 bool Wait::on_continue()
 {
     ::wait_for_user = false;
     return false;
 }
 
+//! Handles the Back command
 void Wait::do_back_command()
 {
     bool continue_processing = true;
@@ -427,6 +457,7 @@ void Wait::do_back_command()
         Parent::do_back_command();
 }
 
+//! Handles the Save (Continue) command
 void Wait::do_save_command()
 {
     bool continue_processing = true;
@@ -447,23 +478,30 @@ void Wait::do_save_command()
 // Temperatures Graph
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Temperatures::do_prepare_page()
 {
     return Page::Temperature;
 }
 
+//! Show the temperature page and record and action to be executed when the back button is pressed
+//! @param back Action to be executed when the back button is pressed
 void Temperatures::show(const WaitCallback& back)
 {
     back_ = back;
     Parent::show(ShowOptions::SaveBack);
 }
 
-void Temperatures::show(bool save_back)
+//! Show the temperature page
+//! @param options  Options when displaying the page (i.e. save the current page or not)
+void Temperatures::show(ShowOptions options)
 {
     back_ = nullptr;
-    Parent::show(save_back ? ShowOptions::SaveBack : ShowOptions::None);
+    Parent::show(options);
 }
 
+//! Execute the Back command
 void Temperatures::do_back_command()
 {
     if(back_)
@@ -481,6 +519,7 @@ void Temperatures::do_back_command()
 
 //! Handle Load & Unload actions.
 //! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool LoadUnload::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -496,7 +535,8 @@ bool LoadUnload::do_dispatch(KeyValue key_value)
     return true;
 }
 
-//! Get the Load & Unload screen.
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page LoadUnload::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -505,6 +545,8 @@ Page LoadUnload::do_prepare_page()
     return Page::LoadUnload;
 }
 
+//! Prepare Load or Unload step #1: set the target temperature, setup the next step and display a wait message
+//! @param background Background task to detect if it is time for step #2
 void LoadUnload::prepare(const BackgroundTask& background)
 {
     ReadRamData frame{Variable::Value0, 1};
@@ -530,13 +572,14 @@ void LoadUnload::load_command()
     prepare(BackgroundTask(this, &LoadUnload::load_start_task));
 }
 
-//! Start Load action.
+//! Start Unload action.
 void LoadUnload::unload_command()
 {
     prepare(BackgroundTask(this, &LoadUnload::unload_start_task));
 }
 
-//! Handle back from the Load on Unload LCD screen.
+//! Handle back from the Load or Unload LCD screen: stop the process.
+//! @return true to continue Back processing
 bool LoadUnload::stop()
 {
     Log::log() << F("Load/Unload Stop") << Log::endl();
@@ -548,6 +591,7 @@ bool LoadUnload::stop()
     return true;
 }
 
+//! Check if the process is actually stopped and reset E axis
 void LoadUnload::stop_task()
 {
     if(advi3pp.is_busy() || !task.has_background_task())
@@ -560,6 +604,9 @@ void LoadUnload::stop_task()
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 }
 
+//! Check if the target temperature is reached and in this case, do step #2: extrude or unextrude
+//! @param command      Command to extrude or unextrude
+//! @param back_task    Background task to detect if the target temperature is reached and in this case, do step #2
 void LoadUnload::start_task(const char* command, const BackgroundTask& back_task)
 {
     if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
@@ -604,6 +651,7 @@ void LoadUnload::unload_task()
 
 //! Handle Preheat actions.
 //! @param key_value    Sub-action to handle
+//! @return             True if the action was handled
 bool Preheat::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -620,7 +668,8 @@ bool Preheat::do_dispatch(KeyValue key_value)
     return true;
 }
 
-//! Store presets in permanent memory.
+//! Store presets in permanent memory (EEPROM)
+//! @param eeprom EEPROM writer
 void Preheat::do_write(EepromWrite& eeprom) const
 {
     for(auto& preset: presets_)
@@ -630,10 +679,8 @@ void Preheat::do_write(EepromWrite& eeprom) const
     }
 }
 
-//! Restore presets from permanent memory.
-//! @param read Function to use for the actual reading
-//! @param eeprom_index
-//! @param working_crc
+//! Restore presets from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
 void Preheat::do_read(EepromRead& eeprom)
 {
     for(auto& preset: presets_)
@@ -654,11 +701,14 @@ void Preheat::do_reset()
     }
 }
 
+//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
+//! @return Number of bytes
 uint16_t Preheat::do_size_of() const
 {
     return NB_PRESETS * (sizeof(Preset::hotend) + sizeof(Preset::bed));
 }
 
+//! Send the presets t the LCD Panel
 void Preheat::send_presets()
 {
     Log::log() << F("Preheat page") << Log::endl();
@@ -675,6 +725,7 @@ void Preheat::send_presets()
     frame.send();
 }
 
+//! Retrieve presets values from the LCD Panel
 void Preheat::retrieve_presets()
 {
     ReadRamData frame{Variable::Value0, 3};
@@ -692,13 +743,15 @@ void Preheat::retrieve_presets()
     presets_[index_].fan = fan.word;
 }
 
-//! Get the preheat screen
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Preheat::do_prepare_page()
 {
     send_presets();
     return Page::Preheat;
 }
 
+//! Handle Previous command
 void Preheat::previous_command()
 {
     if(index_ <= 0)
@@ -708,6 +761,7 @@ void Preheat::previous_command()
     send_presets();
 }
 
+//! Handle Next command
 void Preheat::next_command()
 {
     if(index_ >= NB_PRESETS - 1)
@@ -717,6 +771,7 @@ void Preheat::next_command()
     send_presets();
 }
 
+//! Handles the Save (Continue) command
 void Preheat::do_save_command()
 {
     retrieve_presets();
@@ -735,10 +790,10 @@ void Preheat::do_save_command()
     enqueue_and_echo_command(command.get());
 
     advi3pp.save_settings();
-    temperatures.show(false);
+    temperatures.show(ShowOptions::None);
 }
 
-//! Cooldown the bed and the nozzle
+//! Cooldown the bed and the nozzle, turn off the fan
 void Preheat::cooldown_command()
 {
     Log::log() << F("Cooldown") << Log::endl();
@@ -753,6 +808,8 @@ void Preheat::cooldown_command()
 // --------------------------------------------------------------------
 
 //! Execute a move command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool Move::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -771,13 +828,17 @@ bool Move::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Move::do_prepare_page()
 {
     Planner::finish_and_disable(); // To circumvent homing problems
     return Page::Move;
 }
 
-//! Move the nozzle.
+//! Move the nozzle. Check that the command is not send too early when multiple move commands are send in a short time
+//! (i.e. when the user keep the button presses)
+//! @params command Actual command to move the nozzle.
 void Move::move(const char* command, millis_t delay)
 {
     if(!ELAPSED(millis(), last_move_time_ + delay))
@@ -788,37 +849,37 @@ void Move::move(const char* command, millis_t delay)
     last_move_time_ = millis();
 }
 
-//! Move the nozzle.
+//! Move the nozzle (+X)
 void Move::x_plus_command()
 {
     move(PSTR("G1 X4 F1000"), 150);
 }
 
-//! Move the nozzle.
+//! Move the nozzle (-X)
 void Move::x_minus_command()
 {
     move(PSTR("G1 X-4 F1000"), 150);
 }
 
-//! Move the nozzle.
+//! Move the nozzle (+Y)
 void Move::y_plus_command()
 {
     move(PSTR("G1 Y4 F1000"), 150);
 }
 
-//! Move the nozzle.
+//! Move the nozzle (-Y)
 void Move::y_minus_command()
 {
     move(PSTR("G1 Y-4 F1000"), 150);
 }
 
-//! Move the nozzle.
+//! Move the nozzle (+Z)
 void Move::z_plus_command()
 {
     move(PSTR("G1 Z0.5 F240"), 10);
 }
 
-//! Move the nozzle.
+//! Move the nozzle (-Z)
 void Move::z_minus_command()
 {
     move(PSTR("G1 Z-0.5 F240"), 10);
@@ -836,7 +897,7 @@ void Move::e_plus_command()
     enqueue_and_echo_commands_P(PSTR("G90"));
 }
 
-//! Unextrude.
+//! Unextrude some filament.
 void Move::e_minus_command()
 {
     if(Temperature::degHotend(0) < 180)
@@ -886,6 +947,9 @@ void Move::all_home_command()
 
 #ifdef ADVi3PP_PROBE
 
+//! Execute a Sensor Tuning command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool SensorTuning::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -903,26 +967,32 @@ bool SensorTuning::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page SensorTuning::do_prepare_page()
 {
     return Page::SensorTuning;
 }
 
+//! Execute the sensor Self-test command
 void SensorTuning::self_test_command()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
 }
 
+//! Execute the sensor Reset command
 void SensorTuning::reset_command()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
 }
 
+//! Execute the sensor Deploy command
 void SensorTuning::deploy_command()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
 }
 
+//! Execute the sensor Stow command
 void SensorTuning::stow_command()
 {
     enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
@@ -930,6 +1000,8 @@ void SensorTuning::stow_command()
 
 #else
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page SensorTuning::do_prepare_page()
 {
     return Page::NoSensor;
@@ -943,6 +1015,8 @@ Page SensorTuning::do_prepare_page()
 
 #ifdef ADVi3PP_PROBE
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page AutomaticLeveling::do_prepare_page()
 {
     sensor_interactive_leveling_ = true;
@@ -956,6 +1030,8 @@ Page AutomaticLeveling::do_prepare_page()
     return Page::None;
 }
 
+//! Called by Marlin when G29 (automatic bed leveling) is finished.
+//! @param success Boolean indicating if the leveling was successful or not.
 void AutomaticLeveling::g29_leveling_finished(bool success)
 {
     if(!success)
@@ -986,6 +1062,7 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
     }
 }
 
+//! Show the back page when G29 (automatic bed leveling) failed.
 bool AutomaticLeveling::g29_leveling_failed()
 {
     pages.show_back_page();
@@ -994,6 +1071,8 @@ bool AutomaticLeveling::g29_leveling_failed()
 
 #else
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page AutomaticLeveling::do_prepare_page()
 {
     return Page::NoSensor;
@@ -1007,6 +1086,8 @@ Page AutomaticLeveling::do_prepare_page()
 
 #ifdef ADVi3PP_PROBE
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page LevelingGrid::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -1018,6 +1099,7 @@ Page LevelingGrid::do_prepare_page()
     return Page::SensorGrid;
 }
 
+//! Handles the Save (Continue) command
 void LevelingGrid::do_save_command()
 {
     enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
@@ -1027,6 +1109,8 @@ void LevelingGrid::do_save_command()
 
 #else
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page LevelingGrid::do_prepare_page()
 {
     return Page::NoSensor;
@@ -1038,6 +1122,9 @@ Page LevelingGrid::do_prepare_page()
 // Manual Leveling
 // --------------------------------------------------------------------
 
+//! Execute a Manual Leveling command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool ManualLeveling::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1060,13 +1147,15 @@ bool ManualLeveling::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Execute the Back command
 void ManualLeveling::do_back_command()
 {
     enqueue_and_echo_commands_P(PSTR("G1 Z30 F1200"));
     Parent::do_back_command();
 }
 
-//! Home the printer for bed leveling.
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page ManualLeveling::do_prepare_page()
 {
     wait.show(F("Homing..."));
@@ -1135,6 +1224,7 @@ void ManualLeveling::point5_command()
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
+//! Handle leveling point #A.
 void ManualLeveling::pointA_command()
 {
     Log::log() << F("Level point A") << Log::endl();
@@ -1143,6 +1233,7 @@ void ManualLeveling::pointA_command()
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
+//! Handle leveling point #B.
 void ManualLeveling::pointB_command()
 {
     Log::log() << F("Level point B") << Log::endl();
@@ -1151,6 +1242,7 @@ void ManualLeveling::pointB_command()
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
+//! Handle leveling point #C.
 void ManualLeveling::pointC_command()
 {
     Log::log() << F("Level point C") << Log::endl();
@@ -1159,6 +1251,7 @@ void ManualLeveling::pointC_command()
     enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));
 }
 
+//! Handle leveling point #D.
 void ManualLeveling::pointD_command()
 {
     Log::log() << F("Level point D") << Log::endl();
@@ -1172,6 +1265,9 @@ void ManualLeveling::pointD_command()
 // SD Card
 // --------------------------------------------------------------------
 
+//! Execute a SD Card command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool SdCard::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1192,12 +1288,15 @@ bool SdCard::do_dispatch(KeyValue key_value)
 	return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page SdCard::do_prepare_page()
 {
     show_first_page();
     return Page::SdCard;
 }
 
+//! Show first SD card page
 void SdCard::show_first_page()
 {
 	if(!card.cardOK)
@@ -1210,6 +1309,7 @@ void SdCard::show_first_page()
     show_current_page();
 }
 
+//! Handle Page Down command.
 void SdCard::down_command()
 {
 	if(!card.cardOK)
@@ -1223,6 +1323,7 @@ void SdCard::down_command()
     }
 }
 
+//! Handle Page Up command.
 void SdCard::up_command()
 {
 	if(!card.cardOK)
@@ -1236,7 +1337,7 @@ void SdCard::up_command()
     }
 }
 
-//! Show the list of files on SD.
+//! Show the list of files on SD (current page)
 void SdCard::show_current_page()
 {
     WriteRamDataRequest frame{Variable::LongText0};
@@ -1305,6 +1406,7 @@ void SdCard::select_file_command(uint16_t file_index)
 
 //! Handle print commands.
 //! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool Print::do_dispatch(KeyValue value)
 {
     if(Parent::do_dispatch(value))
@@ -1321,6 +1423,8 @@ bool Print::do_dispatch(KeyValue value)
     return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Print::do_prepare_page()
 {
     return Page::Print;
@@ -1344,6 +1448,7 @@ void Print::advanced_pause_command()
     enqueue_and_echo_commands_P(PSTR("M600"));
 }
 
+//! Process Stop (A1) code and actually stop the print (if any running).
 void Print::process_stop_code()
 {
     if(!is_printing())
@@ -1365,6 +1470,7 @@ void Print::process_stop_code()
     pages.show_back_page();
 }
 
+//! Process Pause (A0) code and actually pause the print (if any running).
 void Print::process_pause_code()
 {
     if(!is_printing())
@@ -1412,11 +1518,14 @@ void Print::process_pause_code()
     pause_finished(true);
 }
 
+//! Pause command done, show the back page
 void Print::pause_finished(bool)
 {
     pages.show_back_page();
 }
 
+//! Check if there is currently a print running (USB or SD)
+//! @return True if a print is running.
 bool Print::is_printing() const
 {
     if(card.isFileOpen())
@@ -1425,11 +1534,15 @@ bool Print::is_printing() const
         return print_job_timer.isRunning();
 }
 
+//! Check if there is currently a print running (USB)
+//! @return True if a USB print is running.
 bool Print::is_usb_printing() const
 {
     return print_job_timer.isRunning();
 }
 
+//! Send Stop print to the host.
+//! Unfortunately, there no way to properly do this except disconnecting the host.
 void Print::send_stop_usb_print()
 {
     // "disconnect" is the only standard command to stop an USB print
@@ -1440,11 +1553,15 @@ void Print::send_stop_usb_print()
 // Advance pause
 // --------------------------------------------------------------------
 
+//! Show Advance Pause message (called from Marlin).
+//! @param message Message to dislay.
 void ADVi3pp_::advanced_pause_show_message(const AdvancedPauseMessage message)
 {
     pause.advanced_pause_show_message(message);
 }
 
+//! Show Advance Pause message (called from Marlin).
+//! @param message Message to dislay.
 void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage message)
 {
     if(message == last_advanced_pause_message_)
@@ -1453,7 +1570,7 @@ void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage messa
 
     switch (message)
     {
-        case ADVANCED_PAUSE_MESSAGE_INIT:                       init(); break;
+        case ADVANCED_PAUSE_MESSAGE_INIT:                       wait.show(F("Pausing...")); break;
         case ADVANCED_PAUSE_MESSAGE_UNLOAD:                     advi3pp.set_status(F("Unloading filament...")); break;
         case ADVANCED_PAUSE_MESSAGE_INSERT:                     insert_filament(); break;
         case ADVANCED_PAUSE_MESSAGE_LOAD:                       advi3pp.set_status(F("Loading...")); break;
@@ -1467,17 +1584,13 @@ void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage messa
     }
 }
 
-void AdvancedPause::init()
-{
-    wait.show(F("Pausing..."));
-}
-
+//! Show "Insert filament" message during Advance Pause
 void AdvancedPause::insert_filament()
 {
-    wait.show_continue(F("Insert filament and press continue..."),
-                       WaitCallback{this, &AdvancedPause::filament_inserted}, ShowOptions::None);
+    wait.show_continue(F("Insert filament and press continue..."), WaitCallback{this, &AdvancedPause::filament_inserted}, ShowOptions::None);
 }
 
+//! Action to execute once the filament is inserted (Continue command)
 bool AdvancedPause::filament_inserted()
 {
     ::wait_for_user = false;
@@ -1491,6 +1604,9 @@ bool AdvancedPause::filament_inserted()
 
 #ifdef ADVi3PP_PROBE
 
+//! Handle Sensor Z Height command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool SensorZHeight::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1507,6 +1623,8 @@ bool SensorZHeight::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page SensorZHeight::do_prepare_page()
 {
     pages.save_forward_page();
@@ -1514,16 +1632,18 @@ Page SensorZHeight::do_prepare_page()
     zprobe_zoffset = 0;  // reset offset
     wait.show(F("Homing..."));
     enqueue_and_echo_commands_P((PSTR("G28 F6000")));  // homing
-    task.set_background_task(BackgroundTask(this, &SensorZHeight::home_task), 200);
+    task.set_background_task(BackgroundTask(this, &SensorZHeight::post_home_task), 200);
     return Page::None;
 }
 
+//! Reset Sensor Z Height data.
 void SensorZHeight::reset()
 {
     multiplier_ = Multiplier::M1;
 }
 
-void SensorZHeight::home_task()
+//! Check if the printer is homed, and continue the Z Height Tuning process.
+void SensorZHeight::post_home_task()
 {
     if(!TEST(axis_homed, X_AXIS) || !TEST(axis_homed, Y_AXIS) || !TEST(axis_homed, Z_AXIS))
         return;
@@ -1543,6 +1663,7 @@ void SensorZHeight::home_task()
     pages.show_page(Page::ZHeightTuning, ShowOptions::None);
 }
 
+//! Execute the Back command
 void SensorZHeight::do_back_command()
 {
     enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
@@ -1551,6 +1672,7 @@ void SensorZHeight::do_back_command()
     Parent::do_back_command();
 }
 
+//! Handles the Save (Continue) command
 void SensorZHeight::do_save_command()
 {
     zprobe_zoffset = advi3pp.get_current_z_height();
@@ -1560,34 +1682,40 @@ void SensorZHeight::do_save_command()
     Parent::do_save_command();
 }
 
+//! Change the multiplier.
 void SensorZHeight::multiplier1_command()
 {
     multiplier_ = Multiplier::M1;
     send_data();
 }
 
+//! Change the multiplier.
 void SensorZHeight::multiplier2_command()
 {
     multiplier_ = Multiplier::M2;
     send_data();
 }
 
+//! Change the multiplier.
 void SensorZHeight::multiplier3_command()
 {
     multiplier_ = Multiplier::M3;
     send_data();
 }
 
+//! Change the position of the nozzle (-Z).
 void SensorZHeight::minus()
 {
     adjust_height(-get_multiplier_value());
 }
 
+//! Change the position of the nozzle (+Z).
 void SensorZHeight::plus()
 {
     adjust_height(+get_multiplier_value());
 }
 
+//! Get the current multiplier value on the LCD panel.
 double SensorZHeight::get_multiplier_value() const
 {
     if(multiplier_ < Multiplier::M1 || multiplier_ > Multiplier::M3)
@@ -1599,6 +1727,8 @@ double SensorZHeight::get_multiplier_value() const
     return SENSOR_Z_HEIGHT_MULTIPLIERS[static_cast<uint16_t>(multiplier_)];
 }
 
+//! Adjust the Z height.
+//! @param offset Offset for the adjustment.
 void SensorZHeight::adjust_height(double offset)
 {
 	auto new_height = advi3pp.get_current_z_height() + offset;
@@ -1608,6 +1738,7 @@ void SensorZHeight::adjust_height(double offset)
     send_data();
 }
 
+//! Send the current data (i.e. multiplier) to the LCD panel.
 void SensorZHeight::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -1617,6 +1748,8 @@ void SensorZHeight::send_data() const
 
 #else
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page SensorZHeight::do_prepare_page()
 {
     return Page::NoSensor;
@@ -1628,6 +1761,9 @@ Page SensorZHeight::do_prepare_page()
 // Extruder tuning
 // --------------------------------------------------------------------
 
+//! Handle Extruder Tuning command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool ExtruderTuning::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1643,7 +1779,8 @@ bool ExtruderTuning::do_dispatch(KeyValue key_value)
     return true;
 }
 
-//! Show the extruder tuning screen.
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page ExtruderTuning::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -1719,6 +1856,7 @@ void ExtruderTuning::finished()
     pages.show_page(Page::ExtruderTuningMeasure, ShowOptions::None);
 }
 
+//! Cancel Extruder tuning process.
 bool ExtruderTuning::cancel()
 {
     ::wait_for_user = ::wait_for_heatup = false;
@@ -1727,7 +1865,7 @@ bool ExtruderTuning::cancel()
     return false;
 }
 
-//! Cancel the extruder tuning.
+//! Execute the Back command
 void ExtruderTuning::do_back_command()
 {
     task.clear_background_task();
@@ -1767,8 +1905,9 @@ void ExtruderTuning::settings_command()
 // PID Tuning
 // --------------------------------------------------------------------
 
-//! Handle PID tuning.
+//! Handle PID tuning command
 //! @param key_value    The step of the PID tuning
+//! @return             True if the action was handled
 bool PidTuning::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1785,7 +1924,8 @@ bool PidTuning::do_dispatch(KeyValue key_value)
     return true;
 }
 
-//! Show step #1 of PID tuning
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page PidTuning::do_prepare_page()
 {
     pages.save_forward_page();
@@ -1794,6 +1934,7 @@ Page PidTuning::do_prepare_page()
     return Page::PidTuning;
 }
 
+//! Send the current data to the LCD panel.
 void PidTuning::send_data()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -1802,6 +1943,7 @@ void PidTuning::send_data()
     frame.send();
 }
 
+//! Select the hotend PID
 void PidTuning::hotend_command()
 {
     temperature_ = advi3pp.get_last_used_temperature(TemperatureKind::Hotend);
@@ -1809,6 +1951,7 @@ void PidTuning::hotend_command()
     send_data();
 }
 
+//! Select the bed PID
 void PidTuning::bed_command()
 {
     temperature_ = advi3pp.get_last_used_temperature(TemperatureKind::Bed);
@@ -1842,6 +1985,7 @@ void PidTuning::step2_command()
     temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
 }
 
+//! Cancel PID process.
 bool PidTuning::cancel_pid()
 {
     ::wait_for_user = ::wait_for_heatup = false;
@@ -1871,6 +2015,8 @@ void PidTuning::finished(bool success)
 // Linear Advance Tuning
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page LinearAdvanceTuning::do_prepare_page()
 {
     return Page::LinearAdvanceTuning;
@@ -1881,18 +2027,24 @@ Page LinearAdvanceTuning::do_prepare_page()
 // Diagnosis
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Diagnosis::do_prepare_page()
 {
     task.set_background_task(BackgroundTask{this, &Diagnosis::send_data}, 250);
     return Page::Diagnosis;
 }
 
+//! Execute the Back command
 void Diagnosis::do_back_command()
 {
     task.clear_background_task();
     Parent::do_back_command();
 }
 
+//! Get current digital pin state (adapted from Arduino source code).
+//! @param pin  Pin number to check.
+//! @return     The current state: On (input), Off (input), Output
 Diagnosis::State Diagnosis::get_pin_state(uint8_t pin)
 {
     uint8_t mask = digitalPinToBitMask(pin);
@@ -1911,6 +2063,7 @@ Diagnosis::State Diagnosis::get_pin_state(uint8_t pin)
     return (*portInputRegister(port) & mask) ? State::On : State::Off;
 }
 
+//! Send the current data to the LCD panel.
 void Diagnosis::send_data()
 {
     WriteRamDataRequest request{Variable::Value0};
@@ -1936,11 +2089,15 @@ void Diagnosis::send_data()
 
 #ifdef ADVi3PP_PROBE
 
+//! Constructor
 SensorSettings::SensorSettings()
 {
     do_reset();
 }
 
+//! Handle Sensor Settings command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool SensorSettings::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -1956,6 +2113,8 @@ bool SensorSettings::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page SensorSettings::do_prepare_page()
 {
     send_data();
@@ -1963,12 +2122,15 @@ Page SensorSettings::do_prepare_page()
     return Page::SensorSettings;
 }
 
+//! Handles the Save (Continue) command
 void SensorSettings::do_save_command()
 {
     get_data();
     Parent::do_save_command();
 }
 
+//! Store current data in permanent memory (EEPROM)
+//! @param eeprom EEPROM writer
 void SensorSettings::do_write(EepromWrite& eeprom) const
 {
     eeprom.write(index_);
@@ -1979,6 +2141,8 @@ void SensorSettings::do_write(EepromWrite& eeprom) const
     }
 }
 
+//! Restore data from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
 void SensorSettings::do_read(EepromRead& eeprom)
 {
     eeprom.read(index_);
@@ -1989,6 +2153,7 @@ void SensorSettings::do_read(EepromRead& eeprom)
     }
 }
 
+//! Reset settings
 void SensorSettings::do_reset()
 {
     index_ = 0;
@@ -1996,11 +2161,14 @@ void SensorSettings::do_reset()
         positions_[i] = DEFAULT_SENSOR_POSITION[i];
 }
 
+//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
+//! @return Number of bytes
 uint16_t SensorSettings::do_size_of() const
 {
     return sizeof(index_) + NB_SENSOR_POSITIONS * sizeof(SensorPosition);
 }
 
+//! Show the previous settings.
 void SensorSettings::previous_command()
 {
     if(index_ <= 0)
@@ -2010,6 +2178,7 @@ void SensorSettings::previous_command()
     send_data();
 }
 
+//! Show the next settings.
 void SensorSettings::next_command()
 {
     if(index_ >= NB_SENSOR_POSITIONS - 1)
@@ -2019,6 +2188,7 @@ void SensorSettings::next_command()
     send_data();
 }
 
+//! Send current data to the LCD Panel.
 void SensorSettings::send_data() const
 {
     ADVString<32> title{get_sensor_name(index_)};
@@ -2032,6 +2202,7 @@ void SensorSettings::send_data() const
     frame.send();
 }
 
+//! Send current data from the LCD Panel.
 void SensorSettings::get_data()
 {
     ReadRamData frame{Variable::Value0, 3};
@@ -2049,31 +2220,43 @@ void SensorSettings::get_data()
     zprobe_zoffset = static_cast<int16_t>(z.word) / 100.0;
 }
 
+//! Get the current offset of the nozzle (depending of the sensor holder).
+//! @return The offset between the nozzle and the sensor.
 int SensorSettings::x_probe_offset_from_extruder() const
 {
     return static_cast<int>(positions_[index_].x / 100.0 + 0.5); // 0.5 for rounding
 }
 
+//! Get the current offset of the nozzle (depending of the sensor holder).
+//! @return The offset between the nozzle and the sensor.
 int SensorSettings::y_probe_offset_from_extruder() const
 {
     return static_cast<int>(positions_[index_].y / 100.0 + 0.5); // 0.5 for rounding
 }
 
+//! Get the position of the bed (depending of the sensor holder).
+//! @return The position reachable (left).
 int SensorSettings::left_probe_bed_position()
 {
     return max(X_MIN_BED + (MIN_PROBE_EDGE), X_MIN_POS + x_probe_offset_from_extruder());
 }
 
+//! Get the position of the bed (depending of the sensor holder).
+//! @return The position reachable (right).
 int SensorSettings::right_probe_bed_position()
 {
     return min(X_MAX_BED - (MIN_PROBE_EDGE), X_MAX_POS + x_probe_offset_from_extruder());
 }
 
+//! Get the position of the bed (depending of the sensor holder).
+//! @return The position reachable (front).
 int SensorSettings::front_probe_bed_position()
 {
     return max(Y_MIN_BED + (MIN_PROBE_EDGE), Y_MIN_POS + y_probe_offset_from_extruder());
 }
 
+//! Get the position of the bed (depending of the sensor holder).
+//! @return The position reachable (bottom).
 int SensorSettings::back_probe_bed_position()
 {
     return min(Y_MAX_BED - (MIN_PROBE_EDGE), Y_MAX_POS + y_probe_offset_from_extruder());
@@ -2081,6 +2264,8 @@ int SensorSettings::back_probe_bed_position()
 
 #else
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page SensorSettings::do_prepare_page()
 {
     return Page::NoSensor;
@@ -2094,6 +2279,9 @@ Page SensorSettings::do_prepare_page()
 // Firmware Settings
 // --------------------------------------------------------------------
 
+//! Handle Firmware Settings command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool FirmwareSettings::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -2111,6 +2299,8 @@ bool FirmwareSettings::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page FirmwareSettings::do_prepare_page()
 {
     usb_baudrate_ = advi3pp.get_current_baudrate();
@@ -2120,18 +2310,21 @@ Page FirmwareSettings::do_prepare_page()
     return Page::Firmware;
 }
 
+//! Toggle the Thermal Runaway Protection feature.
 void FirmwareSettings::thermal_protection_command()
 {
     flip_bits(features_, Feature::ThermalProtection);
     send_features();
 }
 
+//! Toggle the Runout Sensor feature (currently not fully implemented)
 void FirmwareSettings::runout_sensor_command()
 {
     flip_bits(features_, Feature::RunoutSensor);
     send_features();
 }
 
+//! Handles the Save (Continue) command
 void FirmwareSettings::do_save_command()
 {
     if(advi3pp.get_current_baudrate() != usb_baudrate_)
@@ -2140,11 +2333,13 @@ void FirmwareSettings::do_save_command()
     Parent::do_save_command();
 }
 
+//! Send the current selected features to the LCD Panel.
 void FirmwareSettings::send_features() const
 {
     WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(static_cast<uint16_t>(features_)); frame.send();
 }
 
+//! Send the current selected baudrate to the LCD Panel.
 void FirmwareSettings::send_usb_baudrate() const
 {
     ADVString<6> value; value << usb_baudrate_;
@@ -2154,7 +2349,10 @@ void FirmwareSettings::send_usb_baudrate() const
     frame.send();
 }
 
-static size_t UsbBaudrateIndex(uint32_t baudrate)
+//! Get the baudrate index from its value.
+//! @param baudrate Baudrate
+//! @return The index corresponding to the baudrate, or 0 if none.
+size_t FirmwareSettings::usb_baudrate_index(uint32_t baudrate)
 {
     size_t nb = adv::count_of(usb_baudrates);
     for(size_t i = 0; i < nb; ++i)
@@ -2163,16 +2361,18 @@ static size_t UsbBaudrateIndex(uint32_t baudrate)
     return 0;
 }
 
+//! Handle the -Baudrate command.
 void FirmwareSettings::baudrate_minus_command()
 {
-    auto index = UsbBaudrateIndex(usb_baudrate_);
+    auto index = usb_baudrate_index(usb_baudrate_);
     usb_baudrate_ = index > 0 ? usb_baudrates[index - 1] : usb_baudrates[0];
     send_usb_baudrate();
 }
 
+//! Handle the +Baudrate command.
 void FirmwareSettings::baudrate_plus_command()
 {
-    auto index = UsbBaudrateIndex(usb_baudrate_);
+    auto index = usb_baudrate_index(usb_baudrate_);
     static const auto max = adv::count_of(usb_baudrates) - 1;
     usb_baudrate_ = index < max ? usb_baudrates[index + 1] : usb_baudrates[max];
     send_usb_baudrate();
@@ -2182,6 +2382,9 @@ void FirmwareSettings::baudrate_plus_command()
 // LCD Settings
 // --------------------------------------------------------------------
 
+//! Handle LCD Settings command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool LcdSettings::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -2198,6 +2401,8 @@ bool LcdSettings::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page LcdSettings::do_prepare_page()
 {
     features_ = advi3pp.get_current_features();
@@ -2205,6 +2410,7 @@ Page LcdSettings::do_prepare_page()
     return Page::LCD;
 }
 
+//! Handle the Dimming (On/Off) command
 void LcdSettings::dimming_command()
 {
     flip_bits(features_, Feature::Dimming);
@@ -2214,6 +2420,7 @@ void LcdSettings::dimming_command()
     advi3pp.save_settings();
 }
 
+//! Handle the change brightness command.
 void LcdSettings::change_brightness(uint16_t brightness)
 {
     dimming.change_brightness(brightness);
@@ -2221,6 +2428,7 @@ void LcdSettings::change_brightness(uint16_t brightness)
     advi3pp.save_settings();
 }
 
+//! Handle the Buzz on Action command
 void LcdSettings::buzz_on_action_command()
 {
     flip_bits(features_, Feature::Buzzer);
@@ -2230,6 +2438,7 @@ void LcdSettings::buzz_on_action_command()
     advi3pp.save_settings();
 }
 
+//! Handle the Buzz on Press command
 void LcdSettings::buzz_on_press_command()
 {
     flip_bits(features_, Feature::BuzzOnPress);
@@ -2239,6 +2448,7 @@ void LcdSettings::buzz_on_press_command()
     advi3pp.save_settings();
 }
 
+//! Send the current data to the LCD panel.
 void LcdSettings::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -2251,6 +2461,9 @@ void LcdSettings::send_data() const
 // Print Settings
 // --------------------------------------------------------------------
 
+//! Handle Print Settings command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool PrintSettings::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -2268,6 +2481,8 @@ bool PrintSettings::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Get the value corresponding the the current multiplier.
+//! @return The value of the current multiplier, or the first one in the case of an invalid multiplier
 double PrintSettings::get_multiplier_value() const
 {
     if(multiplier_ < Multiplier::M1 || multiplier_ > Multiplier::M3)
@@ -2279,6 +2494,7 @@ double PrintSettings::get_multiplier_value() const
     return PRINT_SETTINGS_MULTIPLIERS[static_cast<uint16_t>(multiplier_)];
 }
 
+//! Send the current data to the LCD panel.
 void PrintSettings::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -2286,13 +2502,15 @@ void PrintSettings::send_data() const
     frame.send();
 }
 
-//! Display on the LCD screen the printing settings.
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page PrintSettings::do_prepare_page()
 {
     send_data();
     return Page::PrintSettings;
 }
 
+//! Handle the -Feedrate command
 void PrintSettings::feedrate_minus_command()
 {
     if(feedrate_percentage <= 50)
@@ -2301,6 +2519,7 @@ void PrintSettings::feedrate_minus_command()
     feedrate_percentage -= 1;
 }
 
+//! Handle the +Feedrate command
 void PrintSettings::feedrate_plus_command()
 {
     if(feedrate_percentage >= 150)
@@ -2309,6 +2528,7 @@ void PrintSettings::feedrate_plus_command()
     feedrate_percentage += 1;
 }
 
+//! Handle the -Fan command
 void PrintSettings::fan_minus_command()
 {
     auto speed = scale(fanSpeeds[0], 255, 100);
@@ -2319,6 +2539,7 @@ void PrintSettings::fan_minus_command()
     fanSpeeds[0] = scale(speed, 100, 255);
 }
 
+//! Handle the +Fan command
 void PrintSettings::fan_plus_command()
 {
     auto speed = scale(fanSpeeds[0], 255, 100);
@@ -2329,6 +2550,7 @@ void PrintSettings::fan_plus_command()
     fanSpeeds[0] = scale(speed, 100, 255);
 }
 
+//! Handle the -Hotend Temperature command
 void PrintSettings::hotend_minus_command()
 {
     auto temperature = Temperature::degTargetHotend(0);
@@ -2338,6 +2560,7 @@ void PrintSettings::hotend_minus_command()
     Temperature::setTargetHotend(temperature - 1, 0);
 }
 
+//! Handle the +Hotend Temperature command
 void PrintSettings::hotend_plus_command()
 {
     auto temperature = Temperature::degTargetHotend(0);
@@ -2347,6 +2570,7 @@ void PrintSettings::hotend_plus_command()
     Temperature::setTargetHotend(temperature + 1, 0);
 }
 
+//! Handle the -Bed Temperature command
 void PrintSettings::bed_minus_command()
 {
     auto temperature = Temperature::degTargetBed();
@@ -2356,6 +2580,7 @@ void PrintSettings::bed_minus_command()
     Temperature::setTargetBed(temperature - 1);
 }
 
+//! Handle the +Bed Temperature command
 void PrintSettings::bed_plus_command()
 {
     auto temperature = Temperature::degTargetBed();
@@ -2365,12 +2590,14 @@ void PrintSettings::bed_plus_command()
     Temperature::setTargetBed(temperature + 1);
 }
 
+//! Handle the -Babystep command
 void PrintSettings::baby_minus_command()
 {
     auto distance = static_cast<int16_t>(-get_multiplier_value() * planner.axis_steps_per_mm[Z_AXIS]);
 	Temperature::babystep_axis(Z_AXIS, distance);
 }
 
+//! Handle the +Babystep command
 void PrintSettings::baby_plus_command()
 {
     auto distance = static_cast<int16_t>(get_multiplier_value() * planner.axis_steps_per_mm[Z_AXIS]);
@@ -2386,6 +2613,9 @@ PidSettings::PidSettings()
     do_reset();
 }
 
+//! Handle PID Settings command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
 bool PidSettings::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
@@ -2403,6 +2633,7 @@ bool PidSettings::do_dispatch(KeyValue key_value)
     return true;
 }
 
+//! Handle the select Hotend PID command
 void PidSettings::hotend_command()
 {
     save_data();
@@ -2410,6 +2641,7 @@ void PidSettings::hotend_command()
     send_data();
 }
 
+//! Handle the select Bed PID command
 void PidSettings::bed_command()
 {
     save_data();
@@ -2417,6 +2649,7 @@ void PidSettings::bed_command()
     send_data();
 }
 
+//! Handle the show previous PID values command
 void PidSettings::previous_command()
 {
     if(index_ <= 0)
@@ -2426,6 +2659,7 @@ void PidSettings::previous_command()
     send_data();
 }
 
+//! Handle the show next PID values command
 void PidSettings::next_command()
 {
     if(index_ >= NB_PIDs - 1)
@@ -2435,6 +2669,8 @@ void PidSettings::next_command()
     send_data();
 }
 
+//! Store current data in permanent memory (EEPROM)
+//! @param eeprom EEPROM writer
 void PidSettings::do_write(EepromWrite& eeprom) const
 {
     for(size_t i = 0; i < NB_PIDs; ++i)
@@ -2444,6 +2680,8 @@ void PidSettings::do_write(EepromWrite& eeprom) const
     }
 }
 
+//! Restore data from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
 void PidSettings::do_read(EepromRead& eeprom)
 {
     for(size_t i = 0; i < NB_PIDs; ++i)
@@ -2453,6 +2691,7 @@ void PidSettings::do_read(EepromRead& eeprom)
     }
 }
 
+//! Reset settings
 void PidSettings::do_reset()
 {
     for(size_t i = 0; i < NB_PIDs; ++i)
@@ -2469,11 +2708,14 @@ void PidSettings::do_reset()
     }
 }
 
+//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
+//! @return Number of bytes
 uint16_t PidSettings::do_size_of() const
 {
     return NB_PIDs * 2 * sizeof(Pid);
 }
 
+//! Set the current PID values from what is recorded
 void PidSettings::set_current_pid() const
 {
     if(kind_ == TemperatureKind::Hotend)
@@ -2500,6 +2742,7 @@ void PidSettings::set_current_pid() const
     }
 }
 
+//! Record the current PID values
 void PidSettings::get_current_pid()
 {
     if(kind_ == TemperatureKind::Hotend)
@@ -2526,6 +2769,9 @@ void PidSettings::get_current_pid()
     }
 }
 
+//! Record new PID values for a given temperature
+//! @param kind Kind of PID values: Hotend or Bed
+//! @param temperature Temperature for these PID values
 void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
 {
     kind_ = kind;
@@ -2552,6 +2798,9 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
     get_current_pid();
 }
 
+//! Choose the best PID values for the given temperature
+//! @param kind Kind of PID values: Hotend or Bed
+//! @param temperature Temperature for these PID values
 void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
 {
     index_ = 0;
@@ -2575,6 +2824,7 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
     set_current_pid();
 }
 
+//! Send the current data to the LCD panel.
 void PidSettings::send_data() const
 {
     const Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
@@ -2596,6 +2846,7 @@ void PidSettings::send_data() const
     frame.send();
 }
 
+//! Save the settings from the LCD Panel.
 void PidSettings::save_data()
 {
     Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
@@ -2619,7 +2870,8 @@ void PidSettings::save_data()
 	set_current_pid();
 }
 
-//! Show the PID settings
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page PidSettings::do_prepare_page()
 {
     send_data();
@@ -2639,6 +2891,7 @@ void PidSettings::do_save_command()
     Parent::do_save_command();
 }
 
+//! Execute the Back command
 void PidSettings::do_back_command()
 {
     advi3pp.restore_settings();
@@ -2650,8 +2903,8 @@ void PidSettings::do_back_command()
 // Steps Settings
 // --------------------------------------------------------------------
 
-//! Show the Steps settings
-//! @param init     Initialize the settings are use those already set
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page StepSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -2689,7 +2942,8 @@ void StepSettings::do_save_command()
 // Feedrate Settings
 // --------------------------------------------------------------------
 
-//! Show the Feedrate settings
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page FeedrateSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -2731,7 +2985,8 @@ void FeedrateSettings::do_save_command()
 // AccelerationSettings
 // --------------------------------------------------------------------
 
-//! Show the Acceleration settings
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page AccelerationSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -2775,7 +3030,8 @@ void AccelerationSettings::do_save_command()
 // JerkSettings
 // --------------------------------------------------------------------
 
-//! Show the Jerk settings
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page JerkSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -2813,6 +3069,8 @@ void JerkSettings::do_save_command()
 // Linear Advance Settings
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page LinearAdvanceSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
@@ -2822,6 +3080,7 @@ Page LinearAdvanceSettings::do_prepare_page()
     return Page::LinearAdvanceSettings;
 }
 
+//! Handles the Save (Continue) command
 void LinearAdvanceSettings::do_save_command()
 {
     ReadRamData response{Variable::Value0, 1};
@@ -2841,11 +3100,14 @@ void LinearAdvanceSettings::do_save_command()
 // Factory Reset
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page FactoryReset::do_prepare_page()
 {
     return Page::FactoryReset;
 }
 
+//! Handles the Save (Continue) command
 void FactoryReset::do_save_command()
 {
     enqueue_and_echo_commands_P(PSTR("M502"));
@@ -2856,6 +3118,8 @@ void FactoryReset::do_save_command()
 // Statistics
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Statistics::do_prepare_page()
 {
     send_stats();
@@ -2892,6 +3156,8 @@ void Statistics::send_stats()
 // Versions
 // --------------------------------------------------------------------
 
+//! Check if the versions of the different parts (LCD Panel, Mainboard) are compatible and if not, display a message
+//! @return True if the versions are compatible
 bool Versions::check()
 {
     if(!is_lcd_version_valid())
@@ -2904,6 +3170,7 @@ bool Versions::check()
     return true;
 }
 
+//! Get the version of the LCD Panel part.
 void Versions::get_version_from_lcd()
 {
     ReadRamData frame{Variable::ADVi3ppLCDversion, 1};
@@ -2965,6 +3232,7 @@ void Versions::send_versions()
     frame.send();
 }
 
+//! Send ADVi3++ version and build number to the LCD Panel
 void Versions::send_advi3pp_version()
 {
     ADVString<16> motherboard_version;
@@ -2983,11 +3251,15 @@ void Versions::send_advi3pp_version()
     frame.send();
 }
 
+//! Check if the versions of the different parts (LCD Panel, Mainboard) are compatible.
+//! @return True if the versions are compatible
 bool Versions::is_lcd_version_valid()
 {
     return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Versions::do_prepare_page()
 {
     send_versions();
@@ -2998,6 +3270,8 @@ Page Versions::do_prepare_page()
 // Sponsors
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Sponsors::do_prepare_page()
 {
     return Page::Sponsors;
@@ -3007,6 +3281,8 @@ Page Sponsors::do_prepare_page()
 // Copyrights
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page Copyrights::do_prepare_page()
 {
     return Page::Copyrights;
@@ -3016,6 +3292,8 @@ Page Copyrights::do_prepare_page()
 // Change Filament
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page ChangeFilament::do_prepare_page()
 {
     return Page::None;
@@ -3026,6 +3304,8 @@ Page ChangeFilament::do_prepare_page()
 // EEPROM data mismatch
 // --------------------------------------------------------------------
 
+//! Check if the EEPROM values are compatible or not. If not, display a message.
+//! @return False if the values are compatible
 bool EepromMismatch::check()
 {
     if(does_mismatch())
@@ -3037,27 +3317,33 @@ bool EepromMismatch::check()
     return true;
 }
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page EepromMismatch::do_prepare_page()
 {
     return Page::EEPROMMismatch;
 }
 
+//! Handles the Save (Continue) command
 void EepromMismatch::do_save_command()
 {
     advi3pp.save_settings();
     pages.show_page(Page::Main);
 }
 
+//! Check the EEPROM value mismatch flag.
 bool EepromMismatch::does_mismatch() const
 {
     return mismatch_;
 }
 
+//! Set the EEPROM value mismatch flag.
 void EepromMismatch::set_mismatch()
 {
     mismatch_ = true;
 }
 
+//! Reset the EEPROM value mismatch flag.
 void EepromMismatch::reset_mismatch()
 {
     mismatch_ = false;
@@ -3067,6 +3353,8 @@ void EepromMismatch::reset_mismatch()
 // No Sensor
 // --------------------------------------------------------------------
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
 Page NoSensor::do_prepare_page()
 {
     return Page::NoSensor;
@@ -3077,17 +3365,23 @@ Page NoSensor::do_prepare_page()
 // Dimming
 // --------------------------------------------------------------------
 
+//! Set LCD Panel brightness
+//! @param brightness New brightness
 void ADVi3pp_::set_brightness(int16_t brightness)
 {
     dimming.change_brightness(brightness);
 }
 
+//! Constructor. Initialize dimming check time and dimming delay time
 Dimming::Dimming()
 {
     set_next_checking_time();
     set_next_dimmming_time();
 }
 
+//! Enable or disable dimming of the LCD Panel
+//! @param enable Enable or disable dimming
+//! @param doIt Chnage the dimming right now or not
 void Dimming::enable(bool enable, bool doIt)
 {
     enabled_ = enable;
@@ -3095,28 +3389,33 @@ void Dimming::enable(bool enable, bool doIt)
         reset(true);
 }
 
+//! Set the next dimming check time
 void Dimming::set_next_checking_time()
 {
     next_check_time_ = millis() + 200;
 }
 
+//! Set the next dimming delay time
 void Dimming::set_next_dimmming_time()
 {
-    next_dimming_time_ = millis() + 1000ul * DIMMING_DELAY;
+    next_dimming_time_ = millis() + 1000ul * dimming_delay;
 }
 
+//! Get adjusted brightness (depended of the active dimming or not)
+//! @return The adjusted brightness
 uint8_t Dimming::get_adjusted_brightness()
 {
     int16_t brightness = ::lcd_contrast;
     if(dimming_)
-        brightness = brightness * DIMMING_RATIO / 100;
-    if(brightness < BRIGHTNESS_MIN)
-        brightness = BRIGHTNESS_MIN;
-    if(brightness > BRIGHTNESS_MAX)
-        brightness = BRIGHTNESS_MAX;
+        brightness = brightness * dimming_ratio / 100;
+    if(brightness < brightness_min)
+        brightness = brightness_min;
+    if(brightness > brightness_max)
+        brightness = brightness_max;
     return static_cast<uint8_t>(brightness);
 }
 
+//! Check the dimming state: LCD Panel was touched? Dimming delay was elapsed?
 void Dimming::check()
 {
     if(!enabled_ || !ELAPSED(millis(), next_check_time_))
@@ -3151,6 +3450,8 @@ void Dimming::check()
     }
 }
 
+//! Reset the dimming
+//! @param force Change the brightness right now
 void Dimming::reset(bool force)
 {
     set_next_dimmming_time();
@@ -3161,6 +3462,7 @@ void Dimming::reset(bool force)
     send_brightness();
 }
 
+//! Adjust the brigthness of the LCD panel
 void Dimming::send_brightness()
 {
     auto brightness = get_adjusted_brightness();
@@ -3170,6 +3472,8 @@ void Dimming::send_brightness()
     frame.send(true);
 }
 
+//! Change the brightness of the LCD Panel.
+//! @param brightness New brightness
 void Dimming::change_brightness(int16_t brightness)
 {
     ::lcd_contrast = brightness;

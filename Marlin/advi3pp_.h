@@ -1,12 +1,7 @@
 /**
  * Marlin 3D Printer Firmware For Wanhao Duplicator i3 Plus (ADVi3++)
  *
- * Copyright (C) 2017 Sebastien Andrivet [https://github.com/andrivet/]
- *
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2017-2019 Sebastien Andrivet [https://github.com/andrivet/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +51,7 @@ namespace advi3pp {
 const size_t message_length = 48;
 const size_t progress_name_length = 44;
 const size_t progress_percent_length = 48;
-const uint8_t sd_file_length = 26; // This is the maximum length handled by the SD layer (FILENAME_LENGTH)
+const uint8_t sd_file_length = 26; //!< This is the maximum length handled by the SD layer (FILENAME_LENGTH)
 
 const uint16_t default_bed_temperature = 50;
 const uint16_t default_hotend_temperature = 200;
@@ -134,7 +129,7 @@ inline void EepromRead::read(T& data)
 }
 
 // --------------------------------------------------------------------
-// Pages
+// Pages - Display a page on top of the others; display back and forward pages
 // --------------------------------------------------------------------
 
 enum class ShowOptions: uint8_t
@@ -213,7 +208,7 @@ private:
 
 
 // --------------------------------------------------------------------
-// Wait
+// Wait Messages
 // --------------------------------------------------------------------
 
 struct Wait: Handler<Wait>
@@ -244,7 +239,7 @@ private:
 struct Temperatures: Handler<Temperatures>
 {
     void show(const WaitCallback& back);
-    void show(bool save_back = true);
+    void show(ShowOptions options = ShowOptions::SaveBack);
 
 private:
     Page do_prepare_page();
@@ -256,7 +251,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Load and Unload
+// Load and Unload Page
 // --------------------------------------------------------------------
 
 struct LoadUnload: Handler<LoadUnload>
@@ -279,7 +274,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Preheat
+// Preheat Page
 // --------------------------------------------------------------------
 
 struct Preheat: Handler<Preheat>
@@ -309,7 +304,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Move
+// Move Page
 // --------------------------------------------------------------------
 
 struct Move: Handler<Move>
@@ -340,7 +335,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Sensor Tuning
+// Sensor Tuning Page
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
@@ -367,7 +362,7 @@ private:
 #endif
 
 // --------------------------------------------------------------------
-// Automatic Leveling
+// Automatic Leveling Page
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
@@ -396,7 +391,7 @@ private:
 #endif
 
 // --------------------------------------------------------------------
-// Leveling Grid
+// Leveling Grid Page
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
@@ -418,7 +413,7 @@ private:
 #endif
 
 // --------------------------------------------------------------------
-// Manual Leveling
+// Manual Leveling Page
 // --------------------------------------------------------------------
 
 struct ManualLeveling: Handler<ManualLeveling>
@@ -442,7 +437,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// SD Card
+// SD Card Page
 // --------------------------------------------------------------------
 
 struct SdCard: Handler<SdCard>
@@ -459,6 +454,8 @@ private:
     void select_file_command(uint16_t file_index);
 
 private:
+    static constexpr uint16_t nb_visible_sd_files = 5; //!< Number of files per page on the SD screen
+
     uint16_t nb_files_ = 0;
     uint16_t last_file_index_ = 0;
     uint16_t page_index_ = 0;
@@ -467,7 +464,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Printing
+// Printing Page
 // --------------------------------------------------------------------
 
 struct Print: Handler<Print>
@@ -491,7 +488,7 @@ private:
 
 
 // --------------------------------------------------------------------
-// Advanced Pause
+// Advanced Pause Page
 // --------------------------------------------------------------------
 
 struct AdvancedPause: Handler<AdvancedPause>
@@ -499,7 +496,6 @@ struct AdvancedPause: Handler<AdvancedPause>
     void advanced_pause_show_message(AdvancedPauseMessage message);
 
 private:
-    void init();
     void insert_filament();
     bool filament_inserted();
 
@@ -510,7 +506,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Sensor Z Height Tuning
+// Sensor Z Height Tuning Page
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
@@ -531,7 +527,7 @@ private:
     Page do_prepare_page();
     void do_save_command();
     void do_back_command();
-    void home_task();
+    void post_home_task();
     void multiplier1_command();
     void multiplier2_command();
     void multiplier3_command();
@@ -557,7 +553,7 @@ private:
 #endif
 
 // --------------------------------------------------------------------
-// Extruder Tuning
+// Extruder Tuning Page
 // --------------------------------------------------------------------
 
 struct ExtruderTuning: Handler<ExtruderTuning>
@@ -574,12 +570,15 @@ private:
     bool cancel();
 
 private:
+    static constexpr uint16_t tuning_extruder_filament = 100; //!< Filament to extrude (10 cm)
+    static constexpr uint16_t tuning_extruder_delta = 20; //!< Amount of filament supposes tp remain after extruding (2 cm)
+
     float extruded_ = 0.0;
     friend Parent;
 };
 
 // --------------------------------------------------------------------
-// PID Tuning
+// PID Tuning Page
 // --------------------------------------------------------------------
 
 struct PidTuning: Handler<PidTuning>
@@ -604,7 +603,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Linear Advance Tuning
+// Linear Advance Tuning Page
 // --------------------------------------------------------------------
 
 struct LinearAdvanceTuning: Handler<LinearAdvanceTuning>
@@ -616,7 +615,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Diagnosis
+// Diagnosis Page
 // --------------------------------------------------------------------
 
 struct Diagnosis: Handler<Diagnosis>
@@ -634,7 +633,7 @@ private:
 
 
 // --------------------------------------------------------------------
-// Sensor Settings
+// Sensor Settings Page
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
@@ -685,7 +684,7 @@ private:
 
 
 // --------------------------------------------------------------------
-// Firmware Setting
+// Firmware Setting Page
 // --------------------------------------------------------------------
 
 struct FirmwareSettings: Handler<FirmwareSettings>
@@ -700,6 +699,7 @@ private:
     void send_features() const;
     void baudrate_minus_command();
     void baudrate_plus_command();
+    size_t usb_baudrate_index(uint32_t baudrate);
 
     uint32_t usb_baudrate_ = BAUDRATE;
     Feature features_ = Feature::BuzzOnPress | Feature::Dimming | Feature::ThermalProtection;
@@ -708,7 +708,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// LCD Setting
+// LCD Setting Page
 // --------------------------------------------------------------------
 
 struct LcdSettings: Handler<LcdSettings>
@@ -728,7 +728,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Print Settings
+// Print Settings Page
 // --------------------------------------------------------------------
 
 struct PrintSettings: Handler<PrintSettings>
@@ -766,7 +766,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// PidSettings
+// PID Settings Page
 // --------------------------------------------------------------------
 
 struct Pid
@@ -811,7 +811,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// StepSettings
+// Step Settings Page
 // --------------------------------------------------------------------
 
 struct StepSettings: Handler<StepSettings>
@@ -824,7 +824,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// FeedrateSettings
+// Feedrate Settings Page
 // --------------------------------------------------------------------
 
 struct FeedrateSettings: Handler<FeedrateSettings>
@@ -837,7 +837,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// AccelerationSettings
+// Acceleration Settings Page
 // --------------------------------------------------------------------
 
 struct AccelerationSettings: Handler<AccelerationSettings>
@@ -850,7 +850,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// JerkSettings
+// Jerk Settings Page
 // --------------------------------------------------------------------
 
 struct JerkSettings: Handler<JerkSettings>
@@ -863,7 +863,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Linear Advance Settings
+// Linear Advance Settings Page
 // --------------------------------------------------------------------
 
 struct LinearAdvanceSettings: Handler<LinearAdvanceSettings>
@@ -876,7 +876,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Factory Reset
+// Factory Reset Page
 // --------------------------------------------------------------------
 
 struct FactoryReset: Handler<FactoryReset>
@@ -890,7 +890,7 @@ private:
 
 
 // --------------------------------------------------------------------
-// Statistics
+// Statistics Page
 // --------------------------------------------------------------------
 
 struct Statistics: Handler<Statistics>
@@ -903,7 +903,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Versions
+// Versions Page
 // --------------------------------------------------------------------
 
 struct Versions: Handler<Versions>
@@ -923,7 +923,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Sponsors
+// Sponsors Page
 // --------------------------------------------------------------------
 
 struct Sponsors: Handler<Sponsors>
@@ -935,7 +935,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// Copyrights
+// Copyrights Page
 // --------------------------------------------------------------------
 
 struct Copyrights: Handler<Copyrights>
@@ -948,7 +948,7 @@ private:
 
 
 // --------------------------------------------------------------------
-// Change Filament
+// Change Filament Page
 // --------------------------------------------------------------------
 
 struct ChangeFilament: Handler<ChangeFilament>
@@ -960,7 +960,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// EEPROM Mistatch
+// EEPROM Mismatch Page
 // --------------------------------------------------------------------
 
 struct EepromMismatch: Handler<EepromMismatch>
@@ -980,7 +980,7 @@ private:
 };
 
 // --------------------------------------------------------------------
-// No Sensor
+// No Sensor Page
 // --------------------------------------------------------------------
 
 struct NoSensor: Handler<NoSensor>
@@ -1011,6 +1011,11 @@ private:
     uint8_t get_adjusted_brightness();
 
 private:
+    static constexpr int8_t brightness_min = 0x01; //!< Minimum value for brightness
+    static constexpr int8_t brightness_max = 0x40; //!< Maximum value for brightness
+    static constexpr uint8_t dimming_ratio = 5; //!< Ratio (in percent) between normal and dimmed LCD panel
+    static constexpr uint16_t dimming_delay = 5 * 60; //!< Delay before dimming the LCD panel (5 minutes)
+
     bool enabled_ = true;
     bool dimming_ = false;
     millis_t next_check_time_ = 0;
@@ -1084,8 +1089,6 @@ struct ADVi3pp_
     void set_status(const char* fmt, va_list& args);
     void set_status(const FlashChar* message);
     void set_status(const FlashChar* fmt, va_list& args);
-    void queue_status(const char* message);
-    void queue_status(const FlashChar* message);
     void reset_status();
     void stop_and_wait();
 
@@ -1145,7 +1148,6 @@ inline namespace singletons
     extern ADVi3pp_ advi3pp;
     extern Pages pages;
     extern Task task;
-
 }
 
 // --------------------------------------------------------------------

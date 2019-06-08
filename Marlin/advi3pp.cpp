@@ -1,12 +1,7 @@
 /**
  * Marlin 3D Printer Firmware For Wanhao Duplicator i3 Plus (ADVi3++)
  *
- * Copyright (C) 2017 Sebastien Andrivet [https://github.com/andrivet/]
- *
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2017-2019 Sebastien Andrivet [https://github.com/andrivet/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,6 +119,7 @@ void ADVi3pp_::setup_lcd_serial()
     Serial2.begin(advi3_pp_baudrate);
 }
 
+//! Change the baudrate. Check before that it is actually different.
 void ADVi3pp_::change_baudrate()
 {
     if(usb_baudrate_ != BAUDRATE)
@@ -136,6 +132,7 @@ void ADVi3pp_::setup()
     init_ = true;
 }
 
+//! Display the Boot animation (page)
 void ADVi3pp_::show_boot_page()
 {
     if(!eeprom_mismatch.check())
@@ -154,6 +151,7 @@ void ADVi3pp_::send_gplv3_7b_notice()
     SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2019 Sebastien Andrivet");
 }
 
+//! Send the list of sponsors on the serial port (www.patreon.com/andrivet)
 void ADVi3pp_::send_sponsors()
 {
     SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar, Sawtoothsquid, Darren Williams, JeremyThePrintr, RonnieL");
@@ -229,27 +227,31 @@ void ADVi3pp_::eeprom_settings_mismatch()
     eeprom_mismatch.set_mismatch();
 }
 
+//! Save the current settings permanently in EEPROM memory
 void ADVi3pp_::save_settings()
 {
     eeprom_mismatch.reset_mismatch();
     enqueue_and_echo_commands_P(PSTR("M500"));
 }
 
+//! Restore settings from EEPROM memory
 void ADVi3pp_::restore_settings()
 {
     // Note: Previously, M420 (bed leveling compensation) was reset by M501. It is no more the case.
     enqueue_and_echo_commands_P(PSTR("M501"));
 }
 
+//! Check if thermal runaway protection is activated or not.
+//! @return true if thermal runaway protection is activated
 bool ADVi3pp_::is_thermal_protection_enabled() const
 {
     return test_one_bit(features_, Feature::ThermalProtection);
 }
 
 
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// --------------------------------------------------------------------
 // Incoming LCD commands and status update
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// --------------------------------------------------------------------
 
 //! Do not do too many things in setup so do things here
 void ADVi3pp_::init()
@@ -293,11 +295,14 @@ void ADVi3pp_::idle()
     graphs.update();
 }
 
+//! Check if the printer is doing something or is idle
+//! @return true if the printer is busy or has some blocks queued
 bool ADVi3pp_::is_busy()
 {
     return busy_state != NOT_BUSY || Planner::has_blocks_queued();
 }
 
+//! Update the progress bar if the printer is printing for the SD card
 void ADVi3pp_::update_progress()
 {
     // Progress bar % comes from SD when actively printing
@@ -305,6 +310,8 @@ void ADVi3pp_::update_progress()
         progress_bar_percent = card.percentDone();
 }
 
+//! Get the current Z height (optionaly multiplied by a factor)
+//! @return The current Z height in mm
 double ADVi3pp_::get_current_z_height(int multiply) const
 {
 	auto height = LOGICAL_Z_POSITION(current_position[Z_AXIS]) * multiply;
@@ -316,9 +323,12 @@ double ADVi3pp_::get_current_z_height(int multiply) const
 //! Update the status of the printer on the LCD.
 void ADVi3pp_::send_status_data(bool force_update)
 {
+    // Right time for an update or force update?
     if(!force_update && !task.is_update_time())
         return;
 
+    // The progress bar is split into two parts because of a limitation of the DWIN panel
+    // so compute the progress of each part.
     int16_t progress_bar_low = progress_bar_percent >= 50 ? 5 : progress_bar_percent / 10;
     int16_t progress_var_high  = progress_bar_percent < 50 ? 0 : (progress_bar_percent / 10) - 5;
 
@@ -328,6 +338,7 @@ void ADVi3pp_::send_status_data(bool force_update)
     uint16_t probe_state = 0;
 #endif
 
+    // Send the current status in one frame
     WriteRamDataRequest frame{Variable::TargetBed};
     frame << Uint16(Temperature::target_temperature_bed)
           << Uint16(Temperature::degBed())
@@ -343,6 +354,7 @@ void ADVi3pp_::send_status_data(bool force_update)
     frame.send(false);
 
     compute_progress();
+    // If one of the messages has changed, send them to the LCD panel
     if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
     {
         frame.reset(Variable::Message);
@@ -444,9 +456,9 @@ void ADVi3pp_::read_lcd_serial()
     }
 }
 
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// --------------------------------------------------------------------
 // Screens
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// --------------------------------------------------------------------
 
 //! Display the Thermal Runaway Error screen.
 void ADVi3pp_::temperature_error(const FlashChar* message)
@@ -456,11 +468,14 @@ void ADVi3pp_::temperature_error(const FlashChar* message)
     pages.show_page(advi3pp::Page::ThermalRunawayError);
 }
 
+//! Check if there is currently a status to be displayed
+//! @return true if there is a status (i.e. a message) to display
 bool ADVi3pp_::has_status()
 {
     return has_status_;
 }
 
+//! Set a status to display (a message)
 void ADVi3pp_::set_status(const char* message)
 {
     message_.set(message).align(Alignment::Left);
@@ -468,6 +483,7 @@ void ADVi3pp_::set_status(const char* message)
     has_status_ = true;
 }
 
+//! Set a status to display (a message)
 void ADVi3pp_::set_status(const char* fmt, va_list& args)
 {
     message_.set(fmt, args).align(Alignment::Left);
@@ -475,6 +491,7 @@ void ADVi3pp_::set_status(const char* fmt, va_list& args)
     has_status_ = true;
 }
 
+//! Set a status to display (a message)
 void ADVi3pp_::set_status(const FlashChar* message)
 {
     message_.set(message).align(Alignment::Left);
@@ -482,6 +499,7 @@ void ADVi3pp_::set_status(const FlashChar* message)
     has_status_ = true;
 }
 
+//! Set a status to display (a message)
 void ADVi3pp_::set_status(const FlashChar* fmt, va_list& args)
 {
     message_.set(fmt, args).align(Alignment::Left);
@@ -489,18 +507,7 @@ void ADVi3pp_::set_status(const FlashChar* fmt, va_list& args)
     has_status_ = true;
 }
 
-void ADVi3pp_::queue_status(const char* message)
-{
-    ADVString<100> string{F("M117 ")}; string << message;
-    enqueue_and_echo_command(string.get());
-}
-
-void ADVi3pp_::queue_status(const FlashChar* message)
-{
-    ADVString<100> string{F("M117 ")}; string << message;
-    enqueue_and_echo_command(string.get());
-}
-
+//! Clear the status (nothing to display)
 void ADVi3pp_::reset_status()
 {
     message_.reset().align(Alignment::Left);
@@ -508,11 +515,13 @@ void ADVi3pp_::reset_status()
     has_status_ = false;
 }
 
+//! Handle Stop and Wait from the host: display a wait/continue page
 void ADVi3pp_::stop_and_wait()
 {
     wait.show_continue();
 }
 
+//! Set the name for the progess message. Usually, it is the name of the file printed.
 void ADVi3pp_::set_progress_name(const char* name)
 {
     progress_name_ = name;
@@ -521,6 +530,7 @@ void ADVi3pp_::set_progress_name(const char* name)
     compute_progress();
 }
 
+//! Compute the current progress message (name and percentage)
 void ADVi3pp_::compute_progress()
 {
     auto done = card.percentDone();
@@ -534,6 +544,7 @@ void ADVi3pp_::compute_progress()
     percent_ = done;
 }
 
+//! Clear the progress message
 void ADVi3pp_::reset_progress()
 {
     progress_name_.reset();
@@ -541,11 +552,13 @@ void ADVi3pp_::reset_progress()
     percent_ = -1;
 }
 
+//! Enable or disable the buzzer
 void ADVi3pp_::enable_buzzer(bool enable, bool /*doIt*/)
 {
     buzzer_enabled_ = enable;
 }
 
+//! Enable or disable the buzzer when the LCD panel is presses
 void ADVi3pp_::enable_buzz_on_press(bool enable, bool doIt)
 {
     buzz_on_press_enabled_ = enable;
@@ -554,6 +567,7 @@ void ADVi3pp_::enable_buzz_on_press(bool enable, bool doIt)
 }
 
 //! Activate the LCD internal buzzer for the given duration.
+//! Note: If the buzzer is disabled, does nothing.
 void ADVi3pp_::buzz(long duration)
 {
     dimming.reset();
@@ -566,6 +580,8 @@ void ADVi3pp_::buzz(long duration)
     buzz_(duration);
 }
 
+//! Send the buzz command to the LCD panel
+//! @param duration Duration of the sound
 void ADVi3pp_::buzz_(long duration)
 {
     duration /= 10;
@@ -575,6 +591,8 @@ void ADVi3pp_::buzz_(long duration)
     request.send();
 }
 
+//! Buzz briefly when the LCD panel is pressed.
+//! Note: If buzz on press is disabled, does nothing
 void ADVi3pp_::buzz_on_press()
 {
     if(!buzz_on_press_enabled_)
@@ -585,6 +603,9 @@ void ADVi3pp_::buzz_on_press()
     buzz_(BUZZ_ON_PRESS_DURATION);
 }
 
+//! Change the USB baudrate between the printer and the host
+//! @param baudrate New baudrate
+//! @param disconnect Disconnect or not the host
 void ADVi3pp_::change_usb_baudrate(uint32_t baudrate, bool disconnect)
 {
     if(disconnect)
@@ -595,7 +616,7 @@ void ADVi3pp_::change_usb_baudrate(uint32_t baudrate, bool disconnect)
     MYSERIAL0.flushTX();
     MYSERIAL0.end();
 
-    dwell(500);
+    dwell(500); // Wait a little before reconnecting
 
     usb_baudrate_ = baudrate;
     MYSERIAL0.begin(usb_baudrate_);
@@ -605,16 +626,23 @@ void ADVi3pp_::change_usb_baudrate(uint32_t baudrate, bool disconnect)
     SERIAL_PROTOCOLLNPGM("start");
 }
 
+//! Change the current set of features of ADVi3++ (thermal protection, dimming, ...)
 void ADVi3pp_::change_features(Feature features)
 {
     features_ = features;
 }
 
+//! Get the last used temperature for the hotend or the bad
+//! @param kind Kind of temperature: hotend or bed
+//! @return The last used themperature
 uint16_t  ADVi3pp_::get_last_used_temperature(TemperatureKind kind) const
 {
     return last_used_temperature_[kind == TemperatureKind::Hotend];
 }
 
+//! To be called when a new temperature is selected as a target
+//! @param kind Kind of temperature: hotend or bed
+//! @param temperature The new target temperature
 void ADVi3pp_::on_set_temperature(TemperatureKind kind, uint16_t temperature)
 {
     if(temperature == 0)
@@ -623,6 +651,7 @@ void ADVi3pp_::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     pid_settings.set_best_pid(kind, temperature);
 }
 
+//! Process G-Codes specific to this firmware (Ax)
 void ADVi3pp_::process_command(const GCodeParser& parser)
 {
     switch(parser.codenum)
@@ -638,11 +667,14 @@ void ADVi3pp_::process_command(const GCodeParser& parser)
 // Graphs
 // --------------------------------------------------------------------
 
+//! Constructor
+//! Initialize the update time
 Graphs::Graphs()
 {
     next_update_graph_time_ = millis() + 1000L * 10; // Wait 10 sec before starting updating graphs
 }
 
+//! Update the graphs (if the update delay has elapsed)
 void Graphs::update()
 {
     if(!ELAPSED(millis(), next_update_graph_time_))
@@ -652,7 +684,7 @@ void Graphs::update()
     next_update_graph_time_ = millis() + 500;
 }
 
-//! Update the graphics (two channels: the bed and the hotend).
+//! Update the graphs on the LCD panel (two channels: the bed and the hotend).
 void Graphs::send_data()
 {
     WriteCurveDataRequest frame{0b00000011};
@@ -661,6 +693,7 @@ void Graphs::send_data()
     frame.send(false);
 }
 
+//! Clear the graphs
 void Graphs::clear()
 {
     WriteRegisterDataRequest request{Register::TrendlineClear}; // TODO: Fix this (Mini DGUS)
@@ -679,6 +712,8 @@ void Task::set_next_update_time(unsigned int delta)
     next_update_time_ = millis() + delta;
 }
 
+//! Is it the time to update?
+//! @return true if it is the time to update
 bool Task::is_update_time()
 {
     auto current_time = millis();
@@ -714,6 +749,8 @@ void Task::execute_background_task()
     background_task_();
 }
 
+//! Check if there is a background task to execute
+//! @return true if there is a background task to execute
 bool Task::has_background_task() const
 {
     return bool(background_task_);

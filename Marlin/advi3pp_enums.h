@@ -1,12 +1,7 @@
 /**
  * Marlin 3D Printer Firmware For Wanhao Duplicator i3 Plus (ADVi3++)
  *
- * Copyright (C) 2017 Sebastien Andrivet [https://github.com/andrivet/]
- *
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2017-2019 Sebastien Andrivet [https://github.com/andrivet/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -241,6 +236,7 @@ enum class KeyValue: uint16_t
     Back                    = 0xFFFF
 };
 
+//! Set of possible feature to enable or disable
 enum class Feature: uint16_t
 {
     None                = 0b0000000000000000,
