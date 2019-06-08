@@ -1,5 +1,53 @@
 # ADVi3++ Changelog
 
+## 4.0.0 (2019-06-08)
+
+### New features
+
+* **#73** - Enable Linear Advance (LIN_ADVANCE). By default `K` is `0` but you can change it on the LCD Panel
+* **#75** - Diagnosis page with the live state of several digital and analog lines
+* **#81** - Multiple PID values recorded and auto PID tune. When a target temperature is set, choose the closest set of PID values.
+* **#101** - PID Tuning of Heated Bed
+* **#108** - Live Z adjustment (Babystepping)
+* **#125** - Ability to enter Touch Sensor (X, Y) offset position on the LCD Panel.
+* **#187** - Aldi UK printer (HE180021) support
+* **#195** - Support of the new BLTouch Smart version 3
+* **#195** - Add the positions of some sensor supports (Giorgio Baseggio, TechningTech, Mark II)
+* **#203** - G20, G21, M149 support
+* **#204** - M0 and M1 support
+* **#204** - S-Curve Acceleration support
+* **#204** - G26 Mesh Validation Pattern tool support. Not yet in the LCD Panel UI
+* **#204** - Support of BLTouch and BLTouch Smart 3 with Aldi UK printer (HE180021)
+
+### Enhancements
+
+* **#27** - Add a progress bar during printing
+* **#29** - During SD print, displays the remaining time in percent
+* **#39** - Be able to cancel a PID tuning
+* **#165** - Allow bigger values (>800) for motor steps.
+* **#170** - Disable drive when stopping print
+* **#179** - Add free memory (SRAM) in statistics
+* **#185** - Show page number on SD Card screen
+* **#192** - Clear the message on the display when G4 is finished
+* **#195** - Align ADVi3++ with the latest 1.1.9 patches from Marlin
+* New Z Height tuning - The Z-end stop is no more used
+
+### Bug fixes
+
+* **#156** - No more filament load/unload artifacts
+* **#159** - Switches like on iOS (left off, right, on)
+* **#163** - Title of last print stuck on LCD screen
+* **#176** - Race condition between TP_Flag reading and action sent by the LCD Panel
+* **#195** - Prints were not centered in the bed
+* **#195** - Cooldown turns also off the fan
+* **#199** - Octoprint connection speed issues
+* **#204** - Under some circumstances, bed leveling compensation was disabled
+* **#204** - Sometimes when hitting Pause, the head goes in the corner as expected but then suddenly goes over the piece being printed
+
+### Removed features
+
+* **#162**: XYZ Motors "calibration". It was wrong. It gives the false impression that this part needs some calibration when in fact, these parameters (number of steps per millimeter) are directly derived from the mechanical parts of the printer (the stepper motor, ...)
+
 ## 3.0.2 (2018-06-10)
 
 ### New features
