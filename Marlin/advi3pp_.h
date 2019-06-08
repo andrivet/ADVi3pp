@@ -48,13 +48,13 @@ extern bool ensure_safe_temperature(AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_P
 
 namespace advi3pp {
 
-const size_t message_length = 48;
-const size_t progress_name_length = 44;
-const size_t progress_percent_length = 48;
+const size_t message_length = 48; //!< Size of messages to be displayed on the LCD Panel
+const size_t progress_name_length = 44; //!< Size of the progress name (i.e. filename) to be displayed on the LCD Panel
+const size_t progress_length = 48; //!< Size of the progress message (filename and percent) to be displayed on the LCD Panel
 const uint8_t sd_file_length = 26; //!< This is the maximum length handled by the SD layer (FILENAME_LENGTH)
 
-const uint16_t default_bed_temperature = 50;
-const uint16_t default_hotend_temperature = 200;
+const uint16_t default_bed_temperature = 50; //!< Default target temperature for the bed
+const uint16_t default_hotend_temperature = 200; //!< Default target temperature for the hotend
 
 using adv::Callback;
 using BackgroundTask = Callback<void(*)()>;
@@ -84,6 +84,7 @@ inline int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { r
 // EEPROM Data Read & Write
 // --------------------------------------------------------------------
 
+//! EEPROM writer: utility class to write values into EEPROM
 struct EepromWrite
 {
     EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
@@ -95,6 +96,7 @@ private:
     uint16_t& working_crc_;
 };
 
+//! EEPROM reader: utility class to read values from EEPROM
 struct EepromRead
 {
     EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
@@ -106,39 +108,19 @@ private:
     uint16_t& working_crc_;
 };
 
-inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
-: write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc)
-{
-}
-
-template <typename T>
-inline void EepromWrite::write(const T& data)
-{
-    write_(eeprom_index_, reinterpret_cast<const uint8_t*>(&data), sizeof(T), &working_crc_);
-}
-
-inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
-: read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc)
-{
-}
-
-template <typename T>
-inline void EepromRead::read(T& data)
-{
-    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_, false);
-}
-
 // --------------------------------------------------------------------
 // Pages - Display a page on top of the others; display back and forward pages
 // --------------------------------------------------------------------
 
+//! Options when pushing a page onto the stack
 enum class ShowOptions: uint8_t
 {
-    None     = 0x00,
-    SaveBack = 0x01
+    None     = 0x00, //!< No option
+    SaveBack = 0x01  //!< Save the current page onto the stack of back pages
 };
 ENABLE_BITMASK_OPERATOR(ShowOptions);
 
+//! Display a page on top of the others; display back and forward pages
 struct Pages
 {
     void show_page(Page page, ShowOptions options = ShowOptions::SaveBack);
@@ -157,6 +139,7 @@ private:
 // Handler - Handle inputs from the LCD Panel
 // --------------------------------------------------------------------
 
+//! Handle inputs from the LCD Panel
 template<typename Self>
 struct Handler: adv::Crtp<Self, Handler>
 {
@@ -194,6 +177,7 @@ private:
 // Screens
 // --------------------------------------------------------------------
 
+//! Handle Temperature, SD card and Print screens
 struct Screens: Handler<Screens>
 {
 private:
@@ -211,6 +195,7 @@ private:
 // Wait Messages
 // --------------------------------------------------------------------
 
+//! Display wait page and messages
 struct Wait: Handler<Wait>
 {
     void show(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
@@ -236,6 +221,7 @@ private:
 // Temperatures Graph
 // --------------------------------------------------------------------
 
+//! Temperatures Graph
 struct Temperatures: Handler<Temperatures>
 {
     void show(const WaitCallback& back);
@@ -254,6 +240,7 @@ private:
 // Load and Unload Page
 // --------------------------------------------------------------------
 
+//! Load and Unload Page
 struct LoadUnload: Handler<LoadUnload>
 {
 private:
@@ -277,6 +264,7 @@ private:
 // Preheat Page
 // --------------------------------------------------------------------
 
+//! Preheat Page
 struct Preheat: Handler<Preheat>
 {
     static const size_t NB_PRESETS = 5;
@@ -307,6 +295,7 @@ private:
 // Move Page
 // --------------------------------------------------------------------
 
+//! Move Page
 struct Move: Handler<Move>
 {
     void x_plus_command();
@@ -339,6 +328,7 @@ private:
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
+//! Sensor Tuning Page
 struct SensorTuning: Handler<SensorTuning>
 {
 private:
@@ -353,6 +343,7 @@ private:
     friend Parent;
 };
 #else
+//! Sensor Tuning Page
 struct SensorTuning: Handler<SensorTuning>
 {
 private:
@@ -366,6 +357,7 @@ private:
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
+//! Automatic Leveling Page
 struct AutomaticLeveling: Handler<AutomaticLeveling>
 {
     void g29_leveling_finished(bool success);
@@ -380,6 +372,7 @@ private:
     friend Parent;
 };
 #else
+//! Automatic Leveling Page
 struct AutomaticLeveling: Handler<AutomaticLeveling>
 {
     void g29_leveling_finished(bool) {}
@@ -395,6 +388,7 @@ private:
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
+//! Leveling Grid Page
 struct LevelingGrid: Handler<LevelingGrid>
 {
 private:
@@ -404,6 +398,7 @@ private:
     friend Parent;
 };
 #else
+//! Leveling Grid Page
 struct LevelingGrid: Handler<LevelingGrid>
 {
 private:
@@ -416,6 +411,7 @@ private:
 // Manual Leveling Page
 // --------------------------------------------------------------------
 
+//! Manual Leveling Page
 struct ManualLeveling: Handler<ManualLeveling>
 {
 private:
@@ -440,6 +436,7 @@ private:
 // SD Card Page
 // --------------------------------------------------------------------
 
+//! SD Card Page
 struct SdCard: Handler<SdCard>
 {
     void show_first_page();
@@ -467,6 +464,7 @@ private:
 // Printing Page
 // --------------------------------------------------------------------
 
+//! Printing Page
 struct Print: Handler<Print>
 {
     void process_pause_code();
@@ -491,6 +489,7 @@ private:
 // Advanced Pause Page
 // --------------------------------------------------------------------
 
+//! Advanced Pause Page
 struct AdvancedPause: Handler<AdvancedPause>
 {
     void advanced_pause_show_message(AdvancedPauseMessage message);
@@ -510,6 +509,7 @@ private:
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
+//! Sensor Z Height Tuning Page
 struct SensorZHeight: Handler<SensorZHeight>
 {
     void minus();
@@ -541,6 +541,7 @@ private:
     friend Parent;
 };
 #else
+//! Sensor Z Height Tuning Page
 struct SensorZHeight: Handler<SensorZHeight>
 {
     void minus() {}
@@ -556,6 +557,7 @@ private:
 // Extruder Tuning Page
 // --------------------------------------------------------------------
 
+//! Extruder Tuning Page
 struct ExtruderTuning: Handler<ExtruderTuning>
 {
 private:
@@ -581,6 +583,7 @@ private:
 // PID Tuning Page
 // --------------------------------------------------------------------
 
+//! PID Tuning Page
 struct PidTuning: Handler<PidTuning>
 {
     void finished(bool success);
@@ -606,6 +609,8 @@ private:
 // Linear Advance Tuning Page
 // --------------------------------------------------------------------
 
+//! Linear Advance Tuning Page
+//! Note: Not fully implemented
 struct LinearAdvanceTuning: Handler<LinearAdvanceTuning>
 {
 private:
@@ -618,6 +623,7 @@ private:
 // Diagnosis Page
 // --------------------------------------------------------------------
 
+//! Diagnosis Page
 struct Diagnosis: Handler<Diagnosis>
 {
     enum class State: uint8_t { Off = 0, On = 1, Output = 2};
@@ -637,7 +643,7 @@ private:
 // --------------------------------------------------------------------
 
 #ifdef ADVi3PP_PROBE
-
+//! Sensor Settings Page
 struct SensorSettings: Handler<SensorSettings>
 {
     static const size_t NB_SENSOR_POSITIONS = 3;
@@ -671,6 +677,7 @@ private:
     friend Parent;
 };
 #else
+//! Sensor Settings Page
 struct SensorSettings: Handler<SensorSettings>
 {
     void send_z_height_to_lcd(double) {}
@@ -687,6 +694,7 @@ private:
 // Firmware Setting Page
 // --------------------------------------------------------------------
 
+//! Firmware Setting Page
 struct FirmwareSettings: Handler<FirmwareSettings>
 {
 private:
@@ -711,6 +719,7 @@ private:
 // LCD Setting Page
 // --------------------------------------------------------------------
 
+//! LCD Setting Page
 struct LcdSettings: Handler<LcdSettings>
 {
     void change_brightness(uint16_t brightness);
@@ -731,6 +740,7 @@ private:
 // Print Settings Page
 // --------------------------------------------------------------------
 
+//! Print Settings Page
 struct PrintSettings: Handler<PrintSettings>
 {
     void feedrate_minus_command();
@@ -744,12 +754,7 @@ struct PrintSettings: Handler<PrintSettings>
     void baby_minus_command();
     void baby_plus_command();
 
-    enum class Multiplier: uint8_t
-    {
-        M1 = 0,
-        M2 = 1,
-        M3 = 2
-    };
+    enum class Multiplier: uint8_t { M1 = 0, M2 = 1, M3 = 2 };
 
 protected:
     bool do_dispatch(KeyValue value);
@@ -769,6 +774,7 @@ private:
 // PID Settings Page
 // --------------------------------------------------------------------
 
+//! PID Settings Page
 struct Pid
 {
     float Kp_, Ki_, Kd_;
@@ -814,6 +820,7 @@ private:
 // Step Settings Page
 // --------------------------------------------------------------------
 
+//! Step Settings Page
 struct StepSettings: Handler<StepSettings>
 {
 private:
@@ -827,6 +834,7 @@ private:
 // Feedrate Settings Page
 // --------------------------------------------------------------------
 
+//! Feedrate Settings Page
 struct FeedrateSettings: Handler<FeedrateSettings>
 {
 private:
@@ -840,6 +848,7 @@ private:
 // Acceleration Settings Page
 // --------------------------------------------------------------------
 
+//! Acceleration Settings Page
 struct AccelerationSettings: Handler<AccelerationSettings>
 {
 private:
@@ -853,6 +862,7 @@ private:
 // Jerk Settings Page
 // --------------------------------------------------------------------
 
+//! Jerk Settings Page
 struct JerkSettings: Handler<JerkSettings>
 {
 private:
@@ -866,6 +876,7 @@ private:
 // Linear Advance Settings Page
 // --------------------------------------------------------------------
 
+//! Linear Advance Settings Page
 struct LinearAdvanceSettings: Handler<LinearAdvanceSettings>
 {
 private:
@@ -879,6 +890,7 @@ private:
 // Factory Reset Page
 // --------------------------------------------------------------------
 
+//! Factory Reset Page
 struct FactoryReset: Handler<FactoryReset>
 {
 private:
@@ -888,11 +900,11 @@ private:
     friend Parent;
 };
 
-
 // --------------------------------------------------------------------
 // Statistics Page
 // --------------------------------------------------------------------
 
+//! Statistics Page
 struct Statistics: Handler<Statistics>
 {
 private:
@@ -906,6 +918,7 @@ private:
 // Versions Page
 // --------------------------------------------------------------------
 
+//! Versions Page
 struct Versions: Handler<Versions>
 {
     bool check();
@@ -926,6 +939,7 @@ private:
 // Sponsors Page
 // --------------------------------------------------------------------
 
+//! Sponsors Page
 struct Sponsors: Handler<Sponsors>
 {
 private:
@@ -938,6 +952,7 @@ private:
 // Copyrights Page
 // --------------------------------------------------------------------
 
+//! Copyrights Page
 struct Copyrights: Handler<Copyrights>
 {
 private:
@@ -951,6 +966,7 @@ private:
 // Change Filament Page
 // --------------------------------------------------------------------
 
+//! Change Filament Page
 struct ChangeFilament: Handler<ChangeFilament>
 {
 private:
@@ -963,6 +979,7 @@ private:
 // EEPROM Mismatch Page
 // --------------------------------------------------------------------
 
+//! EEPROM Mismatch Page
 struct EepromMismatch: Handler<EepromMismatch>
 {
     bool check();
@@ -983,6 +1000,7 @@ private:
 // No Sensor Page
 // --------------------------------------------------------------------
 
+//! No Sensor Page
 struct NoSensor: Handler<NoSensor>
 {
 private:
@@ -995,6 +1013,7 @@ private:
 // LCD screen brightness and dimming
 // --------------------------------------------------------------------
 
+//! LCD screen brightness and dimming
 struct Dimming
 {
     Dimming();
@@ -1026,6 +1045,7 @@ private:
 // Graphs
 // --------------------------------------------------------------------
 
+//! Graphs
 struct Graphs
 {
     Graphs();
@@ -1042,6 +1062,7 @@ private:
 // Background Task
 // --------------------------------------------------------------------
 
+//! Background Task
 struct Task
 {
     void set_background_task(const BackgroundTask& task, unsigned int delta = 500);
@@ -1065,6 +1086,7 @@ private:
 // Main class
 // --------------------------------------------------------------------
 
+//! ADVi3++ class
 struct ADVi3pp_
 {
     void setup_lcd_serial();
@@ -1133,7 +1155,7 @@ private:
     ADVString<message_length> message_;
     ADVString<message_length> centered_;
     ADVString<progress_name_length> progress_name_;
-    ADVString<progress_percent_length> progress_;
+    ADVString<progress_length> progress_;
     int percent_ = -1;
     bool buzzer_enabled_ = true;
     bool buzz_on_press_enabled_ = false;
@@ -1149,6 +1171,33 @@ inline namespace singletons
     extern Pages pages;
     extern Task task;
 }
+
+// --------------------------------------------------------------------
+// EEPROM Data Read & Write implementations
+// --------------------------------------------------------------------
+
+inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+        : write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc)
+{
+}
+
+template <typename T>
+inline void EepromWrite::write(const T& data)
+{
+    write_(eeprom_index_, reinterpret_cast<const uint8_t*>(&data), sizeof(T), &working_crc_);
+}
+
+inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+        : read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc)
+{
+}
+
+template <typename T>
+inline void EepromRead::read(T& data)
+{
+    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_, false);
+}
+
 
 // --------------------------------------------------------------------
 // Handler implementation
