@@ -74,7 +74,7 @@
    * version was tagged.
    */
   // @advi3++: Build date (set by advbumpversion) 
-  #define STRING_DISTRIBUTION_DATE "2019-05-25"
+  #define STRING_DISTRIBUTION_DATE "2019-06-08"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
