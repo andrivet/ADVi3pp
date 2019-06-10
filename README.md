@@ -47,7 +47,7 @@ A complete and up to date User Manual is published on [ADVi3++ Community Web Sit
 
 You can get support from various resources:
 
-* The [User Manual](https://community.advi3pp.com/c/user-manual). You may be especially interested by the [Troubleshooting part](https://community.advi3pp.com/t/troubleshooting).
+* The [User Manual](https://community.advi3pp.com/c/user-manual). You may be especially interested by the [Troubleshooting part](https://community.advi3pp.com/c/user-manual/troubleshooting).
 * The [ADVi3++ Community - Get Help](https://community.advi3pp.com/c/get-help). It is a forum, based on [Discourse](https://www.discourse.org). In particular, it includes a [Search page](https://community.advi3pp.com/search?expanded=true).
 I monitor this forum and try to reply to all requests, from sponsors and non-sponsors of the ADVi3++ project.
 * The [Facebook ADVi3++ Page](http://facebook.com/advi3pp). I use it mainly for announcement, but I reply from time to time.
