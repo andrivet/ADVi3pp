@@ -34,6 +34,7 @@ _Please provide information (such as links to web sites, blogs, technical descri
 * **ADVi3++** exact version (Mainboard):
 * Printing using **SD card** or **USB**:
 * **For USB printing only**: Software used to print with its exact version:
+* **Do you use a BLTouch?**: If yes, exact version of the BLTouch
 * Expected behaviour:
 * Actual behaviour:
 * Steps to reproduce:
