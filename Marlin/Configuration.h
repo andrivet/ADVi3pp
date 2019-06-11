@@ -1243,8 +1243,11 @@
 // - Move the Z probe (or nozzle) to a defined XY point before Z Homing when homing all axes (G28).
 // - Prevent Z homing when the Z probe is outside bed area.
 //
-// @advi3++: From v4, use safe homing
+// @advi3++: From v4, use safe homing. From 4.0.1 only for BLTouch
+
+#if defined(ADVi3PP_BLTOUCH) || defined(ADVi3PP_BLTOUCH3)
 #define Z_SAFE_HOMING
+#endif
 
 #if ENABLED(Z_SAFE_HOMING)
 #if ENABLED(ADVi3PP_PROBE) // @advi3++: In the middle of the bed
