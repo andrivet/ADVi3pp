@@ -1,5 +1,12 @@
 # ADVi3++ Changelog
 
+## 4.0.1 (2019-06-15)
+
+### Bug fixes
+
+* **#208** - Homing Z moves extruder to X10, Y10 (i.e. disable Safe Homing for non BLTouch builds)
+* **#209** - Prints are not centered
+
 ## 4.0.0 (2019-06-08)
 
 ### New features
