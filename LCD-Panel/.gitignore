@@ -1,4 +1,5 @@
-*.tft
 /DGUS-root/**/*.bmp
-/DGUS-root/TFT/**
+/DGUS-root/TFT/25_Controls/
+/DGUS-root/TFT/DWIN_SET/
+/DGUS-root/TFT/DWprj.*
 /Sketch-Export
