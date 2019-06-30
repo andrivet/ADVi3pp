@@ -1,5 +1,11 @@
 # ADVi3++ Changelog
 
+## 4.0.2 (2019-06-30)
+
+* **#209** - Prints were not centered (~ 2.5 mm on Y axis)
+* **#210** - Values when you press buttons in Print Settings were wrong
+* **#212** - BLTouch supports positions were not perfectly correct (Baseggio/Indianagio Front)
+
 ## 4.0.1 (2019-06-15)
 
 ### Bug fixes
