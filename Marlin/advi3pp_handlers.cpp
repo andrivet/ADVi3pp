@@ -101,7 +101,7 @@ namespace
         { -2400, -3800 },    // Teaching Tech L. Side
         {     0,     0 }     // Custom
 #elif defined(ADVi3PP_BLTOUCH)
-        {     0, -3890 },    // Baseggio Front
+        {  +150, -4270 },    // Baseggio/Indianagio Front
         { -2400, -3800 },    // Teaching Tech L. Side
         {     0,     0 }     // Custom
 #endif
