@@ -66,7 +66,7 @@
    * from where the binary was downloaded or the source code was compiled.
    */
   // @advi3++: Construct build version (version number set by advbumpversion) 
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 4.0.1)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 4.0.2)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
@@ -74,7 +74,7 @@
    * version was tagged.
    */
   // @advi3++: Build date (set by advbumpversion) 
-  #define STRING_DISTRIBUTION_DATE "2019-06-15 12:00"
+  #define STRING_DISTRIBUTION_DATE "2019-06-30 12:00"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
