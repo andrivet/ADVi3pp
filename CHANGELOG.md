@@ -1,5 +1,9 @@
 # ADVi3++ Changelog
 
+## 4.0.3 (2019-07-11)
+
+* **#215** - Sometimes after flashing, the LCD Panel displays a version mismatch warning with a wrong LCD version and the continue button does not work
+
 ## 4.0.2 (2019-06-30)
 
 * **#209** - Prints were not centered (~ 2.5 mm on Y axis)
