@@ -170,6 +170,7 @@ inline namespace singletons
     SensorZHeight sensor_z_height;
     ChangeFilament change_filament;
     EepromMismatch eeprom_mismatch;
+    VersionsMismatch versions_mismatch;
     Sponsors sponsors;
     LinearAdvanceTuning linear_advance_tuning;
     LinearAdvanceSettings linear_advance_settings;
@@ -3160,9 +3161,11 @@ void Statistics::send_stats()
 //! @return True if the versions are compatible
 bool Versions::check()
 {
+    get_version_from_lcd();
+    send_versions();
+
     if(!is_lcd_version_valid())
     {
-        send_versions();
         pages.show_page(Page::VersionsMismatch, ShowOptions::None);
         return false;
     }
@@ -3173,7 +3176,7 @@ bool Versions::check()
 //! Get the version of the LCD Panel part.
 void Versions::get_version_from_lcd()
 {
-    ReadRamData frame{Variable::ADVi3ppLCDversion, 1};
+    ReadRamData frame{Variable::ADVi3ppLCDVersion_Raw, 1};
     if(!frame.send_and_receive())
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
@@ -3185,7 +3188,7 @@ void Versions::get_version_from_lcd()
     lcd_version_ = version.word;
 }
 
-//! Get the current LCD firmware version.
+//! Get the current DGUS firmware version.
 //! @return     The version as a string.
 template<size_t L>
 ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
@@ -3215,39 +3218,34 @@ ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version)
 }
 
 //! Send the different versions to the LCD screen.
-void Versions::send_versions()
-{
-    ADVString<16> marlin_version{SHORT_BUILD_VERSION};
-    ADVString<16> advi3pp_lcd_version;
-    ADVString<16> lcd_firmware_version;
-
-    marlin_version.align(Alignment::Left);
-    convert_version(advi3pp_lcd_version, lcd_version_).align(Alignment::Left);
-    get_lcd_firmware_version(lcd_firmware_version).align(Alignment::Left);
-
-    WriteRamDataRequest frame{Variable::ShortText0};
-    frame << advi3pp_lcd_version
-          << lcd_firmware_version
-          << marlin_version;
-    frame.send();
-}
-
-//! Send ADVi3++ version and build number to the LCD Panel
-void Versions::send_advi3pp_version()
+void Versions::send_versions() const
 {
     ADVString<16> motherboard_version;
+    ADVString<16> motherboard_build;
+    ADVString<16> lcd_version;
+    ADVString<16> dgus_version;
+    ADVString<16> marlin_version{SHORT_BUILD_VERSION};
+
+    motherboard_build
+        << (YEAR__ - 2000)
+        << (MONTH__ < 10 ? "0" : "") << MONTH__
+        << (DAY__   < 10 ? "0" : "") << DAY__
+        << (HOUR__  < 10 ? "0" : "") << HOUR__
+        << (MIN__   < 10 ? "0" : "") << MIN__
+        << (SEC__   < 10 ? "0" : "") << SEC__;
+
     convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
+    motherboard_build.align(Alignment::Left);
+    convert_version(lcd_version, lcd_version_).align(Alignment::Left);
+    get_lcd_firmware_version(dgus_version).align(Alignment::Left);
+    marlin_version.align(Alignment::Left);
 
-    ADVString<16> build;
-    build << (YEAR__ - 2000)
-          << (MONTH__ < 10 ? "0" : "") << MONTH__
-          << (DAY__   < 10 ? "0" : "") << DAY__
-          << (HOUR__  < 10 ? "0" : "") << HOUR__
-          << (MIN__   < 10 ? "0" : "") << MIN__
-          << (SEC__   < 10 ? "0" : "") << SEC__;
-
-    WriteRamDataRequest frame{Variable::ADVi3ppVersion};
-    frame << motherboard_version << build;
+    WriteRamDataRequest frame{Variable::ADVi3ppMotherboardVersion};
+    frame << motherboard_version
+          << motherboard_build
+          << lcd_version
+          << dgus_version
+          << marlin_version;
     frame.send();
 }
 
@@ -3262,7 +3260,6 @@ bool Versions::is_lcd_version_valid()
 //! @return The index of the page to display
 Page Versions::do_prepare_page()
 {
-    send_versions();
     return Page::Versions;
 }
 
@@ -3348,6 +3345,24 @@ void EepromMismatch::reset_mismatch()
 {
     mismatch_ = false;
 }
+
+// --------------------------------------------------------------------
+// Versions mismatch
+// --------------------------------------------------------------------
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page VersionsMismatch::do_prepare_page()
+{
+    return Page::VersionsMismatch;
+}
+
+//! Handles the Save (Continue) command
+void VersionsMismatch::do_save_command()
+{
+    pages.show_page(Page::Main);
+}
+
 
 // --------------------------------------------------------------------
 // No Sensor

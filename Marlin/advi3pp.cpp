@@ -101,6 +101,7 @@ inline namespace singletons
     extern Copyrights copyrights;
     extern ChangeFilament change_filament;
     extern EepromMismatch eeprom_mismatch;
+    extern VersionsMismatch versions_mismatch;
     extern Sponsors sponsors;
     extern LinearAdvanceTuning linear_advance_tuning;
     extern LinearAdvanceSettings linear_advance_settings;
@@ -154,7 +155,7 @@ void ADVi3pp_::send_gplv3_7b_notice()
 //! Send the list of sponsors on the serial port (www.patreon.com/andrivet)
 void ADVi3pp_::send_sponsors()
 {
-    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar, Sawtoothsquid, Darren Williams, JeremyThePrintr, RonnieL");
+    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar, Joshua");
 }
 
 //! Store presets in permanent memory.
@@ -272,8 +273,6 @@ void ADVi3pp_::init()
 
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     send_sponsors();
-    versions.get_version_from_lcd();
-    versions.send_advi3pp_version();
     graphs.clear();
     dimming.reset(true);
     reset_status();
@@ -429,6 +428,7 @@ void ADVi3pp_::read_lcd_serial()
         case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_value); break;
         case Action::Diagnosis:             diagnosis.handle(key_value); break;
         case Action::Temperatures:          temperatures.handle(key_value); break;
+        case Action::VersionsMismatch:      versions_mismatch.handle(key_value); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;

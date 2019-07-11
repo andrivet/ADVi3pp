@@ -72,9 +72,12 @@ enum class Variable: uint16_t
     Value7                  = 0x0307,
 
     // 5 - Versions
-    ADVi3ppLCDversion       = 0x0500,
-    ADVi3ppVersion          = 0x0501,
-    ADVi3ppBuild            = 0x0509
+    ADVi3ppLCDVersion_Raw       = 0x0500,
+    ADVi3ppMotherboardVersion   = 0x0501,
+    ADVi3ppMotherboardBuild     = 0x0509,
+    ADVi3ppLCDVersion           = 0x0511,
+    ADVi3ppDGUSVersion          = 0x0519,
+    ADVi3ppMarlinVersion        = 0x0521
 };
 
 //! List of actions sent by the LCD.
@@ -116,6 +119,7 @@ enum class Action: uint16_t
     LinearAdvanceSettings   = 0x0420,
     Diagnosis               = 0x0421,
     Temperatures            = 0x0422,
+    VersionsMismatch        = 0x0423,
 
     // 6 - Moves
     MoveXMinus              = 0x0600,
