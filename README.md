@@ -32,7 +32,7 @@ A complete and up to date User Manual is published on [ADVi3++ Community Web Sit
 * [A list of features and of compatible printers](https://community.advi3pp.com/t/introduction/)
 * [How to Flash the firmware](https://community.advi3pp.com/t/how-to-flash/)
 * [LCD Touch Screen Guide](https://community.advi3pp.com/t/lcd-touch-screen-guide/)
-* [BLTouch Sensor installation instructions](https://community.advi3pp.com/t/bltouch-sensor/)
+* [BLTouch Sensor installation instructions](https://community.advi3pp.com/t/add-a-bltouch-sensor/)
 * [Tuning instructions](https://community.advi3pp.com/t/tuning/)
 * [Default Settings used by ADVi3++](https://community.advi3pp.com/t/default-settings/)
 * [Starting and Ending G-Code](https://community.advi3pp.com/t/starting-and-ending-g-code/)
