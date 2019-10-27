@@ -1151,10 +1151,12 @@
 
   // Boundaries for Cartesian probing based on bed limits
   // @advi3++: these are dynamic so disable them
-  //#define _MIN_PROBE_X (max(X_MIN_BED + MIN_PROBE_EDGE, X_MIN_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
-  //#define _MIN_PROBE_Y (max(Y_MIN_BED + MIN_PROBE_EDGE, Y_MIN_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
-  //#define _MAX_PROBE_X (min(X_MAX_BED - (MIN_PROBE_EDGE), X_MAX_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
-  //#define _MAX_PROBE_Y (min(Y_MAX_BED - (MIN_PROBE_EDGE), Y_MAX_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
+#ifndef ADVi3PP_PROBE
+  #define _MIN_PROBE_X (max(X_MIN_BED + MIN_PROBE_EDGE, X_MIN_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
+  #define _MIN_PROBE_Y (max(Y_MIN_BED + MIN_PROBE_EDGE, Y_MIN_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
+  #define _MAX_PROBE_X (min(X_MAX_BED - (MIN_PROBE_EDGE), X_MAX_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
+  #define _MAX_PROBE_Y (min(Y_MAX_BED - (MIN_PROBE_EDGE), Y_MAX_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
+#endif
 
 #endif
 
@@ -1164,18 +1166,20 @@
 
 // These may be overridden in Configuration.h if a smaller area is desired
 // @advi3++: these are dynamic so disable them
-//#ifndef MIN_PROBE_X
-//  #define MIN_PROBE_X _MIN_PROBE_X
-//#endif
-//#ifndef MIN_PROBE_Y
-//  #define MIN_PROBE_Y _MIN_PROBE_Y
-//#endif
-//#ifndef MAX_PROBE_X
-//  #define MAX_PROBE_X _MAX_PROBE_X
-//#endif
-//#ifndef MAX_PROBE_Y
-//  #define MAX_PROBE_Y _MAX_PROBE_Y
-//#endif
+#ifndef ADVi3PP_PROBE
+#ifndef MIN_PROBE_X
+  #define MIN_PROBE_X _MIN_PROBE_X
+#endif
+#ifndef MIN_PROBE_Y
+  #define MIN_PROBE_Y _MIN_PROBE_Y
+#endif
+#ifndef MAX_PROBE_X
+  #define MAX_PROBE_X _MAX_PROBE_X
+#endif
+#ifndef MAX_PROBE_Y
+  #define MAX_PROBE_Y _MAX_PROBE_Y
+#endif
+#endif
 
 /**
  * Default mesh area is an area with an inset margin on the print area.
