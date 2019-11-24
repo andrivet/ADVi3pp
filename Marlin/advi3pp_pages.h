@@ -57,7 +57,6 @@ enum class Page: uint8_t
     JerkSettings            = 78,
     PrintSettings           = 80,
     ThermalRunawayError     = 82,
-    VersionsMismatch        = 84,
     Temperature             = 86,
     Infos                   = 88,
     Firmware                = 90,

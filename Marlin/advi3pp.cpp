@@ -101,7 +101,6 @@ inline namespace singletons
     extern Copyrights copyrights;
     extern ChangeFilament change_filament;
     extern EepromMismatch eeprom_mismatch;
-    extern VersionsMismatch versions_mismatch;
     extern Sponsors sponsors;
     extern LinearAdvanceTuning linear_advance_tuning;
     extern LinearAdvanceSettings linear_advance_settings;
@@ -139,8 +138,7 @@ void ADVi3pp_::show_boot_page()
     if(!eeprom_mismatch.check())
         return;
 
-    if(!versions.check())
-        return;
+    versions.send_versions();
 
     pages.show_page(Page::Boot, ShowOptions::None);
 }
@@ -428,7 +426,6 @@ void ADVi3pp_::read_lcd_serial()
         case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_value); break;
         case Action::Diagnosis:             diagnosis.handle(key_value); break;
         case Action::Temperatures:          temperatures.handle(key_value); break;
-        case Action::VersionsMismatch:      versions_mismatch.handle(key_value); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;
