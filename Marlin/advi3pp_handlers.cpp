@@ -170,7 +170,6 @@ inline namespace singletons
     SensorZHeight sensor_z_height;
     ChangeFilament change_filament;
     EepromMismatch eeprom_mismatch;
-    VersionsMismatch versions_mismatch;
     Sponsors sponsors;
     LinearAdvanceTuning linear_advance_tuning;
     LinearAdvanceSettings linear_advance_settings;
@@ -3157,37 +3156,6 @@ void Statistics::send_stats()
 // Versions
 // --------------------------------------------------------------------
 
-//! Check if the versions of the different parts (LCD Panel, Mainboard) are compatible and if not, display a message
-//! @return True if the versions are compatible
-bool Versions::check()
-{
-    get_version_from_lcd();
-    send_versions();
-
-    if(!is_lcd_version_valid())
-    {
-        pages.show_page(Page::VersionsMismatch, ShowOptions::None);
-        return false;
-    }
-
-    return true;
-}
-
-//! Get the version of the LCD Panel part.
-void Versions::get_version_from_lcd()
-{
-    ReadRamData frame{Variable::ADVi3ppLCDVersion_Raw, 1};
-    if(!frame.send_and_receive())
-    {
-        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
-        return;
-    }
-
-    Uint16 version; frame >> version;
-    Log::log() << F("ADVi3++ LCD version = ") <<  version.word << Log::endl();
-    lcd_version_ = version.word;
-}
-
 //! Get the current DGUS firmware version.
 //! @return     The version as a string.
 template<size_t L>
@@ -3222,7 +3190,6 @@ void Versions::send_versions() const
 {
     ADVString<16> motherboard_version;
     ADVString<16> motherboard_build;
-    ADVString<16> lcd_version;
     ADVString<16> dgus_version;
     ADVString<16> marlin_version{SHORT_BUILD_VERSION};
 
@@ -3236,24 +3203,16 @@ void Versions::send_versions() const
 
     convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
     motherboard_build.align(Alignment::Left);
-    convert_version(lcd_version, lcd_version_).align(Alignment::Left);
     get_lcd_firmware_version(dgus_version).align(Alignment::Left);
     marlin_version.align(Alignment::Left);
 
     WriteRamDataRequest frame{Variable::ADVi3ppMotherboardVersion};
     frame << motherboard_version
           << motherboard_build
-          << lcd_version
+          << motherboard_version // TODO: Until I remove this field
           << dgus_version
           << marlin_version;
     frame.send();
-}
-
-//! Check if the versions of the different parts (LCD Panel, Mainboard) are compatible.
-//! @return True if the versions are compatible
-bool Versions::is_lcd_version_valid()
-{
-    return lcd_version_ >= advi3_pp_oldest_lcd_compatible_version && lcd_version_ <= advi3_pp_newest_lcd_compatible_version;
 }
 
 //! Prepare the page before being displayed and return the right Page value
@@ -3345,24 +3304,6 @@ void EepromMismatch::reset_mismatch()
 {
     mismatch_ = false;
 }
-
-// --------------------------------------------------------------------
-// Versions mismatch
-// --------------------------------------------------------------------
-
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page VersionsMismatch::do_prepare_page()
-{
-    return Page::VersionsMismatch;
-}
-
-//! Handles the Save (Continue) command
-void VersionsMismatch::do_save_command()
-{
-    pages.show_page(Page::Main);
-}
-
 
 // --------------------------------------------------------------------
 // No Sensor

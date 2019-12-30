@@ -921,15 +921,10 @@ private:
 //! Versions Page
 struct Versions: Handler<Versions>
 {
-    bool check();
+    void send_versions() const;
 
 private:
     Page do_prepare_page();
-    void get_version_from_lcd();
-    bool is_lcd_version_valid();
-    void send_versions() const;
-
-    uint16_t lcd_version_ = 0x0000;
 
     friend Parent;
 };
@@ -994,21 +989,6 @@ private:
 
     friend Parent;
 };
-
-// --------------------------------------------------------------------
-// Versions Mismatch Page
-// --------------------------------------------------------------------
-
-//! EEPROM Mismatch Page
-struct VersionsMismatch: Handler<VersionsMismatch>
-{
-private:
-    Page do_prepare_page();
-    void do_save_command();
-
-    friend Parent;
-};
-
 
 // --------------------------------------------------------------------
 // No Sensor Page

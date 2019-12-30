@@ -798,7 +798,8 @@
 
 #if ENABLED(BLTOUCH)
 // @advi3++: Set delay for BLTouch
-  #define BLTOUCH_DELAY 100   // (ms) Enable and increase if needed
+// Increase the delay as it was too short for some BLTouch especially version 3.1
+  #define BLTOUCH_DELAY 500   // (ms) Enable and increase if needed
 
   /**
    * BLTouch V3.0 and newer smart series
@@ -825,7 +826,8 @@
   //#define WAIT_FOR_BED_HEATER     // Wait for bed to heat back up between probes (to improve accuracy)
 #endif
 #define PROBING_FANS_OFF          // Turn fans off when probing
-//#define DELAY_BEFORE_PROBING 200  // (ms) To prevent vibrations from triggering piezo sensors
+// #advi3++: Apparently, on some printers, vibrations are triggering the BLTouch, especially BLTouch 3.1
+#define DELAY_BEFORE_PROBING 400  // (ms) To prevent vibrations from triggering piezo sensors
 
 // A probe that is deployed and stowed with a solenoid pin (SOL1_PIN)
 //#define SOLENOID_PROBE
