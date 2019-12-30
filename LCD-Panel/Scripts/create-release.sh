@@ -29,8 +29,6 @@ echo "Create ADVi3++ $1"
 echo "=============================="
 echo
 echo "BE SURE YOU HAVE CHANGED:"
-echo "- advi3_pp_oldest_lcd_compatible_version in advi3pp_versions.cpp"
-echo "- LCD Main screen (version number)"
 echo "- CHANGELOG.md"
 echo "- advbumpversion: advbumpversion --allow-dirty release --list"
 echo "- User Manual if necessary"
