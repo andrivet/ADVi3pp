@@ -4732,6 +4732,11 @@ void home_all_axes() { gcode_G28(true); }
     #endif
   #endif
 
+  void abort_G29()
+  {
+	  advi3pp::ADVi3pp::g29_leveling_finished(false);
+  }
+
   /**
    * G29: Detailed Z probe, probes the bed at 3 or more points.
    *      Will fail if the printer has not been homed with G28.
@@ -5062,7 +5067,8 @@ void home_all_axes() { gcode_G28(true); }
             || !position_is_reachable_by_probe(right_probe_bed_position, back_probe_bed_position)
           #endif
         ) {
-          SERIAL_PROTOCOLLNPGM("? (L,R,F,B) out of bounds.");
+		  SERIAL_PROTOCOLLNPGM("? (L,R,F,B) out of bounds.");
+		  abort_G29();
           return;
         }
 
