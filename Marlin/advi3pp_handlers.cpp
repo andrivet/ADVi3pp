@@ -2238,28 +2238,28 @@ int SensorSettings::y_probe_offset_from_extruder() const
 //! @return The position reachable (left).
 int SensorSettings::left_probe_bed_position()
 {
-    return max(X_MIN_BED + (MIN_PROBE_EDGE), X_MIN_POS + x_probe_offset_from_extruder());
+    return max(X_MIN_BED + MIN_PROBE_EDGE, X_MIN_POS + x_probe_offset_from_extruder());
 }
 
 //! Get the position of the bed (depending of the sensor holder).
 //! @return The position reachable (right).
 int SensorSettings::right_probe_bed_position()
 {
-    return min(X_MAX_BED - (MIN_PROBE_EDGE), X_MAX_POS + x_probe_offset_from_extruder());
+    return min(X_MAX_BED - MIN_PROBE_EDGE, X_MAX_POS + x_probe_offset_from_extruder());
 }
 
 //! Get the position of the bed (depending of the sensor holder).
 //! @return The position reachable (front).
 int SensorSettings::front_probe_bed_position()
 {
-    return max(Y_MIN_BED + (MIN_PROBE_EDGE), Y_MIN_POS + y_probe_offset_from_extruder());
+    return max(Y_MIN_BED + MIN_PROBE_EDGE, Y_MIN_POS + y_probe_offset_from_extruder());
 }
 
 //! Get the position of the bed (depending of the sensor holder).
 //! @return The position reachable (bottom).
 int SensorSettings::back_probe_bed_position()
 {
-    return min(Y_MAX_BED - (MIN_PROBE_EDGE), Y_MAX_POS + y_probe_offset_from_extruder());
+    return min(Y_MAX_BED - MIN_PROBE_EDGE, Y_MAX_POS + y_probe_offset_from_extruder());
 }
 
 #else
