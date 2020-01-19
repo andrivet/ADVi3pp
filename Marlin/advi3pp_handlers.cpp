@@ -1057,8 +1057,15 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
     }
     else
     {
-        enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
-        enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
+        settings.save();
+        // From gcode_M420
+        set_bed_leveling_enabled(true);
+        // Error if leveling failed to enable or reenable
+        if(!planner.leveling_active)
+        {
+            SERIAL_ERROR_START();
+            SERIAL_ERRORLNPGM(MSG_ERR_M420_FAILED);
+        }
     }
 }
 
