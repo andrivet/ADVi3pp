@@ -900,10 +900,6 @@ inline void _commit_command(bool say_ok) {
  * Return false for a full buffer, or if the 'command' is a comment.
  */
 inline bool _enqueuecommand(const char* cmd, bool say_ok=false) {
-  // @advi3++: Makes debugging easier
-  if(commands_in_queue >= BUFSIZE)
-    advi3pp::Log::error() << F("Command was not queued: ") << cmd << advi3pp::Log::endl();
-
   if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
   strcpy(command_queue[cmd_queue_index_w], cmd);
   _commit_command(say_ok);
@@ -920,6 +916,13 @@ bool enqueue_and_echo_command(const char* cmd) {
     SERIAL_CHAR('"');
     SERIAL_EOL();
     return true;
+  }
+  else {  // @advi3++: Makes debugging easier
+	SERIAL_ECHO_START();
+	SERIAL_ECHO("NOT QUEUED ");
+    SERIAL_ECHOPAIR(MSG_ENQUEUEING, cmd);
+    SERIAL_CHAR('"');
+    SERIAL_EOL();	  
   }
   return false;
 }
@@ -11140,7 +11143,7 @@ inline void gcode_M502() {
     // Resume the print job timer if it was running
     if (job_running) print_job_timer.start();
 
-    advi3pp::ADVi3pp::pause_finished(true);
+    advi3pp::ADVi3pp::pause_finished();
   }
 
   /**

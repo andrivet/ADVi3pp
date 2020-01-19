@@ -41,10 +41,6 @@
 #include "ADVcrtp.h"
 #include "advi3pp_bitmasks.h"
 
-// From Marlin
-extern bool pause_print(const float &retract, const point_t &park_point, const float &unload_length=0, bool show_lcd=false);
-extern void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, int8_t max_beep_count=0);
-extern bool ensure_safe_temperature(AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT);
 
 namespace advi3pp {
 
@@ -467,18 +463,16 @@ private:
 //! Printing Page
 struct Print: Handler<Print>
 {
-    void process_pause_code();
-    void process_stop_code();
-    void pause_finished(bool success);
     bool is_printing() const;
-    bool is_usb_printing() const;
-    void send_stop_usb_print();
+    void process_pause_resume_code();
+    void process_stop_code();
+    void pause_finished();
 
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void stop_command();
-    void pause_command();
+    void pause_resume_command();
     void advanced_pause_command();
 
     friend Parent;

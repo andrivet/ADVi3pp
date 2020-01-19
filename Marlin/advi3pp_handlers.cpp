@@ -40,6 +40,9 @@
 uint8_t progress_bar_percent;
 int16_t lcd_contrast;
 extern int freeMemory();
+extern bool pause_print(const float &retract, const point_t &park_point, const float &unload_length=0, bool show_lcd=false);
+extern void resume_print(const float &slow_load_length=0, const float &fast_load_length=0, const float &purge_length=ADVANCED_PAUSE_PURGE_LENGTH, int8_t max_beep_count=0);
+extern bool ensure_safe_temperature(AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_PAUSE_PRINT);
 
 #ifdef ADVi3PP_PROBE
 bool set_probe_deployed(bool);
@@ -1036,9 +1039,6 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
 {
     if(!success)
     {
-        if(!sensor_interactive_leveling_)
-            print.send_stop_usb_print(); // Send even during a SD print because you may monitor with OctoPrint
-
         if(sensor_interactive_leveling_)
             wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::g29_leveling_failed});
         else
@@ -1415,7 +1415,7 @@ bool Print::do_dispatch(KeyValue value)
     switch(value)
     {
         case KeyValue::PrintStop:           stop_command(); break;
-        case KeyValue::PrintPause:          pause_command(); break;
+        case KeyValue::PrintPause:          pause_resume_command(); break;
         case KeyValue::PrintAdvancedPause:  advanced_pause_command(); break;
         default:                            return false;
     }
@@ -1437,7 +1437,7 @@ void Print::stop_command()
 }
 
 //! Pause printing
-void Print::pause_command()
+void Print::pause_resume_command()
 {
     enqueue_and_echo_commands_P(PSTR("A0"));
 }
@@ -1455,23 +1455,21 @@ void Print::process_stop_code()
         return;
 
     wait.show(F("Stop printing..."), ShowOptions::SaveBack);
-    if(is_usb_printing())
-        send_stop_usb_print();
 
     pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true);
 
     thermalManager.disable_all_heaters();
     fanSpeeds[0] = 0;
-
     planner.quick_stop();
     print_job_timer.stop();
+    clear_command_queue();
 
     advi3pp.set_status(F("Print Stopped"));
     pages.show_back_page();
 }
 
 //! Process Pause (A0) code and actually pause the print (if any running).
-void Print::process_pause_code()
+void Print::process_pause_resume_code()
 {
     if(!is_printing())
         return;
@@ -1479,7 +1477,7 @@ void Print::process_pause_code()
     wait.show(F("Pause printing..."), ShowOptions::SaveBack);
     if (!pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true))
     {
-        pause_finished(false);
+        pages.show_back_page();
         return;
     }
 
@@ -1515,11 +1513,10 @@ void Print::process_pause_code()
     resume_print(0, 0, ADVANCED_PAUSE_PURGE_LENGTH, 0);
     print_job_timer.start();
 
-    pause_finished(true);
+    pages.show_back_page();
 }
 
-//! Pause command done, show the back page
-void Print::pause_finished(bool)
+void Print::pause_finished()
 {
     pages.show_back_page();
 }
@@ -1532,21 +1529,6 @@ bool Print::is_printing() const
         return card.sdprinting;
     else
         return print_job_timer.isRunning();
-}
-
-//! Check if there is currently a print running (USB)
-//! @return True if a USB print is running.
-bool Print::is_usb_printing() const
-{
-    return print_job_timer.isRunning();
-}
-
-//! Send Stop print to the host.
-//! Unfortunately, there no way to properly do this except disconnecting the host.
-void Print::send_stop_usb_print()
-{
-    // "disconnect" is the only standard command to stop an USB print
-    SERIAL_ECHOLNPGM("//action:disconnect");
 }
 
 // --------------------------------------------------------------------
