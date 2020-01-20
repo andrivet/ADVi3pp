@@ -1440,29 +1440,36 @@ Page Print::do_prepare_page()
 //! Stop printing
 void Print::stop_command()
 {
+    if(!is_printing())
+        return;
+
+    wait.show(F("Stop printing..."), ShowOptions::SaveBack);
     enqueue_and_echo_commands_P(PSTR("A1"));
 }
 
 //! Pause printing
 void Print::pause_resume_command()
 {
+    if(!is_printing())
+        return;
+
+    wait.show(F("Pause printing..."), ShowOptions::SaveBack);
     enqueue_and_echo_commands_P(PSTR("A0"));
 }
 
 //! Advanced Pause for filament change
 void Print::advanced_pause_command()
 {
+    if(!is_printing())
+        return;
+    
+    wait.show(F("Pausing..."), ShowOptions::SaveBack);
     enqueue_and_echo_commands_P(PSTR("M600"));
 }
 
 //! Process Stop (A1) code and actually stop the print (if any running).
 void Print::process_stop_code()
 {
-    if(!is_printing())
-        return;
-
-    wait.show(F("Stop printing..."), ShowOptions::SaveBack);
-
     pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true);
 
     thermalManager.disable_all_heaters();
@@ -1478,10 +1485,6 @@ void Print::process_stop_code()
 //! Process Pause (A0) code and actually pause the print (if any running).
 void Print::process_pause_resume_code()
 {
-    if(!is_printing())
-        return;
-
-    wait.show(F("Pause printing..."), ShowOptions::SaveBack);
     if (!pause_print(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true))
     {
         pages.show_back_page();

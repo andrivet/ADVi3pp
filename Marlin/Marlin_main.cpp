@@ -11074,8 +11074,8 @@ inline void gcode_M502() {
     if (get_target_extruder_from_command(600)) return;
 
     // Show initial message
-    // @advi3++: ADVi3++ is like a ULTIPANEL
-    #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
+    // @advi3++: Message is already displayed, so do not display it here
+    #if ENABLED(ULTIPANEL)
       lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INIT, ADVANCED_PAUSE_MODE_PAUSE_PRINT, target_extruder);
     #endif
 
