@@ -7433,6 +7433,8 @@ inline void gcode_M17() {
     if (nozzle_timed_out || thermalManager.hotEnoughToExtrude(active_extruder)) {
       // Load the new filament
       load_filament(slow_load_length, fast_load_length, purge_length, max_beep_count, true, nozzle_timed_out);
+      // @advi3++: Wait a little after purging
+      dwell(2000);
     }
 
     // @advi3++: ADVi3++ behave like a ULTIPANEL
