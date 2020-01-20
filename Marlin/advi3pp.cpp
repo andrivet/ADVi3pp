@@ -153,7 +153,7 @@ void ADVi3pp_::send_gplv3_7b_notice()
 //! Send the list of sponsors on the serial port (www.patreon.com/andrivet)
 void ADVi3pp_::send_sponsors()
 {
-    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar, Joshua");
+    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar");
 }
 
 //! Store presets in permanent memory.
