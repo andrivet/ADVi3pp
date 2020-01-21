@@ -307,7 +307,7 @@ void ADVi3pp_::update_progress()
         progress_bar_percent = card.percentDone();
 }
 
-//! Get the current Z height (optionaly multiplied by a factor)
+//! Get the current Z height (optionally multiplied by a factor)
 //! @return The current Z height in mm
 double ADVi3pp_::get_current_z_height(int multiply) const
 {
