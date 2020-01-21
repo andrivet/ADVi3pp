@@ -88,9 +88,9 @@ void ADVi3pp::g29_leveling_finished(bool success)
     automatic_leveling.g29_leveling_finished(success);
 }
 
-void ADVi3pp::pause_finished(bool success)
+void ADVi3pp::pause_finished()
 {
-    print.pause_finished(success);
+    print.pause_finished();
 }
 
 //! Store presets in permanent memory.

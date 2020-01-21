@@ -153,7 +153,7 @@ void ADVi3pp_::send_gplv3_7b_notice()
 //! Send the list of sponsors on the serial port (www.patreon.com/andrivet)
 void ADVi3pp_::send_sponsors()
 {
-    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar, Joshua");
+    SERIAL_ECHOLNPGM("Sponsored by Alexander Cherenegar");
 }
 
 //! Store presets in permanent memory.
@@ -653,7 +653,7 @@ void ADVi3pp_::process_command(const GCodeParser& parser)
 {
     switch(parser.codenum)
     {
-        case 0: print.process_pause_code(); break;
+        case 0: print.process_pause_resume_code(); break;
         case 1: print.process_stop_code(); break;
         default: Log::error() << F("Invalid command ") << static_cast<uint16_t>(parser.codenum) << Log::endl(); break;
     }

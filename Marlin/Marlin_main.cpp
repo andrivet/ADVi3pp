@@ -900,10 +900,6 @@ inline void _commit_command(bool say_ok) {
  * Return false for a full buffer, or if the 'command' is a comment.
  */
 inline bool _enqueuecommand(const char* cmd, bool say_ok=false) {
-  // @advi3++: Makes debugging easier
-  if(commands_in_queue >= BUFSIZE)
-    advi3pp::Log::error() << F("Command was not queued: ") << cmd << advi3pp::Log::endl();
-
   if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
   strcpy(command_queue[cmd_queue_index_w], cmd);
   _commit_command(say_ok);
@@ -920,6 +916,13 @@ bool enqueue_and_echo_command(const char* cmd) {
     SERIAL_CHAR('"');
     SERIAL_EOL();
     return true;
+  }
+  else {  // @advi3++: Makes debugging easier
+	SERIAL_ECHO_START();
+	SERIAL_ECHO("NOT QUEUED ");
+    SERIAL_ECHOPAIR(MSG_ENQUEUEING, cmd);
+    SERIAL_CHAR('"');
+    SERIAL_EOL();	  
   }
   return false;
 }
@@ -4732,6 +4735,11 @@ void home_all_axes() { gcode_G28(true); }
     #endif
   #endif
 
+  void abort_G29()
+  {
+	  advi3pp::ADVi3pp::g29_leveling_finished(false);
+  }
+
   /**
    * G29: Detailed Z probe, probes the bed at 3 or more points.
    *      Will fail if the printer has not been homed with G28.
@@ -5062,7 +5070,8 @@ void home_all_axes() { gcode_G28(true); }
             || !position_is_reachable_by_probe(right_probe_bed_position, back_probe_bed_position)
           #endif
         ) {
-          SERIAL_PROTOCOLLNPGM("? (L,R,F,B) out of bounds.");
+		  SERIAL_PROTOCOLLNPGM("? (L,R,F,B) out of bounds.");
+		  abort_G29();
           return;
         }
 
@@ -7424,6 +7433,8 @@ inline void gcode_M17() {
     if (nozzle_timed_out || thermalManager.hotEnoughToExtrude(active_extruder)) {
       // Load the new filament
       load_filament(slow_load_length, fast_load_length, purge_length, max_beep_count, true, nozzle_timed_out);
+      // @advi3++: Wait a little after purging
+      dwell(2000);
     }
 
     // @advi3++: ADVi3++ behave like a ULTIPANEL
@@ -11063,8 +11074,8 @@ inline void gcode_M502() {
     if (get_target_extruder_from_command(600)) return;
 
     // Show initial message
-    // @advi3++: ADVi3++ is like a ULTIPANEL
-    #if ENABLED(ULTIPANEL) || ENABLED(I3PLUS_LCD)
+    // @advi3++: Message is already displayed, so do not display it here
+    #if ENABLED(ULTIPANEL)
       lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INIT, ADVANCED_PAUSE_MODE_PAUSE_PRINT, target_extruder);
     #endif
 
@@ -11134,7 +11145,7 @@ inline void gcode_M502() {
     // Resume the print job timer if it was running
     if (job_running) print_job_timer.start();
 
-    advi3pp::ADVi3pp::pause_finished(true);
+    advi3pp::ADVi3pp::pause_finished();
   }
 
   /**
