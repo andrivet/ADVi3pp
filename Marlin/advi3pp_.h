@@ -252,6 +252,7 @@ private:
     void unload_start_task();
     void unload_task();
     void start_task(const char* command,  const BackgroundTask& back_task);
+    void send_data();
 
     friend Parent;
 };
@@ -564,6 +565,7 @@ private:
     void extruding_task();
     void finished();
     bool cancel();
+    void send_data();
 
 private:
     static constexpr uint16_t tuning_extruder_filament = 100; //!< Filament to extrude (10 cm)
@@ -791,14 +793,22 @@ private:
     uint16_t do_size_of() const;
     void do_save_command();
     void do_back_command();
+     void save_bed_pid() const;
     void hotend_command();
+    void save_hotend_pid() const;
     void bed_command();
     void previous_command();
     void next_command();
     void set_current_pid() const;
+    void set_current_bed_pid() const;
+    void set_current_hotend_pid() const;
     void get_current_pid();
+    void get_current_bed_pid();
+    void get_current_hotend_pid();
     void send_data() const;
     void save_data();
+    Pid* get_pid(TemperatureKind kind);
+    const Pid* get_pid(TemperatureKind kind) const;
 
 private:
     static const size_t NB_PIDs = 3;

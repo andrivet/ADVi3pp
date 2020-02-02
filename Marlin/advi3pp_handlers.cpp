@@ -679,6 +679,7 @@ void Preheat::do_write(EepromWrite& eeprom) const
     {
         eeprom.write(preset.hotend);
         eeprom.write(preset.bed);
+        eeprom.write(preset.fan);
     }
 }
 
@@ -690,6 +691,7 @@ void Preheat::do_read(EepromRead& eeprom)
     {
         eeprom.read(preset.hotend);
         eeprom.read(preset.bed);
+        eeprom.read(preset.fan);
     }
 }
 
@@ -708,7 +710,7 @@ void Preheat::do_reset()
 //! @return Number of bytes
 uint16_t Preheat::do_size_of() const
 {
-    return NB_PRESETS * (sizeof(Preset::hotend) + sizeof(Preset::bed));
+    return NB_PRESETS * (sizeof(Preset::hotend) + sizeof(Preset::bed) + sizeof(Preset::fan));
 }
 
 //! Send the presets t the LCD Panel
@@ -1404,7 +1406,7 @@ void SdCard::select_file_command(uint16_t file_index)
     card.startFileprint();
     PrintCounter::start();
 
-    pages.show_page(Page::Print);
+    pages.show_page(Page::Print, ShowOptions::None);
 }
 
 // --------------------------------------------------------------------
@@ -1772,13 +1774,18 @@ bool ExtruderTuning::do_dispatch(KeyValue key_value)
     return true;
 }
 
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page ExtruderTuning::do_prepare_page()
+void ExtruderTuning::send_data()
 {
     WriteRamDataRequest frame{Variable::Value0};
     frame << Uint16(advi3pp.get_last_used_temperature(TemperatureKind::Hotend));
     frame.send();
+}
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page ExtruderTuning::do_prepare_page()
+{
+    send_data();
     return Page::ExtruderTuningTemp;
 }
 
@@ -2710,55 +2717,93 @@ uint16_t PidSettings::do_size_of() const
 //! Set the current PID values from what is recorded
 void PidSettings::set_current_pid() const
 {
-    if(kind_ == TemperatureKind::Hotend)
+    switch(kind_)
     {
-        const Pid& pid = hotend_pid_[index_];
-
-        Temperature::Kp = pid.Kp_;
-        Temperature::Ki = scalePID_i(pid.Ki_);
-        Temperature::Kd = scalePID_d(pid.Kd_);
-
-        Log::log() << F("Set Hotend PID #") << index_ << F(" for temperature ") << pid.temperature_
-                   << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+        case TemperatureKind::Hotend:  set_current_hotend_pid(); break;
+        case TemperatureKind::Bed:     set_current_bed_pid(); break;
+        default: assert("Invalid temperature Kind");
     }
-    else
-    {
-        const Pid& pid = bed_pid_[index_];
+}
 
-        Temperature::bedKp = pid.Kp_;
-        Temperature::bedKi = scalePID_i(pid.Ki_);
-        Temperature::bedKd = scalePID_d(pid.Kd_);
+void PidSettings::set_current_hotend_pid() const
+{
+    const Pid& pid = hotend_pid_[index_];
 
-        Log::log() << F("Set Bed PID #") << index_ << F(" for temperature ") << pid.temperature_
-                   << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
-    }
+    Temperature::Kp = pid.Kp_;
+    Temperature::Ki = scalePID_i(pid.Ki_);
+    Temperature::Kd = scalePID_d(pid.Kd_);
+
+    Log::log() << F("Set Hotend PID #") << index_ << F(" for temperature ") << pid.temperature_
+               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+}
+
+void PidSettings::set_current_bed_pid() const
+{
+    const Pid& pid = bed_pid_[index_];
+
+    Temperature::bedKp = pid.Kp_;
+    Temperature::bedKi = scalePID_i(pid.Ki_);
+    Temperature::bedKd = scalePID_d(pid.Kd_);
+
+    Log::log() << F("Set Bed PID #") << index_ << F(" for temperature ") << pid.temperature_
+               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
 }
 
 //! Record the current PID values
 void PidSettings::get_current_pid()
 {
-    if(kind_ == TemperatureKind::Hotend)
+    switch(kind_)
     {
-        Pid& pid = hotend_pid_[index_];
-
-        pid.Kp_ = Temperature::Kp;
-        pid.Ki_ = unscalePID_i(Temperature::Ki);
-        pid.Kd_ = unscalePID_d(Temperature::Kd);
-
-        Log::log() << F("Get Hotend PID #") << index_
-                   << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+        case TemperatureKind::Hotend:  get_current_hotend_pid(); break;
+        case TemperatureKind::Bed:     get_current_bed_pid(); break;
+        default: assert("Invalid temperature Kind");
     }
-    else
+}
+
+Pid* PidSettings::get_pid(TemperatureKind kind)
+{
+    switch(kind_)
     {
-        Pid& pid = bed_pid_[index_];
-
-        pid.Kp_ = Temperature::bedKp;
-        pid.Ki_ = unscalePID_i(Temperature::bedKi);
-        pid.Kd_ = unscalePID_d(Temperature::bedKd);
-
-        Log::log() << F("Get Hotend PID #") << index_
-                   << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+        case TemperatureKind::Hotend:  return hotend_pid_;
+        case TemperatureKind::Bed:     return bed_pid_;
+        default: assert("Invalid temperature Kind"); return hotend_pid_;
     }
+}
+
+const Pid* PidSettings::get_pid(TemperatureKind kind) const
+{
+    switch(kind_)
+    {
+        case TemperatureKind::Hotend:  return hotend_pid_;
+        case TemperatureKind::Bed:     return bed_pid_;
+        default: assert("Invalid temperature Kind"); return hotend_pid_;
+    }
+}
+
+//! Record the current PID values
+void PidSettings::get_current_hotend_pid()
+{
+    Pid& pid = hotend_pid_[index_];
+
+    pid.Kp_ = Temperature::Kp;
+    pid.Ki_ = unscalePID_i(Temperature::Ki);
+    pid.Kd_ = unscalePID_d(Temperature::Kd);
+
+    Log::log() << F("Get Hotend PID #") << index_
+               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+}
+
+//! Record the current PID values
+void PidSettings::get_current_bed_pid()
+{
+    Pid& pid = bed_pid_[index_];
+
+    pid.Kp_ = Temperature::bedKp;
+    pid.Ki_ = unscalePID_i(Temperature::bedKi);
+    pid.Kd_ = unscalePID_d(Temperature::bedKd);
+
+    Log::log() << F("Get Hotend PID #") << index_
+               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
 }
 
 //! Record new PID values for a given temperature
@@ -2767,7 +2812,7 @@ void PidSettings::get_current_pid()
 void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
 {
     kind_ = kind;
-    Pid* pid = kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_;
+    Pid* pid = get_pid(kind_);
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
         if(temperature == pid[i].temperature_)
@@ -2799,7 +2844,7 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
     kind_ = kind;
 
     uint16_t best_difference = 500;
-    Pid* pid = kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_;
+    Pid* pid = get_pid(kind_);
 
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
@@ -2819,7 +2864,7 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
 //! Send the current data to the LCD panel.
 void PidSettings::send_data() const
 {
-    const Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
+    const Pid& pid = get_pid(kind_)[index_];
     Log::log() << F("Send ") << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID #") << index_
                << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
 
@@ -2841,7 +2886,7 @@ void PidSettings::send_data() const
 //! Save the settings from the LCD Panel.
 void PidSettings::save_data()
 {
-    Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
+    Pid& pid = get_pid(kind_)[index_];
 
     ReadRamData response{Variable::Value0, 5};
     if(!response.send_and_receive())
@@ -2875,10 +2920,12 @@ void PidSettings::do_save_command()
 {
     save_data();
 
-    Pid& pid = (kind_ == TemperatureKind::Hotend ? hotend_pid_ : bed_pid_)[index_];
-    Temperature::Kp = pid.Kp_;
-    Temperature::Ki = pid.Ki_;
-    Temperature::Kd = pid.Kd_;
+    switch(kind_)
+    {
+        case TemperatureKind::Hotend:  save_hotend_pid(); break;
+        case TemperatureKind::Bed:     save_bed_pid(); break;
+        default: assert("Invalid temperature Kind");
+    }
 
     Parent::do_save_command();
 }
@@ -2889,6 +2936,22 @@ void PidSettings::do_back_command()
     advi3pp.restore_settings();
     pid_tuning.send_data();
     Parent::do_back_command();
+}
+
+void PidSettings::save_hotend_pid() const
+{
+    auto pid = get_pid(kind_)[index_];
+    Temperature::Kp = pid.Kp_;
+    Temperature::Ki = pid.Ki_;
+    Temperature::Kd = pid.Kd_;
+}
+
+void PidSettings::save_bed_pid() const
+{
+    auto pid = get_pid(kind_)[index_];
+    Temperature::bedKp = pid.Kp_;
+    Temperature::bedKi = pid.Ki_;
+    Temperature::bedKd = pid.Kd_;
 }
 
 // --------------------------------------------------------------------
