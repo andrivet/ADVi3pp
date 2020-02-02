@@ -147,7 +147,7 @@ void ADVi3pp_::show_boot_page()
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void ADVi3pp_::send_gplv3_7b_notice()
 {
-    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2019 Sebastien Andrivet");
+    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2020 Sebastien Andrivet");
 }
 
 //! Send the list of sponsors on the serial port (www.patreon.com/andrivet)
