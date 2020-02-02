@@ -435,9 +435,10 @@ void ADVi3pp_::read_lcd_serial()
         case Action::MoveZMinus:            move.z_minus_command(); break;
         case Action::MoveEPlus:             move.e_plus_command(); break;
         case Action::MoveEMinus:            move.e_minus_command(); break;
-        case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_value)); break;
         case Action::BabyMinus:             print_settings.baby_minus_command(); break;
         case Action::BabyPlus:              print_settings.baby_plus_command(); break;
+        case Action::ZHeightMinus:          sensor_z_height.minus(); break;
+        case Action::ZHeightPlus:           sensor_z_height.plus(); break;
         case Action::FeedrateMinus:         print_settings.feedrate_minus_command(); break;
         case Action::FeedratePlus:          print_settings.feedrate_plus_command(); break;
         case Action::FanMinus:              print_settings.fan_minus_command(); break;
@@ -446,8 +447,7 @@ void ADVi3pp_::read_lcd_serial()
         case Action::HotendPlus:            print_settings.hotend_plus_command(); break;
         case Action::BedMinus:              print_settings.bed_minus_command(); break;
         case Action::BedPlus:               print_settings.bed_plus_command(); break;
-        case Action::ZHeightMinus:          sensor_z_height.minus(); break;
-        case Action::ZHeightPlus:           sensor_z_height.plus(); break;
+        case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_value)); break;
 
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
