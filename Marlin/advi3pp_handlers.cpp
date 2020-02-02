@@ -1971,8 +1971,7 @@ void PidTuning::step2_command()
         return;
     }
 
-    Uint16 temperature; frame >> temperature; temperature_ = temperature.word;
-
+    Uint16 temperature, kind; frame >> temperature >> kind; temperature_ = temperature.word; // kind is not used here, it is already set
     if(kind_ == TemperatureKind::Hotend)
         enqueue_and_echo_commands_P(PSTR("M106 S255")); // Turn on fan (only for hotend)
 
