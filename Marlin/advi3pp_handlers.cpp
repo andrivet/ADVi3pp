@@ -3181,12 +3181,12 @@ ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version)
 //! Send the different versions to the LCD screen.
 void Versions::send_versions() const
 {
-    ADVString<16> motherboard_version;
-    ADVString<16> motherboard_build;
+    ADVString<16> advi3pp_version;
+    ADVString<16> advi3pp_build;
     ADVString<16> dgus_version;
     ADVString<16> marlin_version{SHORT_BUILD_VERSION};
 
-    motherboard_build
+    advi3pp_build
         << (YEAR__ - 2000)
         << (MONTH__ < 10 ? "0" : "") << MONTH__
         << (DAY__   < 10 ? "0" : "") << DAY__
@@ -3194,15 +3194,14 @@ void Versions::send_versions() const
         << (MIN__   < 10 ? "0" : "") << MIN__
         << (SEC__   < 10 ? "0" : "") << SEC__;
 
-    convert_version(motherboard_version, advi3_pp_version).align(Alignment::Left);
-    motherboard_build.align(Alignment::Left);
+    convert_version(advi3pp_version, advi3_pp_version).align(Alignment::Left);
+    advi3pp_build.align(Alignment::Left);
     get_lcd_firmware_version(dgus_version).align(Alignment::Left);
     marlin_version.align(Alignment::Left);
 
-    WriteRamDataRequest frame{Variable::ADVi3ppMotherboardVersion};
-    frame << motherboard_version
-          << motherboard_build
-          << motherboard_version // TODO: Until I remove this field
+    WriteRamDataRequest frame{Variable::ADVi3ppVersion};
+    frame << advi3pp_version
+          << advi3pp_build
           << dgus_version
           << marlin_version;
     frame.send();
