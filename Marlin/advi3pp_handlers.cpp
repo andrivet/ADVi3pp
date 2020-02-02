@@ -68,7 +68,7 @@ namespace
     };
 
     //! List of multipliers in Print Settings
-    const double PRINT_SETTINGS_MULTIPLIERS[] = {0.04, 0.08, 0.12};
+    const double BABYSTEPS_MULTIPLIERS[] = {0.04, 0.08, 0.12};
 
 #ifdef ADVi3PP_PROBE
     //! List of multipliers in Z-height Tuning
@@ -334,7 +334,7 @@ void Screens::show_print()
         return;
     }
 
-    wait.show(F("Try to access the SD card..."));
+    wait.show(F("Accessing the SD card..."));
     task.set_background_task(BackgroundTask{this, &Screens::show_sd_or_temp_page});
 }
 
@@ -559,9 +559,9 @@ void LoadUnload::prepare(const BackgroundTask& background)
         return;
     }
 
-    Uint16 hotend; frame >> hotend;
+    Uint16 temperature; frame >> temperature;
 
-    Temperature::setTargetHotend(hotend.word, 0);
+    Temperature::setTargetHotend(temperature.word, 0);
     enqueue_and_echo_commands_P(PSTR("M83"));       // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));    // reset E axis
 
@@ -1714,7 +1714,7 @@ double SensorZHeight::get_multiplier_value() const
     if(multiplier_ < Multiplier::M1 || multiplier_ > Multiplier::M3)
     {
         Log::error() << F("Invalid multiplier value: ") << static_cast<uint16_t >(multiplier_) << Log::endl();
-        return PRINT_SETTINGS_MULTIPLIERS[0];
+        return SENSOR_Z_HEIGHT_MULTIPLIERS[0];
     }
 
     return SENSOR_Z_HEIGHT_MULTIPLIERS[static_cast<uint16_t>(multiplier_)];
@@ -1792,9 +1792,9 @@ void ExtruderTuning::start_command()
         return;
     }
 
-    Uint16 hotend; frame >> hotend;
+    Uint16 temperature; frame >> temperature;
     wait.show(F("Heating the extruder..."), WaitCallback{this, &ExtruderTuning::cancel}, ShowOptions::None);
-    Temperature::setTargetHotend(hotend.word, 0);
+    Temperature::setTargetHotend(temperature.word, 0);
 
     task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
 }
@@ -1841,7 +1841,7 @@ void ExtruderTuning::finished()
 
     task.clear_background_task();
 
-    // Always set ny default 20mm
+    // Always set to default 20mm
     WriteRamDataRequest frame{Variable::Value0};
     frame << 200_u16; // 20.0
     frame.send();
@@ -2449,7 +2449,6 @@ void LcdSettings::send_data() const
     frame.send();
 }
 
-
 // --------------------------------------------------------------------
 // Print Settings
 // --------------------------------------------------------------------
@@ -2481,10 +2480,10 @@ double PrintSettings::get_multiplier_value() const
     if(multiplier_ < Multiplier::M1 || multiplier_ > Multiplier::M3)
     {
         Log::error() << F("Invalid multiplier value: ") << static_cast<uint16_t >(multiplier_) << Log::endl();
-        return PRINT_SETTINGS_MULTIPLIERS[0];
+        return BABYSTEPS_MULTIPLIERS[0];
     }
 
-    return PRINT_SETTINGS_MULTIPLIERS[static_cast<uint16_t>(multiplier_)];
+    return BABYSTEPS_MULTIPLIERS[static_cast<uint16_t>(multiplier_)];
 }
 
 //! Send the current data to the LCD panel.

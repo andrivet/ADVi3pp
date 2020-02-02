@@ -1138,7 +1138,7 @@ private:
     bool init_ = true;
     uint32_t usb_baudrate_ = BAUDRATE;
     Feature features_ = Feature::None;
-    uint16_t last_used_temperature_[2] = {default_bed_temperature, default_hotend_temperature};
+    uint16_t last_used_temperature_[nb_temperatures] = {default_bed_temperature, default_hotend_temperature};
     bool has_status_ = false;
     ADVString<message_length> message_;
     ADVString<message_length> centered_;
