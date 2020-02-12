@@ -767,15 +767,6 @@
 //#define MANUAL_PROBE_START_Z 0.2
 
 /**
- * A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
- *   (e.g., an inductive probe or a nozzle-based probe-switch.)
- */
-// @advi3++: Mark II probe is fix
-#ifdef ADVi3PP_MARK2
-#define FIX_MOUNTED_PROBE
-#endif
-
-/**
  * Z Servo Probe, such as an endstop switch on a rotating arm.
  */
 //#define Z_PROBE_SERVO_NR 0   // Defaults to SERVO 0 connector.
@@ -794,6 +785,17 @@
 #define ADVi3PP_BLTOUCH
 #define BLTOUCH
 #define BLTOUCH_V3
+#endif
+
+/**
+ * A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
+ *   (e.g., an inductive probe or a nozzle-based probe-switch.)
+ */
+// @advi3++: Mark II probe is fix
+#ifndef BLTOUCH
+#ifdef ADVi3PP_MARK2
+#define FIX_MOUNTED_PROBE
+#endif
 #endif
 
 #if ENABLED(BLTOUCH)

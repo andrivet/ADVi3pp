@@ -39,6 +39,9 @@
 #define Y_STOP_PIN         24   // PA2 / AD2
 #define Z_STOP_PIN         6    // PH3 / PCINT8
 #define Z_MIN_PROBE_PIN    6    // PH3 / PCINT8
+#ifdef ADVi3PP_BLTOUCH
+    #define SERVO0_PIN     7   // PH4
+#endif
 
 //
 // Steppers
