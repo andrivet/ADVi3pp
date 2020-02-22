@@ -18,6 +18,8 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 src="$( cd "${scripts}/../${srcname}" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
+mkdir -p "${scripts}/../../../../Releases/v${version}"
+ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 release="$( cd "${scripts}/../../../../Releases/v${version}" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 

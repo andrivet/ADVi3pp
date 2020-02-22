@@ -31,8 +31,7 @@ function export_sketches() {
 function clean_images() {
 
     echo Clean bmp files in $1...
-    [[ -e $1/*.bmp ]] || rm $1/*.bmp
-    ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
+    rm $1/*.bmp
 
 }
 
