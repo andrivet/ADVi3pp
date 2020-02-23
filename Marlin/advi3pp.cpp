@@ -109,6 +109,18 @@ inline namespace singletons
     extern AdvancedPause pause;
 }
 
+//! Transform a value from a scale to another one.
+//! @param value        Value to be transformed
+//! @param valueScale   Current scale of the value (maximal)
+//! @param targetScale  Target scale (maximum, i.e. including)
+//! @return             The scaled value
+int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale)
+{
+    auto target = round(static_cast<double>(value) * targetScale / valueScale);
+    return target <= targetScale ? target : targetScale;
+}
+
+
 // --------------------------------------------------------------------
 // ADVi3++ implementation
 // --------------------------------------------------------------------

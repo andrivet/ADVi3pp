@@ -74,7 +74,7 @@ struct SensorPosition { int16_t x, y; };
 //! @param valueScale   Current scale of the value (maximal)
 //! @param targetScale  Target scale
 //! @return             The scaled value
-inline int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale) { return value * targetScale / valueScale; }
+int16_t scale(int16_t value, int16_t valueScale, int16_t targetScale);
 
 // --------------------------------------------------------------------
 // EEPROM Data Read & Write
