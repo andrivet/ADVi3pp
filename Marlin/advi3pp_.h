@@ -200,12 +200,14 @@ struct Wait: Handler<Wait>
     void show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
     void show_continue(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
     void show_continue(ShowOptions options = ShowOptions::SaveBack);
+    void show_back(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
 
 private:
     Page do_prepare_page();
     void do_save_command();
     void do_back_command();
     bool on_continue();
+    bool on_back();
 
     WaitCallback back_;
     WaitCallback continue_;

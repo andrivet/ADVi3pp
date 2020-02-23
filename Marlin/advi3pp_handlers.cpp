@@ -436,10 +436,27 @@ void Wait::show_continue(ShowOptions options)
     pages.show_page(Page::WaitContinue, options);
 }
 
+//! Ensure a print is not running and if so, display a message
+void Wait::show_back(const FlashChar* message, ShowOptions options)
+{
+    advi3pp.set_status(message);
+    back_ = WaitCallback{this, &Wait::on_back};
+    continue_ = nullptr;
+    pages.show_page(Page::WaitBack, options);
+}
+
 //! Default action when the continue button is pressed (inform Marlin)
 bool Wait::on_continue()
 {
     ::wait_for_user = false;
+    return false;
+}
+
+//! Action when the back button is pressed
+bool Wait::on_back()
+{
+    advi3pp.reset_status();
+    pages.show_back_page();
     return false;
 }
 
