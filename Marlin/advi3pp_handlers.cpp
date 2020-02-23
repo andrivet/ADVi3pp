@@ -636,7 +636,7 @@ void LoadUnload::stop_task()
 //! @param back_task    Background task to detect if the target temperature is reached and in this case, do step #2
 void LoadUnload::start_task(const char* command, const BackgroundTask& back_task)
 {
-    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10.0)
     {
         Log::log() << F("Load/Unload Filament") << Log::endl();
         advi3pp.buzz(); // Inform the user that the extrusion starts
@@ -655,7 +655,7 @@ void LoadUnload::load_start_task()
 //! Load the filament if the temperature is high enough.
 void LoadUnload::load_task()
 {
-    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10.0)
         enqueue_and_echo_commands_P(PSTR("G1 E1 F120"));
 }
 
@@ -668,7 +668,7 @@ void LoadUnload::unload_start_task()
 //! Unload the filament if the temperature is high enough.
 void LoadUnload::unload_task()
 {
-    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10)
+    if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10.0)
         enqueue_and_echo_commands_P(PSTR("G1 E-1 F120"));
 }
 
@@ -809,16 +809,11 @@ void Preheat::do_save_command()
 
     const Preset& preset = presets_[index_];
 
-    ADVString<15> command;
+    // Avoid using queue functions because the buffer is small
 
-    command = F("M104 S"); command << preset.hotend;
-    enqueue_and_echo_command(command.get());
-
-    command = F("M140 S"); command << preset.bed;
-    enqueue_and_echo_command(command.get());
-
-    command = F("M106 S"); command << scale(preset.fan, 100, 255);
-    enqueue_and_echo_command(command.get());
+    thermalManager.setTargetHotend(preset.hotend, 0);
+    thermalManager.setTargetBed(preset.bed);
+    fanSpeeds[0] = scale(preset.fan, 100, 255);
 
     advi3pp.save_settings();
     temperatures.show(ShowOptions::None);
@@ -833,7 +828,7 @@ void Preheat::cooldown_command()
     Log::log() << F("Cooldown") << Log::endl();
     advi3pp.reset_status();
     Temperature::disable_all_heaters();
-    enqueue_and_echo_commands_P(PSTR("M106 S0")); // Turn off fan
+    fanSpeeds[0] = 0; // Turn off fan
 }
 
 
@@ -1809,17 +1804,18 @@ Page SensorZHeight::do_prepare_page()
 //! @return             True if the action was handled
 bool ExtruderTuning::do_dispatch(KeyValue key_value)
 {
+    switch(key_value)
+    {
+        case KeyValue::TuningStart:     start_command(); return true;
+        case KeyValue::TuningSettings:  settings_command(); return true;
+        default:                        break;
+    }
+
+    // Do this after since we handle Save before
     if(Parent::do_dispatch(key_value))
         return true;
 
-    switch(key_value)
-    {
-        case KeyValue::TuningStart:     start_command(); break;
-        case KeyValue::TuningSettings:  settings_command(); break;
-        default:                        return false;
-    }
-
-    return true;
+    return false;
 }
 
 void ExtruderTuning::send_data()
