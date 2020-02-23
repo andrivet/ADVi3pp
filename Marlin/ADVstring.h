@@ -46,6 +46,11 @@ enum class Alignment: uint8_t
     None, Left, Center, Right
 };
 
+enum class Duration: uint8_t
+{
+    full, digital, digitalWithDays
+};
+
 template<size_t L>
 struct ADVString
 {
@@ -53,7 +58,7 @@ struct ADVString
     explicit ADVString(const char* s);
     explicit ADVString(const FlashChar* s);
     explicit ADVString(char c);
-    explicit ADVString(duration_t d);
+    explicit ADVString(duration_t d, Duration options = Duration::full);
     explicit ADVString(int16_t n, Base b = Base::Decimal);
     explicit ADVString(int32_t n, Base b = Base::Decimal);
     explicit ADVString(uint16_t n, Base b = Base::Decimal);
@@ -72,7 +77,7 @@ struct ADVString
     template<size_t L2> ADVString& set(const ADVString<L2>& s);
     template<size_t L2> ADVString& set(const ADVString<L2>& s, Alignment alignment);
     ADVString& set(char c);
-    ADVString& set(duration_t d);
+    ADVString& set(duration_t d, Duration options = Duration::full);
     ADVString& set(int16_t n, Base base = Base::Decimal);
     ADVString& set(int32_t n, Base base = Base::Decimal);
     ADVString& set(uint16_t n, Base base = Base::Decimal);
@@ -117,7 +122,7 @@ inline ADVString<L>& operator<<(ADVString<L>& rhs, T lhs) { rhs.append(lhs); ret
 template<size_t L> inline ADVString<L>::ADVString(const char* s) { set(s); }
 template<size_t L> inline ADVString<L>::ADVString(const FlashChar* s) { set(s); }
 template<size_t L> inline ADVString<L>::ADVString(const char c) { set(c); }
-template<size_t L> inline ADVString<L>::ADVString(duration_t d) { set(d); }
+template<size_t L> inline ADVString<L>::ADVString(duration_t d, Duration options) { set(d, options); }
 template<size_t L> inline ADVString<L>::ADVString(int16_t n, Base b) { set(n, b); }
 template<size_t L> inline ADVString<L>::ADVString(int32_t n, Base b) { set(n, b); }
 template<size_t L> inline ADVString<L>::ADVString(uint16_t n, Base b) { set(n, b); }
@@ -226,10 +231,16 @@ inline ADVString<L>& ADVString<L>::set(const ADVString<L2>& s)
 }
 
 template<size_t L>
-ADVString<L>& ADVString<L>::set(duration_t d)
+ADVString<L>& ADVString<L>::set(duration_t d, Duration options)
 {
     char buffer[22]; // 21 + 1, from the doc
-    d.toString(buffer);
+    switch(options)
+    {
+        case Duration::full:            d.toString(buffer); break;
+        case Duration::digital:         d.toDigital(buffer); break;
+        case Duration::digitalWithDays: d.toDigital(buffer, true); break;
+    }
+
     return set(buffer);
 }
 
