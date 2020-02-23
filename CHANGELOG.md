@@ -1,5 +1,10 @@
 # ADVi3++ Changelog
 
+## 4.0.6 (2020-02-23)
+
+* **#234** - Some actions should be disabled during a print
+* **#232** - Fan speed in Preset was not saved in EEPROM
+
 ## 4.0.5 (2020-01-20)
 
 * **#230** - During pause (both normal and advanced), wait a moment just after purging the nozzle
