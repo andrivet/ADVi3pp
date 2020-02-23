@@ -19,10 +19,10 @@ sketch_export_dir="$( cd "${scripts}/../Sketch-Export" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 masters="$( cd "${scripts}/../Masters" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
-sketch="${masters}/3DLabs LCD-Panel.sketch"
+sketch="${masters}/ADVi3++ LCD-Panel.sketch"
 
 function export_sketches() {
-    echo Export Sketches into ${sketch_export_dir}
+    echo Export Sketch ${sketch} into ${sketch_export_dir}
     "${sketchtool}" export artboards --output=${sketch_export_dir} --overwriting=YES ${sketch}
     # Fix a bug with sketchtool
     mv "${sketch_export_dir}/"*.png "${sketch_export_dir}/Screenshots/"
@@ -54,6 +54,7 @@ clean_images "${dgus}/DWIN_SET"
 clean_images "${dgus}/25_Controls"
 
 export_sketches
+ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 convert_images "${parent}/Masters/Boot"             "${dgus}/DWIN_SET"
 convert_images "${parent}/Sketch-Export/DWIN_SET"   "${dgus}/DWIN_SET"
