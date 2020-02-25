@@ -2,6 +2,7 @@
 
 ## 4.0.6 (2020-02-23)
 
+* **#235** - Sometimes, message displayed on Wait screens was wrong
 * **#234** - Some actions should be disabled during a print
 * **#232** - Fan speed in Preset was not saved in EEPROM
 

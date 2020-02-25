@@ -208,6 +208,7 @@ private:
     void do_back_command();
     bool on_continue();
     bool on_back();
+    void set_message(const FlashChar* message);
 
     WaitCallback back_;
     WaitCallback continue_;

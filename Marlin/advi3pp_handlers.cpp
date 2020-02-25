@@ -366,12 +366,20 @@ Page Wait::do_prepare_page()
     return Page::Waiting;
 }
 
+void Wait::set_message(const FlashChar* message)
+{
+    WriteRamDataRequest frame{Variable::LongText0};
+    ADVString<48> message_to_send{message};
+    frame << message_to_send;
+    frame.send();
+}
+
 //! Show a simple wait page with a message
 //! @param message  The message to display
 //! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show(const FlashChar* message, ShowOptions options)
 {
-    advi3pp.set_status(message);
+    set_message(message);
     back_ = nullptr;
     continue_ = nullptr;
     pages.show_page(Page::Waiting, options);
@@ -383,7 +391,7 @@ void Wait::show(const FlashChar* message, ShowOptions options)
 //! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show(const FlashChar* message, const WaitCallback& back, ShowOptions options)
 {
-    advi3pp.set_status(message);
+    set_message(message);
     back_ = back;
     continue_ = nullptr;
     pages.show_page(Page::WaitBack, options);
@@ -396,7 +404,7 @@ void Wait::show(const FlashChar* message, const WaitCallback& back, ShowOptions 
 //! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options)
 {
-    advi3pp.set_status(message);
+    set_message(message);
     back_ = back;
     continue_ = cont;
     pages.show_page(Page::WaitBackContinue, options);
@@ -408,7 +416,7 @@ void Wait::show(const FlashChar* message, const WaitCallback& back, const WaitCa
 //! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options)
 {
-    advi3pp.set_status(message);
+    set_message(message);
     back_ = nullptr;
     continue_ = cont;
     pages.show_page(Page::WaitContinue, options);
@@ -419,7 +427,7 @@ void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, Sho
 //! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show_continue(const FlashChar* message, ShowOptions options)
 {
-    advi3pp.set_status(message);
+    set_message(message);
     back_ = nullptr;
     continue_ = WaitCallback{this, &Wait::on_continue};
     pages.show_page(Page::WaitContinue, options);
@@ -439,7 +447,7 @@ void Wait::show_continue(ShowOptions options)
 //! Ensure a print is not running and if so, display a message
 void Wait::show_back(const FlashChar* message, ShowOptions options)
 {
-    advi3pp.set_status(message);
+    set_message(message);
     back_ = WaitCallback{this, &Wait::on_back};
     continue_ = nullptr;
     pages.show_page(Page::WaitBack, options);
@@ -455,7 +463,6 @@ bool Wait::on_continue()
 //! Action when the back button is pressed
 bool Wait::on_back()
 {
-    advi3pp.reset_status();
     pages.show_back_page();
     return false;
 }
