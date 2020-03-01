@@ -527,7 +527,7 @@ void ADVi3pp_::reset_status()
 //! Handle Stop and Wait from the host: display a wait/continue page
 void ADVi3pp_::stop_and_wait()
 {
-    wait.show_continue();
+    wait.show_continue(message_);
 }
 
 //! Set the name for the progess message. Usually, it is the name of the file printed.

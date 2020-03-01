@@ -433,17 +433,6 @@ void Wait::show_continue(const FlashChar* message, ShowOptions options)
     pages.show_page(Page::WaitContinue, options);
 }
 
-//! Show a simple wait page without a message
-//! @param message  The message to display
-//! @param options  Options when displaying the page (i.e. save the current page or not)
-void Wait::show_continue(ShowOptions options)
-{
-    back_ = nullptr;
-    continue_ = WaitCallback{this, &Wait::on_continue};
-    advi3pp.buzz();
-    pages.show_page(Page::WaitContinue, options);
-}
-
 //! Ensure a print is not running and if so, display a message
 void Wait::show_back(const FlashChar* message, ShowOptions options)
 {

@@ -199,7 +199,7 @@ struct Wait: Handler<Wait>
     void show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
     void show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
     void show_continue(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
-    void show_continue(ShowOptions options = ShowOptions::SaveBack);
+    template<size_t L> void show_continue(const ADVString<L>& message, ShowOptions options = ShowOptions::SaveBack);
     void show_back(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
 
 private:
@@ -1273,6 +1273,19 @@ void Handler<Self>::do_back_command()
 
 
 // --------------------------------------------------------------------
+//! Show a simple wait page without a message
+//! @param message  The message to display
+//! @param options  Options when displaying the page (i.e. save the current page or not)
+template<size_t L>
+void Wait::show_continue(const ADVString<L>& message, ShowOptions options)
+{
+    set_message(message);
+    back_ = nullptr;
+    continue_ = WaitCallback{this, &Wait::on_continue};
+    advi3pp.buzz();
+    pages.show_page(Page::WaitContinue, options);
+}
+
 
 }
 
