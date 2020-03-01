@@ -17,9 +17,10 @@
 */
 
 #include <stdio.h>
-#include <string.h>
 
-char* ltoa(long value, char* string, int radix)
+extern "C" {
+
+char* ltoa(long value, char *string, int radix)
 {
     if(string == nullptr)
         return nullptr;
@@ -93,4 +94,6 @@ char* dtostrf(double val, signed char width, unsigned char prec, char *sout)
     sprintf(fmt, "%%%d.%df", width, prec);
     sprintf(sout, fmt, val);
     return sout;
+}
+
 }
