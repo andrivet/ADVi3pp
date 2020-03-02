@@ -208,6 +208,7 @@ private:
     void do_back_command();
     bool on_continue();
     bool on_back();
+    template<size_t L> void set_message(const ADVString<L>& message);
     void set_message(const FlashChar* message);
 
     WaitCallback back_;
@@ -1271,6 +1272,14 @@ void Handler<Self>::do_back_command()
     pages.show_back_page();
 }
 
+// --------------------------------------------------------------------
+
+template<size_t L> void Wait::set_message(const ADVString<L>& message)
+{
+    WriteRamDataRequest frame{Variable::LongText0};
+    frame << message;
+    frame.send();
+}
 
 // --------------------------------------------------------------------
 //! Show a simple wait page without a message
