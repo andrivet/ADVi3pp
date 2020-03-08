@@ -811,6 +811,7 @@ void Preheat::do_save_command()
     fanSpeeds[0] = scale(preset.fan, 100, 255);
 
     advi3pp.save_settings();
+    advi3pp.set_status(F("Preheat..."));
     temperatures.show(ShowOptions::None);
 }
 
@@ -821,7 +822,7 @@ void Preheat::cooldown_command()
         return;
 
     Log::log() << F("Cooldown") << Log::endl();
-    advi3pp.reset_status();
+    advi3pp.set_status(F("Cooldown"));
     Temperature::disable_all_heaters();
     fanSpeeds[0] = 0; // Turn off fan
 }
