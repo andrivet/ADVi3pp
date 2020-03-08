@@ -607,7 +607,6 @@ bool LoadUnload::stop()
 {
     Log::log() << F("Load/Unload Stop") << Log::endl();
 
-    advi3pp.reset_status();
     task.set_background_task(BackgroundTask(this, &LoadUnload::stop_task));
     clear_command_queue();
     Temperature::setTargetHotend(0, 0);
@@ -638,7 +637,7 @@ void LoadUnload::start_task(const char* command, const BackgroundTask& back_task
         advi3pp.buzz(); // Inform the user that the extrusion starts
         enqueue_and_echo_commands_P(command);
         task.set_background_task(back_task);
-        advi3pp.set_status(F("Press Back when the filament comes out..."));
+        wait.set_message(F("Press Back when the filament comes out..."));
     }
 }
 
@@ -1211,7 +1210,6 @@ void ManualLeveling::leveling_task()
         return;
 
     Log::log() << F("Leveling Homed, start process") << Log::endl();
-    advi3pp.reset_status();
     task.clear_background_task();
     pages.show_page(Page::ManualLeveling, ShowOptions::None);
 }
@@ -1603,14 +1601,14 @@ void AdvancedPause::advanced_pause_show_message(const AdvancedPauseMessage messa
     switch (message)
     {
         case ADVANCED_PAUSE_MESSAGE_INIT:                       wait.show(F("Pausing...")); break;
-        case ADVANCED_PAUSE_MESSAGE_UNLOAD:                     advi3pp.set_status(F("Unloading filament...")); break;
+        case ADVANCED_PAUSE_MESSAGE_UNLOAD:                     wait.set_message(F("Unloading filament...")); break;
         case ADVANCED_PAUSE_MESSAGE_INSERT:                     insert_filament(); break;
-        case ADVANCED_PAUSE_MESSAGE_LOAD:                       advi3pp.set_status(F("Loading...")); break;
-        case ADVANCED_PAUSE_MESSAGE_PURGE:                      advi3pp.set_status(F("Extruding some filament...")); break;
-        case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:       advi3pp.set_status(F("Press continue to heat")); break;
-        case ADVANCED_PAUSE_MESSAGE_RESUME:                     advi3pp.set_status(F("Resuming print...")); break;
+        case ADVANCED_PAUSE_MESSAGE_LOAD:                       wait.set_message(F("Loading...")); break;
+        case ADVANCED_PAUSE_MESSAGE_PURGE:                      wait.set_message(F("Extruding some filament...")); break;
+        case ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:       wait.set_message(F("Press continue to heat")); break;
+        case ADVANCED_PAUSE_MESSAGE_RESUME:                     wait.set_message(F("Resuming print...")); break;
         case ADVANCED_PAUSE_MESSAGE_STATUS:                     break;
-        case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:   advi3pp.set_status(F("Waiting for heat...")); break;
+        case ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:   wait.set_message(F("Waiting for heat...")); break;
         case ADVANCED_PAUSE_MESSAGE_OPTION:                     advanced_pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
         default: advi3pp::Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << advi3pp::Log::endl(); break;
     }
@@ -1685,7 +1683,6 @@ void SensorZHeight::post_home_task()
         return;
 
     task.clear_background_task();
-    advi3pp.reset_status();
 
     reset();
 
@@ -1855,7 +1852,7 @@ void ExtruderTuning::heating_task()
         return;
     task.clear_background_task();
 
-    advi3pp.set_status(F("Wait until the extrusion is finished..."));
+    wait.set_message(F("Wait until the extrusion is finished..."));
     enqueue_and_echo_commands_P(PSTR("G1 Z20 F1200"));   // raise head
     enqueue_and_echo_commands_P(PSTR("M83"));           // relative E mode
     enqueue_and_echo_commands_P(PSTR("G92 E0"));        // reset E axis
@@ -1877,7 +1874,6 @@ void ExtruderTuning::extruding_task()
 
     Temperature::setTargetHotend(0, 0);
     task.clear_background_task();
-    advi3pp.reset_status();
     finished();
 }
 

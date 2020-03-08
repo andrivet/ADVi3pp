@@ -201,6 +201,7 @@ struct Wait: Handler<Wait>
     void show_continue(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
     template<size_t L> void show_continue(const ADVString<L>& message, ShowOptions options = ShowOptions::SaveBack);
     void show_back(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
+    void set_message(const FlashChar* message);
 
 private:
     Page do_prepare_page();
@@ -209,7 +210,6 @@ private:
     bool on_continue();
     bool on_back();
     template<size_t L> void set_message(const ADVString<L>& message);
-    void set_message(const FlashChar* message);
 
     WaitCallback back_;
     WaitCallback continue_;
