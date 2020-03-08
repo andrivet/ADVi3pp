@@ -493,11 +493,15 @@ void ADVi3pp_::set_status(const char* message)
 }
 
 //! Set a status to display (a message)
-void ADVi3pp_::set_status(const char* fmt, va_list& args)
+void  ADVi3pp_::set_auto_pid_status(const FlashChar* message)
 {
-    message_.set(fmt, args).align(Alignment::Left);
-    centered_.set(fmt, args).align(Alignment::Center);
-    has_status_ = true;
+    wait.set_message(message);
+}
+
+//! Set a status to display (a message)
+void ADVi3pp_::set_auto_pid_status(const FlashChar* fmt, va_list& args)
+{
+    wait.set_message(fmt, args);
 }
 
 //! Set a status to display (a message)
