@@ -72,11 +72,10 @@ enum class Variable: uint16_t
     Value7                  = 0x0307,
 
     // 5 - Versions
-    // ADVi3ppLCDVersion_Raw       = 0x0500, // No more used
-    ADVi3ppVersion          = 0x0501,
-    ADVi3ppBuild            = 0x0509,
-    ADVi3ppDGUSVersion      = 0x0519,
-    ADVi3ppMarlinVersion    = 0x0521
+    ADVi3ppVersion          = 0x0500,
+    ADVi3ppBuild            = 0x0508,
+    ADVi3ppDGUSVersion      = 0x0510,
+    ADVi3ppMarlinVersion    = 0x0518
 };
 
 //! List of actions sent by the LCD.
