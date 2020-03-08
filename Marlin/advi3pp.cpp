@@ -493,15 +493,24 @@ void ADVi3pp_::set_status(const char* message)
 }
 
 //! Set a status to display (a message)
-void  ADVi3pp_::set_auto_pid_status(const FlashChar* message)
+void ADVi3pp_::set_auto_pid_progress(int index, int nb)
 {
+    if(nb == 0)
+    {
+        wait.set_message(F("PID tuning: waiting for heatup"));
+        return;
+    }
+
+    ADVString<48> message{F("PID tuning: cycle ")};
+    message.append(index + 1).append(F(" / ")).append(nb);
     wait.set_message(message);
 }
 
-//! Set a status to display (a message)
-void ADVi3pp_::set_auto_pid_status(const FlashChar* fmt, va_list& args)
+void ADVi3pp_::set_auto_bed_leveling_progress(int index, int nb, int x, int y)
 {
-    wait.set_message(fmt, args);
+    ADVString<48> message{F("Level ")};
+    message.append(index + 1).append('/').append(nb).append(F(" @ ")).append(x).append(F(", ")).append(x).append(F(" mm"));
+    wait.set_message(message);
 }
 
 //! Set a status to display (a message)

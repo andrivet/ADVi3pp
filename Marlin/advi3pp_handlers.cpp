@@ -375,16 +375,6 @@ void Wait::set_message(const FlashChar* message)
     frame.send();
 }
 
-void Wait::set_message(const FlashChar* fmt, va_list& args)
-{
-    WriteRamDataRequest frame{Variable::LongText0};
-    ADVString<48> message_to_send;
-    message_to_send.set(fmt, args);
-    message_to_send.align(Alignment::Left);
-    frame << message_to_send;
-    frame.send();
-}
-
 //! Show a simple wait page with a message
 //! @param message  The message to display
 //! @param options  Options when displaying the page (i.e. save the current page or not)

@@ -323,7 +323,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
     SHV(soft_pwm_amount, bias = d = (MAX_BED_POWER) >> 1, bias = d = (PID_MAX) >> 1);
 
     wait_for_heatup = true; // Can be interrupted with M108
-    advi3pp::ADVi3pp::set_auto_pid_status(F("PID tuning: waiting for heatup"));
+    advi3pp::ADVi3pp::set_auto_pid_progress(0, 0);
 
     // PID Tuning loop
     while (wait_for_heatup) {
@@ -357,7 +357,7 @@ uint8_t Temperature::soft_pwm_amount[HOTENDS];
 
         if (!heating && current < target) {
           if (ELAPSED(ms, t1 + 5000UL)) {
-            advi3pp::ADVi3pp::set_auto_pid_status_v(F("PID tuning: cycle %i / %i"), cycles + 1, ncycles);
+            advi3pp::ADVi3pp::set_auto_pid_progress(cycles, ncycles);
             heating = true;
             t2 = ms;
             t_low = t2 - t1;

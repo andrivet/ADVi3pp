@@ -5371,9 +5371,8 @@ void home_all_axes() { gcode_G28(true); }
             #endif
 
             // @advi3++: Display on the LCD panel the indexes of the measures
-            lcd_status_printf_P(0, PSTR("Measure %i/%i @ (%i, %i) mm"),
-                                ++measure_index, nb_measures,
-                                static_cast<int>(xProbe), static_cast<int>(yProbe));
+            advi3pp::ADVi3pp::set_auto_bed_leveling_progress(measure_index++, nb_measures,
+                static_cast<int>(xProbe), static_cast<int>(yProbe));
             
             measured_z = faux ? 0.001 * random(-100, 101) : probe_pt(xProbe, yProbe, raise_after, verbose_level);
 

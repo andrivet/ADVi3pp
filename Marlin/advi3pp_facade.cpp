@@ -165,22 +165,14 @@ void ADVi3pp::set_status(const FlashChar* const fmt, va_list& args)
     advi3pp.set_status(fmt, args);
 }
 
-void ADVi3pp::set_auto_pid_status(const FlashChar* message)
+void ADVi3pp::set_auto_pid_progress(int index, int nb)
 {
-    advi3pp.set_auto_pid_status(message);
+    advi3pp.set_auto_pid_progress(index, nb);
 }
 
-void ADVi3pp::set_auto_pid_status(const FlashChar* fmt, va_list& args)
+void ADVi3pp::set_auto_bed_leveling_progress(int index, int nb, int x, int y)
 {
-    advi3pp.set_auto_pid_status(fmt, args);
-}
-
-void ADVi3pp::set_auto_pid_status_v(const FlashChar* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    set_auto_pid_status(fmt, args);
-    va_end(args);
+    advi3pp.set_auto_bed_leveling_progress(index, nb, x, y);
 }
 
 void  ADVi3pp::advanced_pause_show_message(AdvancedPauseMessage message)
