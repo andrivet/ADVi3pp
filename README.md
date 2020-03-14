@@ -1,76 +1,117 @@
-# Marlin 3D Printer Firmware
+# ADVi3++, an advanced and better firmware for Wanhao i3 Plus Printers
 
-![GitHub](https://img.shields.io/github/license/marlinfirmware/marlin.svg)
-![GitHub contributors](https://img.shields.io/github/contributors/marlinfirmware/marlin.svg)
-![GitHub Release Date](https://img.shields.io/github/release-date/marlinfirmware/marlin.svg)
-[![Build Status](https://github.com/MarlinFirmware/Marlin/workflows/CI/badge.svg?branch=bugfix-2.0.x)](https://github.com/MarlinFirmware/Marlin/actions)
+## Introduction
 
-<img align="right" width=175 src="buildroot/share/pixmaps/logo/marlin-250.png" />
+**ADVi3++** is a fork of the [Marlin Firmware](http://marlinfw.org/) for the Wanhao Duplicator i3 Plus (and its clones: Monoprice Maker Select Plus, Cocoon Create, ...). It includes both Marlin itself and screens for the LCD Panel.
 
-Additional documentation can be found at the [Marlin Home Page](https://marlinfw.org/).
-Please test this firmware and let us know if it misbehaves in any way. Volunteers are standing by!
+## Become a Sponsor of this Project
 
-## Marlin 2.0
+[![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=6504486)
 
-Marlin 2.0 takes this popular RepRap firmware to the next level by adding support for much faster 32-bit and ARM-based boards while improving support for 8-bit AVR boards. Read about Marlin's decision to use a "Hardware Abstraction Layer" below.
+Working on **ADVi3++** takes a lot of time and effort. I make my best to release good quality software, useful and precise documents. I track bugs reported by users and replies to help requests. I invest also time and money to implement new hardware features.
 
-Download earlier versions of Marlin on the [Releases page](https://github.com/MarlinFirmware/Marlin/releases).
+If you like what I am doing, please consider supporting me as a supporter on [**Patreon**](https://www.patreon.com/bePatron?u=6504486) so I can continue and develop new releases and new documents. Supporting this project is a guaranty for you that it will continue and become better and better.
 
-## Building Marlin 2.0
+## Objectives
 
-To build Marlin 2.0 you'll need [Arduino IDE 1.8.8 or newer](https://www.arduino.cc/en/main/software) or [PlatformIO](http://docs.platformio.org/en/latest/ide.html#platformio-ide). Detailed build and install instructions are posted at:
+The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
 
-  - [Installing Marlin (Arduino)](http://marlinfw.org/docs/basics/install_arduino.html)
-  - [Installing Marlin (VSCode)](http://marlinfw.org/docs/basics/install_platformio_vscode.html).
+* Based on the latest version of Marlin available (currently: 1.1.9 + post 1.1.9 fixes)
+* As few modifications of the Marlin code as possible. The goal is to be able to port **ADVi3++** to new versions of Marlin with only a few effort.
+* Open source code.
+* Object-oriented code with as few hard-coded values as possible. For example, instead of constructing a frame by hand, use instances of classes that know how to construct themselves.
+* Documented code, logging and error handling (without using exceptions as they are not supported).
+* Full color and nice LCD screens.
+* Support of hardware such as the BLTouch sensor for automatic bed leveling.
+* Etc.
 
-### Supported Platforms
+## ADVi3++ User Manual
 
-  Platform|MCU|Example Boards
-  --------|---|-------
-  [Arduino AVR](https://www.arduino.cc/)|ATmega|RAMPS, Melzi, RAMBo
-  [Teensy++ 2.0](http://www.microchip.com/wwwproducts/en/AT90USB1286)|AT90USB1286|Printrboard
-  [Arduino Due](https://www.arduino.cc/en/Guide/ArduinoDue)|SAM3X8E|RAMPS-FD, RADDS, RAMPS4DUE
-  [LPC1768](http://www.nxp.com/products/microcontrollers-and-processors/arm-based-processors-and-mcus/lpc-cortex-m-mcus/lpc1700-cortex-m3/512kb-flash-64kb-sram-ethernet-usb-lqfp100-package:LPC1768FBD100)|ARM® Cortex-M3|MKS SBASE, Re-ARM, Selena Compact
-  [LPC1769](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc1700-cortex-m3/512kb-flash-64kb-sram-ethernet-usb-lqfp100-package:LPC1769FBD100)|ARM® Cortex-M3|Smoothieboard, Azteeg X5 mini, TH3D EZBoard
-  [STM32F103](https://www.st.com/en/microcontrollers-microprocessors/stm32f103.html)|ARM® Cortex-M3|Malyan M200, GTM32 Pro, MKS Robin, BTT SKR Mini
-  [STM32F401](https://www.st.com/en/microcontrollers-microprocessors/stm32f401.html)|ARM® Cortex-M4|ARMED, Rumba32, SKR Pro, Lerdge, FYSETC S6
-  [STM32F7x6](https://www.st.com/en/microcontrollers-microprocessors/stm32f7x6.html)|ARM® Cortex-M7|The Borg, RemRam V1
-  [SAMD51P20A](https://www.adafruit.com/product/4064)|ARM® Cortex-M4|Adafruit Grand Central M4
-  [Teensy 3.5](https://www.pjrc.com/store/teensy35.html)|ARM® Cortex-M4|
-  [Teensy 3.6](https://www.pjrc.com/store/teensy36.html)|ARM® Cortex-M4|
-  [Teensy 4.0](https://www.pjrc.com/store/teensy40.html)|ARM® Cortex-M7|
-  [Teensy 4.1](https://www.pjrc.com/store/teensy41.html)|ARM® Cortex-M7|
+A complete and up to date User Manual is published on [ADVi3++ Community Web Site](hhttps://community.advi3pp.com/c/user-manual). This manual contains:
 
-## Submitting Changes
+* [A list of features and of compatible printers](https://community.advi3pp.com/t/introduction/)
+* [How to Flash the firmware](https://community.advi3pp.com/t/how-to-flash/)
+* [LCD Touch Screen Guide](https://community.advi3pp.com/t/lcd-touch-screen-guide/)
+* [BLTouch Sensor installation instructions](https://community.advi3pp.com/t/add-a-bltouch-sensor/)
+* [Tuning instructions](https://community.advi3pp.com/t/tuning/)
+* [Default Settings used by ADVi3++](https://community.advi3pp.com/t/default-settings/)
+* [Starting and Ending G-Code](https://community.advi3pp.com/t/starting-and-ending-g-code/)
+* [Resources](https://community.advi3pp.com/t/resources/)
 
-- Submit **Bug Fixes** as Pull Requests to the ([bugfix-2.0.x](https://github.com/MarlinFirmware/Marlin/tree/bugfix-2.0.x)) branch.
-- Follow the [Coding Standards](http://marlinfw.org/docs/development/coding_standards.html) to gain points with the maintainers.
-- Please submit your questions and concerns to the [Issue Queue](https://github.com/MarlinFirmware/Marlin/issues).
+[Sponsors of the **ADVI3++** project](https://www.patreon.com/andrivet) have also access to advanced topics:
 
-## Marlin Support
+* [Build ADVi3++ from Sources](https://community.advi3pp.com/t/build-advi3-from-sources/)
+* [Alternative ways to Flash](https://community.advi3pp.com/t/alternative-ways-to-flash/)
 
-For best results getting help with configuration and troubleshooting, please use the following resources:
+## Support
 
-- [Marlin Documentation](http://marlinfw.org) - Official Marlin documentation
-- [Marlin Discord](https://discord.gg/n5NJ59y) - Discuss issues with Marlin users and developers
-- Facebook Group ["Marlin Firmware"](https://www.facebook.com/groups/1049718498464482/)
-- RepRap.org [Marlin Forum](http://forums.reprap.org/list.php?415)
-- [Tom's 3D Forums](https://forum.toms3d.org/)
-- Facebook Group ["Marlin Firmware for 3D Printers"](https://www.facebook.com/groups/3Dtechtalk/)
-- [Marlin Configuration](https://www.youtube.com/results?search_query=marlin+configuration) on YouTube
+You can get support from various resources:
 
-## Credits
+* The [User Manual](https://community.advi3pp.com/c/user-manual). You may be especially interested by the [Troubleshooting part](https://community.advi3pp.com/c/user-manual/troubleshooting).
+* The [ADVi3++ Community - Get Help](https://community.advi3pp.com/c/get-help). It is a forum, based on [Discourse](https://www.discourse.org). In particular, it includes a [Search page](https://community.advi3pp.com/search?expanded=true).
+I monitor this forum and try to reply to all requests, from sponsors and non-sponsors of the ADVi3++ project.
+* The [Facebook ADVi3++ Page](http://facebook.com/advi3pp). I use it mainly for announcement, but I reply from time to time.
+* The [Patreon Page](https://www.patreon.com/andrivet). it **was** the may to get help during the development of ADVi3++ version 4. But it **no more the case**. I will no more reply to support on Patreon page and will redirect everybody to [ADVi3++ Community](https://community.advi3pp.com/c/get-help), open to everybody.
 
-The current Marlin dev team consists of:
+# Wanhao Duplicator i3 Plus
 
- - Scott Lahteine [[@thinkyhead](https://github.com/thinkyhead)] - USA &nbsp; [Donate](http://www.thinkyhead.com/donate-to-marlin)
- - Roxanne Neufeld [[@Roxy-3D](https://github.com/Roxy-3D)] - USA
- - Chris Pepper [[@p3p](https://github.com/p3p)] - UK
- - Bob Kuhn [[@Bob-the-Kuhn](https://github.com/Bob-the-Kuhn)] - USA
- - Erik van der Zalm [[@ErikZalm](https://github.com/ErikZalm)] - Netherlands &nbsp; [![Flattr Erik](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=ErikZalm&url=https://github.com/MarlinFirmware/Marlin&title=Marlin&language=&tags=github&category=software)
+I have posted an article on my web site: [Wanhao Duplicator i3 Plus 3D Printer - Everything I know about the Wanhao Duplicator i3 Plus 3D printer and its clones](http://sebastien.andrivet.com/en/posts/). It contains several technical information about the printer internals.
 
-## License
+# Other projects
 
-Marlin is published under the [GPL license](/LICENSE) because we believe in open development. The GPL comes with both rights and obligations. Whether you use Marlin firmware as the driver for your open or closed-source product, you must keep Marlin open, and you must provide your compatible Marlin source code to end users upon request. The most straightforward way to comply with the Marlin license is to make a fork of Marlin on Github, perform your modifications, and direct users to your modified fork.
+There are some other projects (I am aware of) on a similar topic:
 
-While we can't prevent the use of this code in products (3D printers, CNC, etc.) that are closed source or crippled by a patent, we would prefer that you choose another firmware or, better yet, make your own.
+- [i3plus+](https://github.com/Silverquark/i3PlusPlus) from Leo Lüker (Silverquark): a modified version of the Marlin 1.1.2 firmware for the WANHAO Duplicator i3 Plus 3d printer. **Important**: No more actively developed (that's why I created ADVi3++).
+
+- [i3extra](https://github.com/nepeee/i3Extra) from Nemcsik Péter: a modified version of the Marlin 1.1.0-RC8 firmware and updated LCD resources. **Important**: this project is no more maintained.
+
+- [Wanhao-I3-Plus](https://github.com/jamesarm97/Wanhao-I3-Plus) by James Armstrong: Sources of version 2.18 of Mainboard firmware and LCD resources.
+
+- [Wanhao-I3-Plus](https://github.com/garychen99/Duplicator-i3-plus) by WANHAO 3D PRINTER: Official sources of version 2.1.803 of Mainboard firmware and LCD resources.
+
+# Thanks
+
+Thanks to [Dylan xKoldx](https://github.com/xKoldx/ADVi3pp-Marlin) and [weidercs](https://github.com/weidercs/ADVi3pp-Marlin) for their forks supporting BLTouch. Thanks to Matt Cowell [SureshotM6](https://github.com/SureshotM6/ADVi3pp-Marlin) for the fork supporting M600 and head parking.
+
+Thanks to Leo Lüker (Silverquark) for his [i3plus+ project](https://github.com/Silverquark/i3PlusPlus). I take many ideas from his code. But the project is no more active and I do not like the screens (personal taste) so I have created the **ADVi3++** fork. It is technically a fork of Marlin, not of i3plus+.
+
+Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
+
+# Copyright
+
+## ADVi3++
+
+* Copyright &copy; 2017-2019 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
+* Copyright &copy; 2016-2019 [MarlinFirmware](https://github.com/MarlinFirmware/Marlin)
+* Based on Sprinter and grbl.
+* Copyright &copy; 2011 Camiel Gubbels / Erik van der Zalm
+
+## ADVi3++ LCD Panels
+
+* Copyright &copy; 2017-2019 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
+
+## ADVi3++ User Manual
+
+* Copyright &copy; 2018-2019 Sebastien Andrivet
+
+# License
+
+## ADVi3++
+
+![](https://www.gnu.org/graphics/gplv3-127x51.png)
+
+> This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+>
+> This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+>
+> You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+## ADVi3++ LCD Panels
+
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />ADVi3++ LCD Panels are licenses under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
+## ADVi3++ User Manual
+
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This manual is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
