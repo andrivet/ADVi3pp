@@ -29,16 +29,45 @@
   #error "Oops! Select 'Arduino/Genuino Mega or Mega 2560' in 'Tools > Board.'"
 #endif
 
-#define BOARD_INFO_NAME "Duplicator i3 Plus"
+#if MB(DUPLICATOR_I3_PLUS_51)
+#define BOARD_INFO_NAME         "Duplicator i3 Plus"
+    #define DEFAULT_MACHINE_NAME    "i3 Plus"
+#elif MB(DUPLICATOR_I3_PLUS_52C)
+#define BOARD_INFO_NAME         "Aldi Balco 3D HE180021"
+    #define DEFAULT_MACHINE_NAME    "Balco 3D"
+#elif MB(DUPLICATOR_I3_PLUS_54)
+#define BOARD_INFO_NAME         "Duplicator i3 Plus Mark II"
+    #define DEFAULT_MACHINE_NAME    "i3 Plus M2"
+#else
+#error "Unknown i3 Plus mainboard"
+#endif
 
 //
 // Limit Switches
 //
-#define X_STOP_PIN                            54  // PF0 / A0
-#define Y_STOP_PIN                            24  // PA2 / AD2
-#define Z_MIN_PIN                             23  // PA1 / AD1
-#define Z_MAX_PIN                             25  // PA3 / AD3
-#define SERVO0_PIN                            40  // PG1 / !RD
+#define X_STOP_PIN              54   // PF0 / ADC0 - A0
+#define Y_STOP_PIN              24   // PA2 / AD2
+
+#if MB(DUPLICATOR_I3_PLUS_51)
+    #ifdef ADVi3PP_BLTOUCH
+        #define Z_STOP_PIN      25   // PA3 / AD3
+        #define Z_MIN_PROBE_PIN 25   // PA3 / AD3
+        #define SERVO0_PIN      40   // PG1 / !RD
+    #else
+        #define Z_STOP_PIN      23   // PA1 / AD1
+    #endif
+#elif MB(DUPLICATOR_I3_PLUS_52C)
+    #define Z_STOP_PIN           6   // PH3 / PWM6
+    #define Z_MIN_PROBE_PIN      6   // PH3 / PCINT8
+    #ifdef ADVi3PP_BLTOUCH
+        #define SERVO0_PIN      40   // PG1 / !RD
+    #endif
+#elif MB(DUPLICATOR_I3_PLUS_54)
+    #define Z_STOP_PIN           6   // PH3 / PCINT8
+    #define Z_MIN_PROBE_PIN      6   // PH3 / PCINT8
+#else
+#error "Unknown i3 Plus mainboard"
+#endif
 
 //
 // Steppers
@@ -47,14 +76,19 @@
 #define X_DIR_PIN                             62  // PK0 / A8
 #define X_ENABLE_PIN                          60  // PF6 / A6
 
-#define Y_STEP_PIN                            64  // PK2 / A10
-#define Y_DIR_PIN                             65  // PK3 / A11
-#define Y_ENABLE_PIN                          63  // PK1 / A9
+#define Y_STEP_PIN         64   // PK2 / A10
+#define Y_DIR_PIN          65   // PK3 / A11
+#if MB(DUPLICATOR_I3_PLUS_51) || MB(DUPLICATOR_I3_PLUS_52C)
+    #define Y_ENABLE_PIN        63   // PK1 / A9
+#elif MB(DUPLICATOR_I3_PLUS_54)
+    #define Y_ENABLE_PIN        2    // PE4 / INT4
+#else
+    #error "Unknown i3 Plus mainboard"
+#endif
 
-#define Z_STEP_PIN                            67  // PK5 / A13
-#define Z_DIR_PIN                             69  // PK7 / A15
-#define Z_ENABLE_PIN                          66  // PK4 / A12
-#define Z_MIN_PROBE_PIN                       25  // PA3 / AD3
+#define Z_STEP_PIN         67   // PK5 / A13
+#define Z_DIR_PIN          69   // PK7 / A15
+#define Z_ENABLE_PIN       66   // PK4 / A12
 
 #define E0_STEP_PIN                           58  // PF4 / A4
 #define E0_DIR_PIN                            59  // PF5 / A5

@@ -183,7 +183,7 @@
   #include "ramps/pins_FYSETC_F6_13.h"          // ATmega2560                             env:FYSETC_F6_13
 #elif MB(FYSETC_F6_14)
   #include "ramps/pins_FYSETC_F6_14.h"          // ATmega2560                             env:FYSETC_F6_14
-#elif MB(DUPLICATOR_I3_PLUS)
+#elif MB(DUPLICATOR_I3_PLUS_51) || MB(DUPLICATOR_I3_PLUS_52C) || MB(DUPLICATOR_I3_PLUS_54)
   #include "ramps/pins_DUPLICATOR_I3_PLUS.h"    // ATmega2560                             env:mega2560
 #elif MB(VORON)
   #include "ramps/pins_VORON.h"                 // ATmega2560                             env:mega2560
