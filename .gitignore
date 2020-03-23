@@ -180,3 +180,6 @@ vc-fileutils.settings
 #Python
 __pycache__
 .python-version
+
+#ADVi3++
+ArduinoCore/
