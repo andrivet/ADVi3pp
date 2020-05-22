@@ -2269,7 +2269,7 @@
 // Sources should be installed in 'src/lcd/extensible_ui'.
 //
 #define EXTENSIBLE_UI // adi3++
-#define EXTUI_EXAMPLE
+//#define EXTUI_EXAMPLE
 
 #if ENABLED(EXTENSIBLE_UI)
   //#define EXTUI_LOCAL_BEEPER // Enables use of local Beeper pin with external display
