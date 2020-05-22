@@ -1,49 +1,33 @@
-cmake_minimum_required(VERSION 3.2)
+# !!! WARNING !!! AUTO-GENERATED FILE, PLEASE DO NOT MODIFY IT AND USE
+# https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+#
+# If you need to override existing CMake configuration or add extra,
+# please create `CMakeListsUser.txt` in the root of project.
+# The `CMakeListsUser.txt` will not be overwritten by PlatformIO.
 
-project("ADVi3pp")
+cmake_minimum_required(VERSION 3.13)
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
+
+project("ADVi3pp" C CXX)
 
 include(CMakeListsPrivate.txt)
 
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/CMakeListsUser.txt)
+include(CMakeListsUser.txt)
+endif()
+
 add_custom_target(
-    ADVi3++_5.1 ALL
-    COMMAND ${PLATFORMIO_CMD} -f -c clion run $<$<CONFIG:Verbose>:--verbose> -e advi3pp-51
+    Production ALL
+    COMMAND platformio -c clion run "$<$<NOT:$<CONFIG:All>>:-e${CMAKE_BUILD_TYPE}>"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_custom_target(
-    ADVi3++_5.1_BLTouch ALL
-    COMMAND ${PLATFORMIO_CMD} -f -c clion run $<$<CONFIG:Verbose>:--verbose> -e advi3pp-51-bltouch
+    Debug ALL
+    COMMAND platformio -c clion run --target debug "$<$<NOT:$<CONFIG:All>>:-e${CMAKE_BUILD_TYPE}>"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_custom_target(
-    ADVi3++_5.1_BLTouch3 ALL
-    COMMAND ${PLATFORMIO_CMD} -f -c clion run $<$<CONFIG:Verbose>:--verbose> -e advi3pp-51-bltouch3
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-add_custom_target(
-    ADVi3++_5.2C ALL
-    COMMAND ${PLATFORMIO_CMD} -f -c clion run $<$<CONFIG:Verbose>:--verbose> -e advi3pp-52c
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-add_custom_target(
-    ADVi3++_5.2C_BLTouch ALL
-    COMMAND ${PLATFORMIO_CMD} -f -c clion run $<$<CONFIG:Verbose>:--verbose> -e advi3pp-52c-bltouch
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-add_custom_target(
-    ADVi3++_5.2C_BLTouch3 ALL
-    COMMAND ${PLATFORMIO_CMD} -f -c clion run $<$<CONFIG:Verbose>:--verbose> -e advi3pp-52c-bltouch3
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-add_custom_target(
-    ADVi3++_5.4 ALL
-    COMMAND ${PLATFORMIO_CMD} -f -c clion run $<$<CONFIG:Verbose>:--verbose> -e advi3pp-54
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-add_executable(${PROJECT_NAME} ${SRC_LIST})
+add_executable(Z_DUMMY_TARGET ${SRC_LIST})
