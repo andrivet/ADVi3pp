@@ -128,11 +128,11 @@
 // Choose the name from boards.h that matches your setup
 // @advi3++: Wanhao Duplicator i3 Plus motherboards
 #if defined(ADVi3PP_54)
-#define MOTHERBOARD BOARD_DUPLICATOR_I3_PLUS_51
+#define MOTHERBOARD BOARD_ADVI3PP_I3_PLUS_51
 #elif defined(ADVi3PP_52C)
-#define MOTHERBOARD BOARD_DUPLICATOR_I3_PLUS_52C
+#define MOTHERBOARD BOARD_ADVI3PP_I3_PLUS_52C
 #else
-#define MOTHERBOARD BOARD_DUPLICATOR_I3_PLUS_54
+#define MOTHERBOARD BOARD_ADVI3PP_I3_PLUS_54
 #endif
 
 // Name displayed in the LCD "Ready" message and Info menu
@@ -2268,7 +2268,8 @@
 // Third-party or vendor-customized controller interfaces.
 // Sources should be installed in 'src/lcd/extensible_ui'.
 //
-#define EXTENSIBLE_UI // adi3++
+#define EXTENSIBLE_UI // @adi3++
+#define ADVi3PP_UI // @advi3++
 //#define EXTUI_EXAMPLE
 
 #if ENABLED(EXTENSIBLE_UI)
