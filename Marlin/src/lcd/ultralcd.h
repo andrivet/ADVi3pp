@@ -424,12 +424,6 @@ public:
 
       static uint8_t lcd_status_update_delay;
 
-      #if HAS_LCD_CONTRAST
-        static int16_t contrast;
-        static void set_contrast(const int16_t value);
-        FORCE_INLINE static void refresh_contrast() { set_contrast(contrast); }
-      #endif
-
       #if BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
         static millis_t next_filament_display;
       #endif
@@ -462,6 +456,13 @@ public:
       static bool drawing_screen, first_page;
     #else
       static constexpr bool drawing_screen = false, first_page = true;
+    #endif
+
+    // @advi3++ PR candidate
+    #if HAS_LCD_CONTRAST
+        static int16_t contrast;
+        static void set_contrast(const int16_t value);
+        FORCE_INLINE static void refresh_contrast() { set_contrast(contrast); }
     #endif
 
     static bool get_blink();
