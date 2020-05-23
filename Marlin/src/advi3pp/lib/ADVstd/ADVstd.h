@@ -20,14 +20,14 @@
 
 #pragma once
 
+using size_t = decltype(sizeof(int));
+using nullptr_t = decltype(nullptr);
+
 // Default placement new
 inline void* operator new(size_t, void* p) noexcept { return p; }
 inline void* operator new[](size_t, void* p) noexcept { return p; }
 
 namespace adv {
-
-using size_t = decltype(sizeof(int));
-using nullptr_t = decltype(nullptr);
 
 // Not in the standard, but useful
 template <typename T, size_t N>

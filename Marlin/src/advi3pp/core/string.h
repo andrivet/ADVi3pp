@@ -1,7 +1,7 @@
 /**
- * ADVstring - String without dynamic allocation and a fixed maximum size
+ * ADVi3++ Firmware For Wanhao Duplicator i3 Plus (based on Marlin 2)
  *
- * Copyright (C) 2018 Sebastien Andrivet [https://github.com/andrivet/]
+ * Copyright (C) 2017-2020 Sebastien Andrivet [https://github.com/andrivet/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,13 @@
 #pragma once
 
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "duration_t.h"
+#include "../../libs/duration_t.h"
+#include "flash_char.h"
 
-
-namespace advi3pp {
+namespace ADVi3pp {
 
 // --------------------------------------------------------------------
 // String without dynamic allocation and a fixed maximum size
@@ -385,7 +386,4 @@ template<size_t L> bool ADVString<L>::has_changed(bool reset)
     return dirty;
 }
 
-// --------------------------------------------------------------------
-
 }
-
