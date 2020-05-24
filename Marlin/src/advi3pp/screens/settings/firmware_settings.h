@@ -31,16 +31,12 @@ private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_save_command();
-    void thermal_protection_command();
     void runout_sensor_command();
     void send_usb_baudrate() const;
     void send_features() const;
     void baudrate_minus_command();
     void baudrate_plus_command();
     size_t usb_baudrate_index(uint32_t baudrate);
-
-    uint32_t usb_baudrate_ = BAUDRATE;
-    Feature features_ = Feature::BuzzOnPress | Feature::Dimming | Feature::ThermalProtection;
 
     friend Parent;
 };

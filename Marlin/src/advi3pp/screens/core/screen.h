@@ -55,7 +55,6 @@ protected:
     void do_save_command();
     void do_back_command();
     void invalid(KeyValue value);
-    void save_settings() const;
 
 private:
     void do_write(EepromWrite& eeprom) const {}
@@ -107,12 +106,6 @@ void Screen<Self>::show(ShowOptions options)
     Page page = prepare_page();
     if(page != Page::None)
         pages.show_page(page, options);
-}
-
-template<typename Self>
-void Screen<Self>::save_settings() const
-{
-    ExtUI::injectCommands_P(PSTR("M500"));
 }
 
 template<typename Self>

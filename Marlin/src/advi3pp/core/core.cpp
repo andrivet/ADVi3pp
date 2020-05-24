@@ -129,16 +129,24 @@ void Facade::on_status_changed(const char* msg)
 {
 }
 
+void Facade::on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+{
+    settings.write(write, eeprom_index, working_crc);
+}
+
+void Facade::on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+{
+    settings.read(read, eeprom_index, working_crc);
+}
+
+uint16_t Facade::on_sizeof_settings()
+{
+    return settings.size_of();
+}
+
 void Facade::on_factory_reset()
 {
-}
-
-void Facade::on_store_settings(char* buff)
-{
-}
-
-void Facade::on_load_settings(const char* buff)
-{
+    settings.reset();
 }
 
 void Facade::on_settings_written(bool success)

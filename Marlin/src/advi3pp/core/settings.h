@@ -21,6 +21,9 @@
 #pragma once
 
 #include <stdint.h>
+#include "../../lcd/extui/ui_api.h"
+#include "enums.h"
+#include "eeprom.h"
 
 namespace ADVi3pp {
 
@@ -35,9 +38,18 @@ struct Preset
 enum class TemperatureKind: uint8_t { Bed, Hotend };
 constexpr const unsigned nb_temperatures = 2;
 
+
 struct Settings
 {
+    uint16_t size_of() const;
+    bool write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    bool read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    void reset();
+
     void save();
+
+private:
+    Feature features_ = Feature::None;
 };
 
 extern Settings settings;

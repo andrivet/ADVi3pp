@@ -103,7 +103,11 @@ void onStoreSettings(char *buff)
     // Example:
     //  static_assert(sizeof(myDataStruct) <= ExtUI::eeprom_data_size);
     //  memcpy(buff, &myDataStruct, sizeof(myDataStruct));
-    ADVi3pp::Facade::on_store_settings(buff);
+}
+
+void onStoreSettingsEx(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+{
+    ADVi3pp::Facade::on_store_settings(write, eeprom_index, working_crc);
 }
 
 void onLoadSettings(const char *buff)
@@ -115,7 +119,16 @@ void onLoadSettings(const char *buff)
     // Example:
     //  static_assert(sizeof(myDataStruct) <= ExtUI::eeprom_data_size);
     //  memcpy(&myDataStruct, buff, sizeof(myDataStruct));
-    ADVi3pp::Facade::on_load_settings(buff);
+}
+
+void onLoadSettingsEx(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+{
+    ADVi3pp::Facade::on_load_settings(read, eeprom_index, working_crc);
+}
+
+uint16_t getSizeofSettings()
+{
+    return ADVi3pp::Facade::on_sizeof_settings();
 }
 
 void onConfigurationStoreWritten(bool success)

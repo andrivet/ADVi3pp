@@ -24,8 +24,8 @@
 
 namespace ADVi3pp {
 
-using eeprom_write = void (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
-using eeprom_read  = void (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
+using eeprom_write = ExtUI::eeprom_write;
+using eeprom_read  = ExtUI::eeprom_read;
 
 //! EEPROM writer: utility class to write values into EEPROM
 struct EepromWrite
