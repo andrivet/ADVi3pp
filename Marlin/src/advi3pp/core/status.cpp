@@ -35,4 +35,9 @@ void Status::set(const FlashChar* message)
     // TODO
 }
 
+void Status::set(const char* message)
+{
+    // TODO
+}
+
 }

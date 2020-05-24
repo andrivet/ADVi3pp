@@ -85,8 +85,11 @@ void Facade::on_idle()
     graphs.update();
 }
 
-void Facade::on_killed(PGM_P const error, PGM_P const component)
+void Facade::on_killed(PGM_P error, PGM_P component)
 {
+    status.set(error);
+    core.send_lcd_serial_data();
+    pages.show_page(Page::Killed);
 }
 
 void Facade::on_media_inserted()
@@ -155,6 +158,8 @@ void Facade::on_settings_written(bool success)
 
 void Facade::on_settings_loaded(bool success)
 {
+    if(!success)
+        settings.mismatch();
 }
 
 void Facade::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval)
@@ -180,14 +185,12 @@ void Core::send_gplv3_7b_notice()
     SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2020 Sebastien Andrivet");
 }
 
-//! Display the Boot animation (page)
+//! Display the Boot animation or the EEPROM settings mismatch page
 void Core::show_boot_page()
 {
+    versions.send_versions();
     if(!eeprom_mismatch.check())
         return;
-
-    versions.send_versions();
-
     pages.show_page(Page::Boot, ShowOptions::None);
 }
 

@@ -45,8 +45,10 @@ struct Settings
     bool write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     bool read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset();
+    void mismatch();
 
-    void save();
+    void save(); // Save to EEPROM (i.e. M500)
+    void restore();
 
 private:
     Feature features_ = Feature::None;

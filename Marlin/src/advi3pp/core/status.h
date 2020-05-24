@@ -30,6 +30,7 @@ struct Status
 {
     void reset();
     void set(const FlashChar* message);
+    void set(const char* message);
 };
 
 extern Status status;

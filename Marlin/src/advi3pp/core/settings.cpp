@@ -25,6 +25,7 @@
 #include "../screens/controls/preheat.h"
 #include "../screens/settings/sensor_settings.h"
 #include "../screens/settings/pid_settings.h"
+#include "../screens/settings/eeprom_mismatch.h"
 
 namespace ADVi3pp {
 
@@ -86,9 +87,26 @@ uint16_t Settings::size_of() const
             sizeof(features_);
 }
 
+//! Inform the user that the EEPROM data are not compatible and have been reset
+void Settings::mismatch()
+{
+    // It is not possible to show the Mismatch page now since nothing is yet initialized.
+    // It will be done in the setup method.
+    eeprom_mismatch.set_mismatch();
+}
+
+//! Save the current settings permanently in EEPROM memory
 void Settings::save()
 {
+    eeprom_mismatch.reset_mismatch();
     ExtUI::injectCommands_P(PSTR("M500"));
+}
+
+//! Restore settings from EEPROM memory
+void Settings::restore()
+{
+    // Note: Previously, M420 (bed leveling compensation) was reset by M501. It is no more the case.
+    ExtUI::injectCommands_P(PSTR("M501"));
 }
 
 }

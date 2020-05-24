@@ -28,7 +28,7 @@ struct Facade
 {
     static void on_startup();
     static void on_idle();
-    static void on_killed(PGM_P const error, PGM_P const component);
+    static void on_killed(PGM_P error, PGM_P component);
     static void on_media_inserted();
     static void on_media_error();
     static void on_media_removed();
