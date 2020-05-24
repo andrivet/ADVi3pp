@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+PidTuning pid_tuning;
 
 }

@@ -54,4 +54,6 @@ private:
     friend Parent;
 };
 
+extern PrintSettings print_settings;
+
 }

@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+ManualLeveling manual_leveling;
 
 }

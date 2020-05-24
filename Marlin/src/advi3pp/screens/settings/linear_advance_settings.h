@@ -34,4 +34,6 @@ private:
     friend Parent;
 };
 
+extern LinearAdvanceSettings linear_advance_settings;
+
 }

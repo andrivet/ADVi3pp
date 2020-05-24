@@ -23,7 +23,7 @@
 #include "../../core/background_task.h"
 #include "../../core/string.h"
 #include "../../core/dgus.h"
-#include "screen.h"
+#include "../core/screen.h"
 
 namespace ADVi3pp {
 
@@ -52,6 +52,8 @@ private:
 
     friend Parent;
 };
+
+extern Wait wait;
 
 // --------------------------------------------------------------------
 

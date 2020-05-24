@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+FirmwareSettings firmware_settings;
 
 }

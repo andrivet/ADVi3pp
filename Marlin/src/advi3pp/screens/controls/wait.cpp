@@ -22,6 +22,7 @@
 
 namespace ADVi3pp {
 
+Wait wait;
 
 }
 

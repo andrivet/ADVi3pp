@@ -45,4 +45,6 @@ private:
     friend Parent;
 };
 
+extern FirmwareSettings firmware_settings;
+
 }

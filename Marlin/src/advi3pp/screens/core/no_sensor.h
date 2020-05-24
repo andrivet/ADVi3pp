@@ -33,4 +33,6 @@ private:
     friend Parent;
 };
 
+extern NoSensor no_sensor;
+
 }

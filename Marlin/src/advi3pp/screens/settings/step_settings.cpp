@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+StepSettings steps_settings;
 
 }

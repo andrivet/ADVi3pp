@@ -51,4 +51,6 @@ private:
     friend Parent;
 };
 
+extern SdCard sd_card;
+
 }

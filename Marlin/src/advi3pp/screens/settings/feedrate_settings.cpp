@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+FeedrateSettings feedrates_settings;
 
 }

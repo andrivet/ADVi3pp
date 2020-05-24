@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+ExtruderTuning extruder_tuning;
 
 }

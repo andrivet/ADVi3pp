@@ -74,4 +74,6 @@ private:
     friend Parent;
 };
 
+extern PidSettings pid_settings;
+
 }

@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+PidSettings pid_settings;
 
 }

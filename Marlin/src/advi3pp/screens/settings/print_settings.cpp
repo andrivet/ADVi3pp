@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+PrintSettings print_settings;
 
 }

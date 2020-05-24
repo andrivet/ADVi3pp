@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+NoSensor no_sensor;
 
 }

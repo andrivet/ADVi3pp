@@ -34,5 +34,7 @@ private:
     friend Parent;
 };
 
+extern FactoryReset factory_reset;
+
 }
 

@@ -49,4 +49,6 @@ private:
 };
 #endif
 
+extern SensorTuning sensor_tuning;
+
 }

@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+JerkSettings jerks_settings;
 
 }

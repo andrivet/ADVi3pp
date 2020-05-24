@@ -34,4 +34,6 @@ private:
     friend Parent;
 };
 
+extern StepSettings steps_settings;
+
 }

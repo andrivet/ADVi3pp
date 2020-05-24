@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+SensorSettings sensor_settings;
 
 }

@@ -52,4 +52,6 @@ private:
     friend Parent;
 };
 
+extern Move move;
+
 }

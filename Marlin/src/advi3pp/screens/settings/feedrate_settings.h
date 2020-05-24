@@ -34,5 +34,7 @@ private:
     friend Parent;
 };
 
+extern FeedrateSettings feedrates_settings;
+
 }
 

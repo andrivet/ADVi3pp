@@ -69,4 +69,6 @@ private:
 };
 #endif
 
+extern SensorZHeight sensor_z_height;
+
 }

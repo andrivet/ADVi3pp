@@ -33,4 +33,6 @@ private:
     friend Parent;
 };
 
+extern Copyrights copyrights;
+
 }

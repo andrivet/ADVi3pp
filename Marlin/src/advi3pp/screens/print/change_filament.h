@@ -33,4 +33,6 @@ private:
     friend Parent;
 };
 
+extern ChangeFilament change_filament;
+
 }

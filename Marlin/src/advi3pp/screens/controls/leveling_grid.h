@@ -44,4 +44,6 @@ private:
 };
 #endif
 
+extern LevelingGrid leveling_grid;
+
 }

@@ -43,4 +43,6 @@ private:
     friend Parent;
 };
 
+extern Print print;
+
 }

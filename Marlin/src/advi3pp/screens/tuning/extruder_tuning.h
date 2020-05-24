@@ -47,4 +47,6 @@ private:
     friend Parent;
 };
 
+extern ExtruderTuning extruder_tuning;
+
 }

@@ -71,4 +71,6 @@ private:
 };
 #endif
 
+extern SensorSettings sensor_settings;
+
 }

@@ -46,4 +46,6 @@ private:
     friend Parent;
 };
 
+extern LoadUnload load_unload;
+
 }

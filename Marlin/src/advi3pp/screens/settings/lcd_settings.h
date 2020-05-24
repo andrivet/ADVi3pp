@@ -41,4 +41,6 @@ private:
     friend Parent;
 };
 
+extern LcdSettings lcd_settings;
+
 }

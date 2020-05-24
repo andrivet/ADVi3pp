@@ -40,4 +40,6 @@ private:
     friend Parent;
 };
 
+extern AdvancedPause advanced_pause;
+
 }

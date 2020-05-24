@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+LinearAdvanceSettings linear_advance_settings;
 
 }

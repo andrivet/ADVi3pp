@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+SensorZHeight sensor_z_height;
 
 }

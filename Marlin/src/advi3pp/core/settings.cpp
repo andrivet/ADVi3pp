@@ -22,4 +22,6 @@
 
 namespace ADVi3pp {
 
+Settings settings;
+
 }

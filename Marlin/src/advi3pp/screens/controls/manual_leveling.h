@@ -44,5 +44,6 @@ private:
 
     friend Parent;
 };
+extern ManualLeveling manual_leveling;
 
 }

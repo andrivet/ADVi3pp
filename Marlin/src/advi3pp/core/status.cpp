@@ -18,8 +18,6 @@
  *
  */
 
-#pragma once
-
 #include "status.h"
 
 namespace ADVi3pp {

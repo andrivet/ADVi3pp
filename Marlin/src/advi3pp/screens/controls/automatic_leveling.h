@@ -51,4 +51,6 @@ private:
 };
 #endif
 
+extern AutomaticLeveling automatic_leveling;
+
 }

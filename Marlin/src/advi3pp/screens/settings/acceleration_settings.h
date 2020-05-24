@@ -34,4 +34,6 @@ private:
     friend Parent;
 };
 
+extern AccelerationSettings accelerations_settings;
+
 }

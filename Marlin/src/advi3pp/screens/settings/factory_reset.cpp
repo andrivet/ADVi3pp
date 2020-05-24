@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+FactoryReset factory_reset;
 
 }

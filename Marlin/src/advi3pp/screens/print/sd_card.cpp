@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+SdCard sd_card;
 
 }

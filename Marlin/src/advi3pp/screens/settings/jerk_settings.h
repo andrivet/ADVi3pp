@@ -34,4 +34,6 @@ private:
     friend Parent;
 };
 
+extern JerkSettings jerks_settings;
+
 }

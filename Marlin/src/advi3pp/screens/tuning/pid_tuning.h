@@ -46,4 +46,6 @@ private:
     friend Parent;
 };
 
+extern PidTuning pid_tuning;
+
 }

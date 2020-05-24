@@ -22,5 +22,6 @@
 
 namespace ADVi3pp {
 
+AccelerationSettings accelerations_settings;
 
 }

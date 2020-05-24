@@ -38,4 +38,6 @@ private:
     friend Parent;
 };
 
+extern Diagnosis diagnosis;
+
 }
