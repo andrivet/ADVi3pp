@@ -131,7 +131,7 @@ enum class Variable: uint16_t
 enum class Action: uint16_t
 {
     // 4 - Actions
-    Screen                  = 0x0400,
+    Controls                = 0x0400,
     PrintCommand            = 0x0401,
     Wait                    = 0x0402,
     LoadUnload              = 0x0403,
@@ -161,8 +161,8 @@ enum class Action: uint16_t
     SensorZHeight           = 0x041B,
     ChangeFilament          = 0x041C,
     EEPROMMismatch          = 0x041D,
-    Sponsors                = 0x041E,
-    LinearAdvanceTuning     = 0x041F,
+    //                      = 0x041E,
+    //                      = 0x041F,
     LinearAdvanceSettings   = 0x0420,
     Diagnosis               = 0x0421,
     Temperatures            = 0x0422,
