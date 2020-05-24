@@ -65,10 +65,10 @@ uint8_t Dimming::get_adjusted_brightness()
     int16_t brightness = ui.contrast;
     if(dimming_)
         brightness = brightness * dimming_ratio / 100;
-    if(brightness < brightness_min)
-        brightness = brightness_min;
-    if(brightness > brightness_max)
-        brightness = brightness_max;
+    if(brightness < LCD_CONTRAST_MIN)
+        brightness = LCD_CONTRAST_MIN;
+    if(brightness > LCD_CONTRAST_MAX)
+        brightness = LCD_CONTRAST_MAX;
     return static_cast<uint8_t>(brightness);
 }
 

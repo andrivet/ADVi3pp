@@ -42,8 +42,6 @@ private:
     uint8_t get_adjusted_brightness();
 
 private:
-    static constexpr int8_t brightness_min = LCD_CONTRAST_MIN; //!< Minimum value for brightness
-    static constexpr int8_t brightness_max = LCD_CONTRAST_MAX; //!< Maximum value for brightness
     static constexpr uint8_t dimming_ratio = 5; //!< Ratio (in percent) between normal and dimmed LCD panel
     static constexpr uint16_t dimming_delay = 5 * 60; //!< Delay before dimming the LCD panel (5 minutes)
 
