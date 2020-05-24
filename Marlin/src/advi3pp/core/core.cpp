@@ -25,8 +25,41 @@
 #include "status.h"
 #include "pages.h"
 #include "background_task.h"
+#include "dgus.h"
+#include "buzzer.h"
+#include "../screens/core/no_sensor.h"
+#include "../screens/controls/controls.h"
+#include "../screens/controls/wait.h"
+#include "../screens/controls/load_unload.h"
+#include "../screens/controls/preheat.h"
+#include "../screens/controls/move.h"
+#include "../screens/controls/manual_leveling.h"
+#include "../screens/controls/automatic_leveling.h"
+#include "../screens/controls/leveling_grid.h"
+#include "../screens/print/print.h"
+#include "../screens/print/sd_card.h"
+#include "../screens/print/change_filament.h"
+#include "../screens/print/temperatures.h"
+#include "../screens/tuning/extruder_tuning.h"
+#include "../screens/tuning/pid_tuning.h"
+#include "../screens/tuning/sensor_tuning.h"
+#include "../screens/tuning/sensor_z_height.h"
+#include "../screens/tuning/diagnosis.h"
 #include "../screens/settings/eeprom_mismatch.h"
+#include "../screens/settings/factory_reset.h"
+#include "../screens/settings/sensor_settings.h"
+#include "../screens/settings/firmware_settings.h"
+#include "../screens/settings/lcd_settings.h"
+#include "../screens/settings/print_settings.h"
+#include "../screens/settings/pid_settings.h"
+#include "../screens/settings/step_settings.h"
+#include "../screens/settings/feedrate_settings.h"
+#include "../screens/settings/acceleration_settings.h"
+#include "../screens/settings/jerk_settings.h"
+#include "../screens/settings/linear_advance_settings.h"
 #include "../screens/info/versions.h"
+#include "../screens/info/statistics.h"
+#include "../screens/info/copyrights.h"
 
 namespace ADVi3pp {
 
@@ -44,11 +77,11 @@ void Facade::on_startup()
 
 void Facade::on_idle()
 {
-    core.read_lcd_serial();
+    core.receive_lcd_serial_data();
     dimming.check();
     task.execute_background_task();
     core.update_progress();
-    core.send_status_data();
+    core.send_lcd_serial_data();
     graphs.update();
 }
 
@@ -153,19 +186,155 @@ void Core::show_boot_page()
 //! Update the progress bar if the printer is printing for the SD card
 void Core::update_progress()
 {
-    // TODO
+    // TODO Not sure it is necessary
 }
 
 //! Read a frame from the LCD and act accordingly.
-void Core::read_lcd_serial()
+void Core::receive_lcd_serial_data()
 {
-    // TODO
+    // Format of the frame (example):
+    // header | length | command | action | nb words | key code
+    // -------|--------|---------|--------|----------|---------
+    //      2 |      1 |       1 |      2 |        1 |        2   bytes
+    //  5A A5 |     06 |      83 |  04 60 |       01 |    01 50
+
+    IncomingFrame frame;
+    if(!frame.available())
+        return;
+
+    if(!frame.receive())
+    {
+        Log::error() << F("reading incoming Frame") << Log::endl();
+        return;
+    }
+
+    buzzer.buzz_on_press();
+    dimming.reset();
+
+    Command command{}; Action action{}; Uint8 nb_words; Uint16 value;
+    frame >> command >> action >> nb_words >> value;
+    auto key_value = static_cast<KeyValue>(value.word);
+
+    Log::log() << F("=R=> ") << nb_words.byte << F(" words, Action = 0x") << static_cast<uint16_t>(action)
+               << F(", KeyValue = 0x") << value.word << Log::endl();
+
+    switch(action)
+    {
+        case Action::Controls:              controls.handle(key_value); break;
+        case Action::PrintCommand:          print.handle(key_value); break;
+        case Action::Wait:                  wait.handle(key_value); break;
+        case Action::LoadUnload:            load_unload.handle(key_value); break;
+        case Action::Preheat:               preheat.handle(key_value); break;
+        case Action::Move:                  move.handle(key_value); break;
+        case Action::SdCard:                sd_card.handle(key_value); break;
+        case Action::FactoryReset:          factory_reset.handle(key_value); break;
+        case Action::ManualLeveling:        manual_leveling.handle(key_value); break;
+        case Action::ExtruderTuning:        extruder_tuning.handle(key_value); break;
+        case Action::PidTuning:             pid_tuning.handle(key_value); break;
+        case Action::SensorSettings:        sensor_settings.handle(key_value); break;
+        case Action::Firmware:              firmware_settings.handle(key_value); break;
+        case Action::NoSensor:              no_sensor.handle(key_value); break;
+        case Action::LCD:                   lcd_settings.handle(key_value); break;
+        case Action::Statistics:            statistics.handle(key_value); break;
+        case Action::Versions:              versions.handle(key_value); break;
+        case Action::PrintSettings:         print_settings.handle(key_value); break;
+        case Action::PIDSettings:           pid_settings.handle(key_value); break;
+        case Action::StepsSettings:         steps_settings.handle(key_value); break;
+        case Action::FeedrateSettings:      feedrates_settings.handle(key_value); break;
+        case Action::AccelerationSettings:  accelerations_settings.handle(key_value); break;
+        case Action::JerkSettings:          jerks_settings.handle(key_value); break;
+        case Action::Copyrights:            copyrights.handle(key_value); break;
+        case Action::SensorTuning:          sensor_tuning.handle(key_value); break;
+        case Action::AutomaticLeveling:     automatic_leveling.handle(key_value); break;
+        case Action::SensorGrid:            leveling_grid.handle(key_value); break;
+        case Action::SensorZHeight:         sensor_z_height.handle(key_value); break;
+        case Action::ChangeFilament:        change_filament.handle(key_value); break;
+        case Action::EEPROMMismatch:        eeprom_mismatch.handle(key_value); break;
+        case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_value); break;
+        case Action::Diagnosis:             diagnosis.handle(key_value); break;
+        case Action::Temperatures:          temperatures.handle(key_value); break;
+
+        case Action::MoveXPlus:             move.x_plus_command(); break;
+        case Action::MoveXMinus:            move.x_minus_command(); break;
+        case Action::MoveYPlus:             move.y_plus_command(); break;
+        case Action::MoveYMinus:            move.y_minus_command(); break;
+        case Action::MoveZPlus:             move.z_plus_command(); break;
+        case Action::MoveZMinus:            move.z_minus_command(); break;
+        case Action::MoveEPlus:             move.e_plus_command(); break;
+        case Action::MoveEMinus:            move.e_minus_command(); break;
+        case Action::BabyMinus:             print_settings.baby_minus_command(); break;
+        case Action::BabyPlus:              print_settings.baby_plus_command(); break;
+        case Action::ZHeightMinus:          sensor_z_height.minus(); break;
+        case Action::ZHeightPlus:           sensor_z_height.plus(); break;
+        case Action::FeedrateMinus:         print_settings.feedrate_minus_command(); break;
+        case Action::FeedratePlus:          print_settings.feedrate_plus_command(); break;
+        case Action::FanMinus:              print_settings.fan_minus_command(); break;
+        case Action::FanPlus:               print_settings.fan_plus_command(); break;
+        case Action::HotendMinus:           print_settings.hotend_minus_command(); break;
+        case Action::HotendPlus:            print_settings.hotend_plus_command(); break;
+        case Action::BedMinus:              print_settings.bed_minus_command(); break;
+        case Action::BedPlus:               print_settings.bed_plus_command(); break;
+        case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_value)); break;
+
+        default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
+    }
 }
 
 //! Update the status of the printer on the LCD.
-void Core::send_status_data()
+void Core::send_lcd_serial_data(bool force_update)
 {
-    // TODO
+    // Right time for an update or force update?
+    if(!force_update && !task.is_update_time())
+        return;
+
+    // The progress bar is split into two parts because of a limitation of the DWIN panel
+    // so compute the progress of each part.
+    int16_t progress_bar_low  = ExtUI::getProgress_percent() >= 50 ? 5 : ExtUI::getProgress_percent() / 10;
+    int16_t progress_var_high = ExtUI::getProgress_percent() < 50 ? 0 : (ExtUI::getProgress_percent() / 10) - 5;
+
+#ifdef ADVi3PP_PROBE
+    uint16_t probe_state = ExUI::getLevelingActive() ? 2 : 1;
+#else
+    uint16_t probe_state = 0;
+#endif
+
+    // Send the current status in one frame
+    WriteRamDataRequest frame{Variable::TargetBed};
+    frame << Uint16(ExtUI::getTargetTemp_celsius(ExtUI::BED))
+          << Uint16(ExtUI::getActualTemp_celsius(ExtUI::BED))
+          << Uint16(ExtUI::getTargetTemp_celsius(ExtUI::E0))
+          << Uint16(ExtUI::getActualTemp_celsius(ExtUI::E0))
+          << Uint16(ExtUI::getActualFan_percent(ExtUI::FAN0))
+          << Uint16(round(ExtUI::getAxisPosition_mm(ExtUI::Z)))
+          << Uint16(progress_bar_low)
+          << Uint16(progress_var_high)
+          << 0_u16 // TODO
+          << Uint16(probe_state)
+          << Uint16(ExtUI::getFeedrate_percent());
+    frame.send(false);
+
+    compute_progress();
+    // If one of the messages has changed, send them to the LCD panel
+    if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
+    {
+        frame.reset(Variable::Message);
+        frame << message_ << centered_ << progress_;
+        frame.send(false);
+    }
+}
+
+//! Compute the current progress message (name and percentage)
+void Core::compute_progress()
+{
+    auto done = ExtUI::getProgress_percent();
+    if(done == percent_)
+        return;
+
+    progress_ = progress_name_;
+    if(progress_.length() > 0)
+        progress_  << " " << done << "%";
+    progress_.align(Alignment::Left);
+    percent_ = done;
 }
 
 }
