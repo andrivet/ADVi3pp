@@ -23,14 +23,32 @@
 #include <stdint.h>
 #include "../../core/millis_t.h"
 #include "flash_char.h"
+#include "string.h"
 
 namespace ADVi3pp {
+
+const size_t message_length = 48; //!< Size of messages to be displayed on the LCD Panel
+const size_t progress_name_length = 44; //!< Size of the progress name (i.e. filename) to be displayed on the LCD Panel
+const size_t progress_length = 48; //!< Size of the progress message (filename and percent) to be displayed on the LCD Panel
+
 
 struct Status
 {
     void reset();
     void set(const FlashChar* message);
     void set(const char* message);
+    bool has() const;
+
+    void compute_progress();
+    void send();
+
+private:
+    bool has_status_ = false;
+    ADVString<message_length> message_;
+    ADVString<message_length> centered_;
+    ADVString<progress_name_length> progress_name_;
+    ADVString<progress_length> progress_;
+    int percent_ = -1;
 };
 
 extern Status status;

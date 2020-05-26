@@ -24,10 +24,6 @@
 
 namespace ADVi3pp {
 
-const size_t message_length = 48; //!< Size of messages to be displayed on the LCD Panel
-const size_t progress_name_length = 44; //!< Size of the progress name (i.e. filename) to be displayed on the LCD Panel
-const size_t progress_length = 48; //!< Size of the progress message (filename and percent) to be displayed on the LCD Panel
-
 struct Core
 {
     void send_gplv3_7b_notice();
@@ -35,16 +31,6 @@ struct Core
     void update_progress();
     void receive_lcd_serial_data();
     void send_lcd_serial_data(bool force_update = false);
-
-private:
-    void compute_progress();
-
-private:
-    ADVString<message_length> message_;
-    ADVString<message_length> centered_;
-    ADVString<progress_name_length> progress_name_;
-    ADVString<progress_length> progress_;
-    int percent_ = -1;
 };
 
 }

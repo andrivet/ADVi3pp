@@ -324,28 +324,10 @@ void Core::send_lcd_serial_data(bool force_update)
           << Uint16(ExtUI::getFeedrate_percent());
     frame.send(false);
 
-    compute_progress();
-    // If one of the messages has changed, send them to the LCD panel
-    if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
-    {
-        frame.reset(Variable::Message);
-        frame << message_ << centered_ << progress_;
-        frame.send(false);
-    }
+    status.compute_progress();
+    status.send();
 }
 
-//! Compute the current progress message (name and percentage)
-void Core::compute_progress()
-{
-    auto done = ExtUI::getProgress_percent();
-    if(done == percent_)
-        return;
 
-    progress_ = progress_name_;
-    if(progress_.length() > 0)
-        progress_  << " " << done << "%";
-    progress_.align(Alignment::Left);
-    percent_ = done;
-}
 
 }

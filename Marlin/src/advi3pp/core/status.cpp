@@ -18,7 +18,10 @@
  *
  */
 
+#include "../../lcd/extui/ui_api.h"
 #include "status.h"
+#include "dgus.h"
+#include "enums.h"
 
 namespace ADVi3pp {
 
@@ -27,17 +30,53 @@ Status status;
 
 void Status::reset()
 {
-    // TODO
+    message_.reset();
+    centered_.reset();
+    has_status_ = false;
+}
+
+bool Status::has() const
+{
+    return has_status_;
 }
 
 void Status::set(const FlashChar* message)
 {
-    // TODO
+    message_.set(message).align(Alignment::Left);
+    centered_.set(message).align(Alignment::Center);
+    has_status_ = true;
 }
 
 void Status::set(const char* message)
 {
-    // TODO
+    message_.set(message).align(Alignment::Left);
+    centered_.set(message).align(Alignment::Center);
+    has_status_ = true;
+}
+
+//! Compute the current progress message (name and percentage)
+void Status::compute_progress()
+{
+    auto done = ExtUI::getProgress_percent();
+    if(done == percent_)
+        return;
+
+    progress_ = progress_name_;
+    if(progress_.length() > 0)
+        progress_  << " " << done << "%";
+    progress_.align(Alignment::Left);
+    percent_ = done;
+}
+
+void Status::send()
+{
+    // If one of the messages has changed, send them to the LCD panel
+    if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
+    {
+        WriteRamDataRequest frame{Variable::Message};
+        frame << message_ << centered_ << progress_;
+        frame.send(false);
+    }
 }
 
 }
