@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../../core/background_task.h"
+#include "../../core/task.h"
 #include "../core/screen.h"
 
 namespace ADVi3pp {

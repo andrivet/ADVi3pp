@@ -25,7 +25,7 @@
 #include "dimming.h"
 #include "status.h"
 #include "pages.h"
-#include "background_task.h"
+#include "task.h"
 #include "dgus.h"
 #include "buzzer.h"
 #include "../screens/core/no_sensor.h"

@@ -19,7 +19,7 @@
  */
 
 #include <Arduino.h>
-#include "background_task.h"
+#include "task.h"
 
 namespace ADVi3pp {
 
