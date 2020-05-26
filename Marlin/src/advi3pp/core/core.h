@@ -31,6 +31,8 @@ struct Core
     void update_progress();
     void receive_lcd_serial_data();
     void send_lcd_serial_data(bool force_update = false);
+
+    void process_command(const GCodeParser& parser);
 };
 
 }

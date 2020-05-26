@@ -50,6 +50,7 @@ struct Facade
     static void on_power_less_resume();
 #endif
     static void on_pid_tuning(const ExtUI::result_t rst);
+    static void process_command();
 };
 
 }

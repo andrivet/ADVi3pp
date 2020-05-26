@@ -19,6 +19,7 @@
  */
 
 #include "../inc/advi3pp.h"
+#include "../../gcode/parser.h"
 #include "core.h"
 #include "graphs.h"
 #include "dimming.h"
@@ -176,7 +177,15 @@ void Facade::on_pid_tuning(const ExtUI::result_t rst)
 {
 }
 
-
+void Facade::process_command()
+{
+    switch(GCodeParser::codenum)
+    {
+        case 0: print.process_pause_resume_code(); break;
+        case 1: print.process_stop_code(); break;
+        default: Log::error() << F("Invalid command ") << static_cast<uint16_t>(GCodeParser::codenum) << Log::endl(); break;
+    }
+}
 
 //! Note to forks author:
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
