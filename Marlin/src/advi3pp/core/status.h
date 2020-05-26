@@ -40,6 +40,9 @@ struct Status
     bool has() const;
 
     void compute_progress();
+    void set_progress_name(const char* name);
+    void reset_progress();
+
     void send();
 
 private:

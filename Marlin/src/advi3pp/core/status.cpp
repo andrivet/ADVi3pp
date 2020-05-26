@@ -68,6 +68,23 @@ void Status::compute_progress()
     percent_ = done;
 }
 
+//! Set the name for the progress message. Usually, it is the name of the file printed.
+void Status::set_progress_name(const char* name)
+{
+    progress_name_ = name;
+    progress_.reset().align(Alignment::Left);
+    percent_ = -1;
+    compute_progress();
+}
+
+//! Clear the progress message
+void Status::reset_progress()
+{
+    progress_name_.reset();
+    progress_.reset().align(Alignment::Left);
+    percent_ = -1;
+}
+
 void Status::send()
 {
     // If one of the messages has changed, send them to the LCD panel
