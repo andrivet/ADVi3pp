@@ -38,6 +38,8 @@ struct Preset
 enum class TemperatureKind: uint8_t { Bed, Hotend };
 constexpr const unsigned nb_temperatures = 2;
 
+const uint16_t default_bed_temperature = 50; //!< Default target temperature for the bed
+const uint16_t default_hotend_temperature = 200; //!< Default target temperature for the hotend
 
 struct Settings
 {
@@ -50,8 +52,14 @@ struct Settings
     void save(); // Save to EEPROM (i.e. M500)
     void restore();
 
+    void change_features(Feature features);
+
+    uint16_t get_last_used_temperature(TemperatureKind kind) const;
+    void on_set_temperature(TemperatureKind kind, uint16_t temperature);
+
 private:
     Feature features_ = Feature::None;
+    uint16_t last_used_temperature_[nb_temperatures] = {default_bed_temperature, default_hotend_temperature};
 };
 
 extern Settings settings;
