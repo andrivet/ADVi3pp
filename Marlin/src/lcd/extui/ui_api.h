@@ -361,10 +361,13 @@ namespace ExtUI {
   void onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
   uint16_t getSizeofSettings();
 
-#if ENABLED(POWER_LOSS_RECOVERY)
+  #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume();
   #endif
   #if HAS_PID_HEATING
+    // @advi3++ PR candidate
+    void onPidTuningProgress(int cycleIndex, int nbCycles);
+    void onPidTuningReportTemp(int heater);
     void onPidTuning(const result_t rst);
   #endif
 };
