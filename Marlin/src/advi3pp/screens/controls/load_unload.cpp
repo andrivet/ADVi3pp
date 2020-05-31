@@ -19,9 +19,91 @@
  */
 
 #include "load_unload.h"
+#include "../core/wait.h"
+#include "../../core/settings.h"
+#include "../../core/dgus.h"
+#include "../print/print.h"
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "HidingNonVirtualFunction"
 
 namespace ADVi3pp {
 
 LoadUnload load_unload;
+
+
+//! Handle Load & Unload actions.
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
+bool LoadUnload::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::Load:    load_command(); break;
+        case KeyValue::Unload:  unload_command(); break;
+        default:                return false;
+    }
+
+    return true;
+}
+
+void LoadUnload::send_data()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(settings.get_last_used_temperature(TemperatureKind::Hotend));
+    frame.send();
+}
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page LoadUnload::do_prepare_page()
+{
+    if(!print.ensure_not_printing())
+        return Page::None;
+    send_data();
+    return Page::LoadUnload;
+}
+
+//! Prepare Load or Unload step #1: set the target temperature, setup the next step and display a wait message
+//! @param background Background task to detect if it is time for step #2
+void LoadUnload::prepare()
+{
+    ReadRamData frame{Variable::Value0, 1};
+    if(!frame.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
+        return;
+    }
+
+    Uint16 temperature; frame >> temperature;
+    ExtUI::setTargetTemp_celsius(temperature.word, ExtUI::E0);
+}
+
+//! Start Load action.
+void LoadUnload::load_command()
+{
+    prepare();
+    ExtUI::injectCommands_P(PSTR("M701"));
+}
+
+//! Start Unload action.
+void LoadUnload::unload_command()
+{
+    prepare();
+    ExtUI::injectCommands_P(PSTR("M702"));
+}
+
+//! Handle back from the Load or Unload LCD screen: stop the process.
+//! @return true to continue Back processing
+bool LoadUnload::stop()
+{
+    Log::log() << F("Load/Unload Stop") << Log::endl();
+    // TODO actual implementation
+    return true;
+}
+
 
 }

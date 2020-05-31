@@ -31,16 +31,10 @@ struct LoadUnload: Screen<LoadUnload>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void prepare(const BackgroundTask& background);
+    void prepare();
     void load_command();
     void unload_command();
     bool stop();
-    void stop_task();
-    void load_start_task();
-    void load_task();
-    void unload_start_task();
-    void unload_task();
-    void start_task(const char* command,  const BackgroundTask& back_task);
     void send_data();
 
     friend Parent;
