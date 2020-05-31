@@ -370,6 +370,8 @@ namespace ExtUI {
     void onPidTuningReportTemp(int heater);
     void onPidTuning(const result_t rst);
   #endif
+
+  bool isPrintingPaused();
 };
 
 /**
