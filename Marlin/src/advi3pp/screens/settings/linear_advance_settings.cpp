@@ -19,9 +19,37 @@
  */
 
 #include "linear_advance_settings.h"
+#include "../../core/dgus.h"
 
 namespace ADVi3pp {
 
 LinearAdvanceSettings linear_advance_settings;
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page LinearAdvanceSettings::do_prepare_page()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 10);
+    frame.send();
+
+    return Page::LinearAdvanceSettings;
+}
+
+//! Handles the Save (Continue) command
+void LinearAdvanceSettings::do_save_command()
+{
+    ReadRamData response{Variable::Value0, 1};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Linear Advance Settings)") << Log::endl();
+        return;
+    }
+
+    Uint16 k; response >> k;
+    ExtUI::setLinearAdvance_mm_mm_s(k.word / 10.0, ExtUI::E0);
+
+    Parent::do_save_command();
+}
 
 }
