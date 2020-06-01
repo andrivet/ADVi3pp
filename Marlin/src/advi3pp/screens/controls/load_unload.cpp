@@ -20,9 +20,9 @@
 
 #include "load_unload.h"
 #include "../core/wait.h"
+#include "../../core/core.h"
 #include "../../core/settings.h"
 #include "../../core/dgus.h"
-#include "../print/print.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "HidingNonVirtualFunction"
@@ -61,7 +61,7 @@ void LoadUnload::send_data()
 //! @return The index of the page to display
 Page LoadUnload::do_prepare_page()
 {
-    if(!print.ensure_not_printing())
+    if(!core.ensure_not_printing())
         return Page::None;
     send_data();
     return Page::LoadUnload;
