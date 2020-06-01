@@ -19,9 +19,51 @@
  */
 
 #include "acceleration_settings.h"
+#include "../../core/dgus.h"
 
 namespace ADVi3pp {
 
 AccelerationSettings accelerations_settings;
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page AccelerationSettings::do_prepare_page()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X)))
+          << Uint16(static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y)))
+          << Uint16(static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Z)))
+          << Uint16(static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::E0)))
+          << Uint16(static_cast<uint16_t>(ExtUI::getPrintingAcceleration_mm_s2()))
+          << Uint16(static_cast<uint16_t>(ExtUI::getRetractAcceleration_mm_s2()))
+          << Uint16(static_cast<uint16_t>(ExtUI::getTravelAcceleration_mm_s2()));
+    frame.send();
+
+    return Page::AccelerationSettings;
+}
+
+//! Save the Acceleration settings
+void AccelerationSettings::do_save_command()
+{
+    ReadRamData response{Variable::Value0, 7};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
+        return;
+    }
+
+    Uint16 x, y, z, e, print, retract, travel;
+    response >> x >> y >> z >> e >> print >> retract >> travel;
+
+    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(x.word), ExtUI::X);
+    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(y.word), ExtUI::Y);
+    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(z.word), ExtUI::Z);
+    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(e.word), ExtUI::E0);
+    ExtUI::setPrintingAcceleration_mm_s2(static_cast<float>(print.word));
+    ExtUI::setRetractAcceleration_mm_s2(static_cast<float>(retract.word));
+    ExtUI::setTravelAcceleration_mm_s2(static_cast<float>(travel.word));
+
+    Parent::do_save_command();
+}
 
 }
