@@ -24,4 +24,11 @@ namespace ADVi3pp {
 
 NoSensor no_sensor;
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page NoSensor::do_prepare_page()
+{
+    return Page::NoSensor;
+}
+
 }
