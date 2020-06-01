@@ -105,6 +105,7 @@ void Controls::show_sd_or_temp_page()
     task.clear_background_task();
 
     // TODO Be sure that initsd() is not required
+    ExtUI::FileList{}.refresh();
     status.reset();
     if(!ExtUI::isMediaInserted())
     {
