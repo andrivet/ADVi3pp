@@ -19,9 +19,45 @@
  */
 
 #include "jerk_settings.h"
+#include "../../core/dgus.h"
 
 namespace ADVi3pp {
 
 JerkSettings jerks_settings;
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page JerkSettings::do_prepare_page()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(ExtUI::getAxisMaxJerk_mm_s(ExtUI::X) * 10)
+          << Uint16(ExtUI::getAxisMaxJerk_mm_s(ExtUI::Y) * 10)
+          << Uint16(ExtUI::getAxisMaxJerk_mm_s(ExtUI::Z) * 10)
+          << Uint16(ExtUI::getAxisMaxJerk_mm_s(ExtUI::E0) * 10);
+    frame.send();
+
+    return Page::JerkSettings;
+}
+
+//! Save the Jerk settings
+void JerkSettings::do_save_command()
+{
+    ReadRamData response{Variable::Value0, 4};
+    if(!response.send_and_receive())
+    {
+        Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
+        return;
+    }
+
+    Uint16 x, y, z, e;
+    response >> x >> y >> z >> e;
+
+    ExtUI::setAxisMaxJerk_mm_s(x.word / 10.0, ExtUI::X);
+    ExtUI::setAxisMaxJerk_mm_s(y.word / 10.0, ExtUI::Y);
+    ExtUI::setAxisMaxJerk_mm_s(z.word / 10.0, ExtUI::Z);
+    ExtUI::setAxisMaxJerk_mm_s(e.word / 10.0, ExtUI::E0);
+
+    Parent::do_save_command();
+}
 
 }
