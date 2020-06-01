@@ -165,5 +165,16 @@ void onPidTuning(const result_t rst)
     ADVi3pp::Facade::on_pid_tuning(rst);
 }
 
+void onPidTuningProgress(int cycleIndex, int nbCycles)
+{
+    // TODO implementation
+}
+
+void onPidTuningReportTemp(int heater)
+{
+    // TODO implementation
+}
+
+
 }
 

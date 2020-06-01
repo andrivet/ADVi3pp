@@ -377,7 +377,6 @@ namespace ExtUI {
   void setAllAxisUnhomed();
   void setAllAxisPositionUnknown();
   void finishAndDisableHeaters();
-  bool pausePrint(const float &retract, const xyz_pos_t &park_point, const float &unload_length = 0, const bool show_lcd = false);
   void cancelWaitForHeatup();
 };
 
