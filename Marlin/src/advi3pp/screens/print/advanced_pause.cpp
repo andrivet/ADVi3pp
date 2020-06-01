@@ -19,9 +19,51 @@
  */
 
 #include "advanced_pause.h"
+#include "../core/wait.h"
+#include "../../core/logging.h"
 
 namespace ADVi3pp {
 
 AdvancedPause advanced_pause;
+
+
+//! Show Advance Pause message (called from Marlin).
+//! @param message Message to dislay.
+void AdvancedPause::advanced_pause_show_message(const PauseMessage message)
+{
+    if(message == last_advanced_pause_message_)
+        return;
+    last_advanced_pause_message_ = message;
+
+    // TODO handle all the messages
+    switch (message)
+    {
+        case PAUSE_MESSAGE_PAUSING:                       wait.show(F("Pausing...")); break;
+        case PAUSE_MESSAGE_UNLOAD:                     wait.set_message(F("Unloading filament...")); break;
+        case PAUSE_MESSAGE_INSERT:                     insert_filament(); break;
+        case PAUSE_MESSAGE_LOAD:                       wait.set_message(F("Loading...")); break;
+        case PAUSE_MESSAGE_PURGE:                      wait.set_message(F("Extruding some filament...")); break;
+        //case PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:       wait.set_message(F("Press continue to heat")); break;
+        case PAUSE_MESSAGE_RESUME:                     wait.set_message(F("Resuming print...")); break;
+        case PAUSE_MESSAGE_STATUS:                     break;
+        //case PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:   wait.set_message(F("Waiting for heat...")); break;
+        //case PAUSE_MESSAGE_OPTION:                     pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
+        default: Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << Log::endl(); break;
+    }
+}
+
+//! Show "Insert filament" message during Advance Pause
+void AdvancedPause::insert_filament()
+{
+    wait.show_continue(F("Insert filament and press continue..."), WaitCallback{this, &AdvancedPause::filament_inserted}, ShowOptions::None);
+}
+
+//! Action to execute once the filament is inserted (Continue command)
+bool AdvancedPause::filament_inserted()
+{
+    ExtUI::setUserConfirmed();
+    wait.show(F("Filament inserted.."), ShowOptions::None);
+    return false;
+}
 
 }
