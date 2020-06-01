@@ -19,9 +19,92 @@
  */
 
 #include "print.h"
+#include "../../core/status.h"
+#include "../core/wait.h"
+
 
 namespace ADVi3pp {
 
 Print print;
+
+//! Handle print commands.
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
+bool Print::do_dispatch(KeyValue value)
+{
+    if(Parent::do_dispatch(value))
+        return true;
+
+    switch(value)
+    {
+        case KeyValue::PrintStop:           stop_command(); break;
+        case KeyValue::PrintPause:          pause_resume_command(); break;
+        case KeyValue::PrintAdvancedPause:  advanced_pause_command(); break;
+        default:                            return false;
+    }
+
+    return true;
+}
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page Print::do_prepare_page()
+{
+    return Page::Print;
+}
+
+//! Stop printing
+void Print::stop_command()
+{
+    if(!ExtUI::isPrinting())
+        return;
+
+    wait.show(F("Stop printing..."), ShowOptions::SaveBack);
+    ExtUI::injectCommands_P(PSTR("A1"));
+}
+
+//! Pause printing
+void Print::pause_resume_command()
+{
+    if(!ExtUI::isPrinting())
+        return;
+
+    wait.show(F("Pause printing..."), ShowOptions::SaveBack);
+    ExtUI::injectCommands_P(PSTR("A0"));
+}
+
+//! Advanced Pause for filament change
+void Print::advanced_pause_command()
+{
+    if(!ExtUI::isPrinting())
+        return;
+
+    wait.show(F("Pausing..."), ShowOptions::SaveBack);
+    ExtUI::injectCommands_P(PSTR("M600"));
+}
+
+//! Process Stop (A1) code and actually stop the print (if any running).
+void Print::process_stop_code()
+{
+    ExtUI::pausePrint(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true);
+    ExtUI::finishAndDisableHeaters();
+    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+
+    status.set(F("Print Stopped"));
+    pages.show_back_page();
+    pages.show_back_page();
+}
+
+//! Process Pause (A0) code and actually pause the print (if any running).
+void Print::process_pause_resume_code()
+{
+    ExtUI::injectCommands_P(PSTR("M600"));
+}
+
+void Print::pause_finished()
+{
+    pages.show_back_page();
+}
+
 
 }

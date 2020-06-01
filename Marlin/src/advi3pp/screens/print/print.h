@@ -27,8 +27,6 @@ namespace ADVi3pp {
 //! Printing Page
 struct Print: Screen<Print>
 {
-    bool is_printing() const;
-    bool ensure_not_printing();
     void process_pause_resume_code();
     void process_stop_code();
     void pause_finished();
