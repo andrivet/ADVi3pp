@@ -24,4 +24,18 @@ namespace ADVi3pp {
 
 FactoryReset factory_reset;
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page FactoryReset::do_prepare_page()
+{
+    return Page::FactoryReset;
+}
+
+//! Handles the Save (Continue) command
+void FactoryReset::do_save_command()
+{
+    ExtUI::injectCommands_P(PSTR("M502"));
+    Parent::do_save_command();
+}
+
 }
