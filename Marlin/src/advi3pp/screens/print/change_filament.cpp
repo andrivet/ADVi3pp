@@ -24,4 +24,11 @@ namespace ADVi3pp {
 
 ChangeFilament change_filament;
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page ChangeFilament::do_prepare_page()
+{
+    return Page::None;
+}
+
 }
