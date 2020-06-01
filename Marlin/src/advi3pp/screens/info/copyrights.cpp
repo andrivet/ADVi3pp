@@ -24,4 +24,11 @@ namespace ADVi3pp {
 
 Copyrights copyrights;
 
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page Copyrights::do_prepare_page()
+{
+    return Page::Copyrights;
+}
+
 }
