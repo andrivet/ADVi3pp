@@ -144,7 +144,7 @@ enum class Action: uint16_t
     AutomaticLeveling       = 0x040A,
     PidTuning               = 0x040B,
     SensorSettings          = 0x040C,
-    Firmware                = 0x040D,
+    //Firmware                = 0x040D,
     NoSensor                = 0x040E,
     LCD                     = 0x040F,
     Statistics              = 0x0410,
@@ -253,10 +253,8 @@ enum class KeyValue: uint16_t
     SensorSettingsPrevious  = 0x0001,
     SensorSettingsNext      = 0x0002,
 
-    ThermalProtection       = 0x0001,
+    //ThermalProtection       = 0x0001,
     RunoutSensor            = 0x0002,
-    USBBaudrateMinus        = 0x0003,
-    USBBaudratePlus         = 0x0004,
 
     LCDDimming              = 0x0001,
     BuzzerOnAction          = 0x0002,
