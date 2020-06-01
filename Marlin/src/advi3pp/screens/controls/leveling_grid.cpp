@@ -24,4 +24,38 @@ namespace ADVi3pp {
 
 LevelingGrid leveling_grid;
 
+#ifdef ADVi3PP_PROBE
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page LevelingGrid::do_prepare_page()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
+        for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
+            frame << Uint16(static_cast<int16_t>(z_values[x][y] * 100));
+    frame.send();
+
+    return Page::SensorGrid;
+}
+
+//! Handles the Save (Continue) command
+void LevelingGrid::do_save_command()
+{
+    enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
+    enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
+    Parent::do_save_command();
+}
+
+#else
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page LevelingGrid::do_prepare_page()
+{
+    return Page::NoSensor;
+}
+
+#endif
+
 }
