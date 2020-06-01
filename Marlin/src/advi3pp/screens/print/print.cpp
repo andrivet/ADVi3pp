@@ -86,9 +86,7 @@ void Print::advanced_pause_command()
 //! Process Stop (A1) code and actually stop the print (if any running).
 void Print::process_stop_code()
 {
-    ExtUI::pausePrint(PAUSE_PARK_RETRACT_LENGTH, NOZZLE_PARK_POINT, 0, true);
-    ExtUI::finishAndDisableHeaters();
-    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+    ExtUI::stopPrint();
 
     status.set(F("Print Stopped"));
     pages.show_back_page();
