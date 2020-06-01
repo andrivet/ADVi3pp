@@ -35,7 +35,6 @@ private:
     void dimming_command();
     void buzz_on_action_command();
     void buzz_on_press_command();
-    void send_data() const;
 
     Feature features_ = Feature::None;
     friend Parent;

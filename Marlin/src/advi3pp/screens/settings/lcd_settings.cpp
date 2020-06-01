@@ -19,9 +19,73 @@
  */
 
 #include "lcd_settings.h"
+#include "../../core/dimming.h"
+#include "../../core/buzzer.h"
 
 namespace ADVi3pp {
 
 LcdSettings lcd_settings;
+
+
+//! Handle LCD Settings command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
+bool LcdSettings::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::LCDDimming:          dimming_command(); break;
+        case KeyValue::BuzzerOnAction:      buzz_on_action_command(); break;
+        case KeyValue::BuzzOnPress:         buzz_on_press_command(); break;
+        default:                            return false;
+    }
+
+    return true;
+}
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page LcdSettings::do_prepare_page()
+{
+    features_ = settings.get_current_features();
+    return Page::LCD;
+}
+
+//! Handle the Dimming (On/Off) command
+void LcdSettings::dimming_command()
+{
+    flip_bits(features_, Feature::Dimming);
+    dimming.enable(test_one_bit(features_, Feature::Dimming), true);
+    settings.change_features(features_);
+    settings.save();
+}
+
+//! Handle the change brightness command.
+void LcdSettings::change_brightness(uint16_t brightness)
+{
+    dimming.change_brightness(brightness);
+    settings.save();
+}
+
+//! Handle the Buzz on Action command
+void LcdSettings::buzz_on_action_command()
+{
+    flip_bits(features_, Feature::Buzzer);
+    buzzer.enable(test_one_bit(features_, Feature::Buzzer));
+    settings.change_features(features_);
+    settings.save();
+}
+
+//! Handle the Buzz on Press command
+void LcdSettings::buzz_on_press_command()
+{
+    flip_bits(features_, Feature::BuzzOnPress);
+    buzzer.enable_on_press(test_one_bit(features_, Feature::BuzzOnPress));
+    settings.change_features(features_);
+    settings.save();
+}
 
 }
