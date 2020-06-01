@@ -20,6 +20,7 @@
 
 #include "settings.h"
 #include "../versions.h"
+#include "../core/dgus.h"
 #include "../core/dimming.h"
 #include "../core/buzzer.h"
 #include "../screens/controls/preheat.h"
@@ -109,10 +110,25 @@ void Settings::restore()
     ExtUI::injectCommands_P(PSTR("M501"));
 }
 
-//! Change the current set of features of ADVi3++ (thermal protection, dimming, ...)
+Feature Settings::get_current_features() const
+{
+    return features_;
+}
+
+//! Change the current set of features of ADVi3++ (dimming, ...)
 void Settings::change_features(Feature features)
 {
     features_ = features;
+}
+
+void Settings::flip_features(Feature features)
+{
+    flip_bits(features_, features);
+}
+
+void Settings::send_features()
+{
+    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(static_cast<uint16_t>(features_)); frame.send();
 }
 
 //! Get the last used temperature for the hotend or the bad
