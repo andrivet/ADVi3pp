@@ -19,9 +19,43 @@
  */
 
 #include "statistics.h"
+#include "../../core/string.h"
+#include "../../core/dgus.h"
 
 namespace ADVi3pp {
 
 Statistics statistics;
+
+//! Prepare the page before being displayed and return the right Page value
+//! @return The index of the page to display
+Page Statistics::do_prepare_page()
+{
+    send_stats();
+    return Page::Statistics;
+}
+
+void Statistics::send_stats()
+{
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16(ExtUI::getTotalPrints())
+          << Uint16(ExtUI::getFinishedPrints())
+          << Uint16(static_cast<uint16_t>(freeMemory()));
+    frame.send();
+
+    // Minimize the RAM used so send each value separately.
+    char buffer[21];
+
+    ADVString<21> value{ExtUI::getTotalPrintTime_str(buffer)};
+    frame.reset(Variable::LongText0);
+    frame.send();
+
+    value.set(ExtUI::getLongestPrint_str(buffer));
+    frame.reset(Variable::LongText1);
+    frame.send();
+
+    value.set(ExtUI::getFilamentUsed_str(buffer));
+    frame.reset(Variable::LongText2);
+    frame.send();
+}
 
 }
