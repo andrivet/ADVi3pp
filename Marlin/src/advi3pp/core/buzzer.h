@@ -26,7 +26,7 @@ namespace ADVi3pp {
 struct Buzzer
 {
     void enable(bool enable);
-    void enable_on_press(bool enable, bool buzz);
+    void enable_on_press(bool enable, bool buzz = true);
     void buzz(long duration);
     void buzz_on_press();
 
