@@ -160,7 +160,9 @@ namespace ExtUI {
 
   #if ENABLED(PRINTCOUNTER)
     char* getTotalPrints_str(char buffer[21]);
+    uint16_t getTotalPrints(); // @advi3++ PR candidate
     char* getFinishedPrints_str(char buffer[21]);
+    uint16_t getFinishedPrints(); // @advi3++ PR candidate
     char* getTotalPrintTime_str(char buffer[21]);
     char* getLongestPrint_str(char buffer[21]);
     char* getFilamentUsed_str(char buffer[21]);
@@ -372,6 +374,11 @@ namespace ExtUI {
   #endif
 
   bool isPrintingPaused();
+  void setAllAxisUnhomed();
+  void setAllAxisPositionUnknown();
+  void finishAndDisableHeaters();
+  bool pausePrint(const float &retract, const xyz_pos_t &park_point, const float &unload_length = 0, const bool show_lcd = false);
+  void cancelWaitForHeatup();
 };
 
 /**
