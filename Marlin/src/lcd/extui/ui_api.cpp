@@ -840,7 +840,7 @@ namespace ExtUI {
     char* getTotalPrints_str(char buffer[21])    { strcpy(buffer,i16tostr3left(print_job_timer.getStats().totalPrints));    return buffer; }
     uint16_t getTotalPrints()                    { return print_job_timer.getStats().totalPrints; } // @advi3++ PR candidate
     char* getFinishedPrints_str(char buffer[21]) { strcpy(buffer,i16tostr3left(print_job_timer.getStats().finishedPrints)); return buffer; }
-    uint16_t getFinishedPrints()                 { return print_job_timer.getStats().finishedPrints); } // @advi3++ PR candidate
+    uint16_t getFinishedPrints()                 { return print_job_timer.getStats().finishedPrints; } // @advi3++ PR candidate
     char* getTotalPrintTime_str(char buffer[21]) { return duration_t(print_job_timer.getStats().printTime).toString(buffer); }
     char* getLongestPrint_str(char buffer[21])   { return duration_t(print_job_timer.getStats().longestPrint).toString(buffer); }
     char* getFilamentUsed_str(char buffer[21])   {
