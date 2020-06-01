@@ -30,7 +30,7 @@
 #include "buzzer.h"
 #include "../screens/core/no_sensor.h"
 #include "../screens/controls/controls.h"
-#include "../screens/controls/wait.h"
+#include "../screens/core/wait.h"
 #include "../screens/controls/load_unload.h"
 #include "../screens/controls/preheat.h"
 #include "../screens/controls/move.h"
@@ -49,7 +49,6 @@
 #include "../screens/settings/eeprom_mismatch.h"
 #include "../screens/settings/factory_reset.h"
 #include "../screens/settings/sensor_settings.h"
-#include "../screens/settings/firmware_settings.h"
 #include "../screens/settings/lcd_settings.h"
 #include "../screens/settings/print_settings.h"
 #include "../screens/settings/pid_settings.h"
@@ -252,7 +251,6 @@ void Core::receive_lcd_serial_data()
         case Action::ExtruderTuning:        extruder_tuning.handle(key_value); break;
         case Action::PidTuning:             pid_tuning.handle(key_value); break;
         case Action::SensorSettings:        sensor_settings.handle(key_value); break;
-        case Action::Firmware:              firmware_settings.handle(key_value); break;
         case Action::NoSensor:              no_sensor.handle(key_value); break;
         case Action::LCD:                   lcd_settings.handle(key_value); break;
         case Action::Statistics:            statistics.handle(key_value); break;
@@ -337,6 +335,18 @@ void Core::send_lcd_serial_data(bool force_update)
     status.send();
 }
 
+bool Core::ensure_not_printing()
+{
+    if(!ExtUI::isPrinting())
+        return true;
 
+    wait.show_back(F("Not accessible when printing"));
+    return false;
+}
+
+bool Core::is_busy()
+{
+    return ExtUI::isMoving() || ExtUI::commandsInQueue(); // TODO it is enough (we are not looking at busy_state)?
+}
 
 }

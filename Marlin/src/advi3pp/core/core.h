@@ -22,6 +22,9 @@
 
 #include "string.h"
 
+class GCodeParser;
+
+
 namespace ADVi3pp {
 
 struct Core
@@ -33,6 +36,11 @@ struct Core
     void send_lcd_serial_data(bool force_update = false);
 
     void process_command(const GCodeParser& parser);
+
+    bool ensure_not_printing();
+    bool is_busy();
 };
+
+extern Core core;
 
 }
