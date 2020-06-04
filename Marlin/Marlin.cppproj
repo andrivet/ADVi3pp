@@ -1,0 +1,1956 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>7.0</ProjectVersion>
+    <ToolchainName>com.Atmel.AVRGCC8.CPP</ToolchainName>
+    <ProjectGuid>dce6c7e3-ee26-4d79-826b-08594b9ad897</ProjectGuid>
+    <avrdevice>atmega2560</avrdevice>
+    <avrdeviceseries>none</avrdeviceseries>
+    <OutputType>Executable</OutputType>
+    <Language>CPP</Language>
+    <OutputFileName>$(MSBuildProjectName)</OutputFileName>
+    <ArduinoProjectType>Sketch</ArduinoProjectType>
+    <OutputFileExtension>.elf</OutputFileExtension>
+    <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
+    <Name>Marlin</Name>
+    <RootNamespace>Marlin</RootNamespace>
+    <ArduinoIdeDir>C:\Program Files (x86)\Arduino</ArduinoIdeDir>
+    <ToolchainFlavour>Native</ToolchainFlavour>
+    <KeepTimersRunning>true</KeepTimersRunning>
+    <OverrideVtor>false</OverrideVtor>
+    <CacheFlash>true</CacheFlash>
+    <ProgFlashFromRam>true</ProgFlashFromRam>
+    <RamSnippetAddress>0x20000000</RamSnippetAddress>
+    <UncachedRange />
+    <preserveEEPROM>true</preserveEEPROM>
+    <OverrideVtorValue>exception_table</OverrideVtorValue>
+    <BootSegment>2</BootSegment>
+    <eraseonlaunchrule>0</eraseonlaunchrule>
+    <AssemblyName>Marlin</AssemblyName>
+    <ResetRule>0</ResetRule>
+    <EraseKey />
+    <avrtool>com.atmel.avrdbg.tool.simulator</avrtool>
+    <avrtoolserialnumber />
+    <avrdeviceexpectedsignature>0x1E9801</avrdeviceexpectedsignature>
+    <com_atmel_avrdbg_tool_simulator>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+        </InterfaceProperties>
+      </ToolOptions>
+      <ToolType xmlns="">com.atmel.avrdbg.tool.simulator</ToolType>
+      <ToolNumber xmlns="">
+      </ToolNumber>
+      <ToolName xmlns="">Simulator</ToolName>
+    </com_atmel_avrdbg_tool_simulator>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <ToolchainSettings>
+      <AvrGccCpp>
+        <avrgcc.common.Device>-mmcu=atmega2560 -B "%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.351\gcc\dev\atmega2560"</avrgcc.common.Device>
+        <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+        <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>F_CPU=16000000L</Value>
+            <Value>ARDUINO=108012</Value>
+            <Value>ARDUINO_AVR_MEGA2560</Value>
+            <Value>ARDUINO_ARCH_AVR</Value>
+            <Value>USB_VID=0x2341</Value>
+            <Value>USB_PID=0x0010</Value>
+            <Value>USB_MANUFACTURER="\"Arduino LLC\""</Value>
+            <Value>NDEBUG</Value>
+          </ListValues>
+        </avrgcc.compiler.symbols.DefSymbols>
+        <avrgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.351\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\core</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\variants\mega</Value>
+          </ListValues>
+        </avrgcc.compiler.directories.IncludePaths>
+        <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+        <avrgcc.compiler.optimization.OtherFlags>-fno-threadsafe-statics</avrgcc.compiler.optimization.OtherFlags>
+        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+        <avrgcc.compiler.warnings.InhibitAllWarnings>True</avrgcc.compiler.warnings.InhibitAllWarnings>
+        <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -std=gnu11</avrgcc.compiler.miscellaneous.OtherFlags>
+        <avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcccpp.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>F_CPU=16000000L</Value>
+            <Value>ARDUINO=108012</Value>
+            <Value>ARDUINO_AVR_MEGA2560</Value>
+            <Value>ARDUINO_ARCH_AVR</Value>
+            <Value>USB_VID=0x2341</Value>
+            <Value>USB_PID=0x0010</Value>
+            <Value>USB_MANUFACTURER="\"Arduino LLC\""</Value>
+            <Value>NDEBUG</Value>
+          </ListValues>
+        </avrgcccpp.compiler.symbols.DefSymbols>
+        <avrgcccpp.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.351\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\core</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\variants\mega</Value>
+            <Value>%24(ProjectDir)\src</Value>
+          </ListValues>
+        </avrgcccpp.compiler.directories.IncludePaths>
+        <avrgcccpp.compiler.optimization.level>Optimize for size (-Os)</avrgcccpp.compiler.optimization.level>
+        <avrgcccpp.compiler.optimization.OtherFlags>-fno-threadsafe-statics</avrgcccpp.compiler.optimization.OtherFlags>
+        <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
+        <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
+        <avrgcccpp.compiler.warnings.InhibitAllWarnings>True</avrgcccpp.compiler.warnings.InhibitAllWarnings>
+        <avrgcccpp.compiler.miscellaneous.OtherFlags>-std=gnu++11</avrgcccpp.compiler.miscellaneous.OtherFlags>
+        <avrgcccpp.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </avrgcccpp.linker.libraries.Libraries>
+        <avrgcccpp.linker.miscellaneous.LinkerFlags>-Os</avrgcccpp.linker.miscellaneous.LinkerFlags>
+        <avrgcccpp.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.351\include</Value>
+          </ListValues>
+        </avrgcccpp.assembler.general.IncludePaths>
+        <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
+      </AvrGccCpp>
+    </ToolchainSettings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <ToolchainSettings>
+      <AvrGccCpp>
+        <avrgcc.common.Device>-mmcu=atmega2560 -B "%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.351\gcc\dev\atmega2560"</avrgcc.common.Device>
+        <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+        <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>F_CPU=16000000L</Value>
+            <Value>ARDUINO=108012</Value>
+            <Value>ARDUINO_AVR_MEGA2560</Value>
+            <Value>ARDUINO_ARCH_AVR</Value>
+            <Value>USB_VID=0x2341</Value>
+            <Value>USB_PID=0x0010</Value>
+            <Value>USB_MANUFACTURER="\"Arduino LLC\""</Value>
+            <Value>DEBUG</Value>
+          </ListValues>
+        </avrgcc.compiler.symbols.DefSymbols>
+        <avrgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.351\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\core</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\variants\mega</Value>
+          </ListValues>
+        </avrgcc.compiler.directories.IncludePaths>
+        <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+        <avrgcc.compiler.optimization.OtherFlags>-fno-threadsafe-statics</avrgcc.compiler.optimization.OtherFlags>
+        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+        <avrgcc.compiler.warnings.InhibitAllWarnings>True</avrgcc.compiler.warnings.InhibitAllWarnings>
+        <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -std=gnu11</avrgcc.compiler.miscellaneous.OtherFlags>
+        <avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcccpp.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>F_CPU=16000000L</Value>
+            <Value>ARDUINO=108012</Value>
+            <Value>ARDUINO_AVR_MEGA2560</Value>
+            <Value>ARDUINO_ARCH_AVR</Value>
+            <Value>USB_VID=0x2341</Value>
+            <Value>USB_PID=0x0010</Value>
+            <Value>USB_MANUFACTURER="\"Arduino LLC\""</Value>
+            <Value>DEBUG</Value>
+          </ListValues>
+        </avrgcccpp.compiler.symbols.DefSymbols>
+        <avrgcccpp.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.351\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\core</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\variants\mega</Value>
+            <Value>%24(ProjectDir)\src</Value>
+          </ListValues>
+        </avrgcccpp.compiler.directories.IncludePaths>
+        <avrgcccpp.compiler.optimization.level>Optimize for size (-Os)</avrgcccpp.compiler.optimization.level>
+        <avrgcccpp.compiler.optimization.OtherFlags>-fno-threadsafe-statics</avrgcccpp.compiler.optimization.OtherFlags>
+        <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
+        <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
+        <avrgcccpp.compiler.warnings.InhibitAllWarnings>True</avrgcccpp.compiler.warnings.InhibitAllWarnings>
+        <avrgcccpp.compiler.miscellaneous.OtherFlags>-std=gnu++11</avrgcccpp.compiler.miscellaneous.OtherFlags>
+        <avrgcccpp.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </avrgcccpp.linker.libraries.Libraries>
+        <avrgcccpp.linker.miscellaneous.LinkerFlags>-Os</avrgcccpp.linker.miscellaneous.LinkerFlags>
+        <avrgcccpp.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.351\include</Value>
+          </ListValues>
+        </avrgcccpp.assembler.general.IncludePaths>
+        <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
+      </AvrGccCpp>
+    </ToolchainSettings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="readme.html">
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ArduinoCore\ArduinoCore.cppproj">
+      <Name>ArduinoCore</Name>
+      <Project>{631f1062-a317-4a38-b4f2-8e3ce4e1b021}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Configuration.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Configuration_adv.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\bitmasks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\buzzer.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\buzzer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\core.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\core.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\dates.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\dgus.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\dgus.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\dimming.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\dimming.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\eeprom.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\enums.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\flash_char.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\graphs.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\graphs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\logging.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\logging.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\pages.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\pages.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\stack.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\status.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\status.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\string.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\task.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\inc\advi3pp.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\ADVcallback.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\ADVcrtp.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\ADVstd.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\ADVstring.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\ADVunique_ptr.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\automatic_leveling.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\automatic_leveling.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\controls.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\controls.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\leveling_grid.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\leveling_grid.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\load_unload.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\load_unload.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\manual_leveling.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\manual_leveling.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\move.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\move.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\preheat.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\controls\preheat.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\core\no_sensor.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\core\no_sensor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\core\screen.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\core\screen.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\core\wait.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\core\wait.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\copyrights.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\copyrights.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\statistics.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\statistics.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\versions.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\versions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\advanced_pause.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\advanced_pause.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\change_filament.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\change_filament.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\print.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\print.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\sd_card.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\sd_card.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\temperatures.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\temperatures.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\acceleration_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\acceleration_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\eeprom_mismatch.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\eeprom_mismatch.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\factory_reset.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\factory_reset.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\feedrate_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\feedrate_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\jerk_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\jerk_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\lcd_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\lcd_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\linear_advance_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\linear_advance_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\pid_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\pid_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\print_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\print_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\sensor_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\sensor_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\step_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\step_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\diagnosis.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\diagnosis.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\extruder_tuning.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\extruder_tuning.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\pid_tuning.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\pid_tuning.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\sensor_tuning.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\sensor_tuning.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\sensor_z_height.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\sensor_z_height.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\versions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\boards.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\debug_out.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\drivers.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\language.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\macros.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\millis_t.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\multi_language.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\multi_language.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\serial.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\serial.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\types.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\utility.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\core\utility.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\babystep.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\babystep.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\backlash.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\backlash.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\baricuda.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\baricuda.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\abl\abl.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\abl\abl.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\bedlevel.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\bedlevel.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\mbl\mesh_bed_leveling.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\mbl\mesh_bed_leveling.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\ubl\ubl.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\ubl\ubl.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\ubl\ubl_G29.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\ubl\ubl_motion.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\binary_protocol.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\binary_protocol.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bltouch.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bltouch.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\cancel_object.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\cancel_object.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\caselight.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\caselight.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\closedloop.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\closedloop.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\controllerfan.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\controllerfan.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\dac\dac_dac084s085.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\dac\dac_dac084s085.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\dac\dac_mcp4728.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\dac\dac_mcp4728.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\dac\stepper_dac.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\dac\stepper_dac.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\digipot\digipot.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\digipot\digipot_mcp4018.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\digipot\digipot_mcp4451.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\encoder_i2c.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\encoder_i2c.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\e_parser.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\e_parser.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\fanmux.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\fanmux.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\filwidth.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\filwidth.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\fwretract.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\fwretract.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\host_actions.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\host_actions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\joystick.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\joystick.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\blinkm.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\blinkm.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\leds.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\leds.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\neopixel.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\neopixel.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\pca9632.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\pca9632.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\printer_event_leds.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\printer_event_leds.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\tempstat.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\leds\tempstat.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\max7219.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\max7219.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\mixing.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\mixing.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\mmu2\mmu2.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\mmu2\mmu2.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\pause.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\pause.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\power.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\power.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\powerloss.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\powerloss.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\probe_temp_comp.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\probe_temp_comp.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\runout.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\runout.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\snmm.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\snmm.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\solenoid.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\solenoid.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\spindle_laser.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\spindle_laser.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\tmc_util.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\tmc_util.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\touch\xpt2046.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\touch\xpt2046.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\twibus.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\twibus.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\z_stepper_align.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\z_stepper_align.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\abl\G29.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\abl\M421.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\G26.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\G42.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\M420.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\mbl\G29.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\mbl\M421.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\ubl\G29.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\ubl\M421.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\G28.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\G33.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\G34_M422.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\G425.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\G76_M871.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\M100.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\M12.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\M425.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\M48.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\M665.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\M666.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\M852.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M200-M205.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M217.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M218.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M220.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M221.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M281.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M301.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M302.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M304.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M305.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M43.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M540.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M575.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M672.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\config\M92.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M108_M112_M410.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M111.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M120_M121.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M17_M18_M84.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M211.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M226.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M280.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M3-M5.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M350_M351.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M380_M381.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M400.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M42.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M605.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M7-M9.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M80_M81.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M85.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M997.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\M999.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\control\T.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\eeprom\M500-M504.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\advance\M900.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\baricuda\M126-M129.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\camera\M240.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\cancel\M486.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\caselight\M355.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\clean\G12.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\controllerfan\M710.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\digipot\M907-M910.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\filwidth\M404-M407.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\fwretract\G10_G11.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\fwretract\M207-M209.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\i2c\M260_M261.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\L6470\M122.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\L6470\M906.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\L6470\M916-918.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\leds\M150.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\leds\M7219.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\macro\M810-M819.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\mixing\M163-M165.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\mixing\M166.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\pause\G27.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\pause\G60.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\pause\G61.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\pause\M125.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\pause\M600.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\pause\M603.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\pause\M701_M702.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\powerloss\M1000.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\powerloss\M413.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\prusa_MMU2\M403.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\runout\M412.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\trinamic\M122.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\trinamic\M569.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\trinamic\M906.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\trinamic\M911-M914.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\gcode.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\gcode.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\geometry\G17-G19.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\geometry\G53-G59.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\geometry\G92.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\geometry\M206_M428.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\host\M110.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\host\M113.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\host\M114.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\host\M115.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\host\M118.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\host\M119.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\host\M16.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\host\M876.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M0_M1.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M117.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M145.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M250.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M300.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M73.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\motion\G0_G1.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\motion\G2_G3.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\motion\G4.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\motion\G5.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\motion\G80.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\motion\M290.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\parser.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\parser.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\probe\G30.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\probe\G31_G32.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\probe\G38.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\probe\M401_M402.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\probe\M851.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\probe\M951.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\queue.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\queue.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\scara\M360-M364.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M1001.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M20.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M21_M22.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M23.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M24_M25.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M26.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M27.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M28_M29.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M30.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M32.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M33.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M34.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M524.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\sd\M928.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\stats\M31.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\stats\M75-M78.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\temp\M104_M109.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\temp\M105.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\temp\M106_M107.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\temp\M140_M190.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\temp\M141_M191.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\temp\M155.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\temp\M303.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\units\G20_G21.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\units\M149.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\units\M82_M83.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\eeprom.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\endstop_interrupts.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\fastio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\fastio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\fastio\fastio_1280.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\fastio\fastio_1281.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\fastio\fastio_168.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\fastio\fastio_644.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\fastio\fastio_AT90USB.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\fast_pwm.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\HAL.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\HAL.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\HAL_SPI.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\inc\Conditionals_adv.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\inc\Conditionals_LCD.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\inc\Conditionals_post.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\inc\SanityCheck.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\MarlinSerial.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\MarlinSerial.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\math.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\pinsDebug.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\pinsDebug_plus_70.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\pinsDebug_Teensyduino.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\Servo.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\ServoTimers.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\spi_pins.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\u8g_com_HAL_AVR_sw_spi.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\watchdog.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\AVR\watchdog.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\HAL.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\platforms.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\Delay.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\eeprom_api.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\eeprom_api.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\eeprom_i2c.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\eeprom_spi.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\HAL_SPI.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\HAL_spi_L6470.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\HAL_ST7920.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\Marduino.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\math_32bit.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\servo.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\servo.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\servo_private.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\inc\Conditionals_adv.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\inc\Conditionals_LCD.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\inc\Conditionals_post.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\inc\MarlinConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\inc\MarlinConfigPre.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\inc\SanityCheck.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\inc\Version.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\extui\ui_api.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\extui\ui_api.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\extui_advi3pp.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\extui_dgus_lcd.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\extui_example.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\extui_malyan_lcd.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\fontutils.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\fontutils.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\lcdprint.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\lcdprint.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\thermistornames.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\ultralcd.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\lcd\ultralcd.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\bresenham.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\buzzer.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\buzzer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\circularqueue.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\crc16.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\crc16.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\duration_t.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\hex_print_routines.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\hex_print_routines.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\least_squares_fit.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\least_squares_fit.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\nozzle.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\nozzle.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\numtostr.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\numtostr.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\private_spi.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\softspi.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\stopwatch.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\stopwatch.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\vector_3.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\libs\vector_3.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\MarlinCore.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\MarlinCore.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\configuration_store.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\configuration_store.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\delta.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\delta.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\endstops.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\endstops.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\motion.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\motion.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\planner.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\planner.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\planner_bezier.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\planner_bezier.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\printcounter.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\printcounter.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\probe.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\probe.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\scara.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\scara.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\servo.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\servo.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\speed_lookuptable.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper\indirection.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper\indirection.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper\L64xx.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper\L64xx.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper\TMC26X.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper\TMC26X.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper\trinamic.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\stepper\trinamic.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\temperature.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\temperature.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistors.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_1.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_10.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_1010.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_1047.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_11.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_110.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_12.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_13.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_147.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_15.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_18.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_2.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_20.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_201.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_202.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_21.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_3.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_331.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_332.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_4.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_5.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_501.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_51.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_512.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_52.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_55.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_6.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_60.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_61.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_66.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_666.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_67.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_7.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_70.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_71.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_75.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_8.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_9.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_99.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_998.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\thermistor\thermistor_999.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\tool_change.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\tool_change.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\pins\pins.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\pins\pinsDebug.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\pins\pinsDebug_list.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\pins\sensitive_pins.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\cardreader.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\cardreader.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\Sd2Card.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\Sd2Card.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\Sd2Card_sdio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdBaseFile.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdBaseFile.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdFatConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdFatStructs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdFatUtil.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdFatUtil.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdFile.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdFile.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdInfo.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdVolume.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\sd\SdVolume.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Version.h">
+      <SubType>compile</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src" />
+    <Folder Include="src\advi3pp" />
+    <Folder Include="src\advi3pp\core" />
+    <Folder Include="src\advi3pp\inc" />
+    <Folder Include="src\advi3pp\lib" />
+    <Folder Include="src\advi3pp\lib\ADVstd" />
+    <Folder Include="src\advi3pp\screens" />
+    <Folder Include="src\advi3pp\screens\controls" />
+    <Folder Include="src\advi3pp\screens\core" />
+    <Folder Include="src\advi3pp\screens\info" />
+    <Folder Include="src\advi3pp\screens\print" />
+    <Folder Include="src\advi3pp\screens\settings" />
+    <Folder Include="src\advi3pp\screens\tuning" />
+    <Folder Include="src\core" />
+    <Folder Include="src\feature" />
+    <Folder Include="src\feature\bedlevel" />
+    <Folder Include="src\feature\bedlevel\abl" />
+    <Folder Include="src\feature\bedlevel\mbl" />
+    <Folder Include="src\feature\bedlevel\ubl" />
+    <Folder Include="src\feature\dac" />
+    <Folder Include="src\feature\digipot" />
+    <Folder Include="src\feature\leds" />
+    <Folder Include="src\feature\mmu2" />
+    <Folder Include="src\feature\touch" />
+    <Folder Include="src\gcode" />
+    <Folder Include="src\gcode\bedlevel" />
+    <Folder Include="src\gcode\bedlevel\abl" />
+    <Folder Include="src\gcode\bedlevel\mbl" />
+    <Folder Include="src\gcode\bedlevel\ubl" />
+    <Folder Include="src\gcode\calibrate" />
+    <Folder Include="src\gcode\config" />
+    <Folder Include="src\gcode\control" />
+    <Folder Include="src\gcode\eeprom" />
+    <Folder Include="src\gcode\feature" />
+    <Folder Include="src\gcode\feature\advance" />
+    <Folder Include="src\gcode\feature\baricuda" />
+    <Folder Include="src\gcode\feature\camera" />
+    <Folder Include="src\gcode\feature\cancel" />
+    <Folder Include="src\gcode\feature\caselight" />
+    <Folder Include="src\gcode\feature\clean" />
+    <Folder Include="src\gcode\feature\controllerfan" />
+    <Folder Include="src\gcode\feature\digipot" />
+    <Folder Include="src\gcode\feature\filwidth" />
+    <Folder Include="src\gcode\feature\fwretract" />
+    <Folder Include="src\gcode\feature\i2c" />
+    <Folder Include="src\gcode\feature\L6470" />
+    <Folder Include="src\gcode\feature\leds" />
+    <Folder Include="src\gcode\feature\macro" />
+    <Folder Include="src\gcode\feature\mixing" />
+    <Folder Include="src\gcode\feature\pause" />
+    <Folder Include="src\gcode\feature\powerloss" />
+    <Folder Include="src\gcode\feature\prusa_MMU2" />
+    <Folder Include="src\gcode\feature\runout" />
+    <Folder Include="src\gcode\feature\trinamic" />
+    <Folder Include="src\gcode\geometry" />
+    <Folder Include="src\gcode\host" />
+    <Folder Include="src\gcode\lcd" />
+    <Folder Include="src\gcode\motion" />
+    <Folder Include="src\gcode\probe" />
+    <Folder Include="src\gcode\scara" />
+    <Folder Include="src\gcode\sd" />
+    <Folder Include="src\gcode\stats" />
+    <Folder Include="src\gcode\temp" />
+    <Folder Include="src\gcode\units" />
+    <Folder Include="src\HAL" />
+    <Folder Include="src\HAL\shared" />
+    <Folder Include="src\HAL\AVR" />
+    <Folder Include="src\HAL\AVR\fastio" />
+    <Folder Include="src\HAL\AVR\inc" />
+    <Folder Include="src\inc" />
+    <Folder Include="src\lcd" />
+    <Folder Include="src\lcd\extui" />
+    <Folder Include="src\libs" />
+    <Folder Include="src\module" />
+    <Folder Include="src\module\stepper" />
+    <Folder Include="src\module\thermistor" />
+    <Folder Include="src\pins" />
+    <Folder Include="src\sd" />
+  </ItemGroup>
+  <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
+</Project>
