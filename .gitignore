@@ -183,3 +183,6 @@ __pycache__
 
 #ADVi3++
 ArduinoCore/
+LCD-Panel/DGUS-root/25_Controls
+LCD-Panel/DGUS-root/DWIN_SET/*.bmp
+
