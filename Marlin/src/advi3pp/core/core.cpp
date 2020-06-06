@@ -67,10 +67,12 @@ Core core;
 
 void Facade::on_startup()
 {
+    Frame::open();
     core.send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     graphs.clear();
     dimming.reset(true);
     status.reset();
+    versions.send_versions();
     core.show_boot_page();
     status.set(F("ADVi3++ is ready"));
 }
@@ -197,7 +199,6 @@ void Core::send_gplv3_7b_notice()
 //! Display the Boot animation or the EEPROM settings mismatch page
 void Core::show_boot_page()
 {
-    versions.send_versions();
     if(!eeprom_mismatch.check())
         return;
     pages.show_page(Page::Boot, ShowOptions::None);

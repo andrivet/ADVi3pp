@@ -140,6 +140,7 @@ constexpr Uint32 operator "" _u32(unsigned long long int dword) { return Uint32(
 //! A frame to be send to the LCD or received from the LCD
 struct Frame
 {
+    static void open();
     bool send(bool logging = true); // Logging is only used in DEBUG builds
 
     bool available(uint8_t bytes = 3);

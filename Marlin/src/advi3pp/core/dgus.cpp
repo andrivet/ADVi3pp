@@ -147,6 +147,11 @@ Frame& operator<<(Frame& frame, const char* s)
     return frame;
 }
 
+//! Open the serial communication between the mainboard and the LCD panel
+void Frame::open()
+{
+    DgusSerial.begin(LCD_BAUDRATE);
+}
 //! Send this Frame to the LCD display.
 //! @param logging  Enable logging in DEBUG release
 bool Frame::send(bool logging)

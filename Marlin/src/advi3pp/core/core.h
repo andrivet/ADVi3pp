@@ -32,6 +32,7 @@ struct Core
     void send_gplv3_7b_notice();
     void show_boot_page();
     void update_progress();
+
     void receive_lcd_serial_data();
     void send_lcd_serial_data(bool force_update = false);
 
