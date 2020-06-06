@@ -4,7 +4,7 @@ VARCount=64
 SCREENDSIZE=480X272
 SPADDRESS=5000
 [IMG]
-000=000_boot.bmp
+000=000_connecting.bmp
 001=001_boot.bmp
 022=022_main.bmp
 023=023_main_p.bmp
