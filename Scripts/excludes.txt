@@ -1,0 +1,5 @@
+.DS_Store
+._*
+/TFT/*
+DWprj.hmi
+DWprj.tft

@@ -185,4 +185,7 @@ __pycache__
 ArduinoCore/
 LCD-Panel/DGUS-root/25_Controls
 LCD-Panel/DGUS-root/DWIN_SET/*.bmp
+LCD-Panel/Sketch-Export/
+LCD-Panel/Masters/Boot
+
 
