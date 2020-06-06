@@ -25,6 +25,8 @@
 namespace ADVi3pp {
 
 namespace {
+    HardwareSerial& DgusSerial = Serial2;
+    const uint32_t LCD_BAUDRATE = 115200; // Between the LCD panel and the mainboard
 	const size_t MAX_GARBAGE_BYTES = 5;
 	const uint16_t FRAME_RECEIVE_DELAY = 50; // ms
 	const uint16_t FRAME_RECEIVE_TIMEOUT = 2000; // ms
@@ -152,6 +154,7 @@ void Frame::open()
 {
     DgusSerial.begin(LCD_BAUDRATE);
 }
+
 //! Send this Frame to the LCD display.
 //! @param logging  Enable logging in DEBUG release
 bool Frame::send(bool logging)
@@ -169,7 +172,7 @@ bool Frame::send(bool logging)
 #endif
     }
     size_t size = 3 + buffer_[Position::Length];
-    return Serial2.write(buffer_, size) == size; // Header, length and data
+    return DgusSerial.write(buffer_, size) == size; // Header, length and data
 }
 
 //! Reset this Frame as an input Frame
@@ -194,7 +197,7 @@ void Frame::reset(Command command)
 void Frame::wait_for_data(uint8_t length)
 {
 	uint8_t count = 0;
-    while(Serial2.available() < length)
+    while(DgusSerial.available() < length)
 	{
 		if(++count > FRAME_RECEIVE_TIMEOUT / FRAME_RECEIVE_DELAY)
 			receiveTimeout();
@@ -214,7 +217,7 @@ void Frame::receiveTimeout()
 //! @return         True if the amount of bytes is available
 bool Frame::available(uint8_t bytes)
 {
-    return Serial2.available() >= bytes;
+    return DgusSerial.available() >= bytes;
 }
 
 //! Receive data from the LCD display.
@@ -234,7 +237,7 @@ bool Frame::receive(bool log)
     for(size_t index = 0; index < MAX_GARBAGE_BYTES; ++index)
     {
         wait_for_data(1);
-        header0 = static_cast<uint8_t>(Serial2.read());
+        header0 = static_cast<uint8_t>(DgusSerial.read());
         if(header0 == HEADER_BYTE_0)
             break;
         Log::error() << F("Garbage read: ") << header0 << Log::endl();
@@ -246,14 +249,14 @@ bool Frame::receive(bool log)
     }
 
     wait_for_data(2);
-    auto header1 = static_cast<uint8_t>(Serial2.read());
+    auto header1 = static_cast<uint8_t>(DgusSerial.read());
     if(header1 != HEADER_BYTE_1)
     {
         Log::error() << F("Invalid header when receiving a Frame: ") << header0 << ", " << header1 << Log::endl();
         return false;
     }
 
-    auto length = static_cast<uint8_t>(Serial2.read());
+    auto length = static_cast<uint8_t>(DgusSerial.read());
 
     buffer_[0] = HEADER_BYTE_0;
     buffer_[1] = HEADER_BYTE_1;
@@ -267,7 +270,7 @@ bool Frame::receive(bool log)
     buffer_[2] = length;
 
     wait_for_data(length);
-    auto read = Serial2.readBytes(buffer_ + 3, length);
+    auto read = DgusSerial.readBytes(buffer_ + 3, length);
     if(read != length)
     {
         Log::error() << F("Invalid amount of bytes received: ") << read << F(" instead of ") << length << Log::endl();
