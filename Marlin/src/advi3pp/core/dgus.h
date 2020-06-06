@@ -176,6 +176,7 @@ protected:
 
 private:
     void wait_for_data(uint8_t length);
+    void receiveTimeout();
 
 protected:
     static const size_t FRAME_BUFFER_SIZE = 255;

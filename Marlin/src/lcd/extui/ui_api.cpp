@@ -1080,6 +1080,15 @@ namespace ExtUI {
       setUserConfirmed();
   }
 
+  void kill(PGM_P const lcd_error, PGM_P const lcd_component, const bool steppers_off)
+  {
+      ::kill(lcd_error, lcd_component, steppers_off);
+  }
+
+  void killRightNow(const bool steppers_off)
+  {
+      ::minkill(steppers_off);
+  }
 
 } // namespace ExtUI
 

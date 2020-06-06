@@ -378,6 +378,8 @@ namespace ExtUI {
   void setAllAxisPositionUnknown();
   void finishAndDisableHeaters();
   void cancelWaitForHeatup();
+  void kill(PGM_P const lcd_error=nullptr, PGM_P const lcd_component=nullptr, const bool steppers_off=false);
+  void killRightNow(const bool steppers_off=false);
 };
 
 /**

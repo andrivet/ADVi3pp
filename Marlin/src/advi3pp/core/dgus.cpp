@@ -20,10 +20,15 @@
 
 #include "logging.h"
 #include "dgus.h"
+#include "../../lcd/extui/ui_api.h"
 
 namespace ADVi3pp {
 
-namespace { const size_t MAX_GARBAGE_BYTES = 5; }
+namespace {
+	const size_t MAX_GARBAGE_BYTES = 5;
+	const uint16_t FRAME_RECEIVE_DELAY = 50; // ms
+	const uint16_t FRAME_RECEIVE_TIMEOUT = 2000; // ms
+}
 
 // --------------------------------------------------------------------
 // Frame
@@ -183,8 +188,20 @@ void Frame::reset(Command command)
 //! @param length       Number of bytes to be available before returning
 void Frame::wait_for_data(uint8_t length)
 {
-    while (Serial2.available() < length)
-        delay(50);
+	uint8_t count = 0;
+    while(Serial2.available() < length)
+	{
+		if(++count > FRAME_RECEIVE_TIMEOUT / FRAME_RECEIVE_DELAY)
+			receiveTimeout();
+        delay(FRAME_RECEIVE_DELAY);
+	}
+}
+
+void Frame::receiveTimeout()
+{
+    SERIAL_ERROR_START();
+    SERIAL_ECHOLNPGM("LCD panel does not respond. Check cable between the mainboard and the LCD Panel. Printer is stopped");
+    ExtUI::killRightNow();
 }
 
 //! Check if data (bytes) are available.
