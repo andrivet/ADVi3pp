@@ -44,6 +44,7 @@ ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
     Uint8 version; response >> version;
     Log::log() << F("LCD Firmware raw version = ") << version.byte << Log::endl();
 
+	lcd_version.reset();
     lcd_version << (version.byte / 0x10) << '.' << (version.byte % 0x10);
     return lcd_version;
 }
@@ -80,14 +81,14 @@ void Versions::send_versions() const
 	frame.reset(Variable::ADVi3ppBuild);
 	frame << text;
 	frame.send();
-		
+	
     get_lcd_firmware_version(text).align(Alignment::Left);
 	frame.reset(Variable::ADVi3ppDGUSVersion);
 	frame << text;
 	frame.send();
 		
     text.set(SHORT_BUILD_VERSION).align(Alignment::Left);
-	frame.reset(Variable::ADVi3ppVersion);
+	frame.reset(Variable::ADVi3ppMarlinVersion);
 	frame << text;
 	frame.send();
 }
