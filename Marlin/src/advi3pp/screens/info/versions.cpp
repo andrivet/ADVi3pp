@@ -61,30 +61,35 @@ ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version)
 //! Send the different versions to the LCD screen.
 void Versions::send_versions() const
 {
-    ADVString<16> advi3pp_version;
-    ADVString<16> advi3pp_build;
-    ADVString<16> dgus_version;
-    ADVString<16> marlin_version{SHORT_BUILD_VERSION};
+	// Minimize memory usage (SRAM)
+	
+	ADVString<16> text;
+    convert_version(text, advi3_pp_version).align(Alignment::Left);
+	WriteRamDataRequest frame{Variable::ADVi3ppVersion};
+	frame << text;
+	frame.send();
 
-    advi3pp_build
-            << (YEAR__ - 2000)
-            << (MONTH__ < 10 ? "0" : "") << MONTH__
-            << (DAY__   < 10 ? "0" : "") << DAY__
-            << (HOUR__  < 10 ? "0" : "") << HOUR__
-            << (MIN__   < 10 ? "0" : "") << MIN__
-            << (SEC__   < 10 ? "0" : "") << SEC__;
-
-    convert_version(advi3pp_version, advi3_pp_version).align(Alignment::Left);
-    advi3pp_build.align(Alignment::Left);
-    get_lcd_firmware_version(dgus_version).align(Alignment::Left);
-    marlin_version.align(Alignment::Left);
-
-    WriteRamDataRequest frame{Variable::ADVi3ppVersion};
-    frame << advi3pp_version
-          << advi3pp_build
-          << dgus_version
-          << marlin_version;
-    frame.send();
+    text.reset();
+    text << (YEAR__ - 2000)
+         << (MONTH__ < 10 ? "0" : "") << MONTH__
+         << (DAY__   < 10 ? "0" : "") << DAY__
+         << (HOUR__  < 10 ? "0" : "") << HOUR__
+         << (MIN__   < 10 ? "0" : "") << MIN__
+         << (SEC__   < 10 ? "0" : "") << SEC__;
+    text.align(Alignment::Left);
+	frame.reset(Variable::ADVi3ppBuild);
+	frame << text;
+	frame.send();
+		
+    get_lcd_firmware_version(text).align(Alignment::Left);
+	frame.reset(Variable::ADVi3ppDGUSVersion);
+	frame << text;
+	frame.send();
+		
+    text.set(SHORT_BUILD_VERSION).align(Alignment::Left);
+	frame.reset(Variable::ADVi3ppVersion);
+	frame << text;
+	frame.send();
 }
 
 //! Prepare the page before being displayed and return the right Page value
