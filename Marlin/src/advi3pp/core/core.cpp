@@ -190,6 +190,7 @@ void Facade::process_command()
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void Core::send_gplv3_7b_notice()
 {
+    SERIAL_ECHO_START();
     SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2020 Sebastien Andrivet");
 }
 
