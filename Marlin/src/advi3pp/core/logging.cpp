@@ -19,6 +19,8 @@
  */
 
 #include "../parameters.h"
+#include "logging.h"
+#include "../../core/serial.h"
 
 namespace ADVi3pp {
 
