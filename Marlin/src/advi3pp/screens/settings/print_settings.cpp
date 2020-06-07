@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "print_settings.h"
 #include "../../core/dgus.h"
 

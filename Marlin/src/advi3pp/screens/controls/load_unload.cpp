@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "load_unload.h"
 #include "../core/wait.h"
 #include "../../core/core.h"

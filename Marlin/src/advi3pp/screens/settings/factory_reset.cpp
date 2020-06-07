@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "factory_reset.h"
 
 namespace ADVi3pp {

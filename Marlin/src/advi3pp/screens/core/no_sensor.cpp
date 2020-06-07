@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "no_sensor.h"
 
 namespace ADVi3pp {

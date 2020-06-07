@@ -18,6 +18,7 @@
  *
  */
 
+#include "../parameters.h"
 #include "../../lcd/extui/ui_api.h"
 #include "status.h"
 #include "dgus.h"

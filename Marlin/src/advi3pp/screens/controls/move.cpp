@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "move.h"
 #include "../../core/core.h"
 

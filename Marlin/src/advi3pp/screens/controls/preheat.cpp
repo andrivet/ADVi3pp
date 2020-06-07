@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "preheat.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"

@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "statistics.h"
 #include "../../core/string.h"
 #include "../../core/dgus.h"

@@ -18,6 +18,7 @@
  *
  */
 
+#include "../parameters.h"
 #include "dgus.h"
 #include "pages.h"
 

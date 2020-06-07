@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "sd_card.h"
 #include "../../core/dgus.h"
 #include "../../core/status.h"

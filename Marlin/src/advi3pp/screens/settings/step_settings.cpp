@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "step_settings.h"
 #include "../../core/dgus.h"
 

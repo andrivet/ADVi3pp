@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "pid_settings.h"
 #include "../../core/dgus.h"
 #include "../tuning/pid_tuning.h"

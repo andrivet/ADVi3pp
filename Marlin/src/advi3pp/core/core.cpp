@@ -18,6 +18,7 @@
  *
  */
 
+#include "../parameters.h"
 #include "../inc/advi3pp.h"
 #include "../../gcode/parser.h"
 #include "../versions.h"

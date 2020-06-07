@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "advanced_pause.h"
 #include "../core/wait.h"
 #include "../../core/logging.h"

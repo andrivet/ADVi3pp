@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "leveling_grid.h"
 
 namespace ADVi3pp {

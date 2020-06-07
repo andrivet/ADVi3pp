@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "change_filament.h"
 
 namespace ADVi3pp {

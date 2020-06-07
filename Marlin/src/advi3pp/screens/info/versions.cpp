@@ -18,8 +18,8 @@
  *
  */
 
+#include "../../parameters.h"
 #include "../../core/core.h"
-#include "../../core/string.h"
 #include "../../core/dgus.h"
 #include "../../core/dates.h"
 #include "../../versions.h"

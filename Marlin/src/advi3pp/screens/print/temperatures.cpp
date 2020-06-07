@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "temperatures.h"
 
 #pragma clang diagnostic push

@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "eeprom_mismatch.h"
 
 namespace ADVi3pp {

@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "wait.h"
 
 namespace ADVi3pp {

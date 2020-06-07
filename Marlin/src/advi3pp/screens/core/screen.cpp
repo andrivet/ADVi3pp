@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "screen.h"
 
 namespace ADVi3pp {

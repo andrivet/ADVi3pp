@@ -18,6 +18,7 @@
  *
  */
 
+#include "../parameters.h"
 #include <Arduino.h>
 #include "../../lcd/extui/ui_api.h"
 #include "graphs.h"

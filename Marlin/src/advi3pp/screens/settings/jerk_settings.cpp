@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "jerk_settings.h"
 #include "../../core/dgus.h"
 

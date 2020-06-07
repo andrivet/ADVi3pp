@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "extruder_tuning.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"

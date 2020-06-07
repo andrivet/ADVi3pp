@@ -18,6 +18,8 @@
  *
  */
 
+#include "../parameters.h"
+
 namespace ADVi3pp {
 
 #ifdef ADVi3PP_LOG

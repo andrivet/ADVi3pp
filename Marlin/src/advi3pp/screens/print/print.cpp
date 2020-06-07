@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "print.h"
 #include "../../core/status.h"
 #include "../core/wait.h"

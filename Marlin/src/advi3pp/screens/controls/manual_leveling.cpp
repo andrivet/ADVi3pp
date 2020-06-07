@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "manual_leveling.h"
 #include "../../core/core.h"
 #include "../core/wait.h"

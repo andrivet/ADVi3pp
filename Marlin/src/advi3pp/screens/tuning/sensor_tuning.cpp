@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "sensor_tuning.h"
 
 namespace ADVi3pp {

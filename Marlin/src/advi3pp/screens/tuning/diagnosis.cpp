@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "diagnosis.h"
 #include "../../core/task.h"
 #include "../../core/dgus.h"

@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "automatic_leveling.h"
 
 namespace ADVi3pp {

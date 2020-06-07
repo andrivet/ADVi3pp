@@ -18,6 +18,7 @@
  *
  */
 
+#include "../parameters.h"
 #include "logging.h"
 #include "dgus.h"
 #include "buzzer.h"

@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "lcd_settings.h"
 #include "../../core/dimming.h"
 #include "../../core/buzzer.h"

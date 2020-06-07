@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "sensor_z_height.h"
 
 namespace ADVi3pp {

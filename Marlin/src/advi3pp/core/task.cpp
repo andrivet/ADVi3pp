@@ -18,6 +18,7 @@
  *
  */
 
+#include "../parameters.h"
 #include <Arduino.h>
 #include "task.h"
 

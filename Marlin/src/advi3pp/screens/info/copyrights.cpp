@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../parameters.h"
 #include "copyrights.h"
 
 namespace ADVi3pp {
