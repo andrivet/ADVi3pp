@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../core/core.h"
 #include "../../core/string.h"
 #include "../../core/dgus.h"
 #include "../../core/dates.h"
@@ -49,15 +50,6 @@ ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
     return lcd_version;
 }
 
-//! Convert a version from its hexadecimal representation.
-//! @param hex_version  Hexadecimal representation of the version
-//! @return             Version as a string
-template<size_t L>
-ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version)
-{
-    version << hex_version / 0x0100 << '.' << (hex_version % 0x100) / 0x10 << '.' << hex_version % 0x10;
-    return version;
-}
 
 //! Send the different versions to the LCD screen.
 void Versions::send_versions() const
@@ -65,7 +57,7 @@ void Versions::send_versions() const
 	// Minimize memory usage (SRAM)
 	
 	ADVString<16> text;
-    convert_version(text, advi3_pp_version).align(Alignment::Left);
+    core.convert_version(text, advi3_pp_version).align(Alignment::Left);
 	WriteRamDataRequest frame{Variable::ADVi3ppVersion};
 	frame << text;
 	frame.send();
@@ -97,6 +89,7 @@ void Versions::send_versions() const
 //! @return The index of the page to display
 Page Versions::do_prepare_page()
 {
+    send_versions();
     return Page::Versions;
 }
 
