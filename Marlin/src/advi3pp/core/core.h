@@ -29,19 +29,40 @@ namespace ADVi3pp {
 
 struct Core
 {
+    void startup();
+    void idle();
+    void killed(PGM_P error, PGM_P component);
+    void process_command(const GCodeParser& parser); // TODO: call it
+
+    bool ensure_not_printing();
+    bool is_busy();
+
+    template<size_t L> ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version);
+
+private:
+    bool init();
     void send_gplv3_7b_notice();
-    void show_boot_page();
     void update_progress();
 
     void receive_lcd_serial_data();
     void send_lcd_serial_data(bool force_update = false);
 
-    void process_command(const GCodeParser& parser);
-
-    bool ensure_not_printing();
-    bool is_busy();
+private:
+    bool init_ = false;
 };
 
-extern Core core;
+static Core core;
+
+
+//! Convert a version from its hexadecimal representation.
+//! @param hex_version  Hexadecimal representation of the version
+//! @return             Version as a string
+template<size_t L>
+ADVString<L>& Core::convert_version(ADVString<L>& version, uint16_t hex_version)
+{
+    version << hex_version / 0x0100 << '.' << (hex_version % 0x100) / 0x10 << '.' << hex_version % 0x10;
+    return version;
+}
+
 
 }

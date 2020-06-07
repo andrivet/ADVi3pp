@@ -20,6 +20,7 @@
 
 #include "../inc/advi3pp.h"
 #include "../../gcode/parser.h"
+#include "../versions.h"
 #include "core.h"
 #include "graphs.h"
 #include "dimming.h"
@@ -63,35 +64,20 @@
 
 namespace ADVi3pp {
 
-Core core;
 
 void Facade::on_startup()
 {
-    Frame::open();
-    core.send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
-    graphs.clear();
-    dimming.reset(true);
-    status.reset();
-    versions.send_versions();
-    core.show_boot_page();
-    status.set(F("ADVi3++ is ready"));
+    core.startup();
 }
 
 void Facade::on_idle()
 {
-    core.receive_lcd_serial_data();
-    dimming.check();
-    task.execute_background_task();
-    core.update_progress();
-    core.send_lcd_serial_data();
-    graphs.update();
+    core.idle();
 }
 
 void Facade::on_killed(PGM_P error, PGM_P component)
 {
-    status.set(error);
-    core.send_lcd_serial_data();
-    pages.show_page(Page::Killed);
+    core.killed(error, component);
 }
 
 void Facade::on_media_inserted()
@@ -161,7 +147,7 @@ void Facade::on_settings_written(bool success)
 void Facade::on_settings_loaded(bool success)
 {
     if(!success)
-        settings.mismatch();
+        eeprom_mismatch.show(ShowOptions::None);
 }
 
 void Facade::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval)
@@ -188,20 +174,56 @@ void Facade::process_command()
     }
 }
 
+void Core::startup()
+{
+    pinMode(LED_PIN, OUTPUT); // To help debugging when serial is not available
+    Frame::open();
+}
+
+bool Core::init()
+{
+    if(init_)
+        return false;
+    init_ = true;
+
+    send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
+    graphs.clear();
+    dimming.reset(true);
+
+    ADVString<32> welcome;
+    welcome << F("ADVi3++ ");
+    core.convert_version(welcome, advi3_pp_version);
+    welcome << F(" is ready");
+    status.set(welcome.align(Alignment::Center).get());
+
+    return true;
+}
+
+void Core::idle()
+{
+    init();
+
+    receive_lcd_serial_data();
+    dimming.check();
+    task.execute_background_task();
+    update_progress();
+    send_lcd_serial_data();
+    graphs.update();
+}
+
+void Core::killed(PGM_P error, PGM_P component)
+{
+    status.set(error);
+    send_lcd_serial_data();
+    pages.show_page(Page::Killed);
+}
+
 //! Note to forks author:
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void Core::send_gplv3_7b_notice()
 {
     SERIAL_ECHO_START();
     SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2020 Sebastien Andrivet");
-}
-
-//! Display the Boot animation or the EEPROM settings mismatch page
-void Core::show_boot_page()
-{
-    if(!eeprom_mismatch.check())
-        return;
-    pages.show_page(Page::Boot, ShowOptions::None);
 }
 
 //! Update the progress bar if the printer is printing for the SD card
