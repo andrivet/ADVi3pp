@@ -344,6 +344,9 @@
     <Compile Include="src\advi3pp\lib\ADVstd\ADVunique_ptr.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\parameters.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\screens\controls\automatic_leveling.cpp">
       <SubType>compile</SubType>
     </Compile>
