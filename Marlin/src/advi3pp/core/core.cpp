@@ -196,7 +196,7 @@ bool Core::init()
     welcome << F(" is ready");
     status.set(welcome.align(Alignment::Center).get());
 
-    pages.show_page(Page::Boot);
+    pages.show_page(Page::Boot, ShowOptions::None);
 	
 	SERIAL_ECHO_START();
 	SERIAL_ECHOLNPGM("ADVi3++ is ready");

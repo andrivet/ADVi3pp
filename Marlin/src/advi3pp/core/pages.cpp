@@ -50,7 +50,9 @@ void Pages::show_page(Page page, ShowOptions options)
 Page Pages::get_current_page()
 {
     // Boot page switches automatically (animation) to the Main page
-    return current_page_ == Page::None ? Page::Main : current_page_;
+	if(current_page_ == Page::None || current_page_ == Page::Boot)
+		return Page::Main;
+    return current_page_;
 }
 
 //! Set page to display after the completion of an operation.
