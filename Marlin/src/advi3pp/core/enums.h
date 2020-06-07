@@ -71,7 +71,8 @@ enum class Page: uint8_t
     ZHeightTuning           = 106,
     LinearAdvanceTuning     = 108,
     LinearAdvanceSettings   = 110,
-    Diagnosis               = 112
+    Diagnosis               = 112,
+    Boot                    = 200
 };
 
 //! List of variables and their addresses.
