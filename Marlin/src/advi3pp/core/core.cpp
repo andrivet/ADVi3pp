@@ -195,6 +195,9 @@ bool Core::init()
     core.convert_version(welcome, advi3_pp_version);
     welcome << F(" is ready");
     status.set(welcome.align(Alignment::Center).get());
+	
+	SERIAL_ECHO_START();
+	SERIAL_ECHOLNPGM("ADVi3++ is ready");
 
     return true;
 }
