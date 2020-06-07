@@ -129,7 +129,7 @@ struct Callback<R(*)(A...)>
     explicit Callback(const L& l): isNull_{false}  { place<CallableFunction<R, A...>>(l); }
 
     // From another Callback
-    Callback(const Self& cb): isNull_{cb.isNull_}  { copy_buffer(cb.buffer_); }
+    explicit Callback(const Self& cb): isNull_{cb.isNull_}  { copy_buffer(cb.buffer_); }
 
     // Assignment
     Callback& operator=(const Self& cb) { if(&cb != this) { isNull_ = cb.isNull_;  copy_buffer(cb.buffer_); } return *this; };
