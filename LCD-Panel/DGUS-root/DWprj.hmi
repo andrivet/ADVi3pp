@@ -93,6 +93,7 @@ SPADDRESS=5000
 113=113_diagnosis_p.bmp
 114=114_test_leveling.bmp
 115=115_test_leveling.bmp
+200=200_boot.bmp
 201=201_boot.bmp
 202=202_boot.bmp
 203=203_boot.bmp
