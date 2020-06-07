@@ -2190,9 +2190,7 @@ void MarlinSettings::postprocess() {
           if (!validating) ExtUI::onLoadSettings(extui_data);
         }
         // @advi3++ PR candidate
-        {
-            if(!validating) ExtUI::onLoadSettingsEx(persistentStore.read_data, eeprom_index, working_crc);
-        }
+        ExtUI::onLoadSettingsEx(persistentStore.read_data, eeprom_index, working_crc);
       #endif
 
       //
