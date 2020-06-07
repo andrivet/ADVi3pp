@@ -28,7 +28,6 @@ namespace ADVi3pp {
 enum class Page: uint8_t
 {
     None                    = 0,
-    Boot                    = 1,
     Main                    = 22,
     Controls                = 24,
     Tuning                  = 26,
