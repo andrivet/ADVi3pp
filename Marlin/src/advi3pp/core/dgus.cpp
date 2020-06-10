@@ -29,8 +29,8 @@ namespace {
     HardwareSerial& DgusSerial = Serial2;
     const uint32_t  LCD_BAUDRATE = 115200; // Between the LCD panel and the mainboard
 	const size_t    MAX_GARBAGE_BYTES = 5;
-	const uint16_t  LCD_READ_TIMEOUT = 50; // ms
-	const uint16_t  LCD_READ_KILL_DELAY = 2000; // ms, must be less that the watchdog time
+	const uint16_t  LCD_READ_DELAY = 50; // ms
+	const uint16_t  LCD_READ_KILL_DELAY = 2500; // ms, must be less that the watchdog time
 }
 
 // --------------------------------------------------------------------
@@ -153,7 +153,6 @@ Frame& operator<<(Frame& frame, const char* s)
 //! Open the serial communication between the mainboard and the LCD panel
 void Frame::open()
 {
-    DgusSerial.setTimeout(LCD_READ_TIMEOUT);
     DgusSerial.begin(LCD_BAUDRATE);
 }
 
@@ -198,19 +197,27 @@ void Frame::reset(Command command)
 //! @param length       Number of bytes to be available before returning
 void Frame::wait_for_data(uint8_t length)
 {
-	uint32_t count = 0;
+	auto start_time = millis();
     while(DgusSerial.available() < length)
 	{
-        count += 1;
-        receive_kill(count);
+		delay(LCD_READ_DELAY);
+		auto current_time = millis();
+		if(current_time - start_time > LCD_READ_KILL_DELAY)
+			kill();
 	}
 }
 
-void Frame::receive_kill(uint32_t count)
+void Frame::check_lcd_connectivity()
 {
-    if(count % (LCD_READ_KILL_DELAY / LCD_READ_TIMEOUT) != 0)
-        return;
+    ReadRegister read{Register::Version, 1};
+    if(!read.send_and_receive())
+        kill();
+    Uint8 data;
+    read >> data;
+}
 
+void Frame::kill()
+{
     SERIAL_ERROR_START();
     SERIAL_ECHOLNPGM("LCD panel does not respond. Check cable between mainboard and LCD Panel. Printer is stopped.");
     ExtUI::killRightNow();

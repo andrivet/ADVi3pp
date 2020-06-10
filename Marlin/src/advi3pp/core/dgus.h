@@ -141,8 +141,9 @@ constexpr Uint32 operator "" _u32(unsigned long long int dword) { return Uint32(
 struct Frame
 {
     static void open();
-    bool send(bool logging = true); // Logging is only used in DEBUG builds
+    static void check_lcd_connectivity();
 
+    bool send(bool logging = true); // Logging is only used in DEBUG builds
     bool available(uint8_t bytes = 3);
     bool receive(bool logging = true); // Logging is only used in DEBUG builds
     Command get_command() const;
@@ -177,7 +178,7 @@ protected:
 
 private:
     void wait_for_data(uint8_t length);
-    void receive_kill(uint32_t count);
+    static void kill();
 
 protected:
     static const size_t FRAME_BUFFER_SIZE = 255;
