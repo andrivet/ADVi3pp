@@ -1570,16 +1570,33 @@
 
 // @section temperature
 
+// @advi3++ Change the default values and add more presets (5 instead of 2)
+
 // Preheat Constants
-#define PREHEAT_1_LABEL       "PLA"
+#define PREHEAT_1_LABEL       "Preheat1"
 #define PREHEAT_1_TEMP_HOTEND 180
-#define PREHEAT_1_TEMP_BED     70
+#define PREHEAT_1_TEMP_BED     50
 #define PREHEAT_1_FAN_SPEED     0 // Value from 0 to 255
 
-#define PREHEAT_2_LABEL       "ABS"
-#define PREHEAT_2_TEMP_HOTEND 240
-#define PREHEAT_2_TEMP_BED    110
+#define PREHEAT_2_LABEL       "Preheat2"
+#define PREHEAT_2_TEMP_HOTEND 200
+#define PREHEAT_2_TEMP_BED     60
 #define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
+
+#define PREHEAT_3_LABEL       "Preheat3"
+#define PREHEAT_3_TEMP_HOTEND 220
+#define PREHEAT_3_TEMP_BED     70
+#define PREHEAT_3_FAN_SPEED     0 // Value from 0 to 255
+
+#define PREHEAT_4_LABEL       "Preheat4"
+#define PREHEAT_4_TEMP_HOTEND 180
+#define PREHEAT_4_TEMP_BED      0
+#define PREHEAT_4_FAN_SPEED     0 // Value from 0 to 255
+
+#define PREHEAT_5_LABEL       "Preheat5"
+#define PREHEAT_5_TEMP_HOTEND 200
+#define PREHEAT_5_TEMP_BED      0
+#define PREHEAT_5_FAN_SPEED     0 // Value from 0 to 255
 
 /**
  * Nozzle Park
