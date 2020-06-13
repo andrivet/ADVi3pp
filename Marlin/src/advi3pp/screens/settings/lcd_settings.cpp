@@ -51,17 +51,14 @@ bool LcdSettings::do_dispatch(KeyValue key_value)
 //! @return The index of the page to display
 Page LcdSettings::do_prepare_page()
 {
-    features_ = settings.get_current_features();
+    settings.send_features();
     return Page::LCD;
 }
 
 //! Handle the Dimming (On/Off) command
 void LcdSettings::dimming_command()
 {
-    flip_bits(features_, Feature::Dimming);
-    dimming.enable(test_one_bit(features_, Feature::Dimming), true);
-    settings.change_features(features_);
-    settings.save();
+    settings.flip_features(Feature::Dimming);
 }
 
 //! Handle the change brightness command.
@@ -74,19 +71,15 @@ void LcdSettings::change_brightness(uint16_t brightness)
 //! Handle the Buzz on Action command
 void LcdSettings::buzz_on_action_command()
 {
-    flip_bits(features_, Feature::Buzzer);
-    buzzer.enable(test_one_bit(features_, Feature::Buzzer));
-    settings.change_features(features_);
-    settings.save();
+    settings.flip_features(Feature::BuzzOnAction);
 }
 
 //! Handle the Buzz on Press command
 void LcdSettings::buzz_on_press_command()
 {
-    flip_bits(features_, Feature::BuzzOnPress);
-    buzzer.enable_on_press(test_one_bit(features_, Feature::BuzzOnPress));
-    settings.change_features(features_);
-    settings.save();
+    Feature feature = settings.flip_features(Feature::BuzzOnPress);
+    if(feature == Feature::BuzzOnPress)
+        buzzer.buzz_on_press();
 }
 
 }

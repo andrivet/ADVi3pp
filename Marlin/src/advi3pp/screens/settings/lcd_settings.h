@@ -36,7 +36,6 @@ private:
     void buzz_on_action_command();
     void buzz_on_press_command();
 
-    Feature features_ = Feature::None;
     friend Parent;
 };
 

@@ -23,6 +23,7 @@
 #include "dgus.h"
 #include "buzzer.h"
 #include "dimming.h"
+#include "settings.h"
 
 namespace ADVi3pp {
 
@@ -30,26 +31,12 @@ const uint8_t BUZZ_ON_PRESS_DURATION = 10; // x 1 ms
 
 Buzzer buzzer;
 
-//! Enable or disable the buzzer
-void Buzzer::enable(bool enable)
-{
-    enabled_ = enable;
-}
-
-//! Enable or disable the buzzer when the LCD panel is presses
-void Buzzer::enable_on_press(bool enable, bool buzz)
-{
-    on_press_enabled_ = buzz;
-    if(enable && buzz)
-        send_buzz_command_to_lcd(50);
-}
-
 //! Activate the LCD internal buzzer for the given duration.
 //! Note: If the buzzer is disabled, does nothing.
-void Buzzer::buzz(long duration)
+void Buzzer::buzz_on_action(long duration)
 {
     dimming.reset();
-    if(!enabled_)
+    if(!settings.is_feature_enabled(Feature::BuzzOnAction))
     {
         Log::log() << F("Silent Buzz") << Log::endl();
         return;
@@ -73,7 +60,7 @@ void Buzzer::send_buzz_command_to_lcd(long duration)
 //! Note: If buzz on press is disabled, does nothing
 void Buzzer::buzz_on_press()
 {
-    if(!on_press_enabled_)
+    if(!settings.is_feature_enabled(Feature::BuzzOnPress))
     {
         Log::log() << F("Silent Buzz") << Log::endl();
         return;

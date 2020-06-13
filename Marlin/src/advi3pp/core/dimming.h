@@ -30,14 +30,13 @@ struct Dimming
 {
     Dimming();
 
-    void enable(bool enable, bool doIt = true);
     void check();
     void reset(bool force = false);
     void change_brightness(int16_t brightness);
 
 private:
     void set_next_checking_time();
-    void set_next_dimmming_time();
+    void set_next_dimming_time();
     void send_brightness();
     uint8_t get_adjusted_brightness();
 
@@ -45,8 +44,7 @@ private:
     static constexpr uint8_t dimming_ratio = 5; //!< Ratio (in percent) between normal and dimmed LCD panel
     static constexpr uint16_t dimming_delay = 5 * 60; //!< Delay before dimming the LCD panel (5 minutes)
 
-    bool enabled_ = true;
-    bool dimming_ = false;
+    bool dimmed_ = false;
     millis_t next_check_time_ = 0;
     millis_t next_dimming_time_ = 0;
 };

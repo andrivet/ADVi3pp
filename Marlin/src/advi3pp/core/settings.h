@@ -45,10 +45,9 @@ struct Settings
     void save(); // Save to EEPROM (i.e. M500)
     void restore();
 
-    Feature get_current_features() const;
-    void change_features(Feature features);
-    void flip_features(Feature features);
+    Feature flip_features(Feature features);
     void send_features();
+    bool is_feature_enabled(Feature features) const;
 
     uint16_t get_last_used_temperature(TemperatureKind kind) const;
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);

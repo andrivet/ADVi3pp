@@ -290,7 +290,7 @@ enum class Feature: uint16_t
 {
     None                = 0b0000000000000000,
     Dimming             = 0b0000000000000001,
-    Buzzer              = 0b0000000000000010,
+    BuzzOnAction        = 0b0000000000000010,
     BuzzOnPress         = 0b0000000000000100,
     RunoutSensor        = 0b0000000000001000
 };

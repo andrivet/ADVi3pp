@@ -33,7 +33,7 @@ namespace ADVi3pp {
 
 const Feature DEFAULT_FEATURES =
         Feature::Dimming |
-        Feature::Buzzer;
+        Feature::BuzzOnAction;
 
 Settings settings;
 
@@ -42,7 +42,6 @@ bool Settings::write(eeprom_write write, int& eeprom_index, uint16_t& working_cr
     EepromWrite eeprom{write, eeprom_index, working_crc};
 
     eeprom.write(settings_version);
-    preheat.write(eeprom);
     sensor_settings.write(eeprom);
     pid_settings.write(eeprom);
     eeprom.write(features_);
@@ -56,14 +55,9 @@ bool Settings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 
     uint16_t version = 0;
     eeprom.read(version);
-    preheat.read(eeprom);
     sensor_settings.read(eeprom);
     pid_settings.read(eeprom);
     eeprom.read(features_);
-
-    dimming.enable(test_one_bit(features_, Feature::Dimming), false);
-    buzzer.enable(test_one_bit(features_, Feature::Buzzer));
-    buzzer.enable_on_press(test_one_bit(features_, Feature::BuzzOnPress), false);
 
     return version == settings_version;
 }
@@ -71,7 +65,6 @@ bool Settings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 //! Reset presets.
 void Settings::reset()
 {
-    preheat.reset();
     sensor_settings.reset();
     pid_settings.reset();
     features_ = DEFAULT_FEATURES;
@@ -82,7 +75,6 @@ uint16_t Settings::size_of() const
 {
     return
             sizeof(settings_version) +
-            preheat.size_of() +
             sensor_settings.size_of() +
             pid_settings.size_of() +
             sizeof(features_);
@@ -110,20 +102,17 @@ void Settings::restore()
     ExtUI::injectCommands_P(PSTR("M501"));
 }
 
-Feature Settings::get_current_features() const
-{
-    return features_;
-}
-
-//! Change the current set of features of ADVi3++ (dimming, ...)
-void Settings::change_features(Feature features)
-{
-    features_ = features;
-}
-
-void Settings::flip_features(Feature features)
+Feature Settings::flip_features(Feature features)
 {
     flip_bits(features_, features);
+    send_features();
+    save();
+    return features_ & features;
+}
+
+bool Settings::is_feature_enabled(Feature features) const
+{
+    return test_all_bits(features_, features);
 }
 
 void Settings::send_features()

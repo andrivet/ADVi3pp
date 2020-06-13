@@ -25,17 +25,11 @@ namespace ADVi3pp {
 
 struct Buzzer
 {
-    void enable(bool enable);
-    void enable_on_press(bool enable, bool buzz = true);
-    void buzz(long duration);
+    void buzz_on_action(long duration);
     void buzz_on_press();
 
 private:
     void send_buzz_command_to_lcd(long duration);
-
-private:
-    bool enabled_ = true;
-    bool on_press_enabled_ = false;
 };
 
 extern Buzzer buzzer;

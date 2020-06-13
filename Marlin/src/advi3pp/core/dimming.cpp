@@ -22,6 +22,7 @@
 #include <Arduino.h>
 #include "../../lcd/extui/ui_api.h"
 #include "../../lcd/ultralcd.h"
+#include "settings.h"
 #include "dimming.h"
 #include "dgus.h"
 #include "logging.h"
@@ -34,17 +35,7 @@ Dimming dimming;
 Dimming::Dimming()
 {
     set_next_checking_time();
-    set_next_dimmming_time();
-}
-
-//! Enable or disable dimming of the LCD Panel
-//! @param enable Enable or disable dimming
-//! @param doIt Chnage the dimming right now or not
-void Dimming::enable(bool enable, bool doIt)
-{
-    enabled_ = enable;
-    if(doIt)
-        reset(true);
+    set_next_dimming_time();
 }
 
 //! Set the next dimming check time
@@ -54,7 +45,7 @@ void Dimming::set_next_checking_time()
 }
 
 //! Set the next dimming delay time
-void Dimming::set_next_dimmming_time()
+void Dimming::set_next_dimming_time()
 {
     next_dimming_time_ = millis() + 1000ul * dimming_delay;
 }
@@ -64,7 +55,7 @@ void Dimming::set_next_dimmming_time()
 uint8_t Dimming::get_adjusted_brightness()
 {
     int16_t brightness = ui.contrast;
-    if(dimming_)
+    if(dimmed_)
         brightness = brightness * dimming_ratio / 100;
     if(brightness < LCD_CONTRAST_MIN)
         brightness = LCD_CONTRAST_MIN;
@@ -76,7 +67,7 @@ uint8_t Dimming::get_adjusted_brightness()
 //! Check the dimming state: LCD Panel was touched? Dimming delay was elapsed?
 void Dimming::check()
 {
-    if(!enabled_ || !ELAPSED(millis(), next_check_time_))
+    if(!settings.is_feature_enabled(Feature::Dimming) || !ELAPSED(millis(), next_check_time_))
         return;
     set_next_checking_time();
 
@@ -100,10 +91,10 @@ void Dimming::check()
         return;
     }
 
-    if(!dimming_ && ELAPSED(millis(), next_dimming_time_))
+    if(!dimmed_ && ELAPSED(millis(), next_dimming_time_))
     {
         Log::log() << F("Delay elapsed, dim the panel") << Log::endl();
-        dimming_ = true;
+        dimmed_ = true;
         send_brightness();
     }
 }
@@ -112,11 +103,11 @@ void Dimming::check()
 //! @param force Change the brightness right now
 void Dimming::reset(bool force)
 {
-    set_next_dimmming_time();
-    if(!force && !dimming_) // Already reset, nothing more to do (unless force is true)
+    set_next_dimming_time();
+    if(!force && !dimmed_) // Already reset, nothing more to do (unless force is true)
         return;
 
-    dimming_ = false;
+    dimmed_ = false;
     send_brightness();
 }
 
@@ -134,7 +125,7 @@ void Dimming::send_brightness()
 //! @param brightness New brightness
 void Dimming::change_brightness(int16_t brightness)
 {
-    ui.set_contrast(brightness);;
+    ui.set_contrast(brightness);
 }
 
 }
