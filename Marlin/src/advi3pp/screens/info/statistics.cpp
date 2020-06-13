@@ -45,17 +45,21 @@ void Statistics::send_stats()
 
     // Minimize the RAM used so send each value separately.
     char buffer[21];
+    ADVString<16> value;
 
-    ADVString<21> value{ExtUI::getTotalPrintTime_str(buffer)};
+    value.set(ExtUI::getTotalPrintTime_str(buffer)).align(Alignment::Left);
     frame.reset(Variable::LongText0);
+    frame << value;
     frame.send();
 
-    value.set(ExtUI::getLongestPrint_str(buffer));
+    value.set(ExtUI::getLongestPrint_str(buffer)).align(Alignment::Left);
     frame.reset(Variable::LongText1);
+    frame << value;
     frame.send();
 
-    value.set(ExtUI::getFilamentUsed_str(buffer));
+    value.set(ExtUI::getFilamentUsed_str(buffer)).align(Alignment::Left);
     frame.reset(Variable::LongText2);
+    frame << value;
     frame.send();
 }
 
