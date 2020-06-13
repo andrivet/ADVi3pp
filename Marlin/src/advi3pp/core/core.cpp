@@ -191,6 +191,7 @@ bool Core::init()
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     graphs.clear();
     dimming.reset(true);
+    versions.send_versions();
 
     ADVString<32> welcome;
     welcome << F("ADVi3++ ");
