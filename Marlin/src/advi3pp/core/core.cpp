@@ -65,6 +65,8 @@
 
 namespace ADVi3pp {
 
+Core core;
+
 
 void Facade::on_startup()
 {

@@ -27,6 +27,8 @@
 
 namespace ADVi3pp {
 
+Preheat preheat;
+
 //! Handle Preheat actions.
 //! @param key_value    Sub-action to handle
 //! @return             True if the action was handled

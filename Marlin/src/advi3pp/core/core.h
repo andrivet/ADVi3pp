@@ -51,7 +51,7 @@ private:
     bool init_ = false;
 };
 
-static Core core;
+extern Core core;
 
 
 //! Convert a version from its hexadecimal representation.

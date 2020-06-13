@@ -46,6 +46,6 @@ private:
     friend Parent;
 };
 
-static Preheat preheat;
+extern Preheat preheat;
 
 }
