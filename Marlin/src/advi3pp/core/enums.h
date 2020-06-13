@@ -285,14 +285,14 @@ enum class KeyValue: uint16_t
 };
 
 //! Set of possible feature to enable or disable
+// If those values are changed, the controls' bitsets have also to be changed in the screens
 enum class Feature: uint16_t
 {
     None                = 0b0000000000000000,
-    HeadParking         = 0b0000000000000001,
-    Dimming             = 0b0000000000000010,
-    Buzzer              = 0b0000000000000100,
-    BuzzOnPress         = 0b0000000000001000,
-    RunoutSensor        = 0b0000000000010000
+    Dimming             = 0b0000000000000001,
+    Buzzer              = 0b0000000000000010,
+    BuzzOnPress         = 0b0000000000000100,
+    RunoutSensor        = 0b0000000000001000
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 

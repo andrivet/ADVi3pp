@@ -32,7 +32,6 @@
 namespace ADVi3pp {
 
 const Feature DEFAULT_FEATURES =
-        Feature::HeadParking |
         Feature::Dimming |
         Feature::Buzzer;
 
