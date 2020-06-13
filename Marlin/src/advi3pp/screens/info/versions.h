@@ -27,9 +27,10 @@ namespace ADVi3pp {
 //! Versions Page
 struct Versions: Screen<Versions>
 {
+    void send_versions() const;
+
 private:
     Page do_prepare_page();
-    void send_versions() const;
 
     friend Parent;
 };
