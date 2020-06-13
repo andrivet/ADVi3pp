@@ -1090,6 +1090,37 @@ namespace ExtUI {
       ::minkill(steppers_off);
   }
 
+  #if ENABLED(MATERIAL_PRESET_SUPPORT)
+  uint8_t getNbMaterialPresets()
+  {
+      static_assert(COUNT(ui.preheat_hotend_temp) == NB_MATERIAL_PRESET, "Update NB_MATERIAL_PRESET");
+      return NB_MATERIAL_PRESET;
+  }
+
+  int16_t getMaterialPresetHotendTemp_celsius(unsigned int index)
+  {
+      return ui.preheat_hotend_temp[index];
+  }
+
+  int16_t getMaterialPresetBedTemp_celsius(unsigned int index)
+  {
+      return ui.preheat_bed_temp[index];
+  }
+
+  uint8_t getMaterialPresetFanSpeed_percent(unsigned int index)
+  {
+      return thermalManager.fanPercent(ui.preheat_fan_speed[index]);
+  }
+
+  void setMaterialPreset(unsigned int index, int16_t hotend_celcius, int16_t bed_celcius, uint8_t fan_percent)
+  {
+        ui.preheat_hotend_temp[index] = hotend_celcius;
+        ui.preheat_bed_temp[index]    = bed_celcius;
+        ui.preheat_fan_speed[index]   = map(constrain(fan_percent, 0, 100), 0, 100, 0, 255);
+  }
+
+  #endif
+
 } // namespace ExtUI
 
 // At the moment, we piggy-back off the ultralcd calls, but this could be cleaned up in the future
