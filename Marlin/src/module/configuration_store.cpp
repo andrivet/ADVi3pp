@@ -819,10 +819,10 @@ void MarlinSettings::postprocess() {
     {
       _FIELD_TEST(ui_preheat_hotend_temp);
 
-      #if HOTENDS && HAS_LCD_MENU
-        const int16_t (&ui_preheat_hotend_temp)[2]  = ui.preheat_hotend_temp,
-                      (&ui_preheat_bed_temp)[2]     = ui.preheat_bed_temp;
-        const uint8_t (&ui_preheat_fan_speed)[2]    = ui.preheat_fan_speed;
+      #if ENABLED(MATERIAL_PRESET_SUPPORT)
+        const int16_t (&ui_preheat_hotend_temp)[NB_MATERIAL_PRESET]  = ui.preheat_hotend_temp,
+                      (&ui_preheat_bed_temp)[NB_MATERIAL_PRESET]     = ui.preheat_bed_temp;
+        const uint8_t (&ui_preheat_fan_speed)[NB_MATERIAL_PRESET]    = ui.preheat_fan_speed;
       #else
         constexpr int16_t ui_preheat_hotend_temp[2] = { PREHEAT_1_TEMP_HOTEND, PREHEAT_2_TEMP_HOTEND },
                           ui_preheat_bed_temp[2]    = { PREHEAT_1_TEMP_BED, PREHEAT_2_TEMP_BED };
@@ -1681,17 +1681,17 @@ void MarlinSettings::postprocess() {
       {
         _FIELD_TEST(ui_preheat_hotend_temp);
 
-        #if HOTENDS && HAS_LCD_MENU
-          int16_t (&ui_preheat_hotend_temp)[2]  = ui.preheat_hotend_temp,
-                  (&ui_preheat_bed_temp)[2]     = ui.preheat_bed_temp;
-          uint8_t (&ui_preheat_fan_speed)[2]    = ui.preheat_fan_speed;
+        #if ENABLED(MATERIAL_PRESET_SUPPORT)
+          int16_t (&ui_preheat_hotend_temp)[NB_MATERIAL_PRESET]  = ui.preheat_hotend_temp,
+                  (&ui_preheat_bed_temp)[NB_MATERIAL_PRESET]     = ui.preheat_bed_temp;
+          uint8_t (&ui_preheat_fan_speed)[NB_MATERIAL_PRESET]    = ui.preheat_fan_speed;
         #else
           int16_t ui_preheat_hotend_temp[2], ui_preheat_bed_temp[2];
           uint8_t ui_preheat_fan_speed[2];
         #endif
-        EEPROM_READ(ui_preheat_hotend_temp); // 2 floats
-        EEPROM_READ(ui_preheat_bed_temp);    // 2 floats
-        EEPROM_READ(ui_preheat_fan_speed);   // 2 floats
+        EEPROM_READ(ui_preheat_hotend_temp);
+        EEPROM_READ(ui_preheat_bed_temp);
+        EEPROM_READ(ui_preheat_fan_speed);
       }
 
       //
@@ -2610,13 +2610,24 @@ void MarlinSettings::reset() {
   // Preheat parameters
   //
 
-  #if HOTENDS && HAS_LCD_MENU
+  #if ENABLED(MATERIAL_PRESET_SUPPORT)
+    // @advi3++ Add more defaults presets
+    static_assert(COUNT(ui.preheat_hotend_temp) == NB_MATERIAL_PRESET, "Update NB_MATERIAL_PRESET");
     ui.preheat_hotend_temp[0] = PREHEAT_1_TEMP_HOTEND;
     ui.preheat_hotend_temp[1] = PREHEAT_2_TEMP_HOTEND;
-    ui.preheat_bed_temp[0] = PREHEAT_1_TEMP_BED;
-    ui.preheat_bed_temp[1] = PREHEAT_2_TEMP_BED;
-    ui.preheat_fan_speed[0] = PREHEAT_1_FAN_SPEED;
-    ui.preheat_fan_speed[1] = PREHEAT_2_FAN_SPEED;
+    ui.preheat_hotend_temp[2] = PREHEAT_3_TEMP_HOTEND;
+    ui.preheat_hotend_temp[3] = PREHEAT_4_TEMP_HOTEND;
+    ui.preheat_hotend_temp[4] = PREHEAT_5_TEMP_HOTEND;
+    ui.preheat_bed_temp[0]    = PREHEAT_1_TEMP_BED;
+    ui.preheat_bed_temp[1]    = PREHEAT_2_TEMP_BED;
+    ui.preheat_bed_temp[2]    = PREHEAT_3_TEMP_BED;
+    ui.preheat_bed_temp[3]    = PREHEAT_4_TEMP_BED;
+    ui.preheat_bed_temp[4]    = PREHEAT_5_TEMP_BED;
+    ui.preheat_fan_speed[0]   = PREHEAT_1_FAN_SPEED;
+    ui.preheat_fan_speed[1]   = PREHEAT_2_FAN_SPEED;
+    ui.preheat_fan_speed[2]   = PREHEAT_3_FAN_SPEED;
+    ui.preheat_fan_speed[3]   = PREHEAT_4_FAN_SPEED;
+    ui.preheat_fan_speed[4]   = PREHEAT_5_FAN_SPEED;
   #endif
 
   //
@@ -3176,7 +3187,7 @@ void MarlinSettings::reset() {
 
     #endif // [XYZ]_DUAL_ENDSTOPS
 
-    #if HOTENDS && HAS_LCD_MENU
+    #if ENABLED(MATERIAL_PRESET_SUPPORT)
 
       CONFIG_ECHO_HEADING("Material heatup parameters:");
       LOOP_L_N(i, COUNT(ui.preheat_hotend_temp)) {

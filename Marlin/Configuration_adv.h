@@ -1120,6 +1120,10 @@
     #endif
   #endif
 
+  #if HOTENDS
+    #define MATERIAL_PRESET_SUPPORT
+  #endif
+
 #endif // HAS_LCD_MENU
 
 // Scroll a longer status message into view
@@ -1472,6 +1476,10 @@
     #endif
   #endif
 #endif // HAS_DGUS_LCD
+
+// @advi3++
+#define MATERIAL_PRESET_SUPPORT
+#define NB_MATERIAL_PRESET 5
 
 //
 // Touch UI for the FTDI Embedded Video Engine (EVE)

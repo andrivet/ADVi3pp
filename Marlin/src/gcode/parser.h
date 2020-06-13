@@ -337,27 +337,24 @@ public:
 
     static inline void set_input_temp_units(const TempUnit units) { input_temp_units = units; }
 
-    #if HAS_LCD_MENU && DISABLED(DISABLE_M503)
+    static inline char temp_units_code() {
+      return input_temp_units == TEMPUNIT_K ? 'K' : input_temp_units == TEMPUNIT_F ? 'F' : 'C';
+    }
+    static inline PGM_P temp_units_name() {
+      return input_temp_units == TEMPUNIT_K ? PSTR("Kelvin") : input_temp_units == TEMPUNIT_F ? PSTR("Fahrenheit") : PSTR("Celsius");
+    }
+    static inline float to_temp_units(const float &f) {
+      switch (input_temp_units) {
+        case TEMPUNIT_F:
+          return f * 0.5555555556f + 32;
+        case TEMPUNIT_K:
+          return f + 273.15f;
+        case TEMPUNIT_C:
+        default:
+          return f;
+      }
+    }
 
-      static inline char temp_units_code() {
-        return input_temp_units == TEMPUNIT_K ? 'K' : input_temp_units == TEMPUNIT_F ? 'F' : 'C';
-      }
-      static inline PGM_P temp_units_name() {
-        return input_temp_units == TEMPUNIT_K ? PSTR("Kelvin") : input_temp_units == TEMPUNIT_F ? PSTR("Fahrenheit") : PSTR("Celsius");
-      }
-      static inline float to_temp_units(const float &f) {
-        switch (input_temp_units) {
-          case TEMPUNIT_F:
-            return f * 0.5555555556f + 32;
-          case TEMPUNIT_K:
-            return f + 273.15f;
-          case TEMPUNIT_C:
-          default:
-            return f;
-        }
-      }
-
-    #endif // HAS_LCD_MENU && !DISABLE_M503
 
     static inline float value_celsius() {
       const float f = value_float();
