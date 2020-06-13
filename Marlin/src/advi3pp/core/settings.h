@@ -27,13 +27,6 @@
 
 namespace ADVi3pp {
 
-//! Hotend, bed temperature and fan speed preset.
-struct Preset
-{
-    uint16_t hotend;
-    uint8_t bed;
-    uint8_t fan;
-};
 
 enum class TemperatureKind: uint8_t { Bed, Hotend };
 constexpr const unsigned nb_temperatures = 2;

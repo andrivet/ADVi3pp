@@ -27,18 +27,6 @@
 
 namespace ADVi3pp {
 
-//! Default preheat values
-const Preset DEFAULT_PREHEAT_PRESET[Preheat::NB_PRESETS] = {
-        {180, 50, 0},
-        {200, 60, 0},
-        {220, 70, 0},
-        {180, 00, 0},
-        {200, 00, 0}
-};
-
-Preheat preheat;
-
-
 //! Handle Preheat actions.
 //! @param key_value    Sub-action to handle
 //! @return             True if the action was handled
@@ -58,56 +46,14 @@ bool Preheat::do_dispatch(KeyValue key_value)
     return true;
 }
 
-//! Store presets in permanent memory (EEPROM)
-//! @param eeprom EEPROM writer
-void Preheat::do_write(EepromWrite& eeprom) const
-{
-    for(auto& preset: presets_)
-    {
-        eeprom.write(preset.hotend);
-        eeprom.write(preset.bed);
-        eeprom.write(preset.fan);
-    }
-}
-
-//! Restore presets from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-void Preheat::do_read(EepromRead& eeprom)
-{
-    for(auto& preset: presets_)
-    {
-        eeprom.read(preset.hotend);
-        eeprom.read(preset.bed);
-        eeprom.read(preset.fan);
-    }
-}
-
-//! Reset presets.
-void Preheat::do_reset()
-{
-    for(size_t i = 0; i < NB_PRESETS; ++i)
-    {
-        presets_[i].hotend  = DEFAULT_PREHEAT_PRESET[i].hotend;
-        presets_[i].bed     = DEFAULT_PREHEAT_PRESET[i].bed;
-        presets_[i].fan     = DEFAULT_PREHEAT_PRESET[i].fan;
-    }
-}
-
-//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
-//! @return Number of bytes
-uint16_t Preheat::do_size_of() const
-{
-    return NB_PRESETS * (sizeof(Preset::hotend) + sizeof(Preset::bed) + sizeof(Preset::fan));
-}
-
 //! Send the presets t the LCD Panel
 void Preheat::send_presets()
 {
     Log::log() << F("Preheat page") << Log::endl();
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(presets_[index_].hotend)
-          << Uint16(presets_[index_].bed)
-          << Uint16(presets_[index_].fan);
+    frame << Uint16(ExtUI::getMaterialPresetHotendTemp_celsius(index_))
+          << Uint16(ExtUI::getMaterialPresetBedTemp_celsius(index_))
+          << Uint16(ExtUI::getMaterialPresetFanSpeed_percent(index_));
     frame.send();
 
     ADVString<8> preset;
@@ -130,9 +76,7 @@ void Preheat::retrieve_presets()
     Uint16 hotend, bed, fan;
     frame >> hotend >> bed >> fan;
 
-    presets_[index_].hotend = hotend.word;
-    presets_[index_].bed = static_cast<uint8_t>(bed.word);
-    presets_[index_].fan = static_cast<uint8_t>(fan.word);
+    ExtUI::setMaterialPreset(index_, hotend.word, bed.word, fan.word);
 }
 
 //! Prepare the page before being displayed and return the right Page value
@@ -170,11 +114,9 @@ void Preheat::do_save_command()
 {
     retrieve_presets();
 
-    const Preset& preset = presets_[index_];
-
-    ExtUI::setTargetTemp_celsius(preset.hotend, ExtUI::E0);
-    ExtUI::setTargetTemp_celsius(preset.bed, ExtUI::BED);
-    ExtUI::setTargetFan_percent(preset.fan, ExtUI::FAN0);
+    ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetHotendTemp_celsius(index_), ExtUI::E0);
+    ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetBedTemp_celsius(index_), ExtUI::BED);
+    ExtUI::setTargetFan_percent(ExtUI::getMaterialPresetFanSpeed_percent(index_), ExtUI::FAN0);
 
     settings.save();
     status.set(F("Preheat..."));

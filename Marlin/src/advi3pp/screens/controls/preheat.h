@@ -33,10 +33,6 @@ private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_save_command();
-    void do_write(EepromWrite& eeprom) const;
-    void do_read(EepromRead& eeprom);
-    void do_reset();
-    uint16_t do_size_of() const;
 
     void send_presets();
     void retrieve_presets();
@@ -45,12 +41,11 @@ private:
     void cooldown_command();
 
 private:
-    Preset presets_[NB_PRESETS] = {};
     size_t index_ = 0;
 
     friend Parent;
 };
 
-extern Preheat preheat;
+static Preheat preheat;
 
 }
