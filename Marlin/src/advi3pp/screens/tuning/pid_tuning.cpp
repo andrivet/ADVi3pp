@@ -105,7 +105,7 @@ void PidTuning::step2_command()
     ADVString<20> auto_pid_command;
     auto_pid_command << F("M303 S") << temperature_
                      << (kind_ == TemperatureKind::Hotend ? F(" E0 U1") : F(" E-1 U1"));
-    ExtUI::injectCommands_P(auto_pid_command.get());
+    ExtUI::injectCommands_P(auto_pid_command.get()); // TODO this is wrong
 
     inTuning_ = true;
     temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});

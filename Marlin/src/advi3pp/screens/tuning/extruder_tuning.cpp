@@ -90,12 +90,7 @@ void ExtruderTuning::heating_task()
     task.clear_background_task();
 
     wait.set_message(F("Wait until the extrusion is finished..."));
-    ExtUI::injectCommands_P(PSTR("G1 Z20 F1200"));   // raise head
-    ExtUI::injectCommands_P(PSTR("M83"));           // relative E mode
-    ExtUI::injectCommands_P(PSTR("G92 E0"));        // reset E axis
-
-    ADVString<20> command; command << F("G1 E") << tuning_extruder_filament << " F50"; // Extrude slowly
-    ExtUI::injectCommands_P(command.get());
+    ExtUI::injectCommands_P(PSTR("G1 Z20 F1200\nM83\nG92 E0\nG1 E100 F50"));   // raise head, relative E mode, reset E axis, Extrude slowly
 
     task.set_background_task(BackgroundTask(this, &ExtruderTuning::extruding_task));
 }
@@ -118,8 +113,7 @@ void ExtruderTuning::extruding_task()
 void ExtruderTuning::finished()
 {
     Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
-    ExtUI::injectCommands_P(PSTR("M82"));       // absolute E mode
-    ExtUI::injectCommands_P(PSTR("G92 E0"));    // reset E axis
+    ExtUI::injectCommands_P(PSTR("M82\nG92 E0"));       // absolute E mode, reset E axis
 
     task.clear_background_task();
 
@@ -146,9 +140,7 @@ void ExtruderTuning::do_back_command()
     task.clear_background_task();
 
     ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
-
-    ExtUI::injectCommands_P(PSTR("M82"));       // absolute E mode
-    ExtUI::injectCommands_P(PSTR("G92 E0"));    // reset E axis
+    ExtUI::injectCommands_P(PSTR("M82\nG92 E0"));       // absolute E mode, reset E axis
 
     Parent::do_back_command();
 }

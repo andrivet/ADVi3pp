@@ -35,8 +35,8 @@ Page FactoryReset::do_prepare_page()
 //! Handles the Save (Continue) command
 void FactoryReset::do_save_command()
 {
-    ExtUI::injectCommands_P(PSTR("M502"));
-    Parent::do_save_command();
+    ExtUI::injectCommands_P(PSTR("M502\nM500"));
+    pages.show_forward_page();
 }
 
 }

@@ -61,50 +61,48 @@ Page Move::do_prepare_page()
 //! Move the nozzle. Check that the command is not send too early when multiple move commands are send in a short time
 //! (i.e. when the user keep the button presses)
 //! @params command Actual command to move the nozzle.
-void Move::move(const char* command, millis_t delay)
+void Move::move(const char* commands, millis_t delay)
 {
     if(!ELAPSED(millis(), last_move_time_ + delay))
         return;
-    ExtUI::injectCommands_P(PSTR("G91"));
-    ExtUI::injectCommands_P(command);
-    ExtUI::injectCommands_P(PSTR("G90"));
+    ExtUI::injectCommands_P(commands);
     last_move_time_ = millis();
 }
 
 //! Move the nozzle (+X)
 void Move::x_plus_command()
 {
-    move(PSTR("G1 X4 F1000"), 150);
+    move(PSTR("G91\nG1 X4 F1000\nG90"), 150);
 }
 
 //! Move the nozzle (-X)
 void Move::x_minus_command()
 {
-    move(PSTR("G1 X-4 F1000"), 150);
+    move(PSTR("G91\nG1 X-4 F1000\nG90"), 150);
 }
 
 //! Move the nozzle (+Y)
 void Move::y_plus_command()
 {
-    move(PSTR("G1 Y4 F1000"), 150);
+    move(PSTR("G91\nG1 Y4 F1000\nG90"), 150);
 }
 
 //! Move the nozzle (-Y)
 void Move::y_minus_command()
 {
-    move(PSTR("G1 Y-4 F1000"), 150);
+    move(PSTR("G91\nG1 Y-4 F1000\nG90"), 150);
 }
 
 //! Move the nozzle (+Z)
 void Move::z_plus_command()
 {
-    move(PSTR("G1 Z0.5 F240"), 10);
+    move(PSTR("G91\nG1 Z0.5 F240\nG90"), 10);
 }
 
 //! Move the nozzle (-Z)
 void Move::z_minus_command()
 {
-    move(PSTR("G1 Z-0.5 F240"), 10);
+    move(PSTR("G91\nG1 Z-0.5 F240\nG90"), 10);
 }
 
 //! Extrude some filament.
@@ -113,9 +111,7 @@ void Move::e_plus_command()
     if(ExtUI::getActualTemp_celsius(ExtUI::E0) < 180)
         return;
 
-    ExtUI::injectCommands_P(PSTR("G91"));
-    ExtUI::injectCommands_P(PSTR("G1 E1 F120"));
-    ExtUI::injectCommands_P(PSTR("G90"));
+    ExtUI::injectCommands_P(PSTR("G91\nG1 E1 F120\nG90"));
 }
 
 //! Unextrude some filament.
@@ -124,9 +120,7 @@ void Move::e_minus_command()
     if(ExtUI::getActualTemp_celsius(ExtUI::E0) < 180)
         return;
 
-    ExtUI::injectCommands_P(PSTR("G91"));
-    ExtUI::injectCommands_P(PSTR("G1 E-1 F120"));
-    ExtUI::injectCommands_P(PSTR("G90"));
+    ExtUI::injectCommands_P(PSTR("G91\nG1 E-1 F120\nG90"));
 }
 
 //! Disable the motors.

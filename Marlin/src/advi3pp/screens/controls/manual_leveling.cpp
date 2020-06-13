@@ -68,8 +68,7 @@ Page ManualLeveling::do_prepare_page()
     wait.show(F("Homing..."));
     ExtUI::setAllAxisUnhomed();
     ExtUI::setAllAxisPositionUnknown();
-    ExtUI::injectCommands_P(PSTR("G90")); // absolute mode
-    ExtUI::injectCommands_P((PSTR("G28 F6000"))); // homing
+    ExtUI::injectCommands_P(PSTR("G90\nG28 F6000")); // absolute mode, homing
     task.set_background_task(BackgroundTask(this, &ManualLeveling::leveling_task), 200);
     return Page::None;
 }
@@ -89,81 +88,63 @@ void ManualLeveling::leveling_task()
 void ManualLeveling::point1_command()
 {
     Log::log() << F("Level point 1") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X30 Y30 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X30 Y30 F6000\nG1 Z0 F1200"));
 }
 
 //! Handle leveling point #2.
 void ManualLeveling::point2_command()
 {
     Log::log() << F("Level point 2") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X30 Y170 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X30 Y170 F6000\nG1 Z0 F1200"));
 }
 
 //! Handle leveling point #3.
 void ManualLeveling::point3_command()
 {
     Log::log() << F("Level point 3") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X170 Y170 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X170 Y170 F6000\nG1 Z0 F1200"));
 }
 
 //! Handle leveling point #4.
 void ManualLeveling::point4_command()
 {
     Log::log() << F("Level point 4") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X170 Y30 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X170 Y30 F6000\nG1 Z0 F1200"));
 }
 
 //! Handle leveling point #5.
 void ManualLeveling::point5_command()
 {
     Log::log() << F("Level point 5") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X100 Y100 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X100 Y100 F6000\nG1 Z0 F1200"));
 }
 
 //! Handle leveling point #A.
 void ManualLeveling::pointA_command()
 {
     Log::log() << F("Level point A") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X100 Y30 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X100 Y30 F6000\nG1 Z0 F1200"));
 }
 
 //! Handle leveling point #B.
 void ManualLeveling::pointB_command()
 {
     Log::log() << F("Level point B") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X30 Y100 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X30 Y100 F6000\nG1 Z0 F1200"));
 }
 
 //! Handle leveling point #C.
 void ManualLeveling::pointC_command()
 {
     Log::log() << F("Level point C") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X100 Y170 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X100 Y170 F6000\nG1 Z0 F1200"));
 }
 
 //! Handle leveling point #D.
 void ManualLeveling::pointD_command()
 {
     Log::log() << F("Level point D") << Log::endl();
-    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200"));
-    ExtUI::injectCommands_P(PSTR("G1 X170 Y100 F6000"));
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::injectCommands_P(PSTR("G1 Z4 F1200\nG1 X170 Y100 F6000\nG1 Z0 F1200"));
 }
 
 }
