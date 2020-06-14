@@ -80,7 +80,7 @@ void Facade::on_idle()
 
 void Facade::on_killed(PGM_P error, PGM_P component)
 {
-    core.killed(error, component);
+    core.killed(reinterpret_cast<const FlashChar*>(error));
 }
 
 void Facade::on_media_inserted()
@@ -221,10 +221,10 @@ void Core::idle()
     graphs.update();
 }
 
-void Core::killed(PGM_P error, PGM_P component)
+void Core::killed(const FlashChar* error)
 {
     status.set(error);
-    send_lcd_serial_data();
+    send_lcd_serial_data(true);
     pages.show_page(Page::Killed);
 }
 

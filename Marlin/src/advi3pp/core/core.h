@@ -31,7 +31,7 @@ struct Core
 {
     void startup();
     void idle();
-    void killed(PGM_P error, PGM_P component);
+    void killed(const FlashChar* error);
     void process_command(const GCodeParser& parser); // TODO: call it
 
     bool ensure_not_printing();
