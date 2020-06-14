@@ -25,6 +25,21 @@ namespace ADVi3pp {
 
 SensorSettings sensor_settings;
 
+#ifdef ADVi3PP_PROBE
+//! Default position of the sensor for the different holders
+const SensorPosition DEFAULT_SENSOR_POSITION[SensorSettings::NB_SENSOR_POSITIONS] =
+{
+#if defined(ADVi3PP_MARK2)
+        {     0,  6000 },    // Mark II
+        { -2400, -3800 },    // Teaching Tech L. Side
+        {     0,     0 }     // Custom
+#elif defined(ADVi3PP_BLTOUCH)
+        {  +150, -4270 },    // Baseggio/Indianagio Front
+        { -2400, -3800 },    // Teaching Tech L. Side
+        {     0,     0 }     // Custom
+#endif
+};
+#endif
 
 #ifdef ADVi3PP_PROBE
 
@@ -68,44 +83,6 @@ void SensorSettings::do_save_command()
     Parent::do_save_command();
 }
 
-//! Store current data in permanent memory (EEPROM)
-//! @param eeprom EEPROM writer
-void SensorSettings::do_write(EepromWrite& eeprom) const
-{
-    eeprom.write(index_);
-    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
-    {
-        eeprom.write(positions_[i].x);
-        eeprom.write(positions_[i].y);
-    }
-}
-
-//! Restore data from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-void SensorSettings::do_read(EepromRead& eeprom)
-{
-    eeprom.read(index_);
-    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
-    {
-        eeprom.read(positions_[i].x);
-        eeprom.read(positions_[i].y);
-    }
-}
-
-//! Reset settings
-void SensorSettings::do_reset()
-{
-    index_ = 0;
-    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
-        positions_[i] = DEFAULT_SENSOR_POSITION[i];
-}
-
-//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
-//! @return Number of bytes
-uint16_t SensorSettings::do_size_of() const
-{
-    return sizeof(index_) + NB_SENSOR_POSITIONS * sizeof(SensorPosition);
-}
 
 //! Show the previous settings.
 void SensorSettings::previous_command()
@@ -201,6 +178,14 @@ int SensorSettings::back_probe_bed_position()
     return min(Y_MAX_BED - MIN_PROBE_EDGE, Y_MAX_POS + y_probe_offset_from_extruder());
 }
 
+//! Reset settings
+void SensorSettings::do_reset()
+{
+    index_ = 0;
+    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
+        positions_[i] = DEFAULT_SENSOR_POSITION[i];
+}
+
 #else
 
 //! Prepare the page before being displayed and return the right Page value
@@ -211,5 +196,45 @@ Page SensorSettings::do_prepare_page()
 }
 
 #endif
+
+//! Store current data in permanent memory (EEPROM)
+//! @param eeprom EEPROM writer
+void SensorSettings::do_write(EepromWrite& eeprom) const
+{
+    eeprom.write(index_);
+    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
+    {
+        eeprom.write(positions_[i].x);
+        eeprom.write(positions_[i].y);
+    }
+}
+
+//! Restore data from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
+void SensorSettings::do_read(EepromRead& eeprom)
+{
+    eeprom.read(index_);
+    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
+    {
+        eeprom.read(positions_[i].x);
+        eeprom.read(positions_[i].y);
+    }
+}
+
+//! Reset settings
+void SensorSettings::do_reset()
+{
+    index_ = 0;
+    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
+        positions_[i] = SensorPosition{};
+}
+
+//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
+//! @return Number of bytes
+uint16_t SensorSettings::do_size_of() const
+{
+    return sizeof(index_) + NB_SENSOR_POSITIONS * sizeof(SensorPosition);
+}
+
 
 }

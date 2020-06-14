@@ -24,12 +24,14 @@
 
 namespace ADVi3pp {
 
-#ifdef ADVi3PP_PROBE
+struct SensorPosition { int16_t x, y; };
+
 //! Sensor Settings Page
-struct SensorSettings: Handler<SensorSettings>
+struct SensorSettings: Screen<SensorSettings>
 {
     static const size_t NB_SENSOR_POSITIONS = 3;
 
+#ifdef ADVi3PP_PROBE
     SensorSettings();
 
     int x_probe_offset_from_extruder() const;
@@ -38,19 +40,24 @@ struct SensorSettings: Handler<SensorSettings>
     int right_probe_bed_position();
     int front_probe_bed_position();
     int back_probe_bed_position();
+#endif
 
 private:
-    bool do_dispatch(KeyValue value);
     Page do_prepare_page();
+
+#ifdef ADVi3PP_PROBE
+    bool do_dispatch(KeyValue value);
     void do_save_command();
-    void do_write(EepromWrite& eeprom) const;
-    void do_read(EepromRead& eeprom);
-    void do_reset();
-    uint16_t do_size_of() const;
     void previous_command();
     void next_command();
     void send_data() const;
     void get_data();
+#endif
+
+    void do_write(EepromWrite& eeprom) const;
+    void do_read(EepromRead& eeprom);
+    void do_reset();
+    uint16_t do_size_of() const;
 
 private:
     uint16_t index_ = 0;
@@ -58,18 +65,6 @@ private:
 
     friend Parent;
 };
-#else
-//! Sensor Settings Page
-struct SensorSettings: Screen<SensorSettings>
-{
-    void send_z_height_to_lcd(double) {}
-    void save_lcd_z_height() {}
-
-private:
-    Page do_prepare_page();
-    friend Parent;
-};
-#endif
 
 extern SensorSettings sensor_settings;
 
