@@ -46,7 +46,7 @@ struct Settings
     void restore();
 
     Feature flip_features(Feature features);
-    void send_features();
+    void send_lcd_values(Variable features);
     bool is_feature_enabled(Feature features) const;
 
     uint16_t get_last_used_temperature(TemperatureKind kind) const;

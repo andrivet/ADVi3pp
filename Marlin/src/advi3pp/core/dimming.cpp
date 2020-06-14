@@ -134,6 +134,6 @@ int16_t MarlinUI::contrast = DEFAULT_LCD_CONTRAST;
 
 void MarlinUI::set_contrast(const int16_t value) {
     MarlinUI::contrast = constrain(value, LCD_CONTRAST_MIN, LCD_CONTRAST_MAX);
-    ADVi3pp::dimming.reset();
+    ADVi3pp::dimming.reset(true);
 }
 

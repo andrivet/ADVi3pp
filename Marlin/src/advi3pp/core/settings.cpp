@@ -28,6 +28,7 @@
 #include "../screens/settings/sensor_settings.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/eeprom_mismatch.h"
+#include "../../lcd/ultralcd.h"
 
 namespace ADVi3pp {
 
@@ -105,8 +106,6 @@ void Settings::restore()
 Feature Settings::flip_features(Feature features)
 {
     flip_bits(features_, features);
-    send_features();
-    save();
     return features_ & features;
 }
 
@@ -115,9 +114,11 @@ bool Settings::is_feature_enabled(Feature features) const
     return test_all_bits(features_, features);
 }
 
-void Settings::send_features()
+void Settings::send_lcd_values(Variable features)
 {
-    WriteRamDataRequest frame{Variable::Value0}; frame << Uint16(static_cast<uint16_t>(features_)); frame.send();
+    WriteRamDataRequest frame{features};
+    frame << Uint16(static_cast<uint16_t>(features_)) << Uint16(MarlinUI::contrast);
+    frame.send();
 }
 
 //! Get the last used temperature for the hotend or the bad

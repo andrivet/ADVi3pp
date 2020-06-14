@@ -32,6 +32,7 @@ struct LcdSettings: Screen<LcdSettings>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void do_back_command();
     void dimming_command();
     void buzz_on_action_command();
     void buzz_on_press_command();
