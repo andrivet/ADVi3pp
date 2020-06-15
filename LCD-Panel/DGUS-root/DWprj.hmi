@@ -40,6 +40,7 @@ SPADDRESS=5000
 057=057_leveling_p.bmp
 058=058_pid_tuning_1.bmp
 059=059_pid_tuning_1_p.bmp
+060=060_killed.bmp
 062=062_motors_settings.bmp
 063=063_motors_settings_p.bmp
 064=064_pid_settings.bmp
