@@ -357,7 +357,7 @@ void Core::send_lcd_serial_data(bool force_update)
           << Uint16(ExtUI::getTargetTemp_celsius(ExtUI::E0))
           << Uint16(ExtUI::getActualTemp_celsius(ExtUI::E0))
           << Uint16(ExtUI::getActualFan_percent(ExtUI::FAN0))
-          << Uint16(round(ExtUI::getAxisPosition_mm(ExtUI::Z)))
+          << Uint16(round(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100))
           << Uint16(progress_bar_low)
           << Uint16(progress_var_high)
           << 0_u16 // TODO
