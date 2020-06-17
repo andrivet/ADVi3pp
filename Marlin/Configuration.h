@@ -152,6 +152,7 @@
 #define EXTRUDERS 1
 
 // Generally expected filament diameter (1.75, 2.85, 3.0, ...). Used for Volumetric, Filament Width Sensor, etc.
+// @advi3++: Filament size is 1.75 for Wanhao i3 Plus printers
 #define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
 
 // For Cyclops or any "multi-extruder" that shares a single nozzle.
@@ -1085,7 +1086,7 @@
 // Enable the M48 repeatability test to test probe accuracy
 // @advi3++: Enable M48 when BLTouch is enabled
 #ifdef ADVi3PP_PROBE
-//#define Z_MIN_PROBE_REPEATABILITY_TEST
+#define Z_MIN_PROBE_REPEATABILITY_TEST
 #endif
 
 // Before deploy/stow pause for user confirmation
