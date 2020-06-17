@@ -468,6 +468,10 @@ bool Probe::probe_down_to_z(const float z, const feedRate_t fr_mm_s) {
   // Move down until the probe is triggered
   do_blocking_move_to_z(z, fr_mm_s);
 
+  // @advi3++: In the simulator, the probe is always triggered
+  #if defined(ADVi3PP_HARDWARE_SIMULATOR)
+    const bool probe_triggered = true;
+  #else
   // Check to see if the probe was triggered
   const bool probe_triggered =
     #if BOTH(DELTA, SENSORLESS_PROBING)
@@ -476,6 +480,7 @@ bool Probe::probe_down_to_z(const float z, const feedRate_t fr_mm_s) {
       TEST(endstops.trigger_state(), TERN(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN, Z_MIN, Z_MIN_PROBE))
     #endif
   ;
+  #endif
 
   TERN_(QUIET_PROBING, set_probing_paused(false));
 

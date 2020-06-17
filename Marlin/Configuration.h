@@ -1462,7 +1462,10 @@
 #define HOMING_FEEDRATE_Z  1200 // @advi3++
 
 // Validate that endstops are triggered on homing moves
+// @advi3++: Do not validate when using the Simulator
+#ifndef ADVi3PP_HARDWARE_SIMULATOR
 #define VALIDATE_HOMING_ENDSTOPS
+#endif
 
 // @section calibrate
 

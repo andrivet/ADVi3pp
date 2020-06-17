@@ -73,6 +73,7 @@
   <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
   <avrgcc.compiler.symbols.DefSymbols><ListValues>
   <Value>ADVi3PP_51</Value>
+  <Value>ADVi3PP_HARDWARE_SIMULATOR</Value>
   <Value>__MARLIN_FIRMWARE__</Value>
   <Value>ARDUINO_AVR_MEGA2560</Value>
   <Value>F_CPU=16000000L</Value>
@@ -93,6 +94,7 @@
   <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
   <avrgcccpp.compiler.symbols.DefSymbols><ListValues>
   <Value>ADVi3PP_51</Value>
+  <Value>ADVi3PP_HARDWARE_SIMULATOR</Value>
   <Value>__MARLIN_FIRMWARE__</Value>
   <Value>ARDUINO_AVR_MEGA2560</Value>
   <Value>F_CPU=16000000L</Value>
@@ -130,6 +132,7 @@
   <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
   <avrgcc.compiler.symbols.DefSymbols><ListValues>
   <Value>ADVi3PP_51</Value>
+  <Value>ADVi3PP_HARDWARE_SIMULATOR</Value>
   <Value>__MARLIN_FIRMWARE__</Value>
   <Value>ARDUINO_AVR_MEGA2560</Value>
   <Value>F_CPU=16000000L</Value>
@@ -150,6 +153,7 @@
   <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
   <avrgcccpp.compiler.symbols.DefSymbols><ListValues>
   <Value>ADVi3PP_51</Value>
+  <Value>ADVi3PP_HARDWARE_SIMULATOR</Value>
   <Value>__MARLIN_FIRMWARE__</Value>
   <Value>ARDUINO_AVR_MEGA2560</Value>
   <Value>F_CPU=16000000L</Value>
