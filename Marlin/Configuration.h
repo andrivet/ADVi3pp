@@ -130,11 +130,11 @@
 
 // Choose the name from boards.h that matches your setup
 // @advi3++: Wanhao Duplicator i3 Plus motherboards
-#if defined(ADVi3PP_54)
+#if defined(ADVi3PP_51)
 #define MOTHERBOARD BOARD_ADVI3PP_I3_PLUS_51
 #elif defined(ADVi3PP_52C)
 #define MOTHERBOARD BOARD_ADVI3PP_I3_PLUS_52C
-#else
+#elif defined(ADVi3PP_54)
 #define MOTHERBOARD BOARD_ADVI3PP_I3_PLUS_54
 #endif
 
