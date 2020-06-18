@@ -42,7 +42,10 @@
 
 // Check the integrity of data offsets.
 // Can be disabled for production build.
-//#define DEBUG_EEPROM_READWRITE
+// @advi3++: Enable in DEBUG builds
+#ifdef DEBUG
+#define DEBUG_EEPROM_READWRITE
+#endif
 
 #include "configuration_store.h"
 
