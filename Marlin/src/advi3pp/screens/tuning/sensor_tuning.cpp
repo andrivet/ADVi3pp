@@ -19,6 +19,7 @@
  */
 
 #include "../../parameters.h"
+#include "../../core/core.h"
 #include "sensor_tuning.h"
 
 namespace ADVi3pp {
@@ -52,7 +53,7 @@ bool SensorTuning::do_dispatch(KeyValue key_value)
 //! @return The index of the page to display
 Page SensorTuning::do_prepare_page()
 {
-    if(!print.ensure_not_printing())
+    if(!core.ensure_not_printing())
         return Page::None;
     return Page::SensorTuning;
 }
@@ -60,25 +61,25 @@ Page SensorTuning::do_prepare_page()
 //! Execute the sensor Self-test command
 void SensorTuning::self_test_command()
 {
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S120"));
+    ExtUI::injectCommands_P(PSTR("M280 P0 S120"));
 }
 
 //! Execute the sensor Reset command
 void SensorTuning::reset_command()
 {
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S160"));
+    ExtUI::injectCommands_P(PSTR("M280 P0 S160"));
 }
 
 //! Execute the sensor Deploy command
 void SensorTuning::deploy_command()
 {
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S10"));
+    ExtUI::injectCommands_P(PSTR("M280 P0 S10"));
 }
 
 //! Execute the sensor Stow command
 void SensorTuning::stow_command()
 {
-    enqueue_and_echo_commands_P(PSTR("M280 P0 S90"));
+    ExtUI::injectCommands_P(PSTR("M280 P0 S90"));
 }
 
 #else

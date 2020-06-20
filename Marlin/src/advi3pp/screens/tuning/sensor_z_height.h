@@ -26,7 +26,7 @@ namespace ADVi3pp {
 
 #ifdef ADVi3PP_PROBE
 //! Sensor Z Height Tuning Page
-struct SensorZHeight: Handler<SensorZHeight>
+struct SensorZHeight: Screen<SensorZHeight>
 {
     void minus();
     void plus();

@@ -21,16 +21,20 @@
 #pragma once
 
 // The preferred way to build ADVi3++ is with PlatformIO. With PlatformIO, you can easily build BLTouch and non-BLtouch releases.
+// If for whatever reason, you prefer to use Arduino IDE, uncomment the following line to:
 
-// If for whatever reason, you prefer to use Arduino IDE, uncomment the following line to build a BLTouch release.
-// #define ADVi3PP_BLTOUCH
+// build a Wanhao Duplicator i3 Plus (aka Mark I, mainboard version 5.1):
+// #define ADVi3PP_51
 
-// In a similar way, uncomment the following line to build a Mark II release.
-// #define ADVi3PP_MARK2
+// build an Aldi UK Balco 2018 release (mainboard version 5.2C)
+// WARNING: For HE180021 models only (2018). For the 2017 models (UK) or 2019 models (Belgium), use ADVi3PP_51
+// #define ADVi3PP_52C
 
-// In a similar way, uncomment the following line to build a Aldi UK Balco 2018 release (mainboard version 5.2C)
-// WARNING: For HE180021 models only (2018). For the 2017 models, do not use any #define
-// #define ADVi3PP_HE180021
+// build a  Wanhao Duplicator i3 Plus Mark II (mainboard version 5.4):
+// #define ADVi3PP_54
+
+// build a BLTouch release.
+// #define BLTOUCH
 
 #ifdef DEBUG
 
@@ -50,7 +54,13 @@
 // Do not modify the following definitions
 // ---------------------------------------------------------------------------
 
-#if defined(ADVi3PP_BLTOUCH) || defined(ADVi3PP_MARK2)
-#define ADVi3PP_PROBE
+// This is only to ensure that Jetbrains CLion is parsing code properly inside the IDE (intellisense)
+#ifdef __CLION_IDE__
+#define DEBUG
+#define ADVi3PP_51
+#define BLTOUCH
 #endif
 
+#if defined(BLTOUCH) || defined(ADVi3PP_54)
+#define ADVi3PP_PROBE
+#endif

@@ -19,6 +19,8 @@
  */
 
 #include "../../parameters.h"
+#include "../../core/string.h"
+#include "../../core/dgus.h"
 #include "sensor_settings.h"
 
 namespace ADVi3pp {
@@ -26,17 +28,43 @@ namespace ADVi3pp {
 SensorSettings sensor_settings;
 
 #ifdef ADVi3PP_PROBE
+
+//! Get the name of a sensor holder
+//! @param index Index of the holder
+//! @return The name (in Flash memory) of the holder
+const FlashChar* get_sensor_name(size_t index)
+{
+    // Note: F macro can be used only in a function, this is why this is coded like this
+    auto teaching_tech_side  = F("Teaching Tech L. Side");
+    auto custom              = F("Custom");
+
+#if defined(BLTOUCH)
+    auto baseggio            = F("Indianagio Front");
+    static const FlashChar* names[SensorSettings::NB_SENSOR_POSITIONS] = {baseggio, teaching_tech_side, custom};
+#elif defined(ADVi3PP_54)
+    auto mark2               = F("Mark II");
+    static const FlashChar* names[advi3pp::SensorSettings::NB_SENSOR_POSITIONS] = {mark2, teaching_tech_side, custom};
+#else
+#error "ADVi3PP_PROBE is defined but the kind of probe is unknown"
+#endif
+
+    assert(index < SensorSettings::NB_SENSOR_POSITIONS);
+    return names[index];
+}
+
 //! Default position of the sensor for the different holders
 const SensorPosition DEFAULT_SENSOR_POSITION[SensorSettings::NB_SENSOR_POSITIONS] =
 {
-#if defined(ADVi3PP_MARK2)
-        {     0,  6000 },    // Mark II
-        { -2400, -3800 },    // Teaching Tech L. Side
-        {     0,     0 }     // Custom
-#elif defined(ADVi3PP_BLTOUCH)
-        {  +150, -4270 },    // Baseggio/Indianagio Front
-        { -2400, -3800 },    // Teaching Tech L. Side
-        {     0,     0 }     // Custom
+#if ENABLED(BLTOUCH)
+    {  +150, -4270 },    // Baseggio/Indianagio Front
+    { -2400, -3800 },    // Teaching Tech L. Side
+    {     0,     0 }     // Custom
+#elif defined(ADVi3PP_54)
+    {     0,  6000 },    // Mark II
+    { -2400, -3800 },    // Teaching Tech L. Side
+    {     0,     0 }     // Custom
+#else
+#error "ADVi3PP_PROBE is defined but the kind of probe is unknown"
 #endif
 };
 #endif
@@ -110,7 +138,7 @@ void SensorSettings::send_data() const
     ADVString<32> title{get_sensor_name(index_)};
 
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(positions_[index_].x) << Uint16(positions_[index_].y) << Uint16(zprobe_zoffset * 100);
+    frame << Uint16(positions_[index_].x) << Uint16(positions_[index_].y) << Uint16(ExtUI::getZOffset_mm() * 100);
     frame.send();
 
     frame.reset(Variable::LongTextCentered0);
@@ -133,7 +161,7 @@ void SensorSettings::get_data()
 
     positions_[index_].x = static_cast<int16_t>(x.word);
     positions_[index_].y = static_cast<int16_t>(y.word);
-    zprobe_zoffset = static_cast<int16_t>(z.word) / 100.0;
+    ExtUI::setZOffset_mm(static_cast<int16_t>(z.word) / 100.0);
 }
 
 //! Get the current offset of the nozzle (depending of the sensor holder).
@@ -221,13 +249,6 @@ void SensorSettings::do_read(EepromRead& eeprom)
     }
 }
 
-//! Reset settings
-void SensorSettings::do_reset()
-{
-    index_ = 0;
-    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
-        positions_[i] = SensorPosition{};
-}
 
 //! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
 //! @return Number of bytes

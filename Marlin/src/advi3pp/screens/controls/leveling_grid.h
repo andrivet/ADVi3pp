@@ -26,7 +26,7 @@ namespace ADVi3pp {
 
 #ifdef ADVi3PP_PROBE
 //! Leveling Grid Page
-struct LevelingGrid: Handler<LevelingGrid>
+struct LevelingGrid: Screen<LevelingGrid>
 {
 private:
     Page do_prepare_page();

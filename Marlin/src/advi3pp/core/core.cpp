@@ -345,7 +345,7 @@ void Core::send_lcd_serial_data(bool force_update)
     int16_t progress_var_high = ExtUI::getProgress_percent() < 50 ? 0 : (ExtUI::getProgress_percent() / 10) - 5;
 
 #ifdef ADVi3PP_PROBE
-    uint16_t probe_state = ExUI::getLevelingActive() ? 2 : 1;
+    uint16_t probe_state = ExtUI::getLevelingActive() ? 2 : 1;
 #else
     uint16_t probe_state = 0;
 #endif

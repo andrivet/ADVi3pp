@@ -19,6 +19,7 @@
  */
 
 #include "../../parameters.h"
+#include "../../core/dgus.h"
 #include "leveling_grid.h"
 
 namespace ADVi3pp {
@@ -31,6 +32,8 @@ LevelingGrid leveling_grid;
 //! @return The index of the page to display
 Page LevelingGrid::do_prepare_page()
 {
+    auto z_values = ExtUI::getMeshArray();
+
     WriteRamDataRequest frame{Variable::Value0};
     for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
         for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
@@ -43,8 +46,8 @@ Page LevelingGrid::do_prepare_page()
 //! Handles the Save (Continue) command
 void LevelingGrid::do_save_command()
 {
-    enqueue_and_echo_commands_P(PSTR("M500"));      // Save settings (including mash)
-    enqueue_and_echo_commands_P(PSTR("M420 S1"));   // Set bed leveling state (enable)
+    // Save settings (including mesh), Set bed leveling state (enable)
+    ExtUI::injectCommands_P(PSTR("M500\nM420 S1"));
     Parent::do_save_command();
 }
 

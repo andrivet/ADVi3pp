@@ -19,6 +19,11 @@
  */
 
 #include "../../parameters.h"
+#include "../../core/core.h"
+#include "../../core/status.h"
+#include "../core/wait.h"
+#include "../../../lcd/extui/ui_api.h"
+#include "leveling_grid.h"
 #include "automatic_leveling.h"
 
 namespace ADVi3pp {
@@ -31,15 +36,14 @@ AutomaticLeveling automatic_leveling;
 //! @return The index of the page to display
 Page AutomaticLeveling::do_prepare_page()
 {
-    if(!print.ensure_not_printing())
+    if(!core.ensure_not_printing())
         return Page::None;
     sensor_interactive_leveling_ = true;
     pages.save_forward_page();
     wait.show(F("Homing..."));
-    enqueue_and_echo_commands_P(PSTR("G28 F6000"));             // homing
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));           // raise head
-    enqueue_and_echo_commands_P(PSTR("G29 E"));                 // leveling
-    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000"));         // go back to corner. Assumes RESTORE_LEVELING_AFTER_G28
+
+    // homing, raise head, leveling, go back to corner, activate compensation
+    ExtUI::injectCommands_P(PSTR("G28 F6000\nG1 Z4 F1200\nG29 E\nG28 X Y F6000\nM420 S1"));
 
     return Page::None;
 }
@@ -53,13 +57,13 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
         if(sensor_interactive_leveling_)
             wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::g29_leveling_failed});
         else
-            advi3pp.set_status(F("Leveling failed"));
+            status.set(F("Leveling failed"));
 
         sensor_interactive_leveling_ = false;
         return;
     }
 
-    advi3pp.reset_status();
+    status.reset();
 
     if(sensor_interactive_leveling_)
     {
@@ -69,14 +73,7 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
     else
     {
         settings.save();
-        // From gcode_M420
-        set_bed_leveling_enabled(true);
-        // Error if leveling failed to enable or reenable
-        if(!planner.leveling_active)
-        {
-            SERIAL_ERROR_START();
-            SERIAL_ERRORLNPGM(MSG_ERR_M420_FAILED);
-        }
+        ExtUI::setLevelingActive(true);
     }
 }
 

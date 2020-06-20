@@ -26,7 +26,7 @@ namespace ADVi3pp {
 
 #ifdef ADVi3PP_PROBE
 //! Automatic Leveling Page
-struct AutomaticLeveling: Handler<AutomaticLeveling>
+struct AutomaticLeveling: Screen<AutomaticLeveling>
 {
     void g29_leveling_finished(bool success);
 

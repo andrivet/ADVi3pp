@@ -19,6 +19,8 @@
  */
 
 #include "../../parameters.h"
+#include "../../core/core.h"
+#include "..//core/wait.h"
 #include "sensor_z_height.h"
 
 namespace ADVi3pp {
@@ -26,6 +28,8 @@ namespace ADVi3pp {
 SensorZHeight sensor_z_height;
 
 #ifdef ADVi3PP_PROBE
+
+const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.04, 0.12, 1.0};
 
 //! Handle Sensor Z Height command
 //! @param key_value    The sub-action to handle
@@ -50,13 +54,13 @@ bool SensorZHeight::do_dispatch(KeyValue key_value)
 //! @return The index of the page to display
 Page SensorZHeight::do_prepare_page()
 {
-    if(!print.ensure_not_printing())
+    if(!core.ensure_not_printing())
         return Page::None;
     pages.save_forward_page();
 
-    zprobe_zoffset = 0;  // reset offset
+    ExtUI::setZOffset_mm(0); // reset offset
     wait.show(F("Homing..."));
-    enqueue_and_echo_commands_P((PSTR("G28 F6000")));  // homing
+    ExtUI::injectCommands_P((PSTR("G28 F6000")));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::post_home_task), 200);
     return Page::None;
 }
@@ -70,18 +74,14 @@ void SensorZHeight::reset()
 //! Check if the printer is homed, and continue the Z Height Tuning process.
 void SensorZHeight::post_home_task()
 {
-    if(!TEST(axis_homed, X_AXIS) || !TEST(axis_homed, Y_AXIS) || !TEST(axis_homed, Z_AXIS))
-        return;
-    if(advi3pp.is_busy())
+    if(!ExtUI::isMachineHomed() || core.is_busy())
         return;
 
     task.clear_background_task();
 
     reset();
 
-    enqueue_and_echo_commands_P(PSTR("G1 Z0 F1200"));  // raise head
-    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 F6000")); // middle
-    enqueue_and_echo_commands_P(PSTR("M211 S0")); // disable soft-endstops
+    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200\nG1 X100 Y100 F6000\nM211 S0"));  // raise head, middle, disable soft-endstops
     send_data();
 
     pages.show_page(Page::ZHeightTuning, ShowOptions::None);
@@ -90,19 +90,14 @@ void SensorZHeight::post_home_task()
 //! Execute the Back command
 void SensorZHeight::do_back_command()
 {
-    enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
-    enqueue_and_echo_commands_P(PSTR("G28 Z F1200"));  // since we have reset the offset, Z-home
-    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // XY-homing
+    ExtUI::injectCommands_P(PSTR("M211 S1\nG28 Z F1200\nG28 X Y F6000")); // enable enstops, z-home, XY-homing
     Parent::do_back_command();
 }
 
 //! Handles the Save (Continue) command
 void SensorZHeight::do_save_command()
 {
-    zprobe_zoffset = advi3pp.get_current_z_height();
-    enqueue_and_echo_commands_P(PSTR("M211 S1")); // enable enstops
-    enqueue_and_echo_commands_P(PSTR("G1 Z4 F1200"));  // raise head
-    enqueue_and_echo_commands_P(PSTR("G28 X Y F6000")); // homing
+    ExtUI::injectCommands_P(PSTR("M211 S1\nG1 Z4 F1200\nG28 X Y F6000")); // enable enstops, raise head, homing
     Parent::do_save_command();
 }
 
@@ -155,10 +150,8 @@ double SensorZHeight::get_multiplier_value() const
 //! @param offset Offset for the adjustment.
 void SensorZHeight::adjust_height(double offset)
 {
-	auto new_height = advi3pp.get_current_z_height() + offset;
-    ADVString<10> command;
-    command << F("G1 Z") << new_height << F(" F1200");
-    enqueue_and_echo_command(command.get());
+    ExtUI::setZOffset_mm(ExtUI::getZOffset_mm() + offset);
+    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
     send_data();
 }
 

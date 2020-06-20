@@ -26,7 +26,7 @@ namespace ADVi3pp {
 
 #ifdef ADVi3PP_PROBE
 //! Sensor Tuning Page
-struct SensorTuning: Handler<SensorTuning>
+struct SensorTuning: Screen<SensorTuning>
 {
 private:
     bool do_dispatch(KeyValue key_value);
