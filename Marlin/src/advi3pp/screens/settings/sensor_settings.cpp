@@ -223,6 +223,14 @@ Page SensorSettings::do_prepare_page()
     return Page::NoSensor;
 }
 
+//! Reset settings
+void SensorSettings::do_reset()
+{
+    index_ = 0;
+    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
+        positions_[i] = SensorPosition{};
+}
+
 #endif
 
 //! Store current data in permanent memory (EEPROM)
