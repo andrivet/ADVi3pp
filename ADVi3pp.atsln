@@ -11,16 +11,26 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		5.1 Debug|AVR = 5.1 Debug|AVR
 		5.1 Release|AVR = 5.1 Release|AVR
+		5.1BL Debug|AVR = 5.1BL Debug|AVR
+		5.1BL Release|AVR = 5.1BL Release|AVR
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1 Debug|AVR.ActiveCfg = Debug|AVR
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1 Debug|AVR.Build.0 = Debug|AVR
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1 Release|AVR.ActiveCfg = Release|AVR
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1 Release|AVR.Build.0 = Release|AVR
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1BL Debug|AVR.ActiveCfg = 5.1BL Debug|AVR
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1BL Debug|AVR.Build.0 = 5.1BL Debug|AVR
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1BL Release|AVR.ActiveCfg = 5.1BL Release|AVR
+		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1BL Release|AVR.Build.0 = 5.1BL Release|AVR
 		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1 Debug|AVR.ActiveCfg = Debug|AVR
 		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1 Debug|AVR.Build.0 = Debug|AVR
 		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1 Release|AVR.ActiveCfg = Release|AVR
 		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1 Release|AVR.Build.0 = Release|AVR
+		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1BL Debug|AVR.ActiveCfg = 5.1BL Debug|AVR
+		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1BL Debug|AVR.Build.0 = 5.1BL Debug|AVR
+		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1BL Release|AVR.ActiveCfg = 5.1BL Release|AVR
+		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1BL Release|AVR.Build.0 = 5.1BL Release|AVR
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
