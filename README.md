@@ -81,18 +81,18 @@ Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 
 ## ADVi3++
 
-* Copyright &copy; 2017-2019 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
-* Copyright &copy; 2016-2019 [MarlinFirmware](https://github.com/MarlinFirmware/Marlin)
+* Copyright &copy; 2017-2020 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
+* Copyright &copy; 2016-2020 [MarlinFirmware](https://github.com/MarlinFirmware/Marlin)
 * Based on Sprinter and grbl.
 * Copyright &copy; 2011 Camiel Gubbels / Erik van der Zalm
 
 ## ADVi3++ LCD Panels
 
-* Copyright &copy; 2017-2019 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
+* Copyright &copy; 2017-2020 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
 
 ## ADVi3++ User Manual
 
-* Copyright &copy; 2018-2019 Sebastien Andrivet
+* Copyright &copy; 2018-2020 Sebastien Andrivet
 
 # License
 
