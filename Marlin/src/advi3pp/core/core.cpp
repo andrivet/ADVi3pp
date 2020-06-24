@@ -383,4 +383,9 @@ bool Core::is_busy()
     return ExtUI::isMoving() || ExtUI::commandsInQueue(); // TODO it is enough (we are not looking at busy_state)?
 }
 
+void Core::inject_commands(const FlashChar* commands)
+{
+    ExtUI::injectCommands_P(reinterpret_cast<const char*>(commands));
+}
+
 }

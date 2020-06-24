@@ -87,14 +87,14 @@ void LoadUnload::prepare()
 void LoadUnload::load_command()
 {
     prepare();
-    ExtUI::injectCommands_P(PSTR("M701"));
+    core.inject_commands(F("M701"));
 }
 
 //! Start Unload action.
 void LoadUnload::unload_command()
 {
     prepare();
-    ExtUI::injectCommands_P(PSTR("M702"));
+    core.inject_commands(F("M702"));
 }
 
 //! Handle back from the Load or Unload LCD screen: stop the process.

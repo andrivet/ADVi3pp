@@ -19,6 +19,7 @@
  */
 
 #include "../../parameters.h"
+#include "../../core/core.h"
 #include "../../core/dgus.h"
 #include "leveling_grid.h"
 
@@ -47,7 +48,7 @@ Page LevelingGrid::do_prepare_page()
 void LevelingGrid::do_save_command()
 {
     // Save settings (including mesh), Set bed leveling state (enable)
-    ExtUI::injectCommands_P(PSTR("M500\nM420 S1"));
+    core.inject_commands(F("M500\nM420 S1"));
     Parent::do_save_command();
 }
 

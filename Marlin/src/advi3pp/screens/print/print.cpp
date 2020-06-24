@@ -20,6 +20,7 @@
 
 #include "../../parameters.h"
 #include "print.h"
+#include "../../core/core.h"
 #include "../../core/status.h"
 #include "../core/wait.h"
 
@@ -61,7 +62,7 @@ void Print::stop_command()
         return;
 
     wait.show(F("Stop printing..."), ShowOptions::SaveBack);
-    ExtUI::injectCommands_P(PSTR("A1"));
+    core.inject_commands(F("A1")); // TODO review this
 }
 
 //! Pause printing
@@ -71,7 +72,7 @@ void Print::pause_resume_command()
         return;
 
     wait.show(F("Pause printing..."), ShowOptions::SaveBack);
-    ExtUI::injectCommands_P(PSTR("A0"));
+    core.inject_commands(F("A0")); // TODO review this
 }
 
 //! Advanced Pause for filament change
@@ -81,7 +82,7 @@ void Print::advanced_pause_command()
         return;
 
     wait.show(F("Pausing..."), ShowOptions::SaveBack);
-    ExtUI::injectCommands_P(PSTR("M600"));
+    core.inject_commands(F("M600"));
 }
 
 //! Process Stop (A1) code and actually stop the print (if any running).
@@ -97,7 +98,7 @@ void Print::process_stop_code()
 //! Process Pause (A0) code and actually pause the print (if any running).
 void Print::process_pause_resume_code()
 {
-    ExtUI::injectCommands_P(PSTR("M600"));
+    core.inject_commands(F("M600"));
 }
 
 void Print::pause_finished()

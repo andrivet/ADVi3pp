@@ -41,6 +41,7 @@ private:
     void pointC_command();
     void pointD_command();
     void leveling_task();
+    void move(int x, int y);
 
     friend Parent;
 };

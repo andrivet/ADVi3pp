@@ -21,6 +21,7 @@
 #include "../parameters.h"
 #include "settings.h"
 #include "../versions.h"
+#include "../core/core.h"
 #include "../core/dgus.h"
 #include "../core/dimming.h"
 #include "../core/buzzer.h"
@@ -93,14 +94,14 @@ void Settings::mismatch()
 void Settings::save()
 {
     eeprom_mismatch.reset_mismatch();
-    ExtUI::injectCommands_P(PSTR("M500"));
+    core.inject_commands(F("M500"));
 }
 
 //! Restore settings from EEPROM memory
 void Settings::restore()
 {
     // Note: Previously, M420 (bed leveling compensation) was reset by M501. It is no more the case.
-    ExtUI::injectCommands_P(PSTR("M501"));
+    core.inject_commands(F("M501"));
 }
 
 Feature Settings::flip_features(Feature features)

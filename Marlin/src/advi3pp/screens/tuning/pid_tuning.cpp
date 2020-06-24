@@ -100,12 +100,14 @@ void PidTuning::step2_command()
 
     Uint16 temperature, kind; frame >> temperature >> kind; temperature_ = temperature.word; // kind is not used here, it is already set
     if(kind_ == TemperatureKind::Hotend)
-        ExtUI::injectCommands_P(PSTR("M106 S255")); // Turn on fan (only for hotend)
-
-    ADVString<20> auto_pid_command;
-    auto_pid_command << F("M303 S") << temperature_
-                     << (kind_ == TemperatureKind::Hotend ? F(" E0 U1") : F(" E-1 U1"));
-    ExtUI::injectCommands_P(auto_pid_command.get()); // TODO this is wrong
+    {
+        ExtUI::setTargetFan_percent(0, ExtUI::FAN0); // Turn on fan (only for hotend)
+        ExtUI::startPIDTune(temperature_, ExtUI::E0);
+    }
+    else
+    {
+        ExtUI::startBedPIDTune(temperature_);
+    }
 
     inTuning_ = true;
     temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
@@ -123,7 +125,7 @@ bool PidTuning::cancel_pid()
 void PidTuning::finished(bool success)
 {
     Log::log() << F("Auto PID finished: ") << (success ? F("success") : F("failed")) << Log::endl();
-    ExtUI::injectCommands_P(PSTR("M106 S0"));
+    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
     if(!success)
     {
         status.set(F("PID tuning failed"));

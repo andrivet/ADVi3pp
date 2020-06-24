@@ -36,6 +36,7 @@ struct Core
 
     bool ensure_not_printing();
     bool is_busy();
+    void inject_commands(const FlashChar* commands);
 
     template<size_t L> ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version);
 

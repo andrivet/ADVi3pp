@@ -44,7 +44,7 @@ struct Move: Screen<Move>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void move(const char* commands, millis_t delay);
+    void move(void (*commands)(), millis_t delay);
 
 private:
     millis_t last_move_time_ = 0;

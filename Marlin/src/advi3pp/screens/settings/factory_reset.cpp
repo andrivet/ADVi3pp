@@ -19,6 +19,7 @@
  */
 
 #include "../../parameters.h"
+#include "../../core/core.h"
 #include "factory_reset.h"
 
 namespace ADVi3pp {
@@ -35,7 +36,7 @@ Page FactoryReset::do_prepare_page()
 //! Handles the Save (Continue) command
 void FactoryReset::do_save_command()
 {
-    ExtUI::injectCommands_P(PSTR("M502\nM500"));
+    core.inject_commands(F("M502\nM500"));
     pages.show_forward_page();
 }
 

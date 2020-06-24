@@ -20,7 +20,7 @@
 
 #include "../../parameters.h"
 #include "../../core/core.h"
-#include "..//core/wait.h"
+#include "../core/wait.h"
 #include "sensor_z_height.h"
 
 namespace ADVi3pp {
@@ -58,9 +58,8 @@ Page SensorZHeight::do_prepare_page()
         return Page::None;
     pages.save_forward_page();
 
-    ExtUI::setZOffset_mm(0); // reset offset
     wait.show(F("Homing..."));
-    ExtUI::injectCommands_P((PSTR("G28 F6000")));  // homing
+    core.inject_commands(F("G28 F6000"));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::post_home_task), 200);
     return Page::None;
 }
@@ -78,10 +77,17 @@ void SensorZHeight::post_home_task()
         return;
 
     task.clear_background_task();
-
     reset();
 
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200\nG1 X100 Y100 F6000\nM211 S0"));  // raise head, middle, disable soft-endstops
+    ExtUI::setZOffset_mm(0);
+
+    ExtUI::setFeedrate_mm_s(1200);
+    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(100, ExtUI::X);
+    ExtUI::setAxisPosition_mm(100, ExtUI::Y);
+    ExtUI::setAxisPosition_mm(0, ExtUI::Z);
+    ExtUI::setSoftEndstopState(false);
+
     send_data();
 
     pages.show_page(Page::ZHeightTuning, ShowOptions::None);
@@ -90,14 +96,22 @@ void SensorZHeight::post_home_task()
 //! Execute the Back command
 void SensorZHeight::do_back_command()
 {
-    ExtUI::injectCommands_P(PSTR("M211 S1\nG28 Z F1200\nG28 X Y F6000")); // enable enstops, z-home, XY-homing
+    // enable enstops, z-home, XY-homing, compensation
+    ExtUI::setSoftEndstopState(true);
+    core.inject_commands(F("G28 Z F1200\nG28 X Y F6000\nM420 S1"));
     Parent::do_back_command();
 }
 
 //! Handles the Save (Continue) command
 void SensorZHeight::do_save_command()
 {
-    ExtUI::injectCommands_P(PSTR("M211 S1\nG1 Z4 F1200\nG28 X Y F6000")); // enable enstops, raise head, homing
+    // Current Z position becomes Z offset
+    ExtUI::setZOffset_mm(ExtUI::getAxisPosition_mm(ExtUI::Z));
+    // enable enstops, raise head, homing
+    ExtUI::setSoftEndstopState(true);
+    ExtUI::setFeedrate_mm_s(1200);
+    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
+    core.inject_commands(F("G28 X Y F6000\nM420 S1"));
     Parent::do_save_command();
 }
 
@@ -150,8 +164,8 @@ double SensorZHeight::get_multiplier_value() const
 //! @param offset Offset for the adjustment.
 void SensorZHeight::adjust_height(double offset)
 {
-    ExtUI::setZOffset_mm(ExtUI::getZOffset_mm() + offset);
-    ExtUI::injectCommands_P(PSTR("G1 Z0 F1200"));
+    ExtUI::setFeedrate_mm_s(1200);
+    ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset, ExtUI::Z);
     send_data();
 }
 

@@ -133,7 +133,10 @@ void Preheat::cooldown_command()
 
     Log::log() << F("Cooldown") << Log::endl();
     status.set(F("Cooldown"));
-    ExtUI::finishAndDisableHeaters();
+
+    ExtUI::setTargetTemp_celsius(0, ExtUI::BED);
+    ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
 }
 
 }
