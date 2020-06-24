@@ -33,7 +33,7 @@ LevelingGrid leveling_grid;
 //! @return The index of the page to display
 Page LevelingGrid::do_prepare_page()
 {
-    auto z_values = ExtUI::getMeshArray();
+    ExtUI::bed_mesh_t& z_values = ExtUI::getMeshArray();
 
     WriteRamDataRequest frame{Variable::Value0};
     for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
