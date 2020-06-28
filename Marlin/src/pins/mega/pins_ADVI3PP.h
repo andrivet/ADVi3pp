@@ -29,15 +29,13 @@
 #error "Oops! Select 'Arduino/Genuino Mega or Mega 2560' in 'Tools > Board.'"
 #endif
 
+#define DEFAULT_MACHINE_NAME    "ADVi3++"
 #if MB(ADVI3PP_I3_PLUS_51)
 #define BOARD_INFO_NAME         "Duplicator i3 Plus"
-#define DEFAULT_MACHINE_NAME    "i3 Plus"
 #elif MB(ADVI3PP_I3_PLUS_52C)
 #define BOARD_INFO_NAME         "Aldi Balco 3D HE180021"
-#define DEFAULT_MACHINE_NAME    "Balco 3D"
 #elif MB(ADVI3PP_I3_PLUS_54)
 #define BOARD_INFO_NAME         "Duplicator i3 Plus Mark II"
-#define DEFAULT_MACHINE_NAME    "i3 Plus M2"
 #else
 #error "Unknown i3 Plus mainboard"
 #endif
