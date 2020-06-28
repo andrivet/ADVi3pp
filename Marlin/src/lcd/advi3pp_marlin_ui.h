@@ -20,6 +20,10 @@
 
 // Minimal implementation of MarlinUI for ADVi3++
 
+#pragma once
+
+#include "../inc/MarlinConfig.h"
+
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
 #include "../feature/pause.h"
 #include "../module/motion.h" // for active_extruder
@@ -35,7 +39,7 @@ void lcd_pause_show_message(const PauseMessage message,
 class MarlinUI {
 public:
 
-    MarlinUI() {}
+    MarlinUI() = default;
 
     static void init();
     static void update();
@@ -43,38 +47,35 @@ public:
     static void abort_print();
     static void pause_print();
     static void resume_print();
-    static void kill_screen(PGM_P const lcd_error, PGM_P const lcd_component);
+    static void kill_screen(PGM_P lcd_error, PGM_P lcd_component);
 
-    static void set_alert_status_P(PGM_P const message);
+    static void set_alert_status_P(PGM_P message);
     static void reset_alert_level();
     static bool has_status();
-    static void set_status(const char* const message, const bool persist=false);
-    static void set_status_P(PGM_P const message, const int8_t level=0);
-    static void status_printf_P(const uint8_t level, PGM_P const fmt, ...);
-    static void reset_status(const bool no_welcome=false);
+    static void set_status(const char* message, bool persist=false);
+    static void set_status_P(PGM_P message, int8_t level=0);
+    static void status_printf_P(uint8_t level, PGM_P fmt, ...);
+    static void reset_status(bool no_welcome=false);
     static void return_to_status();
 
-    static void set_contrast(const int16_t value);
+    static void set_contrast(int16_t value);
     static int16_t get_contrast();
 
     static void update_buttons();
     static bool button_pressed();
-    static void quick_feedback(const bool clear_buttons=true);
+    static void quick_feedback(bool clear_buttons=true);
     static void refresh();
     static void wait_for_release();
     static bool use_click();
 
-    static bool external_control;
-    FORCE_INLINE static void capture() { external_control = true; }
-    FORCE_INLINE static void release() { external_control = false; }
+    static void capture();
+    static void release();
     static void chirp();
 
     static int16_t preheat_hotend_temp[NB_MATERIAL_PRESET], preheat_bed_temp[NB_MATERIAL_PRESET];
     static uint8_t preheat_fan_speed[NB_MATERIAL_PRESET];
 
     typedef uint8_t progress_t;
-#define PROGRESS_SCALE 1U
-    static progress_t progress_override;
     static void set_progress(const progress_t p);
     static void set_progress_done();
     static uint8_t get_progress_percent();

@@ -28,7 +28,7 @@ namespace ADVi3pp {
 //! Pause Pages
 struct Pause: Screen<Pause>
 {
-    void advanced_pause_show_message(PauseMessage message);
+    void show_message(PauseMessage message);
 
 private:
     void insert_filament();
@@ -40,6 +40,6 @@ private:
     friend Parent;
 };
 
-extern Pause advanced_pause;
+extern Pause pause;
 
 }

@@ -25,12 +25,12 @@
 
 namespace ADVi3pp {
 
-Pause advanced_pause;
+Pause pause;
 
 
 //! Show Advance Pause message (called from Marlin).
 //! @param message Message to dislay.
-void Pause::advanced_pause_show_message(const PauseMessage message)
+void Pause::show_message(PauseMessage message)
 {
     if(message == last_advanced_pause_message_)
         return;
