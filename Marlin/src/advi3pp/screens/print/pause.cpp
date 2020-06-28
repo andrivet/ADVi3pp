@@ -29,29 +29,67 @@ Pause pause;
 
 
 //! Show Advance Pause message (called from Marlin).
-//! @param message Message to dislay.
+//! @param message Message to display.
 void Pause::show_message(PauseMessage message)
 {
-    if(message == last_advanced_pause_message_)
-        return;
-    last_advanced_pause_message_ = message;
-
-    // TODO handle all the messages
     switch (message)
     {
-        case PAUSE_MESSAGE_PAUSING:                    wait.show(F("Pausing...")); break;
-        case PAUSE_MESSAGE_UNLOAD:                     wait.set_message(F("Unloading filament...")); break;
-        case PAUSE_MESSAGE_INSERT:                     insert_filament(); break;
-        case PAUSE_MESSAGE_LOAD:                       wait.set_message(F("Loading...")); break;
-        case PAUSE_MESSAGE_PURGE:                      wait.set_message(F("Extruding some filament...")); break;
-        //case PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE:       wait.set_message(F("Press continue to heat")); break;
-        case PAUSE_MESSAGE_RESUME:                     wait.set_message(F("Resuming print...")); break;
-        case PAUSE_MESSAGE_STATUS:                     break;
-        //case PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT:   wait.set_message(F("Waiting for heat...")); break;
-        //case PAUSE_MESSAGE_OPTION:                     pause_menu_response = ADVANCED_PAUSE_RESPONSE_RESUME_PRINT; break;
-        default: Log::log() << F("Unknown AdvancedPauseMessage: ") << static_cast<uint16_t>(message) << Log::endl(); break;
+        case PAUSE_MESSAGE_PAUSING:     show(GET_TEXT(MSG_PAUSE_PRINT_INIT), false); break;
+        case PAUSE_MESSAGE_CHANGING:    show(GET_TEXT(MSG_FILAMENT_CHANGE_INIT), false); break;
+        case PAUSE_MESSAGE_UNLOAD:      show(GET_TEXT(MSG_FILAMENT_CHANGE_UNLOAD), false); break;
+        case PAUSE_MESSAGE_WAITING:     show(GET_TEXT(MSG_ADVANCED_PAUSE_WAITING), false); break;
+        case PAUSE_MESSAGE_INSERT:      show(GET_TEXT(MSG_FILAMENT_CHANGE_INSERT), true); break;
+        case PAUSE_MESSAGE_LOAD:        show(GET_TEXT(MSG_FILAMENT_CHANGE_LOAD), false); break;
+        case PAUSE_MESSAGE_PURGE:       show(GET_TEXT(MSG_FILAMENT_CHANGE_PURGE), false); break;
+        case PAUSE_MESSAGE_RESUME:      show(GET_TEXT(MSG_FILAMENT_CHANGE_RESUME), false); break;
+        case PAUSE_MESSAGE_HEAT:        show(GET_TEXT(MSG_FILAMENT_CHANGE_HEAT), false); break;
+        case PAUSE_MESSAGE_HEATING:     show(GET_TEXT(MSG_FILAMENT_CHANGE_HEATING), false); break;
+        case PAUSE_MESSAGE_OPTION:      options();
+        case PAUSE_MESSAGE_STATUS:      break;
+
+        default: Log::log() << F("Unknown PauseMessage: ") << static_cast<uint16_t>(message) << Log::endl(); break;
     }
 }
+
+void Pause::show(PGM_P message, bool withContinue)
+{
+    if(withContinue)
+        wait.show(reinterpret_cast<const FlashChar*>(message),
+                  WaitCallback{this, &Pause::wait_back},
+                  WaitCallback{this, &Pause::wait_continue},
+                  ShowOptions::None);
+    else
+        wait.show(reinterpret_cast<const FlashChar*>(message),
+                  WaitCallback{this, &Pause::wait_back},
+                  ShowOptions::None);
+}
+
+void Pause::options()
+{
+    pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT; // TODO change that, display new screen
+    wait.show(F("Press Continue when the filament comes out of the nozzle..."),
+              WaitCallback{this, &Pause::wait_back},
+              WaitCallback{this, &Pause::options_continue},
+              ShowOptions::None);
+}
+
+bool Pause::wait_back()
+{
+    ExtUI::setUserConfirmed();
+    return true;
+}
+
+bool Pause::wait_continue()
+{
+    return true;
+}
+
+bool Pause::options_continue()
+{
+    pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT;
+    return true;
+}
+
 
 //! Show "Insert filament" message during Advance Pause
 void Pause::insert_filament()
