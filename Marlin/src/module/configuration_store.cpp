@@ -902,7 +902,7 @@ void MarlinSettings::postprocess() {
 
       const int16_t lcd_contrast =
         #if HAS_LCD_CONTRAST
-          ui.contrast
+          ui.get_contrast()
         #else
           127
         #endif
@@ -3254,7 +3254,7 @@ void MarlinSettings::reset() {
     #if HAS_LCD_CONTRAST
       CONFIG_ECHO_HEADING("LCD Contrast:");
       CONFIG_ECHO_START();
-      SERIAL_ECHOLNPAIR("  M250 C", ui.contrast);
+      SERIAL_ECHOLNPAIR("  M250 C", ui.get_contrast());
     #endif
 
     #if ENABLED(CONTROLLER_FAN_EDITABLE)

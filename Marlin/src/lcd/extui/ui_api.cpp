@@ -1121,6 +1121,16 @@ namespace ExtUI {
 
   #endif
 
+  uint16_t get_lcd_contrast()
+  {
+      return ui.get_contrast();
+  }
+
+  void set_lcd_contrast(uint16_t contrast)
+  {
+      return ui.set_contrast(contrast);
+  }
+
 } // namespace ExtUI
 
 // At the moment, we piggy-back off the ultralcd calls, but this could be cleaned up in the future

@@ -21,7 +21,6 @@
 #include "../parameters.h"
 #include <Arduino.h>
 #include "../../lcd/extui/ui_api.h"
-#include "../../lcd/ultralcd.h"
 #include "settings.h"
 #include "dimming.h"
 #include "dgus.h"
@@ -54,7 +53,7 @@ void Dimming::set_next_dimming_time()
 //! @return The adjusted brightness
 uint8_t Dimming::get_adjusted_brightness()
 {
-    int16_t brightness = ui.contrast;
+    int16_t brightness = ExtUI::get_lcd_contrast();
     if(dimmed_)
         brightness = brightness * dimming_ratio / 100;
     if(brightness < LCD_CONTRAST_MIN)
@@ -125,15 +124,8 @@ void Dimming::send_brightness()
 //! @param brightness New brightness
 void Dimming::change_brightness(int16_t brightness)
 {
-    ui.set_contrast(brightness);
+    ExtUI::set_lcd_contrast(brightness);
 }
 
-}
-
-int16_t MarlinUI::contrast = DEFAULT_LCD_CONTRAST;
-
-void MarlinUI::set_contrast(const int16_t value) {
-    MarlinUI::contrast = constrain(value, LCD_CONTRAST_MIN, LCD_CONTRAST_MAX);
-    ADVi3pp::dimming.reset(true);
 }
 

@@ -388,6 +388,8 @@ namespace ExtUI {
   void cancelWaitForHeatup();
   void kill(PGM_P const lcd_error=nullptr, PGM_P const lcd_component=nullptr, const bool steppers_off=false);
   void killRightNow(const bool steppers_off=false);
+  uint16_t get_lcd_contrast();
+  void set_lcd_contrast(uint16_t contrast);
 };
 
 /**

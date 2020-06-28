@@ -29,7 +29,7 @@
 #include "../screens/settings/sensor_settings.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/eeprom_mismatch.h"
-#include "../../lcd/ultralcd.h"
+
 
 namespace ADVi3pp {
 
@@ -118,7 +118,7 @@ bool Settings::is_feature_enabled(Feature features) const
 void Settings::send_lcd_values(Variable features)
 {
     WriteRamDataRequest frame{features};
-    frame << Uint16(static_cast<uint16_t>(features_)) << Uint16(MarlinUI::contrast);
+    frame << Uint16(static_cast<uint16_t>(features_)) << Uint16(ExtUI::get_lcd_contrast());
     frame.send();
 }
 
