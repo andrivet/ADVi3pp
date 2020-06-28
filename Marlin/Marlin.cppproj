@@ -610,16 +610,16 @@
     <Compile Include="src\advi3pp\screens\info\versions.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\print\advanced_pause.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\print\advanced_pause.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\print\change_filament.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\change_filament.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\pause.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\pause.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\print.cpp">
