@@ -478,6 +478,9 @@
     <Compile Include="src\advi3pp\core\logging.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\core\marlin_ui.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\core\pages.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1678,31 +1681,7 @@
     <Compile Include="src\lcd\extui_advi3pp.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\lcd\extui_dgus_lcd.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\lcd\extui_example.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\lcd\extui_malyan_lcd.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\lcd\fontutils.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\lcd\fontutils.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\lcd\lcdprint.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\lcd\lcdprint.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\lcd\thermistornames.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\lcd\ultralcd.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\lcd\ultralcd.h">
