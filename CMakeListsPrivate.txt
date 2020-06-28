@@ -12,11 +12,41 @@ set(CMAKE_CONFIGURATION_TYPES "advi3pp-51;advi3pp-51-bltouch;advi3pp-52c;advi3pp
 
 SET(CMAKE_C_COMPILER "$ENV{HOME}/.platformio/packages/toolchain-atmelavr/bin/avr-gcc")
 SET(CMAKE_CXX_COMPILER "$ENV{HOME}/.platformio/packages/toolchain-atmelavr/bin/avr-g++")
-SET(CMAKE_CXX_FLAGS "-std=c++17 -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -fmerge-all-constants -Os -Wall -ffunction-sections -fdata-sections -flto -mmcu=atmega2560")
+SET(CMAKE_CXX_FLAGS "-fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -fmerge-all-constants -Os -Wall -ffunction-sections -fdata-sections -flto -mmcu=atmega2560")
 SET(CMAKE_C_FLAGS "-std=gnu11 -fno-fat-lto-objects -fmerge-all-constants -Os -Wall -ffunction-sections -fdata-sections -flto -mmcu=atmega2560")
 
 SET(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
+
+if (CMAKE_BUILD_TYPE MATCHES "advi3pp-51-bltouch")
+    add_definitions(-D'PLATFORMIO=40304')
+    add_definitions(-D'ARDUINO_AVR_MEGA2560')
+    add_definitions(-D'__MARLIN_FIRMWARE__')
+    add_definitions(-D'ADVi3PP_51')
+    add_definitions(-D'BLTOUCH')
+    add_definitions(-D'F_CPU=16000000L')
+    add_definitions(-D'ARDUINO_ARCH_AVR')
+    add_definitions(-D'ARDUINO=10808')
+    add_definitions(-D'__AVR_ATmega2560__')
+
+    include_directories("${CMAKE_CURRENT_LIST_DIR}/include")
+    include_directories("${CMAKE_CURRENT_LIST_DIR}/Marlin")
+    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/SPI/src")
+    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/Wire/src")
+    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/cores/arduino")
+    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/variants/mega")
+    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src")
+    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/HID/src")
+    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src")
+    include_directories("$ENV{HOME}/.platformio/packages/toolchain-atmelavr/lib/gcc/avr/5.4.0/include")
+    include_directories("$ENV{HOME}/.platformio/packages/toolchain-atmelavr/lib/gcc/avr/5.4.0/include-fixed")
+    include_directories("$ENV{HOME}/.platformio/packages/toolchain-atmelavr/avr/include")
+    include_directories("$ENV{HOME}/.platformio/packages/tool-unity")
+
+    FILE(GLOB_RECURSE EXTRA_LIB_SOURCES
+        ${CMAKE_CURRENT_LIST_DIR}/.pio/libdeps/advi3pp-51-bltouch/*.*
+    )
+endif()
 
 if (CMAKE_BUILD_TYPE MATCHES "advi3pp-51")
     add_definitions(-D'PLATFORMIO=40304')
@@ -44,35 +74,6 @@ if (CMAKE_BUILD_TYPE MATCHES "advi3pp-51")
 
     FILE(GLOB_RECURSE EXTRA_LIB_SOURCES
         ${CMAKE_CURRENT_LIST_DIR}/.pio/libdeps/advi3pp-51/*.*
-    )
-endif()
-
-if (CMAKE_BUILD_TYPE MATCHES "advi3pp-51-bltouch")
-    add_definitions(-D'PLATFORMIO=40304')
-    add_definitions(-D'ARDUINO_AVR_MEGA2560')
-    add_definitions(-D'__MARLIN_FIRMWARE__')
-    add_definitions(-D'ADVi3PP_51_BLTOUCH')
-    add_definitions(-D'F_CPU=16000000L')
-    add_definitions(-D'ARDUINO_ARCH_AVR')
-    add_definitions(-D'ARDUINO=10808')
-    add_definitions(-D'__AVR_ATmega2560__')
-
-    include_directories("${CMAKE_CURRENT_LIST_DIR}/include")
-    include_directories("${CMAKE_CURRENT_LIST_DIR}/Marlin")
-    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/SPI/src")
-    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/Wire/src")
-    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/cores/arduino")
-    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/variants/mega")
-    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src")
-    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/HID/src")
-    include_directories("$ENV{HOME}/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src")
-    include_directories("$ENV{HOME}/.platformio/packages/toolchain-atmelavr/lib/gcc/avr/5.4.0/include")
-    include_directories("$ENV{HOME}/.platformio/packages/toolchain-atmelavr/lib/gcc/avr/5.4.0/include-fixed")
-    include_directories("$ENV{HOME}/.platformio/packages/toolchain-atmelavr/avr/include")
-    include_directories("$ENV{HOME}/.platformio/packages/tool-unity")
-
-    FILE(GLOB_RECURSE EXTRA_LIB_SOURCES
-        ${CMAKE_CURRENT_LIST_DIR}/.pio/libdeps/advi3pp-51-bltouch/*.*
     )
 endif()
 if (CMAKE_BUILD_TYPE MATCHES "advi3pp-52c")
@@ -107,7 +108,8 @@ if (CMAKE_BUILD_TYPE MATCHES "advi3pp-52c-bltouch")
     add_definitions(-D'PLATFORMIO=40304')
     add_definitions(-D'ARDUINO_AVR_MEGA2560')
     add_definitions(-D'__MARLIN_FIRMWARE__')
-    add_definitions(-D'ADVi3PP_52C_BLTOUCH')
+    add_definitions(-D'ADVi3PP_52C')
+    add_definitions(-D'BLTOUCH')
     add_definitions(-D'F_CPU=16000000L')
     add_definitions(-D'ARDUINO_ARCH_AVR')
     add_definitions(-D'ARDUINO=10808')
