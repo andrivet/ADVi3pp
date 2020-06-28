@@ -25,7 +25,7 @@ namespace ADVi3pp {
 
 struct Buzzer
 {
-    void buzz_on_action(long duration);
+    void buzz_on_action();
     void buzz_on_press();
 
 private:

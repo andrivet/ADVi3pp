@@ -27,13 +27,14 @@
 
 namespace ADVi3pp {
 
-const uint8_t BUZZ_ON_PRESS_DURATION = 10; // x 1 ms
+const uint8_t BUZZ_ON_PRESS_DURATION = 10;  // x 1 ms
+const uint8_t BUZZ_ON_ACTION_DURATION = 20; // x 1 ms
 
 Buzzer buzzer;
 
 //! Activate the LCD internal buzzer for the given duration.
 //! Note: If the buzzer is disabled, does nothing.
-void Buzzer::buzz_on_action(long duration)
+void Buzzer::buzz_on_action()
 {
     dimming.reset();
     if(!settings.is_feature_enabled(Feature::BuzzOnAction))
@@ -42,7 +43,7 @@ void Buzzer::buzz_on_action(long duration)
         return;
     }
 
-    send_buzz_command_to_lcd(duration);
+    send_buzz_command_to_lcd(BUZZ_ON_ACTION_DURATION);
 }
 
 //! Send the buzz command to the LCD panel
