@@ -2291,6 +2291,7 @@
 #define ADVi3PP_UI
 //#define EXTUI_EXAMPLE
 #define HAS_LCD_MENU 1
+#define PROGRESS_SCALE 1U
 
 #if ENABLED(EXTENSIBLE_UI)
   //#define EXTUI_LOCAL_BEEPER // Enables use of local Beeper pin with external display
