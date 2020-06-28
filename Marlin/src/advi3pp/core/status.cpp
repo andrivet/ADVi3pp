@@ -55,6 +55,13 @@ void Status::set(const char* message)
     has_status_ = true;
 }
 
+void Status::set(const FlashChar* fmt, va_list& args)
+{
+    message_.set(fmt, args).align(Alignment::Left);
+    centered_.set(fmt, args).align(Alignment::Center);
+    has_status_ = true;
+}
+
 //! Compute the current progress message (name and percentage)
 void Status::compute_progress()
 {
