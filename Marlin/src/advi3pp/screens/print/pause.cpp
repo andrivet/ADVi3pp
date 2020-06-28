@@ -19,18 +19,18 @@
  */
 
 #include "../../parameters.h"
-#include "advanced_pause.h"
+#include "pause.h"
 #include "../core/wait.h"
 #include "../../core/logging.h"
 
 namespace ADVi3pp {
 
-AdvancedPause advanced_pause;
+Pause advanced_pause;
 
 
 //! Show Advance Pause message (called from Marlin).
 //! @param message Message to dislay.
-void AdvancedPause::advanced_pause_show_message(const PauseMessage message)
+void Pause::advanced_pause_show_message(const PauseMessage message)
 {
     if(message == last_advanced_pause_message_)
         return;
@@ -39,7 +39,7 @@ void AdvancedPause::advanced_pause_show_message(const PauseMessage message)
     // TODO handle all the messages
     switch (message)
     {
-        case PAUSE_MESSAGE_PAUSING:                       wait.show(F("Pausing...")); break;
+        case PAUSE_MESSAGE_PAUSING:                    wait.show(F("Pausing...")); break;
         case PAUSE_MESSAGE_UNLOAD:                     wait.set_message(F("Unloading filament...")); break;
         case PAUSE_MESSAGE_INSERT:                     insert_filament(); break;
         case PAUSE_MESSAGE_LOAD:                       wait.set_message(F("Loading...")); break;
@@ -54,13 +54,13 @@ void AdvancedPause::advanced_pause_show_message(const PauseMessage message)
 }
 
 //! Show "Insert filament" message during Advance Pause
-void AdvancedPause::insert_filament()
+void Pause::insert_filament()
 {
-    wait.show_continue(F("Insert filament and press continue..."), WaitCallback{this, &AdvancedPause::filament_inserted}, ShowOptions::None);
+    wait.show_continue(F("Insert filament and press continue..."), WaitCallback{this, &Pause::filament_inserted}, ShowOptions::None);
 }
 
 //! Action to execute once the filament is inserted (Continue command)
-bool AdvancedPause::filament_inserted()
+bool Pause::filament_inserted()
 {
     ExtUI::setUserConfirmed();
     wait.show(F("Filament inserted.."), ShowOptions::None);

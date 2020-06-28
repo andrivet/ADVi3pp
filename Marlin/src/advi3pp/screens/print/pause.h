@@ -25,8 +25,8 @@
 
 namespace ADVi3pp {
 
-//! Advanced Pause Page
-struct AdvancedPause: Screen<AdvancedPause>
+//! Pause Pages
+struct Pause: Screen<Pause>
 {
     void advanced_pause_show_message(PauseMessage message);
 
@@ -40,6 +40,6 @@ private:
     friend Parent;
 };
 
-extern AdvancedPause advanced_pause;
+extern Pause advanced_pause;
 
 }
