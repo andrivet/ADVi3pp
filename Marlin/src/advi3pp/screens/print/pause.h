@@ -31,13 +31,8 @@ struct Pause: Screen<Pause>
     void show_message(PauseMessage message);
 
 private:
-    void show(PGM_P message, bool withContinue);
-    bool wait_back();
-    bool wait_continue();
+    void show(PGM_P message);
     void options();
-    bool options_continue();
-    void insert_filament();
-    bool filament_inserted();
 
 private:
     friend Parent;

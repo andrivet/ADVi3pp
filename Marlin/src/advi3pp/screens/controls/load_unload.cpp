@@ -97,14 +97,5 @@ void LoadUnload::unload_command()
     core.inject_commands(F("M702"));
 }
 
-//! Handle back from the Load or Unload LCD screen: stop the process.
-//! @return true to continue Back processing
-bool LoadUnload::stop()
-{
-    Log::log() << F("Load/Unload Stop") << Log::endl();
-    // TODO actual implementation
-    return true;
-}
-
 
 }

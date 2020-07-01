@@ -34,7 +34,6 @@ private:
     void prepare();
     void load_command();
     void unload_command();
-    bool stop();
     void send_data();
 
     friend Parent;

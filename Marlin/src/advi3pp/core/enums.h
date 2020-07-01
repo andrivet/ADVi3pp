@@ -145,7 +145,7 @@ enum class Action: uint16_t
     AutomaticLeveling       = 0x040A,
     PidTuning               = 0x040B,
     SensorSettings          = 0x040C,
-    //Firmware                = 0x040D,
+    // Reserved             = 0x040D,
     NoSensor                = 0x040E,
     LCD                     = 0x040F,
     Statistics              = 0x0410,
