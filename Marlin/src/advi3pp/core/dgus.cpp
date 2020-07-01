@@ -166,8 +166,8 @@ bool Frame::send(bool logging)
 
     if(logging)
     {
-        Log::log() << F("<=S= 0x") << get_length() << F(" bytes, cmd = 0x") << static_cast<uint8_t>(get_command()) << Log::endl();
 #ifdef ADVi3PP_LOG_FRAMES
+        Log::log() << F("<=S= 0x") << get_length() << F(" bytes, cmd = 0x") << static_cast<uint8_t>(get_command()) << Log::endl();
         Log::log() << F(" ");
         Log::dump(buffer_, get_length() + 3);
 #endif

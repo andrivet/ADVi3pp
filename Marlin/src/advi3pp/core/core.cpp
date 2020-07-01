@@ -268,8 +268,10 @@ void Core::receive_lcd_serial_data()
     frame >> command >> action >> nb_words >> value;
     auto key_value = static_cast<KeyValue>(value.word);
 
+#ifdef ADVi3PP_LOG_FRAMES
     Log::log() << F("=R=> ") << nb_words.byte << F(" words, Action = 0x") << static_cast<uint16_t>(action)
                << F(", KeyValue = 0x") << value.word << Log::endl();
+#endif
 
     switch(action)
     {
