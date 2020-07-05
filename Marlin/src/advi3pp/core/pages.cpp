@@ -90,9 +90,14 @@ void Pages::show_forward_page()
         return;
     }
 
-    if(!back_pages_.contains(forward_page_))
+    back_to_page(forward_page_);
+}
+
+void Pages::back_to_page(Page page)
+{
+    if(!back_pages_.contains(page))
     {
-        Log::error() << F("Back pages do not contain forward page ") << static_cast<uint8_t>(forward_page_) << Log::endl();
+        Log::error() << F("Back pages do not contain page ") << static_cast<uint8_t>(page) << Log::endl();
         return;
     }
 
@@ -100,10 +105,10 @@ void Pages::show_forward_page()
     {
         Page back_page = back_pages_.pop();
         Log::log() << F("Pop back page ") << static_cast<uint8_t>(back_page) << Log::endl();
-        if(back_page == forward_page_)
+        if(back_page == page)
         {
-            Log::log() << F("Show forward page ") << static_cast<uint8_t>(forward_page_) << Log::endl();
-            show_page(forward_page_, ShowOptions::None);
+            Log::log() << F("Show page ") << static_cast<uint8_t>(forward_page_) << Log::endl();
+            show_page(page, ShowOptions::None);
             forward_page_ = Page::None;
             return;
         }

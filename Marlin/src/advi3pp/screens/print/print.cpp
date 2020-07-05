@@ -62,7 +62,7 @@ void Print::stop_command()
         return;
 
     wait.show(F("Stop printing..."), ShowOptions::SaveBack);
-    core.inject_commands(F("A1")); // TODO review this
+    ExtUI::stopPrint();
 }
 
 //! Pause printing
@@ -71,8 +71,16 @@ void Print::pause_resume_command()
     if(!ExtUI::isPrinting())
         return;
 
-    wait.show(F("Pause printing..."), ShowOptions::SaveBack);
-    core.inject_commands(F("A0")); // TODO review this
+    if(ExtUI::isPrintingPaused())
+    {
+        wait.show(F("Resume printing..."), ShowOptions::SaveBack);
+        ExtUI::resumePrint();
+    }
+    else
+    {
+        wait.show(F("Pause printing..."), ShowOptions::SaveBack);
+        ExtUI::pausePrint();
+    }
 }
 
 //! Advanced Pause for filament change

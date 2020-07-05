@@ -25,20 +25,20 @@
 #include "status.h"
 #include "buzzer.h"
 #include "../screens/print/pause.h"
+#include "../screens/core/wait.h"
 
 #include "../../lcd/ultralcd.h"
-#include "../../inc/MarlinConfigPre.h"
 #include "../../module/printcounter.h"
 #include "../../MarlinCore.h"
-#include "../../gcode/queue.h"
 #include "../../sd/cardreader.h"
+#include "../../gcode/queue.h"
+#include "../../module/planner.h"
 
 using namespace ADVi3pp;
 
 int16_t MarlinUI::preheat_hotend_temp[NB_MATERIAL_PRESET];
 int16_t MarlinUI::preheat_bed_temp[NB_MATERIAL_PRESET];
 uint8_t MarlinUI::preheat_fan_speed[NB_MATERIAL_PRESET];
-//uint8_t MarlinUI::alert_level;
 
 extern PauseMode pause_mode;
 
@@ -66,7 +66,7 @@ void lcd_pause_show_message(const PauseMessage message, const PauseMode mode, co
 void MarlinUI::return_to_status()
 {
     Log::log() << F("return_to_status") << Log::endl();
-    // TODO
+    pages.back_to_page(Page::Main);
 }
 
 void MarlinUI::reset_alert_level()
@@ -168,6 +168,54 @@ void MarlinUI::abort_print()
 #endif
 }
 
+void MarlinUI::pause_print() {
+#if HAS_LCD_MENU
+    synchronize(GET_TEXT(MSG_PAUSE_PRINT));
+#endif
+
+#if ENABLED(HOST_PROMPT_SUPPORT)
+    host_prompt_open(PROMPT_PAUSE_RESUME, PSTR("UI Pause"), PSTR("Resume"));
+#endif
+
+    set_status_P(GET_TEXT(MSG_PRINT_PAUSED));
+
+#if ENABLED(PARK_HEAD_ON_PAUSE)
+    queue.inject_P(PSTR("M25 P\nM24"));
+#elif ENABLED(SDSUPPORT)
+    queue.inject_P(PSTR("M25"));
+#elif defined(ACTION_ON_PAUSE)
+      host_action_pause();
+#endif
+}
+
+void MarlinUI::resume_print()
+{
+    reset_status();
+#if ENABLED(PARK_HEAD_ON_PAUSE)
+    wait_for_heatup = wait_for_user = false;
+#endif
+    if (IS_SD_PAUSED()) queue.inject_P(M24_STR);
+#ifdef ACTION_ON_RESUME
+    host_action_resume();
+#endif
+    print_job_timer.start(); // Also called by M24
+}
+
+void MarlinUI::synchronize(PGM_P msg)
+{
+    static bool no_reentry = false;
+    if(no_reentry) return;
+
+    if(msg == nullptr)
+        msg = GET_TEXT(MSG_MOVING);
+    wait.show(reinterpret_cast<const FlashChar*>(msg));
+
+    planner.synchronize(); // idle() is called until moves complete
+    no_reentry = false;
+
+    pages.show_back_page();
+}
+
 void MarlinUI::set_contrast(const int16_t value)
 {
     Log::log() << F("set_contrast") << Log::endl();
@@ -250,5 +298,5 @@ void MarlinUI::set_progress_done()
 
 uint8_t MarlinUI::get_progress_percent()
 {
-    return progress;
+    return card.isPrinting() ? card.percentDone() : progress;
 }

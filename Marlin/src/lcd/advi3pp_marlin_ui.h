@@ -47,10 +47,10 @@ public:
     static void abort_print();
     static void pause_print();
     static void resume_print();
+    static void synchronize(PGM_P const msg=nullptr);
     static void kill_screen(PGM_P lcd_error, PGM_P lcd_component);
 
     static void finish_status(const bool persist);
-    static void synchronize(PGM_P const msg=nullptr);
     static void set_alert_status_P(PGM_P message);
     static void reset_alert_level();
     static bool has_status();
