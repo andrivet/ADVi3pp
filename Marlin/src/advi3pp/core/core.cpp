@@ -343,8 +343,8 @@ void Core::send_lcd_serial_data(bool force_update)
 
     // The progress bar is split into two parts because of a limitation of the DWIN panel
     // so compute the progress of each part.
-    int16_t progress_bar_low  = ExtUI::getProgress_percent() >= 50 ? 5 : ExtUI::getProgress_percent() / 10;
-    int16_t progress_var_high = ExtUI::getProgress_percent() < 50 ? 0 : (ExtUI::getProgress_percent() / 10) - 5;
+    int16_t progress_bar_low  = ExtUI::getProgress_percent() >= 50 ? 10 : ExtUI::getProgress_percent() / 5;
+    int16_t progress_var_high = ExtUI::getProgress_percent() < 50 ? 0 : (ExtUI::getProgress_percent() - 50) / 5;
 
 #ifdef ADVi3PP_PROBE
     uint16_t probe_state = ExtUI::getLevelingActive() ? 2 : 1;
