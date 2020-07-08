@@ -32,6 +32,7 @@ struct Pause: Screen<Pause>
 
 private:
     void show(PGM_P message);
+    void cont(PGM_P message);
     void options();
 
 private:
