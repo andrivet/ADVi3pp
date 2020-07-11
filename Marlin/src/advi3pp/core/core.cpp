@@ -195,17 +195,17 @@ bool Core::init()
     dimming.reset(true);
     versions.send_versions();
 
+    SERIAL_ECHO_START();
+
     ADVString<32> welcome;
     welcome << F("ADVi3++ ");
     core.convert_version(welcome, advi3_pp_version);
     welcome << F(" is ready");
+    SERIAL_ECHOLN(welcome.get());
     status.set(welcome.align(Alignment::Center).get());
 
     pages.show_page(Page::Boot, ShowOptions::None);
-	
-	SERIAL_ECHO_START();
-	SERIAL_ECHOLNPGM("ADVi3++ is ready");
-
+    
     return true;
 }
 
