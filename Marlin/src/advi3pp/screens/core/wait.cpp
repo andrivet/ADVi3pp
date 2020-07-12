@@ -19,6 +19,7 @@
  */
 
 #include "../../parameters.h"
+#include "../../core/status.h"
 #include "wait.h"
 
 namespace ADVi3pp {
@@ -33,11 +34,7 @@ Page Wait::do_prepare_page()
 
 void Wait::set_message(const FlashChar* message)
 {
-    WriteRamDataRequest frame{Variable::LongText0};
-    ADVString<48> message_to_send{message};
-    message_to_send.align(Alignment::Left);
-    frame << message_to_send;
-    frame.send();
+    status.set(message);
 }
 
 //! Show a simple wait page with a message

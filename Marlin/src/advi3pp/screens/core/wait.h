@@ -22,6 +22,7 @@
 
 #include "../../core/task.h"
 #include "../../core/string.h"
+#include "../../core/status.h"
 #include "../../core/dgus.h"
 #include "../core/screen.h"
 
@@ -59,9 +60,7 @@ extern Wait wait;
 
 template<size_t L> void Wait::set_message(const ADVString<L>& message)
 {
-    WriteRamDataRequest frame{Variable::LongText0};
-    frame << message;
-    frame.send();
+    status.set(message);
 }
 
 // --------------------------------------------------------------------
