@@ -374,7 +374,6 @@ void Core::send_lcd_serial_data(bool force_update)
     frame.send(false);
 
     status.compute_progress();
-    status.send();
 }
 
 bool Core::ensure_not_printing()

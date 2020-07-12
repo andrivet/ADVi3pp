@@ -44,12 +44,11 @@ struct Status
     void set_progress_name(const char* name);
     void reset_progress();
 
-    void send();
+private:
+    void send(ADVString<message_length>& message);
 
 private:
     bool has_status_ = false;
-    ADVString<message_length> message_;
-    ADVString<message_length> centered_;
     ADVString<progress_name_length> progress_name_;
     ADVString<progress_length> progress_;
     int percent_ = -1;

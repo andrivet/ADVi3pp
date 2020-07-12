@@ -103,11 +103,9 @@ struct ADVString
     char operator[](size_t i) const;
     bool is_empty() const;
     const char* get() const;
-    bool has_changed(bool reset = true);
 
 private:
     char string_[L + 1] = {};
-    bool dirty_ = true;
 };
 
 // --------------------------------------------------------------------
@@ -163,7 +161,6 @@ template<size_t L> template<size_t L2> ADVString<L>& ADVString<L>::set(const ADV
     // End of string
     string_[index] = 0;
 
-    dirty_ = true;
     return *this;
 }
 
@@ -178,7 +175,6 @@ template<size_t L>
 inline ADVString<L>& ADVString<L>::set(const char* s)
 {
     strlcpy(string_, s, L + 1);
-    dirty_ = true;
     return *this;
 }
 
@@ -190,7 +186,6 @@ ADVString<L>& ADVString<L>::set(const char c)
     string_[0] = c;
     string_[1] = 0;
 
-    dirty_ = true;
     return *this;
 }
 
@@ -198,7 +193,6 @@ template<size_t L>
 ADVString<L>& ADVString<L>::set(const char* fmt, va_list& args)
 {
     vsnprintf(string_, L + 1, fmt, args);
-    dirty_ = true;
     return *this;
 }
 
@@ -208,7 +202,6 @@ template<size_t L>
 inline ADVString<L>& ADVString<L>::set(const FlashChar* s)
 {
     strlcpy_P(string_, reinterpret_cast<const char*>(s), L + 1);
-    dirty_ = true;
     return *this;
 }
 
@@ -216,7 +209,6 @@ template<size_t L>
 ADVString<L>& ADVString<L>::set(const FlashChar* fmt, va_list& args)
 {
     vsnprintf_P(string_, L + 1, reinterpret_cast<const char*>(fmt), args);
-    dirty_ = true;
     return *this;
 }
 
@@ -283,7 +275,7 @@ ADVString<L>& ADVString<L>::set(double n, uint8_t decimals)
 }
 
 template<size_t L>
-inline ADVString<L>& ADVString<L>::reset() { string_[0] = 0; dirty_ = true; return *this; }
+inline ADVString<L>& ADVString<L>::reset() { string_[0] = 0; return *this; }
 
 template<size_t L>
 ADVString<L>& ADVString<L>::format(const char* fmt, ...)
@@ -303,7 +295,6 @@ template<size_t L>
 ADVString<L>& ADVString<L>::append(const char* s)
 {
     strlcat(string_, s, L + 1);
-    dirty_ = true;
     return *this;
 }
 
@@ -316,7 +307,6 @@ ADVString<L>& ADVString<L>::append(char c)
 
     string_[l] = c;
     string_[l + 1] = 0;
-    dirty_ = true;
     return *this;
 }
 
@@ -324,7 +314,6 @@ template<size_t L>
 ADVString<L>& ADVString<L>::append(const FlashChar* s)
 {
     strlcat_P(string_, reinterpret_cast<const char*>(s), L + 1);
-    dirty_ = true;
     return *this;
 }
 
@@ -378,12 +367,5 @@ template<size_t L> inline char ADVString<L>::operator[](size_t i) const { return
 template<size_t L> inline bool ADVString<L>::is_empty() const { return string_[0] == 0; }
 template<size_t L> inline const char* ADVString<L>::get() const { return string_; }
 
-template<size_t L> bool ADVString<L>::has_changed(bool reset)
-{
-    auto dirty = dirty_;
-    if(reset)
-        dirty_ = false;
-    return dirty;
-}
 
 }

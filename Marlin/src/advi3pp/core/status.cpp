@@ -31,9 +31,8 @@ Status status;
 
 void Status::reset()
 {
-    message_.reset();
-    centered_.reset();
     has_status_ = false;
+    set("");
 }
 
 bool Status::has() const
@@ -43,22 +42,23 @@ bool Status::has() const
 
 void Status::set(const FlashChar* message)
 {
-    message_.set(message).align(Alignment::Left);
-    centered_.set(message).align(Alignment::Center);
+    ADVString<message_length> text{message};
+    send(text);
     has_status_ = true;
 }
 
 void Status::set(const char* message)
 {
-    message_.set(message).align(Alignment::Left);
-    centered_.set(message).align(Alignment::Center);
+    ADVString<message_length> text{message};
+    send(text);
     has_status_ = true;
 }
 
 void Status::set(const FlashChar* fmt, va_list& args)
 {
-    message_.set(fmt, args).align(Alignment::Left);
-    centered_.set(fmt, args).align(Alignment::Center);
+    ADVString<message_length> text{};
+    text.set(fmt, args);
+    send(text);
     has_status_ = true;
 }
 
@@ -93,15 +93,15 @@ void Status::reset_progress()
     percent_ = -1;
 }
 
-void Status::send()
+void Status::send(ADVString<message_length>& message)
 {
-    // If one of the messages has changed, send them to the LCD panel
-    if(message_.has_changed(true) || centered_.has_changed(true) || progress_.has_changed(true))
-    {
-        WriteRamDataRequest frame{Variable::Message};
-        frame << message_ << centered_ << progress_;
-        frame.send(false);
-    }
+    ADVString<message_length> centered{message};
+    message.align(Alignment::Left);
+    centered.align(Alignment::Center);
+
+    WriteRamDataRequest frame{Variable::Message};
+    frame << message << centered << progress_;
+    frame.send(false);
 }
 
 }
