@@ -82,7 +82,12 @@
   #endif
 #endif
 
-#define G29_RETURN(b) return TERN_(G29_RETRY_AND_RECOVER, b)
+// @advi3++
+#if ENABLED(ADVi3PP_PROBE)
+  #define G29_RETURN(b) return ExtUI::onAutomaticLevelingFinished(!b)
+#else
+  return TERN_(G29_RETRY_AND_RECOVER, b)
+#endif
 
 /**
  * G29: Detailed Z probe, probes the bed at 3 or more points.

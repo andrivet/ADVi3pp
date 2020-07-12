@@ -28,11 +28,11 @@ namespace ADVi3pp {
 //! Automatic Leveling Page
 struct AutomaticLeveling: Screen<AutomaticLeveling>
 {
-    void g29_leveling_finished(bool success);
+    void leveling_finished(bool success);
 
 private:
     Page do_prepare_page();
-    bool g29_leveling_failed();
+    bool leveling_failed();
 
 private:
     bool sensor_interactive_leveling_ = false;

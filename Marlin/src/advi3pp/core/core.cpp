@@ -157,6 +157,11 @@ void Facade::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float z
 {
 }
 
+void Facade::on_automatic_leveling_finished(bool success)
+{
+    automatic_leveling.leveling_finished(success);
+}
+
 #if ENABLED(POWER_LOSS_RECOVERY)
 void Facade::on_power_less_resume()
 {
@@ -204,8 +209,9 @@ bool Core::init()
     SERIAL_ECHOLN(welcome.get());
     status.set(welcome.align(Alignment::Center).get());
 
+    ExtUI::setLevelingActive(true);
     pages.show_page(Page::Boot, ShowOptions::None);
-    
+
     return true;
 }
 

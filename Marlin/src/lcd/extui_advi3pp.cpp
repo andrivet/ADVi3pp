@@ -151,6 +151,11 @@ void onMeshUpdate(const int8_t xpos, const int8_t ypos, const float zval)
     ADVi3pp::Facade::on_mesh_updated(xpos, ypos, zval);
 }
 
+void onAutomaticLevelingFinished(bool success)
+{
+    ADVi3pp::Facade::on_automatic_leveling_finished(success);
+}
+
 #if ENABLED(POWER_LOSS_RECOVERY)
 void onPowerLossResume()
 {

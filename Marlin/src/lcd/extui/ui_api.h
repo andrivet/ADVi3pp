@@ -371,6 +371,11 @@ namespace ExtUI {
   void onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
   uint16_t getSizeofSettings();
 
+  // @advi3++ PR candidate
+  #if HAS_LEVELING
+    void onAutomaticLevelingFinished(bool success);
+  #endif
+
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume();
   #endif

@@ -50,12 +50,12 @@ Page AutomaticLeveling::do_prepare_page()
 
 //! Called by Marlin when G29 (automatic bed leveling) is finished.
 //! @param success Boolean indicating if the leveling was successful or not.
-void AutomaticLeveling::g29_leveling_finished(bool success)
+void AutomaticLeveling::leveling_finished(bool success)
 {
     if(!success)
     {
         if(sensor_interactive_leveling_)
-            wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::g29_leveling_failed});
+            wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::leveling_failed});
         else
             status.set(F("Leveling failed"));
 
@@ -78,7 +78,7 @@ void AutomaticLeveling::g29_leveling_finished(bool success)
 }
 
 //! Show the back page when G29 (automatic bed leveling) failed.
-bool AutomaticLeveling::g29_leveling_failed()
+bool AutomaticLeveling::leveling_failed()
 {
     pages.show_back_page();
     return true;
