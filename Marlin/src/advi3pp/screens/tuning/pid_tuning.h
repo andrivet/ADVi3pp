@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "../../core/bitmasks.h"
 #include "../core/screen.h"
 
 namespace ADVi3pp {
@@ -27,7 +28,8 @@ namespace ADVi3pp {
 //! PID Tuning Page
 struct PidTuning: Screen<PidTuning>
 {
-    void finished(bool success);
+    void on_progress(int cycleIndex, int nbCycles);
+    void finished(ExtUI::result_t result);
     void send_data();
 
 private:
@@ -39,12 +41,21 @@ private:
     void bed_command();
 
 private:
+    enum class State: uint8_t
+    {
+        None,
+        Processing,
+        FromLCDMenu = 0x80
+    };
+
     uint16_t temperature_ = 0;
     TemperatureKind kind_ = TemperatureKind::Hotend;
-    bool inTuning_ = false;
+    State state_ = State::None;
 
     friend Parent;
 };
+
+ENABLE_BITMASK_OPERATOR(PidTuning::State);
 
 extern PidTuning pid_tuning;
 

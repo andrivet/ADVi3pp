@@ -434,6 +434,12 @@ volatile bool Temperature::raw_temps_ready = false;
 
     TERN_(HAS_AUTO_FAN, next_auto_fan_check_ms = next_temp_ms + 2500UL);
 
+    // @advi3++
+    #if ENABLED(EXTENSIBLE_UI)
+      ExtUI::onPidTuningProgress(0, ncycles);
+    #endif
+
+
     if (target > GHV(BED_MAX_TARGET, temp_range[heater_id].maxtemp - HOTEND_OVERSHOOT)) {
       SERIAL_ECHOLNPGM(STR_PID_TEMP_TOO_HIGH);
       TERN_(EXTENSIBLE_UI, ExtUI::onPidTuning(ExtUI::result_t::PID_TEMP_TOO_HIGH));
@@ -453,11 +459,6 @@ volatile bool Temperature::raw_temps_ready = false;
     #endif
 
     TERN_(NO_FAN_SLOWING_IN_PID_TUNING, adaptive_fan_slowing = false);
-
-    // @advi3++ PR candidate
-    #if ENABLED(EXTENSIBLE_UI)
-      ExtUI::onPidTuningProgress(0, ncycles);
-    #endif
 
     // PID Tuning loop
     wait_for_heatup = true; // Can be interrupted with M108
@@ -498,7 +499,7 @@ volatile bool Temperature::raw_temps_ready = false;
           if (ELAPSED(ms, t1 + 5000UL)) {
             // @advi3++ PR candidate
             #if ENABLED(EXTENSIBLE_UI)
-              ExtUI::onPidTuningProgress(cycles, ncycles);
+              ExtUI::onPidTuningProgress(cycles + 1, ncycles);
             #endif
             heating = true;
             t2 = ms;

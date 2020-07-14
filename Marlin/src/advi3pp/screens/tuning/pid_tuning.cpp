@@ -99,6 +99,10 @@ void PidTuning::step2_command()
     }
 
     Uint16 temperature, kind; frame >> temperature >> kind; temperature_ = temperature.word; // kind is not used here, it is already set
+
+    state_ |= State::FromLCDMenu;
+    temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
+
     if(kind_ == TemperatureKind::Hotend)
     {
         ExtUI::setTargetFan_percent(0, ExtUI::FAN0); // Turn on fan (only for hotend)
@@ -108,35 +112,62 @@ void PidTuning::step2_command()
     {
         ExtUI::startBedPIDTune(temperature_);
     }
-
-    inTuning_ = true;
-    temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
 }
 
 //! Cancel PID process.
 bool PidTuning::cancel_pid()
 {
+    status.set(F("Canceling PID tuning"));
     ExtUI::cancelWaitForHeatup();
-    inTuning_ = false;
+    state_ = State::None;
     return false;
 }
 
-//! PID automatic tuning is finished.
-void PidTuning::finished(bool success)
+void PidTuning::on_progress(int cycle, int nb)
 {
-    Log::log() << F("Auto PID finished: ") << (success ? F("success") : F("failed")) << Log::endl();
-    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
-    if(!success)
-    {
-        status.set(F("PID tuning failed"));
-        return;
-    }
+	if(cycle == 0)
+	{
+        status.set(F("Starting PID tuning..."));
+		state_ |= State::Processing;
+		return;
+	}
 
-    status.reset();
+    ADVString<18> format{F("PID tuning %i / %i")};
+    ADVString<18> progress{};
+    progress.format(format.get(), cycle, nb);
+    status.set(progress.get());
+}
+
+const FlashChar* get_message(ExtUI::result_t result)
+{
+    switch(result)
+    {
+        case ExtUI::PID_BAD_EXTRUDER_NUM:   return reinterpret_cast<const FlashChar*>(PSTR(STR_PID_BAD_EXTRUDER_NUM));
+        case ExtUI::PID_TEMP_TOO_HIGH:      return reinterpret_cast<const FlashChar*>(PSTR(STR_PID_TEMP_TOO_HIGH));
+        case ExtUI::PID_TUNING_TIMEOUT:     return reinterpret_cast<const FlashChar*>(PSTR(STR_PID_TIMEOUT));
+        case ExtUI::PID_DONE:               return F("PID tuning successful");
+    }
+}
+
+//! PID automatic tuning is finished.
+void PidTuning::finished(ExtUI::result_t result)
+{
+    if((state_ & ~State::FromLCDMenu) != State::Processing)
+        return;
+    state_ = State::None;
+
+    auto message = get_message(result);
+    status.set(message);
+    Log::log() << message << Log::endl();
+	
+    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+    if(result != ExtUI::PID_DONE)
+        return;
+
     pid_settings.add_pid(kind_, temperature_);
-    bool inTuning = inTuning_;
-    inTuning_ = false;
-    pid_settings.show(inTuning ? ShowOptions::None : ShowOptions::SaveBack);
+
+    bool fromLCDMenu = test_one_bit(state_, State::FromLCDMenu);
+    pid_settings.show(fromLCDMenu ? ShowOptions::None : ShowOptions::SaveBack);
 }
 
 

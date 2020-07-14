@@ -168,19 +168,18 @@ void Facade::on_power_less_resume()
 }
 #endif
 
-void Facade::on_pid_tuning(const ExtUI::result_t rst)
+void Facade::on_pid_tuning_progress(int cycle, int nb)
 {
+    pid_tuning.on_progress(cycle, nb);
 }
 
-void Facade::process_command()
+void Facade::on_pid_tuning(const ExtUI::result_t rst)
 {
-    switch(GCodeParser::codenum)
-    {
-        case 0: print.process_pause_resume_code(); break;
-        case 1: print.process_stop_code(); break;
-        default: Log::error() << F("Invalid command ") << static_cast<uint16_t>(GCodeParser::codenum) << Log::endl(); break;
-    }
+    pid_tuning.finished(rst);
 }
+
+
+// ----------------------------------------------------------------------------
 
 void Core::startup()
 {
