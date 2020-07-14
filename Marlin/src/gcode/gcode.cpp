@@ -260,7 +260,6 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
 
   // Handle a known G, M, or T
   switch (parser.command_letter) {
-    case 'A': ADVi3pp::Facade::process_command(); break; // @advi3++: ADVi3++ own command codes
     case 'G': switch (parser.codenum) {
 
       case 0: case 1:                                             // G0: Fast Move, G1: Linear Move
