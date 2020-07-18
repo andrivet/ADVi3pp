@@ -33,10 +33,6 @@
 
 namespace ADVi3pp {
 
-const Feature DEFAULT_FEATURES =
-        Feature::Dimming |
-        Feature::BuzzOnAction;
-
 Settings settings;
 
 bool Settings::write(eeprom_write write, int& eeprom_index, uint16_t& working_crc)

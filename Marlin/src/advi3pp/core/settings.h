@@ -36,6 +36,8 @@ const uint16_t default_hotend_temperature = 200; //!< Default target temperature
 
 struct Settings
 {
+    Settings() {};
+
     uint16_t size_of() const;
     bool write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     bool read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
@@ -53,7 +55,11 @@ struct Settings
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 
 private:
-    Feature features_ = Feature::None;
+    const Feature DEFAULT_FEATURES =
+            Feature::Dimming |
+            Feature::BuzzOnAction;
+
+    Feature features_ = DEFAULT_FEATURES;
     uint16_t last_used_temperature_[nb_temperatures] = {default_bed_temperature, default_hotend_temperature};
 };
 
