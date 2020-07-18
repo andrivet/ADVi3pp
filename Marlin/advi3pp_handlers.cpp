@@ -628,9 +628,10 @@ void LoadUnload::stop_task()
 }
 
 //! Check if the target temperature is reached and in this case, do step #2: extrude or unextrude
+//! @param loadunload   Unload=1, Load=0
 //! @param command      Command to extrude or unextrude
 //! @param back_task    Background task to detect if the target temperature is reached and in this case, do step #2
-void LoadUnload::start_task(const char* command, const BackgroundTask& back_task)
+void LoadUnload::start_task(const bool loadunload, const char* command, const BackgroundTask& back_task)
 {
     if(Temperature::current_temperature[0] >= Temperature::target_temperature[0] - 10.0)
     {
@@ -638,14 +639,14 @@ void LoadUnload::start_task(const char* command, const BackgroundTask& back_task
         advi3pp.buzz(); // Inform the user that the extrusion starts
         enqueue_and_echo_commands_P(command);
         task.set_background_task(back_task);
-        wait.set_message(F("Press Back when the filament comes out..."));
+        loadunload ? wait.set_message(F("Press Back when the filament returns...")) : wait.set_message(F("Press Back when the filament extrudes..."));
     }
 }
 
 //! Load the filament if the temperature is high enough.
 void LoadUnload::load_start_task()
 {
-    start_task(PSTR("G1 E1 F120"), BackgroundTask(this, &LoadUnload::load_task));
+    start_task(0,PSTR("G1 E1 F120"), BackgroundTask(this, &LoadUnload::load_task));
 }
 
 //! Load the filament if the temperature is high enough.
@@ -658,7 +659,7 @@ void LoadUnload::load_task()
 //! Unload the filament if the temperature is high enough.
 void LoadUnload::unload_start_task()
 {
-    start_task(PSTR("G1 E-1 F120"), BackgroundTask(this, &LoadUnload::unload_task));
+    start_task(1,PSTR("G1 E-1 F120"), BackgroundTask(this, &LoadUnload::unload_task));
 }
 
 //! Unload the filament if the temperature is high enough.
