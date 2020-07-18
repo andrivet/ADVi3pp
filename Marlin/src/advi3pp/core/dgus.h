@@ -141,7 +141,7 @@ constexpr Uint32 operator "" _u32(unsigned long long int dword) { return Uint32(
 struct Frame
 {
     static void open();
-    static void check_lcd_connectivity();
+    static void setup_lcd();
 
     bool send(bool logging = true); // Logging is only used in DEBUG builds
     bool available(uint8_t bytes = 3);

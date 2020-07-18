@@ -183,7 +183,9 @@ void Facade::on_pid_tuning(const ExtUI::result_t rst)
 
 void Core::startup()
 {
+#ifdef DEBUG
     pinMode(LED_PIN, OUTPUT); // To help debugging when serial is not available
+#endif
     Frame::open();
 }
 
@@ -193,7 +195,7 @@ bool Core::init()
         return false;
     init_ = true;
 
-    Frame::check_lcd_connectivity();
+    Frame::setup_lcd();
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     graphs.clear();
     dimming.reset(true);

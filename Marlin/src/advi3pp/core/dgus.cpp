@@ -25,12 +25,14 @@
 
 namespace ADVi3pp {
 
-namespace {
+namespace
+{
     HardwareSerial& DgusSerial = Serial2;
     const uint32_t  LCD_BAUDRATE = 115200; // Between the LCD panel and the mainboard
 	const size_t    MAX_GARBAGE_BYTES = 5;
 	const uint16_t  LCD_READ_DELAY = 50; // ms
-	const uint16_t  LCD_READ_KILL_DELAY = 2500; // ms, must be less that the watchdog time
+	const uint16_t  LCD_READ_KILL_COUNT = 100; // must be less that the watchdog time
+	const byte      R2 = 0x0D; // SYS_CFG, disable buzzer, L22 init, auto key codes
 }
 
 // --------------------------------------------------------------------
@@ -39,7 +41,7 @@ namespace {
 
 //! Construct an input, empty, Frame.
 Frame::Frame()
-        : position_{0}
+    : position_{0}
 {
 }
 
@@ -197,23 +199,30 @@ void Frame::reset(Command command)
 //! @param length       Number of bytes to be available before returning
 void Frame::wait_for_data(uint8_t length)
 {
-	auto start_time = millis();
+	unsigned count = 0;
     while(DgusSerial.available() < length)
 	{
 		delay(LCD_READ_DELAY);
-		auto current_time = millis();
-		if(current_time - start_time > LCD_READ_KILL_DELAY)
+		count += 1;
+		if(count > LCD_READ_KILL_COUNT)
 			kill();
 	}
 }
 
-void Frame::check_lcd_connectivity()
+void Frame::setup_lcd()
 {
-    ReadRegister read{Register::Version, 1};
+    ReadRegister read{Register::R2, 1};
     if(!read.send_and_receive())
         kill();
-    Uint8 data;
-    read >> data;
+    Uint8 r2;
+    read >> r2;
+
+    if(r2.byte == R2)
+        return;
+
+    WriteRegisterDataRequest request{Register::R2};
+    request << Uint8(R2);
+    request.send();
 }
 
 void Frame::kill()
