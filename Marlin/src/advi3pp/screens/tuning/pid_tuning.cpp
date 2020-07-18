@@ -146,7 +146,10 @@ const FlashChar* get_message(ExtUI::result_t result)
         case ExtUI::PID_TEMP_TOO_HIGH:      return reinterpret_cast<const FlashChar*>(PSTR(STR_PID_TEMP_TOO_HIGH));
         case ExtUI::PID_TUNING_TIMEOUT:     return reinterpret_cast<const FlashChar*>(PSTR(STR_PID_TIMEOUT));
         case ExtUI::PID_DONE:               return F("PID tuning successful");
+        default: Log::error() << F("Unknown result_t ") << static_cast<uint16_t>(result) << Log::endl(); break;
     }
+
+    return F("");
 }
 
 //! PID automatic tuning is finished.
