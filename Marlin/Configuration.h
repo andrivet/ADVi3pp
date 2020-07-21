@@ -1026,8 +1026,8 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-// @advi3++: These are no more used by ADVi3++ since it is dynamic. Use instead advi3pp::probe_offset_from_extruder, ...
-#define NOZZLE_TO_PROBE_OFFSET { 10, 10, 0 }
+// @advi3++: By default, Teaching Tech Left support offsets
+#define NOZZLE_TO_PROBE_OFFSET { -24.00, -38.00, 0 }
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.

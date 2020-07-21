@@ -29,40 +29,43 @@ SensorSettings sensor_settings;
 
 #ifdef ADVi3PP_PROBE
 
+namespace { const size_t NB_SENSOR_POSITIONS = 3; }
+
 //! Get the name of a sensor holder
 //! @param index Index of the holder
 //! @return The name (in Flash memory) of the holder
 const FlashChar* get_sensor_name(size_t index)
 {
     // Note: F macro can be used only in a function, this is why this is coded like this
-    auto teaching_tech_side  = F("Teaching Tech L. Side");
-    auto custom              = F("Custom");
+    auto your                = F("Your Sensor");
+    auto teaching_tech_side  = F("Teaching Tech Left");
+    auto advi3pp             = F("ADVi3++ Left");
 
 #if defined(BLTOUCH)
     auto baseggio            = F("Indianagio Front");
-    static const FlashChar* names[SensorSettings::NB_SENSOR_POSITIONS] = {baseggio, teaching_tech_side, custom};
+    static const FlashChar* names[NB_SENSOR_POSITIONS + 1] = {your, baseggio, teaching_tech_side, advi3pp};
 #elif defined(ADVi3PP_54)
     auto mark2               = F("Mark II");
-    static const FlashChar* names[advi3pp::SensorSettings::NB_SENSOR_POSITIONS] = {mark2, teaching_tech_side, custom};
+    static const FlashChar* names[NB_SENSOR_POSITIONS + 1] = {your, mark2, teaching_tech_side, advi3pp};
 #else
 #error "ADVi3PP_PROBE is defined but the kind of probe is unknown"
 #endif
 
-    assert(index < SensorSettings::NB_SENSOR_POSITIONS);
+    assert(index <= NB_SENSOR_POSITIONS);
     return names[index];
 }
 
 //! Default position of the sensor for the different holders
-const SensorPosition DEFAULT_SENSOR_POSITION[SensorSettings::NB_SENSOR_POSITIONS] =
+const SensorPosition SENSOR_POSITION[NB_SENSOR_POSITIONS] =
 {
 #if ENABLED(BLTOUCH)
     {  +150, -4270 },    // Baseggio/Indianagio Front
-    { -2400, -3800 },    // Teaching Tech L. Side
-    {     0,     0 }     // Custom
+    { -2400, -3800 },    // Teaching Tech Left
+    { -2800, -4000 }     // ADVi3++ Left
 #elif defined(ADVi3PP_54)
     {     0,  6000 },    // Mark II
-    { -2400, -3800 },    // Teaching Tech L. Side
-    {     0,     0 }     // Custom
+    { -2400, -3800 },    // Teaching Tech Left
+    { -2800, -4000 }     // ADVi3++ Left
 #else
 #error "ADVi3PP_PROBE is defined but the kind of probe is unknown"
 #endif
@@ -70,12 +73,6 @@ const SensorPosition DEFAULT_SENSOR_POSITION[SensorSettings::NB_SENSOR_POSITIONS
 #endif
 
 #ifdef ADVi3PP_PROBE
-
-//! Constructor
-SensorSettings::SensorSettings()
-{
-    do_reset();
-}
 
 //! Handle Sensor Settings command
 //! @param key_value    The sub-action to handle
@@ -99,7 +96,9 @@ bool SensorSettings::do_dispatch(KeyValue key_value)
 //! @return The index of the page to display
 Page SensorSettings::do_prepare_page()
 {
-    send_data();
+    index_ = 0;
+    send_name();
+    send_values();
     pages.save_forward_page();
     return Page::SensorSettings;
 }
@@ -107,7 +106,7 @@ Page SensorSettings::do_prepare_page()
 //! Handles the Save (Continue) command
 void SensorSettings::do_save_command()
 {
-    get_data();
+    get_values();
     Parent::do_save_command();
 }
 
@@ -117,37 +116,51 @@ void SensorSettings::previous_command()
 {
     if(index_ <= 0)
         return;
-    get_data();
     index_ -= 1;
-    send_data();
+    send_name();
+    send_values();
 }
 
 //! Show the next settings.
 void SensorSettings::next_command()
 {
-    if(index_ >= NB_SENSOR_POSITIONS - 1)
+    if(index_ >= NB_SENSOR_POSITIONS) // not -1 because we have also index #0 not counted in NB_SENSOR_POSITIONS
         return;
-    get_data();
     index_ += 1;
-    send_data();
+    send_name();
+    send_values();
 }
 
-//! Send current data to the LCD Panel.
-void SensorSettings::send_data() const
+void SensorSettings::send_values() const
 {
-    ADVString<32> title{get_sensor_name(index_)};
-
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(positions_[index_].x) << Uint16(positions_[index_].y) << Uint16(ExtUI::getZOffset_mm() * 100);
-    frame.send();
 
-    frame.reset(Variable::LongTextCentered0);
+    if(index_ == 0)
+    {
+        frame << Uint16{ExtUI::getProbeOffset_mm(ExtUI::X) * 100}
+              << Uint16{ExtUI::getProbeOffset_mm(ExtUI::Y) * 100}
+              << Uint16{ExtUI::getZOffset_mm() * 100};
+    }
+    else
+    {
+        frame << Uint16{SENSOR_POSITION[index_ - 1].x}
+              << Uint16{SENSOR_POSITION[index_ - 1].y}
+              << Uint16{ExtUI::getZOffset_mm() * 100};;
+    }
+
+    frame.send();
+}
+
+void SensorSettings::send_name() const
+{
+    ADVString<28> title{get_sensor_name(index_)};
+    WriteRamDataRequest frame{Variable::LongTextCentered0};
     frame << title.align(Alignment::Center);
     frame.send();
 }
 
-//! Send current data from the LCD Panel.
-void SensorSettings::get_data()
+//! Get current data from the LCD Panel.
+void SensorSettings::get_values()
 {
     ReadRamData frame{Variable::Value0, 3};
     if(!frame.send_and_receive())
@@ -159,59 +172,9 @@ void SensorSettings::get_data()
     Uint16 x, y, z;
     frame >> x >> y >> z;
 
-    positions_[index_].x = static_cast<int16_t>(x.word);
-    positions_[index_].y = static_cast<int16_t>(y.word);
+    ExtUI::setProbeOffset_mm(static_cast<int16_t>(x.word) / 100.0, ExtUI::X);
+    ExtUI::setProbeOffset_mm(static_cast<int16_t>(y.word) / 100.0, ExtUI::Y);
     ExtUI::setZOffset_mm(static_cast<int16_t>(z.word) / 100.0);
-}
-
-//! Get the current offset of the nozzle (depending of the sensor holder).
-//! @return The offset between the nozzle and the sensor.
-int SensorSettings::x_probe_offset_from_extruder() const
-{
-    return static_cast<int>(positions_[index_].x / 100.0 + 0.5); // 0.5 for rounding
-}
-
-//! Get the current offset of the nozzle (depending of the sensor holder).
-//! @return The offset between the nozzle and the sensor.
-int SensorSettings::y_probe_offset_from_extruder() const
-{
-    return static_cast<int>(positions_[index_].y / 100.0 + 0.5); // 0.5 for rounding
-}
-
-//! Get the position of the bed (depending of the sensor holder).
-//! @return The position reachable (left).
-int SensorSettings::left_probe_bed_position()
-{
-    return max(X_MIN_BED + MIN_PROBE_EDGE, X_MIN_POS + x_probe_offset_from_extruder());
-}
-
-//! Get the position of the bed (depending of the sensor holder).
-//! @return The position reachable (right).
-int SensorSettings::right_probe_bed_position()
-{
-    return min(X_MAX_BED - MIN_PROBE_EDGE, X_MAX_POS + x_probe_offset_from_extruder());
-}
-
-//! Get the position of the bed (depending of the sensor holder).
-//! @return The position reachable (front).
-int SensorSettings::front_probe_bed_position()
-{
-    return max(Y_MIN_BED + MIN_PROBE_EDGE, Y_MIN_POS + y_probe_offset_from_extruder());
-}
-
-//! Get the position of the bed (depending of the sensor holder).
-//! @return The position reachable (bottom).
-int SensorSettings::back_probe_bed_position()
-{
-    return min(Y_MAX_BED - MIN_PROBE_EDGE, Y_MAX_POS + y_probe_offset_from_extruder());
-}
-
-//! Reset settings
-void SensorSettings::do_reset()
-{
-    index_ = 0;
-    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
-        positions_[i] = DEFAULT_SENSOR_POSITION[i];
 }
 
 #else
@@ -223,47 +186,6 @@ Page SensorSettings::do_prepare_page()
     return Page::NoSensor;
 }
 
-//! Reset settings
-void SensorSettings::do_reset()
-{
-    index_ = 0;
-    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
-        positions_[i] = SensorPosition{};
-}
-
 #endif
-
-//! Store current data in permanent memory (EEPROM)
-//! @param eeprom EEPROM writer
-void SensorSettings::do_write(EepromWrite& eeprom) const
-{
-    eeprom.write(index_);
-    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
-    {
-        eeprom.write(positions_[i].x);
-        eeprom.write(positions_[i].y);
-    }
-}
-
-//! Restore data from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-void SensorSettings::do_read(EepromRead& eeprom)
-{
-    eeprom.read(index_);
-    for(size_t i = 0; i < NB_SENSOR_POSITIONS; ++i)
-    {
-        eeprom.read(positions_[i].x);
-        eeprom.read(positions_[i].y);
-    }
-}
-
-
-//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
-//! @return Number of bytes
-uint16_t SensorSettings::do_size_of() const
-{
-    return sizeof(index_) + NB_SENSOR_POSITIONS * sizeof(SensorPosition);
-}
-
 
 }

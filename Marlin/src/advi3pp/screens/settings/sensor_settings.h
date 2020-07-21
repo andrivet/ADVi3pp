@@ -29,19 +29,6 @@ struct SensorPosition { int16_t x, y; };
 //! Sensor Settings Page
 struct SensorSettings: Screen<SensorSettings>
 {
-    static const size_t NB_SENSOR_POSITIONS = 3;
-
-#ifdef ADVi3PP_PROBE
-    SensorSettings();
-
-    int x_probe_offset_from_extruder() const;
-    int y_probe_offset_from_extruder() const;
-    int left_probe_bed_position();
-    int right_probe_bed_position();
-    int front_probe_bed_position();
-    int back_probe_bed_position();
-#endif
-
 private:
     Page do_prepare_page();
 
@@ -50,18 +37,13 @@ private:
     void do_save_command();
     void previous_command();
     void next_command();
-    void send_data() const;
-    void get_data();
+    void send_values() const;
+    void send_name() const;
+    void get_values();
 #endif
-
-    void do_write(EepromWrite& eeprom) const;
-    void do_read(EepromRead& eeprom);
-    void do_reset();
-    uint16_t do_size_of() const;
 
 private:
     uint16_t index_ = 0;
-    SensorPosition positions_[NB_SENSOR_POSITIONS];
 
     friend Parent;
 };
