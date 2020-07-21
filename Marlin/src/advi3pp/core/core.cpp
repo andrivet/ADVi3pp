@@ -128,9 +128,12 @@ void Facade::on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uin
     settings.write(write, eeprom_index, working_crc);
 }
 
-void Facade::on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+bool Facade::on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating)
 {
+    if(validating)
+        return settings.validate(read, eeprom_index, working_crc);
     settings.read(read, eeprom_index, working_crc);
+    return true;
 }
 
 uint16_t Facade::on_sizeof_settings()
@@ -150,7 +153,7 @@ void Facade::on_settings_written(bool success)
 void Facade::on_settings_loaded(bool success)
 {
     if(!success)
-        eeprom_mismatch.show(ShowOptions::None);
+        eeprom_mismatch.set_mismatch();
 }
 
 void Facade::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval)
@@ -211,7 +214,8 @@ bool Core::init()
     status.set(welcome.align(Alignment::Center).get());
 
     ExtUI::setLevelingActive(true);
-    pages.show_page(Page::Boot, ShowOptions::None);
+    if(eeprom_mismatch.check())
+        pages.show_page(Page::Boot, ShowOptions::None);
 
     return true;
 }

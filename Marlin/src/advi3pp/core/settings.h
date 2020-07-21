@@ -38,9 +38,9 @@ struct Settings
 {
     uint16_t size_of() const;
     bool write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    bool read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    void read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    bool validate(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset();
-    void mismatch();
 
     void save(); // Save to EEPROM (i.e. M500)
     void restore();

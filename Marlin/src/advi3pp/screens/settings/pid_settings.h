@@ -42,6 +42,7 @@ private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_write(EepromWrite& eeprom) const;
+    bool do_validate(EepromRead& eeprom);
     void do_read(EepromRead& eeprom);
     void do_reset();
     uint16_t do_size_of() const;

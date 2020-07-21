@@ -100,6 +100,19 @@ void PidSettings::do_write(EepromWrite& eeprom) const
     }
 }
 
+//! Validate data from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
+bool PidSettings::do_validate(EepromRead &eeprom)
+{
+    Pid pid{};
+    for(size_t i = 0; i < NB_PIDs; ++i)
+    {
+        eeprom.read(pid);
+        eeprom.read(pid);
+    }
+    return true;
+}
+
 //! Restore data from permanent memory (EEPROM).
 //! @param eeprom EEPROM reader
 void PidSettings::do_read(EepromRead& eeprom)

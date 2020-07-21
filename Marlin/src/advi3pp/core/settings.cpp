@@ -26,7 +26,6 @@
 #include "../core/dimming.h"
 #include "../core/buzzer.h"
 #include "../screens/controls/preheat.h"
-#include "../screens/settings/sensor_settings.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/eeprom_mismatch.h"
 
@@ -40,30 +39,46 @@ bool Settings::write(eeprom_write write, int& eeprom_index, uint16_t& working_cr
     EepromWrite eeprom{write, eeprom_index, working_crc};
 
     eeprom.write(settings_version);
-    sensor_settings.write(eeprom);
     pid_settings.write(eeprom);
     eeprom.write(features_);
 
     return true;
 }
 
-bool Settings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+bool Settings::validate(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
+    bool valid = true;
     EepromRead eeprom{read, eeprom_index, working_crc};
 
     uint16_t version = 0;
     eeprom.read(version);
-    sensor_settings.read(eeprom);
+    if(version != settings_version)
+        valid = false;
+
+    if(!pid_settings.validate(eeprom))
+        valid = false;
+
+    Feature features = Feature::None;
+    eeprom.read(features);
+
+    return valid;
+}
+
+void Settings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+{
+    EepromRead eeprom{read, eeprom_index, working_crc};
+
+    uint16_t version = 0;
+    Feature features = Feature::None;
+
+    eeprom.read(version);
     pid_settings.read(eeprom);
     eeprom.read(features_);
-
-    return version == settings_version;
 }
 
 //! Reset presets.
 void Settings::reset()
 {
-    sensor_settings.reset();
     pid_settings.reset();
     features_ = DEFAULT_FEATURES;
 }
@@ -73,17 +88,8 @@ uint16_t Settings::size_of() const
 {
     return
             sizeof(settings_version) +
-            sensor_settings.size_of() +
             pid_settings.size_of() +
             sizeof(features_);
-}
-
-//! Inform the user that the EEPROM data are not compatible and have been reset
-void Settings::mismatch()
-{
-    // It is not possible to show the Mismatch page now since nothing is yet initialized.
-    // It will be done in the setup method.
-    eeprom_mismatch.set_mismatch();
 }
 
 //! Save the current settings permanently in EEPROM memory

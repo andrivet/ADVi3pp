@@ -41,7 +41,7 @@ struct Facade
     static void on_status_changed(const char* msg);
     static void on_factory_reset();
     static void on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    static void on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+    static bool on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
     static uint16_t on_sizeof_settings();
     static void on_settings_written(bool success);
     static void on_settings_loaded(bool success);

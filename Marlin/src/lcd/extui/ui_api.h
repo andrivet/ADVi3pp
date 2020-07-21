@@ -368,7 +368,7 @@ namespace ExtUI {
   using eeprom_write = bool (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
   using eeprom_read  = bool (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
   void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-  void onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+  bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
   uint16_t getSizeofSettings();
 
   // @advi3++ PR candidate

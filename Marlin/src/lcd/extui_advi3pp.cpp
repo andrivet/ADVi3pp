@@ -121,9 +121,9 @@ void onLoadSettings(const char *buff)
     //  memcpy(&myDataStruct, buff, sizeof(myDataStruct));
 }
 
-void onLoadSettingsEx(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+bool onLoadSettingsEx(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating)
 {
-    ADVi3pp::Facade::on_load_settings(read, eeprom_index, working_crc);
+    return ADVi3pp::Facade::on_load_settings(read, eeprom_index, working_crc, validating);
 }
 
 uint16_t getSizeofSettings()

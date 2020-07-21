@@ -2193,7 +2193,8 @@ void MarlinSettings::postprocess() {
           if (!validating) ExtUI::onLoadSettings(extui_data);
         }
         // @advi3++ PR candidate
-        ExtUI::onLoadSettingsEx(persistentStore.read_data, eeprom_index, working_crc);
+        if(!ExtUI::onLoadSettingsEx(persistentStore.read_data, eeprom_index, working_crc, validating))
+            eeprom_error = true;
       #endif
 
       //
@@ -2204,8 +2205,9 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(case_light_brightness);
       #endif
 
-      eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
-      if (eeprom_error) {
+      bool error = size_error(eeprom_index - (EEPROM_OFFSET));
+      if (error) {
+        eeprom_error = true;
         DEBUG_ECHO_START();
         DEBUG_ECHOLNPAIR("Index: ", int(eeprom_index - (EEPROM_OFFSET)), " Size: ", datasize());
         #if HAS_LCD_MENU && DISABLED(EEPROM_AUTO_INIT)
@@ -2302,6 +2304,9 @@ void MarlinSettings::postprocess() {
     #if ENABLED(EEPROM_AUTO_INIT)
       (void)save();
       SERIAL_ECHO_MSG("EEPROM Initialized");
+      #if ENABLED(EXTENSIBLE_UI)
+        ExtUI::onConfigurationStoreRead(false);
+      #endif
     #endif
     return false;
   }

@@ -45,6 +45,7 @@ public:
     Page prepare_page() { return this->self().do_prepare_page(); }
     void write(EepromWrite& eeprom) const { this->self().do_write(eeprom); }
     void read(EepromRead& eeprom) { this->self().do_read(eeprom); }
+    bool validate(EepromRead& eeprom) { return this->self().do_validate(eeprom); }
     void reset() { this->self().do_reset(); }
     uint16_t size_of() const { return this->self().do_size_of(); }
 
@@ -59,6 +60,7 @@ protected:
 private:
     void do_write(EepromWrite& eeprom) const {}
     void do_read(EepromRead& eeprom) {}
+    bool do_validate(EepromRead& eeprom) { return true; }
     void do_reset() {}
     uint16_t do_size_of() const { return 0; }
 };
