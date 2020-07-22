@@ -69,7 +69,7 @@ Page ManualLeveling::do_prepare_page()
     wait.show(F("Homing..."));
     ExtUI::setAllAxisUnhomed();
     ExtUI::setAllAxisPositionUnknown();
-    core.inject_commands(F("G28 F6000")); // Hhoming
+    core.inject_commands(F("G28 F6000")); // Homing
     task.set_background_task(BackgroundTask(this, &ManualLeveling::leveling_task), 200);
     return Page::None;
 }

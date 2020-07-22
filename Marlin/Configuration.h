@@ -810,7 +810,7 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-// @advi3++: Set resonable default values for Wanhao i3 Plus
+// @advi3++: Set reasonable default values for Wanhao i3 Plus
 #define DEFAULT_ACCELERATION          800    // X, Y, Z and E acceleration for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  3000   // E acceleration for retracts
 #define DEFAULT_TRAVEL_ACCELERATION   800    // X, Y, Z acceleration for travel (non printing) moves
