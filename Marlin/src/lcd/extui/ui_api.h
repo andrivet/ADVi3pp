@@ -50,7 +50,7 @@ namespace ExtUI {
   // in the EEPROM when the methods onStoreSettings and
   // onLoadSettings are called.
 
-  static constexpr size_t eeprom_data_size = 0; // @adi3++ uses another mecanism
+  static constexpr size_t eeprom_data_size = 0; // @adi3++ uses another mechanism
 
   enum axis_t     : uint8_t { X, Y, Z, X2, Y2, Z2, Z3, Z4 };
   enum extruder_t : uint8_t { E0, E1, E2, E3, E4, E5, E6, E7 };
@@ -365,11 +365,16 @@ namespace ExtUI {
   void onConfigurationStoreRead(bool success);
 
   // @advi3++ PR candidate
-  using eeprom_write = bool (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
-  using eeprom_read  = bool (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
-  void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-  bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
-  uint16_t getSizeofSettings();
+  #if ENABLED(EEPROM_SETTINGS)
+    void saveSettings();
+    void loadSettings();
+    void resetSettings();
+    using eeprom_write = bool (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
+    using eeprom_read  = bool (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
+    void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
+    uint16_t getSizeofSettings();
+  #endif
 
   // @advi3++ PR candidate
   #if HAS_LEVELING

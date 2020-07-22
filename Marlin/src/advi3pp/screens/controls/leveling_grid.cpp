@@ -47,8 +47,8 @@ Page LevelingGrid::do_prepare_page()
 //! Handles the Save (Continue) command
 void LevelingGrid::do_save_command()
 {
-    // Save settings (including mesh), Set bed leveling state (enable)
-    core.inject_commands(F("M500\nM420 S1"));
+    ExtUI::saveSettings();
+    ExtUI::setLevelingActive(true);
     Parent::do_save_command();
 }
 

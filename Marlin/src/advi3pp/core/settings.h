@@ -42,7 +42,7 @@ struct Settings
     bool validate(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     void reset();
 
-    void save(); // Save to EEPROM (i.e. M500)
+    void save();
     void restore();
 
     Feature flip_features(Feature features);

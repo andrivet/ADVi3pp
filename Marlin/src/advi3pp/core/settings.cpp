@@ -96,14 +96,14 @@ uint16_t Settings::size_of() const
 void Settings::save()
 {
     eeprom_mismatch.reset_mismatch();
-    core.inject_commands(F("M500"));
+    ExtUI::saveSettings();
 }
 
 //! Restore settings from EEPROM memory
 void Settings::restore()
 {
     // Note: Previously, M420 (bed leveling compensation) was reset by M501. It is no more the case.
-    core.inject_commands(F("M501"));
+    ExtUI::loadSettings();
 }
 
 Feature Settings::flip_features(Feature features)

@@ -36,7 +36,8 @@ Page FactoryReset::do_prepare_page()
 //! Handles the Save (Continue) command
 void FactoryReset::do_save_command()
 {
-    core.inject_commands(F("M502\nM500"));
+    ExtUI::resetSettings();
+    ExtUI::saveSettings();
     pages.show_forward_page();
 }
 

@@ -52,6 +52,7 @@
 #include "../../module/probe.h"
 #include "../../module/temperature.h"
 #include "../../module/printcounter.h"
+#include "../../module/configuration_store.h"
 #include "../../libs/duration_t.h"
 #include "../../HAL/shared/Delay.h"
 #include "../../sd/cardreader.h"
@@ -1129,6 +1130,21 @@ namespace ExtUI {
   void set_lcd_contrast(uint16_t contrast)
   {
       return ui.set_contrast(contrast);
+  }
+
+  void saveSettings()
+  {
+     settings.save();
+  }
+
+  void loadSettings()
+  {
+     settings.load();
+  }
+
+  void resetSettings()
+  {
+     settings.reset();
   }
 
 } // namespace ExtUI
