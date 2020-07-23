@@ -401,6 +401,7 @@ namespace ExtUI {
   void killRightNow(const bool steppers_off=false);
   uint16_t get_lcd_contrast();
   void set_lcd_contrast(uint16_t contrast);
+  void watchdogReset();
 };
 
 /**

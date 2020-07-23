@@ -48,6 +48,7 @@
 #include "../screens/tuning/sensor_tuning.h"
 #include "../screens/tuning/sensor_z_height.h"
 #include "../screens/tuning/diagnosis.h"
+#include "../screens/tuning/usb_to_lcd.h"
 #include "../screens/settings/eeprom_mismatch.h"
 #include "../screens/settings/factory_reset.h"
 #include "../screens/settings/sensor_settings.h"
@@ -315,6 +316,7 @@ void Core::receive_lcd_serial_data()
         case Action::SensorZHeight:         sensor_z_height.handle(key_value); break;
         case Action::ChangeFilament:        change_filament.handle(key_value); break;
         case Action::EEPROMMismatch:        eeprom_mismatch.handle(key_value); break;
+        case Action::USB2LCD:               usb_2_lcd.handle(key_value); break;
         case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_value); break;
         case Action::Diagnosis:             diagnosis.handle(key_value); break;
         case Action::Temperatures:          temperatures.handle(key_value); break;

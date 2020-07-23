@@ -736,6 +736,12 @@
     <Compile Include="src\advi3pp\screens\tuning\sensor_z_height.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\usb_to_lcd.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\usb_to_lcd.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\versions.h">
       <SubType>compile</SubType>
     </Compile>

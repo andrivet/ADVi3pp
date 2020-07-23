@@ -329,6 +329,21 @@ const uint8_t* Frame::get_data() const
 }
 #endif
 
+void Frame::forwarding_loop()
+{
+    while(true)
+    {
+        ExtUI::watchdogReset();
+
+        if(MYSERIAL0.available())
+            DgusSerial.write(MYSERIAL0.read());
+
+        if(DgusSerial.available())
+            MYSERIAL0.write(DgusSerial.read());
+    }
+}
+
+
 //! Extract the next byte from this input Frame.
 //! @param frame    The Frame
 //! @param data     Next byte extracted from this Frame

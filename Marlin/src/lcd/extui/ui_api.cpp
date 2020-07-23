@@ -1152,6 +1152,11 @@ namespace ExtUI {
      settings.reset();
   }
 
+  void watchdogReset()
+  {
+      watchdog_refresh();
+  }
+
 } // namespace ExtUI
 
 // At the moment, we piggy-back off the ultralcd calls, but this could be cleaned up in the future
