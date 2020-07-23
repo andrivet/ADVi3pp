@@ -3591,7 +3591,10 @@
 //
 // M100 Free Memory Watcher to debug memory usage
 //
-//#define M100_FREE_MEMORY_WATCHER
+// @advi3++: Enable M100
+#ifdef DEBUG
+#define M100_FREE_MEMORY_WATCHER
+#endif
 
 //
 // M42 - Set pin states
