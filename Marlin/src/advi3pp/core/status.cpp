@@ -20,6 +20,7 @@
 
 #include "../parameters.h"
 #include "../../lcd/extui/ui_api.h"
+#include "logging.h"
 #include "status.h"
 #include "dgus.h"
 #include "enums.h"
@@ -43,6 +44,7 @@ bool Status::has() const
 void Status::set(const FlashChar* message)
 {
     ADVString<message_length> text{message};
+    Log::log() << F("Status::set(FlashChar) ") << text.get() << Log::endl();
     send(text);
     has_status_ = true;
 }
@@ -50,6 +52,7 @@ void Status::set(const FlashChar* message)
 void Status::set(const char* message)
 {
     ADVString<message_length> text{message};
+    Log::log() << F("Status::set(const char*) ") << text.get() << Log::endl();
     send(text);
     has_status_ = true;
 }
@@ -58,6 +61,7 @@ void Status::set(const FlashChar* fmt, va_list& args)
 {
     ADVString<message_length> text{};
     text.set(fmt, args);
+    Log::log() << F("Status::set(fmt)" ) << text.get() << Log::endl();
     send(text);
     has_status_ = true;
 }
