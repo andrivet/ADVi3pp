@@ -676,4 +676,21 @@ void resume_print(const float &slow_load_length/*=0*/, const float &fast_load_le
   TERN_(HAS_LCD_MENU, ui.return_to_status());
 }
 
+// @advi3++: Used by Extruder Tuning
+bool extrude_filament(const float &purge_length)
+{
+    if(purge_length <= 0)
+        return false;
+
+    KEEPALIVE_STATE(IN_PROCESS);
+
+    if (!ensure_safe_temperature(PAUSE_MODE_SAME))
+        return false;
+
+	lcd_pause_show_message(PAUSE_MESSAGE_LOAD);
+    unscaled_e_move(purge_length, ADVANCED_PAUSE_PURGE_FEEDRATE);
+
+    return true;
+}
+
 #endif // ADVANCED_PAUSE_FEATURE

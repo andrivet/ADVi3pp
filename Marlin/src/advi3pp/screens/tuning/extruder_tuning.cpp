@@ -76,62 +76,28 @@ void ExtruderTuning::start_command()
     }
 
     Uint16 temperature; frame >> temperature;
-    wait.show(F("Heating the extruder..."), WaitCallback{this, &ExtruderTuning::cancel}, ShowOptions::None);
     ExtUI::setTargetTemp_celsius(temperature.word, ExtUI::E0);
+    wait.show(F("Heating the extruder..."), ShowOptions::None);
 
-    task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
+    core.inject_commands(F("G1 Z20 F1200\nM83\nG92 E0"));   // raise head, relative E mode, reset E axis
+
+    auto before = ExtUI::getAxisPosition_mm(ExtUI::E0); // should be 0 (because of G92) but prefer to be sure
+    ExtUI::extrudeFilament(tuning_extruder_filament);
+    extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0) - before;
+
+    after_extrusion();
+
+    //task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
 }
 
-//! Extruder tuning background task.
-void ExtruderTuning::heating_task()
+void ExtruderTuning::after_extrusion()
 {
-    if(ExtUI::getActualTemp_celsius(ExtUI::E0) < ExtUI::getTargetTemp_celsius(ExtUI::E0) - 10)
-        return;
-    task.clear_background_task();
-
-    wait.set_message(F("Wait until the extrusion is finished..."));
-    core.inject_commands(F("G1 Z20 F1200\nM83\nG92 E0\nG1 E100 F50"));   // raise head, relative E mode, reset E axis, Extrude slowly
-
-    task.set_background_task(BackgroundTask(this, &ExtruderTuning::extruding_task));
-}
-
-//! Extruder tuning background task.
-void ExtruderTuning::extruding_task()
-{
-    if(ExtUI::getAxisPosition_mm(ExtUI::E0) < tuning_extruder_filament || core.is_busy())
-        return;
-    task.clear_background_task();
-
-    extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0);
-
-    ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
-    task.clear_background_task();
-    finished();
-}
-
-//! Record the amount of filament extruded.
-void ExtruderTuning::finished()
-{
-    Log::log() << F("Filament extruded ") << extruded_ << Log::endl();
-    core.inject_commands(F("M82\nG92 E0"));       // absolute E mode, reset E axis
-
-    task.clear_background_task();
-
     // Always set to default 20mm
     WriteRamDataRequest frame{Variable::Value0};
     frame << 200_u16; // 20.0
     frame.send();
 
     pages.show_page(Page::ExtruderTuningMeasure, ShowOptions::None);
-}
-
-//! Cancel Extruder tuning process.
-bool ExtruderTuning::cancel()
-{
-    ExtUI::cancelWaitForHeatup();
-    task.clear_background_task();
-    ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
-    return false;
 }
 
 //! Execute the Back command

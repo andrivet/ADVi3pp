@@ -33,10 +33,7 @@ private:
     void do_back_command();
     void start_command();
     void settings_command();
-    void heating_task();
-    void extruding_task();
-    void finished();
-    bool cancel();
+    void after_extrusion();
     void send_data();
 
 private:

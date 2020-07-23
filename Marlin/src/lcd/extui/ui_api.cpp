@@ -991,6 +991,11 @@ namespace ExtUI {
   void resumePrint() { ui.resume_print(); }
   void stopPrint() { ui.abort_print(); }
 
+  bool extrudeFilament(float purge_length)
+  {
+    return extrude_filament(purge_length);
+  }
+
   void onUserConfirmRequired_P(PGM_P const pstr) {
     char msg[strlen_P(pstr) + 1];
     strcpy_P(msg, pstr);

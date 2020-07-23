@@ -100,4 +100,7 @@ bool unload_filament(const float &unload_length, const bool show_lcd=false, cons
   #endif
 );
 
+// @advi3++
+bool extrude_filament(const float &purge_length);
+
 #endif // ADVANCED_PAUSE_FEATURE
