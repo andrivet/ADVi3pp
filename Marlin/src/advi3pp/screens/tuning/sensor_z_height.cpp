@@ -29,7 +29,7 @@ SensorZHeight sensor_z_height;
 
 #ifdef ADVi3PP_PROBE
 
-const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.04, 0.12, 1.0};
+const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.01, 0.10, 1.0};
 
 //! Handle Sensor Z Height command
 //! @param key_value    The sub-action to handle

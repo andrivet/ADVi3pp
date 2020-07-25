@@ -47,9 +47,11 @@ private:
     Page do_prepare_page();
     void send_data() const;
     double get_multiplier_value() const;
+    void save_babysteps();
 
 private:
     Multiplier multiplier_ = Multiplier::M1;
+    uint16_t offset_ = 0;
 
     friend Parent;
 };

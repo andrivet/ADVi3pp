@@ -25,7 +25,7 @@
 namespace ADVi3pp {
 
 //! List of multipliers in Print Settings
-const double BABYSTEPS_MULTIPLIERS[] = {0.04, 0.08, 0.12};
+const double BABYSTEPS_MULTIPLIERS[] = {0.01, 0.05, 0.10};
 
 PrintSettings print_settings;
 
@@ -43,6 +43,7 @@ bool PrintSettings::do_dispatch(KeyValue key_value)
         case KeyValue::Baby1:       multiplier_ = Multiplier::M1; break;
         case KeyValue::Baby2:       multiplier_ = Multiplier::M2; break;
         case KeyValue::Baby3:       multiplier_ = Multiplier::M3; break;
+        case KeyValue::Save:        save_babysteps(); break;
         default:                    return false;
     }
 
@@ -67,7 +68,7 @@ double PrintSettings::get_multiplier_value() const
 void PrintSettings::send_data() const
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(static_cast<uint16_t>(multiplier_));
+    frame << Uint16(static_cast<uint16_t>(multiplier_)) << Uint16{offset_};;
     frame.send();
 }
 
@@ -166,6 +167,8 @@ void PrintSettings::baby_minus_command()
 {
     auto distance = -ExtUI::mmToWholeSteps(get_multiplier_value(), ExtUI::Z);
     ExtUI::smartAdjustAxis_steps(distance, ExtUI::Z, true);
+    offset_ -= static_cast<int16_t>(get_multiplier_value() * 100);
+    send_data();
 }
 
 //! Handle the +Babystep command
@@ -173,6 +176,13 @@ void PrintSettings::baby_plus_command()
 {
     auto distance = ExtUI::mmToWholeSteps(get_multiplier_value(), ExtUI::Z);
     ExtUI::smartAdjustAxis_steps(distance, ExtUI::Z, true);
+    offset_ += static_cast<int16_t>(get_multiplier_value() * 100);
+    send_data();
+}
+
+void PrintSettings::save_babysteps()
+{
+    settings.save();
 }
 
 }
