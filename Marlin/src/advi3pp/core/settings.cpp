@@ -69,8 +69,6 @@ void Settings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
     EepromRead eeprom{read, eeprom_index, working_crc};
 
     uint16_t version = 0;
-    Feature features = Feature::None;
-
     eeprom.read(version);
     pid_settings.read(eeprom);
     eeprom.read(features_);

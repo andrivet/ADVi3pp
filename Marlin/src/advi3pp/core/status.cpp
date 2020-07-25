@@ -45,7 +45,7 @@ void Status::set(const FlashChar* message)
 {
     ADVString<message_length> text{message};
     Log::log() << F("Status::set(FlashChar) ") << text.get() << Log::endl();
-    send(text);
+    send_status(text);
     has_status_ = true;
 }
 
@@ -53,7 +53,7 @@ void Status::set(const char* message)
 {
     ADVString<message_length> text{message};
     Log::log() << F("Status::set(const char*) ") << text.get() << Log::endl();
-    send(text);
+    send_status(text);
     has_status_ = true;
 }
 
@@ -62,49 +62,89 @@ void Status::set(const FlashChar* fmt, va_list& args)
     ADVString<message_length> text{};
     text.set(fmt, args);
     Log::log() << F("Status::set(fmt)" ) << text.get() << Log::endl();
-    send(text);
+    send_status(text);
     has_status_ = true;
 }
 
-//! Compute the current progress message (name and percentage)
-void Status::compute_progress()
+void Status::send()
+{
+    send_progress();
+    send_times();
+}
+
+void Status::send_progress()
 {
     auto done = ExtUI::getProgress_percent();
     if(done == percent_)
         return;
+	percent_ = done;
 
-    progress_ = progress_name_;
-    if(progress_.length() > 0)
-        progress_  << " " << done << "%";
-    progress_.align(Alignment::Left);
-    percent_ = done;
+    ADVString<progress_text_length> progress{progress_name_};
+    if(progress.length() > 0)
+        progress  << " " << done << "%";
+    progress.align(Alignment::Left);
+
+    ADVString<progress_percent_length> progress_percent{};
+    progress_percent << done << "%";
+    progress_percent.align(Alignment::Left);
+
+    WriteRamDataRequest frame{Variable::ProgressText};
+    frame << progress << progress_percent;
+    frame.send(false);
+}
+
+void Status::send_times()
+{
+	if(!ExtUI::isPrinting())
+		return;
+    auto current_time = millis();
+    if(!ELAPSED(current_time, next_update_times_time_))
+        return;
+    next_update_times_time_ = current_time + 2000; // every 2 seconds
+
+    ADVString<tc_length> tc; // time to complete
+    ADVString<et_length> et; // elapsed time
+
+    auto durationSec = ExtUI::getProgress_seconds_elapsed();
+	auto progress = ExtUI::getProgress_percent();
+
+    et.set(duration_t{durationSec}, Duration::digital).align(Alignment::Left);
+
+    auto tcSec = progress <= 0 ? 0 : (durationSec * (100 - progress) / progress);
+    if (progress < 5)
+        tc.set(F("00:00")).align(Alignment::Left);
+    else
+        tc.set(duration_t{tcSec}, Duration::digital).align(Alignment::Left);
+
+    WriteRamDataRequest frame{Variable::ET};
+    frame << et << tc;
+    frame.send(false);
 }
 
 //! Set the name for the progress message. Usually, it is the name of the file printed.
 void Status::set_progress_name(const char* name)
 {
     progress_name_ = name;
-    progress_.reset().align(Alignment::Left);
     percent_ = -1;
-    compute_progress();
+    send_progress();
 }
 
 //! Clear the progress message
 void Status::reset_progress()
 {
     progress_name_.reset();
-    progress_.reset().align(Alignment::Left);
     percent_ = -1;
+    send_progress();
 }
 
-void Status::send(ADVString<message_length>& message)
+void Status::send_status(ADVString<message_length>& message)
 {
     ADVString<message_length> centered{message};
     message.align(Alignment::Left);
     centered.align(Alignment::Center);
 
     WriteRamDataRequest frame{Variable::Message};
-    frame << message << centered << progress_;
+    frame << message << centered;
     frame.send(false);
 }
 

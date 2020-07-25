@@ -380,7 +380,7 @@ void Core::send_lcd_serial_data(bool force_update)
           << Uint16(ExtUI::getFeedrate_percent());
     frame.send(false);
 
-    status.compute_progress();
+    status.send();
 }
 
 bool Core::ensure_not_printing()

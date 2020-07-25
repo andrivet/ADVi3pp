@@ -94,7 +94,10 @@ enum class Variable: uint16_t
     Babysteps               = 0x000B,
     Message                 = 0x0010,
     CenteredMessage         = 0x0028,
-    Progress                = 0x0040,
+    ProgressText            = 0x0040,
+    ProgressPercent         = 0x0058,
+    ET                      = 0x005C,
+    TC                      = 0x0060,
 
     // 1 - Short Texts
     ShortText0              = 0x0100,

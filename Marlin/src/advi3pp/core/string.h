@@ -53,6 +53,7 @@ template<size_t L>
 struct ADVString
 {
     ADVString() = default;
+    template<size_t L2> explicit ADVString(const ADVString<L2>& str);
     explicit ADVString(const char* s);
     explicit ADVString(const FlashChar* s);
     explicit ADVString(char c);
@@ -115,6 +116,7 @@ inline ADVString<L>& operator<<(ADVString<L>& rhs, T lhs) { rhs.append(lhs); ret
 
 // --------------------------------------------------------------------
 
+template<size_t L> template<size_t L2> inline ADVString<L>::ADVString(const ADVString<L2>& str) { set(str); }
 template<size_t L> inline ADVString<L>::ADVString(const char* s) { set(s); }
 template<size_t L> inline ADVString<L>::ADVString(const FlashChar* s) { set(s); }
 template<size_t L> inline ADVString<L>::ADVString(const char c) { set(c); }
