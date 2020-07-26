@@ -31,7 +31,7 @@ LinearAdvanceSettings linear_advance_settings;
 Page LinearAdvanceSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 10);
+    frame << Uint16(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 100);
     frame.send();
 
     return Page::LinearAdvanceSettings;
@@ -48,7 +48,7 @@ void LinearAdvanceSettings::do_save_command()
     }
 
     Uint16 k; response >> k;
-    ExtUI::setLinearAdvance_mm_mm_s(k.word / 10.0, ExtUI::E0);
+    ExtUI::setLinearAdvance_mm_mm_s(k.word / 100.0, ExtUI::E0);
 
     Parent::do_save_command();
 }
