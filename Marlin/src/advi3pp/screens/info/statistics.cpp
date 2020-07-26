@@ -47,17 +47,17 @@ void Statistics::send_stats()
     char buffer[21];
     ADVString<16> value;
 
-    value.set(ExtUI::getTotalPrintTime_str(buffer)).align(Alignment::Left);
+    value.set(ExtUI::getTotalPrintTime_str(buffer));
     frame.reset(Variable::LongText0);
     frame << value;
     frame.send();
 
-    value.set(ExtUI::getLongestPrint_str(buffer)).align(Alignment::Left);
+    value.set(ExtUI::getLongestPrint_str(buffer));
     frame.reset(Variable::LongText1);
     frame << value;
     frame.send();
 
-    value.set(ExtUI::getFilamentUsed_str(buffer)).align(Alignment::Left);
+    value.set(ExtUI::getFilamentUsed_str(buffer));
     frame.reset(Variable::LongText2);
     frame << value;
     frame.send();

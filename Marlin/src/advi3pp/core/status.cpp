@@ -82,11 +82,9 @@ void Status::send_progress()
     ADVString<progress_text_length> progress{progress_name_};
     if(progress.length() > 0)
         progress  << " " << done << "%";
-    progress.align(Alignment::Left);
 
     ADVString<progress_percent_length> progress_percent{};
     progress_percent << done << "%";
-    progress_percent.align(Alignment::Left);
 
     WriteRamDataRequest frame{Variable::ProgressText};
     frame << progress << progress_percent;
@@ -108,13 +106,13 @@ void Status::send_times()
     auto durationSec = ExtUI::getProgress_seconds_elapsed();
 	auto progress = ExtUI::getProgress_percent();
 
-    et.set(duration_t{durationSec}, Duration::digital).align(Alignment::Left);
+    et.set(duration_t{durationSec}, Duration::digital);
 
     auto tcSec = progress <= 0 ? 0 : (durationSec * (100 - progress) / progress);
     if (progress < 5)
-        tc.set(F("00:00")).align(Alignment::Left);
+        tc.set(F("00:00"));
     else
-        tc.set(duration_t{tcSec}, Duration::digital).align(Alignment::Left);
+        tc.set(duration_t{tcSec}, Duration::digital);
 
     WriteRamDataRequest frame{Variable::ET};
     frame << et << tc;
@@ -139,12 +137,9 @@ void Status::reset_progress()
 
 void Status::send_status(ADVString<message_length>& message)
 {
-    ADVString<message_length> centered{message};
-    message.align(Alignment::Left);
-    centered.align(Alignment::Center);
-
     WriteRamDataRequest frame{Variable::Message};
-    frame << message << centered;
+    frame << message;
+    frame.center(message);
     frame.send(false);
 }
 

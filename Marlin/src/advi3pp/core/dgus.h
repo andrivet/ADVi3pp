@@ -156,7 +156,9 @@ struct Frame
     friend Frame& operator<<(Frame& frame, const Uint32& data);
     friend Frame& operator<<(Frame& frame, Page page);
     friend Frame& operator<<(Frame& frame, const char* s);
-    template<size_t L> friend Frame& operator<<(Frame& frame, const ADVString<L>& data) { frame << data.get(); return frame; }
+    friend Frame& operator<<(Frame& frame, char c);
+    template<size_t L> friend Frame& operator<<(Frame& frame, const ADVString<L>& data);
+    template<size_t L> Frame& center(const ADVString<L>& data);
 
     friend Frame& operator>>(Frame& frame, Uint8& data);
     friend Frame& operator>>(Frame& frame, Uint16& data);
@@ -300,5 +302,32 @@ struct WriteCurveDataRequest: Frame
 {
     explicit WriteCurveDataRequest(uint8_t channels);
 };
+
+// --------------------------------------------------------------------
+
+template<size_t L>
+Frame& operator<<(Frame& frame, const ADVString<L>& data)
+{
+    frame << data.get();
+    // Fill the remaining of the string with spaces
+    for(size_t i = data.length(); i < L; ++i)
+        frame << ' ';
+    return frame;
+}
+
+template<size_t L> Frame& Frame::center(const ADVString<L>& data)
+{
+    auto l = data.length();
+    // Pad the beginning to center the string
+    auto pad = (L - l) / 2;
+    for(size_t i = 0; i < pad; ++i)
+        *this << ' ';
+    // The string itself
+    *this << data.get();
+    // Fill the remaining of the string with spaces
+    for(size_t i = l; i < L; ++i)
+        *this << ' ';
+    return *this;
+}
 
 }

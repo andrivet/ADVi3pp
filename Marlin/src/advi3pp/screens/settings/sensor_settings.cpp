@@ -155,7 +155,7 @@ void SensorSettings::send_name() const
 {
     ADVString<28> title{get_sensor_name(index_)};
     WriteRamDataRequest frame{Variable::LongTextCentered0};
-    frame << title.align(Alignment::Center);
+    frame.center(title);
     frame.send();
 }
 

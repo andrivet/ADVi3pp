@@ -152,6 +152,21 @@ Frame& operator<<(Frame& frame, const char* s)
     return frame;
 }
 
+//! Append a character to this Frame.
+//! @param frame    The frame
+//! @param c        Character to be appended
+//! @return         Itself
+Frame& operator<<(Frame& frame, char c)
+{
+    if(frame.position_ >= Frame::FRAME_BUFFER_SIZE - 1)
+        return frame; // The buffer is full
+
+    frame.buffer_[frame.position_] = c;
+    frame.position_ += 1;
+    frame.buffer_[Frame::Position::Length] += 1;
+    return frame;
+}
+
 //! Open the serial communication between the mainboard and the LCD panel
 void Frame::open()
 {

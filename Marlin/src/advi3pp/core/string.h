@@ -39,11 +39,6 @@ enum class Base: uint8_t
     Hexadecimal = 16
 };
 
-enum class Alignment: uint8_t
-{
-    None, Left, Center, Right
-};
-
 enum class Duration: uint8_t
 {
     full, digital, digitalWithDays
@@ -74,7 +69,6 @@ struct ADVString
     ADVString& set(const FlashChar* s);
     ADVString& set(const FlashChar* fmt, va_list& args);
     template<size_t L2> ADVString& set(const ADVString<L2>& s);
-    template<size_t L2> ADVString& set(const ADVString<L2>& s, Alignment alignment);
     ADVString& set(char c);
     ADVString& set(duration_t d, Duration options = Duration::full);
     ADVString& set(int16_t n, Base base = Base::Decimal);
@@ -97,8 +91,6 @@ struct ADVString
     void operator+=(const char* s);
     void operator+=(const FlashChar* s);
     void operator+=(char c);
-
-    ADVString& align(Alignment alignment);
 
     size_t length() const;
     char operator[](size_t i) const;
@@ -132,45 +124,10 @@ template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const FlashChar*
 template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const char c)  { set(c); return *this; }
 template<size_t L> template<size_t L2> inline ADVString<L>& ADVString<L>::operator=(const ADVString<L2>& str) { set(str); return *this; }
 
-template<size_t L> template<size_t L2> ADVString<L>& ADVString<L>::set(const ADVString<L2>& s, Alignment alignment)
+template<size_t L> template<size_t L2> ADVString<L>& ADVString<L>::set(const ADVString<L2>& s)
 {
-    auto l = s.length();
-    size_t pad = 0;
-
-    if(l >= L)
-        pad = 0;
-    else if(alignment == Alignment::Center)
-        pad = (L - l) / 2;
-    else if(alignment == Alignment::Right)
-        pad = L - l;
-
-    // Left part
-    size_t index = 0;
-    for(; index < pad; ++index)
-        string_[index] = ' ';
-
-    // Middle part
-    strlcpy(string_ + index, s.get(), L + 1 - pad);
-    index += l;
-
-    // Right part
-    if(alignment == Alignment::Left || alignment == Alignment::Center)
-    {
-        for(; index < L; ++index)
-            string_[index] = ' ';
-    }
-
-    // End of string
-    string_[index] = 0;
-
+    strlcpy(string_, s.get(), L + 1);
     return *this;
-}
-
-template<size_t L>
-ADVString<L>& ADVString<L>::align(Alignment alignment)
-{
-    ADVString<L> tmp{*this};
-    return this->set(tmp, alignment);
 }
 
 template<size_t L>
@@ -215,12 +172,6 @@ ADVString<L>& ADVString<L>::set(const FlashChar* fmt, va_list& args)
 }
 
 #endif
-
-template<size_t L> template<size_t L2>
-inline ADVString<L>& ADVString<L>::set(const ADVString<L2>& s)
-{
-    return set(s.get());
-}
 
 template<size_t L>
 ADVString<L>& ADVString<L>::set(duration_t d, Duration options)

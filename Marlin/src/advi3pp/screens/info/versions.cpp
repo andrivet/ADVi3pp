@@ -57,7 +57,7 @@ void Versions::send_versions() const
 	// Minimize memory usage (SRAM)
 	
 	ADVString<16> text;
-    core.convert_version(text, advi3_pp_version).align(Alignment::Left);
+    core.convert_version(text, advi3_pp_version);
 	WriteRamDataRequest frame{Variable::ADVi3ppVersion};
 	frame << text;
 	frame.send();
@@ -69,17 +69,16 @@ void Versions::send_versions() const
          << (HOUR__  < 10 ? "0" : "") << HOUR__
          << (MIN__   < 10 ? "0" : "") << MIN__
          << (SEC__   < 10 ? "0" : "") << SEC__;
-    text.align(Alignment::Left);
 	frame.reset(Variable::ADVi3ppBuild);
 	frame << text;
 	frame.send();
 	
-    get_lcd_firmware_version(text).align(Alignment::Left);
+    get_lcd_firmware_version(text);
 	frame.reset(Variable::ADVi3ppDGUSVersion);
 	frame << text;
 	frame.send();
 		
-    text.set(SHORT_BUILD_VERSION).align(Alignment::Left);
+    text.set(SHORT_BUILD_VERSION);
 	frame.reset(Variable::ADVi3ppMarlinVersion);
 	frame << text;
 	frame.send();

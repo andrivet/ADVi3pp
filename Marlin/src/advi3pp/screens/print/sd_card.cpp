@@ -112,13 +112,13 @@ void SdCard::show_current_page()
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
-        aligned_name.set(name, Alignment::Left);
+        aligned_name.set(name);
         frame << aligned_name;
     }
     frame.send(true);
 
     frame.reset(Variable::Value0);
-    frame << Uint16(page_index_ + 1);
+    frame << Uint16{page_index_ + 1};
     frame.send();
 }
 

@@ -214,7 +214,7 @@ bool Core::init()
     core.convert_version(welcome, advi3_pp_version);
     welcome << F(" is ready");
     SERIAL_ECHOLN(welcome.get());
-    status.set(welcome.align(Alignment::Center).get());
+    status.set(welcome.get());
 
 #if HAS_LEVELING
     ExtUI::setLevelingActive(true);
