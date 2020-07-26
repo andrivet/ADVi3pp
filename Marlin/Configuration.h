@@ -432,7 +432,7 @@
 #define TEMP_SENSOR_5 0
 #define TEMP_SENSOR_6 0
 #define TEMP_SENSOR_7 0
-#define TEMP_SENSOR_BED 1 // @advi3++: Headed bed with a thermistor (type 1)
+#define TEMP_SENSOR_BED 1 // @advi3++: Heated bed with a thermistor (type 1)
 #define TEMP_SENSOR_PROBE 0
 #define TEMP_SENSOR_CHAMBER 0
 
