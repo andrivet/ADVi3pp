@@ -688,10 +688,11 @@
 #define Y_MAX_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
 #if ENABLED(BLTOUCH)
 #define Z_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
-#else
-#define Z_MAX_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
-#endif
 #define Z_MIN_PROBE_ENDSTOP_INVERTING false // Set to true to invert the logic of the probe.
+#else // @advi3++: Mark II or Mark I no probe
+#define Z_MAX_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
+#define Z_MIN_PROBE_ENDSTOP_INVERTING true // Set to true to invert the logic of the probe.
+#endif
 
 /**
  * Stepper Drivers
@@ -920,7 +921,7 @@
  *   (e.g., an inductive probe or a nozzle-based probe-switch.)
  */
 // @advi3++: Mark II probe is fix
-#ifdef ADVi3PP_MARK2
+#ifdef ADVi3PP_54
 #define FIX_MOUNTED_PROBE
 #endif
 
@@ -1446,7 +1447,8 @@
 // - Move the Z probe (or nozzle) to a defined XY point before Z Homing.
 // - Prevent Z homing when the Z probe is outside bed area.
 //
-#if ENABLED(BLTOUCH)
+// @advi3++: Safe homing for BLTouch and Mark II
+#if ENABLED(BLTOUCH) || ENABLED(FIX_MOUNTED_PROBE)
 #define Z_SAFE_HOMING
 #endif
 

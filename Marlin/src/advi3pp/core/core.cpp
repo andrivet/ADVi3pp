@@ -163,7 +163,9 @@ void Facade::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float z
 
 void Facade::on_automatic_leveling_finished(bool success)
 {
+#if HAS_LEVELING
     automatic_leveling.leveling_finished(success);
+#endif
 }
 
 #if ENABLED(POWER_LOSS_RECOVERY)
@@ -214,7 +216,10 @@ bool Core::init()
     SERIAL_ECHOLN(welcome.get());
     status.set(welcome.align(Alignment::Center).get());
 
+#if HAS_LEVELING
     ExtUI::setLevelingActive(true);
+#endif
+
     if(eeprom_mismatch.check())
         pages.show_page(Page::Boot, ShowOptions::None);
 

@@ -55,7 +55,9 @@ bool ManualLeveling::do_dispatch(KeyValue key_value)
 //! Execute the Back command
 void ManualLeveling::do_back_command()
 {
+#if HAS_LEVELING
     ExtUI::setLevelingActive(true); // Enable back compensation
+#endif
     ExtUI::setFeedrate_mm_s(1200);
     ExtUI::setAxisPosition_mm(30, ExtUI::Z);
     Parent::do_back_command();
@@ -71,7 +73,9 @@ Page ManualLeveling::do_prepare_page()
     ExtUI::setAllAxisUnhomed();
     ExtUI::setAllAxisPositionUnknown();
     core.inject_commands(F("G28 F6000")); // Homing
+#if HAS_LEVELING
     ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
+#endif
     task.set_background_task(BackgroundTask(this, &ManualLeveling::leveling_task), 200);
     return Page::None;
 }
