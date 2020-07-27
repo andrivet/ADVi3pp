@@ -913,8 +913,10 @@
  * Use G29 repeatedly, adjusting the Z height at each point with movement commands
  * or (with LCD_BED_LEVELING) the LCD controller.
  */
-//#define PROBE_MANUALLY
-//#define MANUAL_PROBE_START_Z 0.2
+#if DISABLED(ADVi3PP_PROBE)
+#define PROBE_MANUALLY
+#define MANUAL_PROBE_START_Z 0.2
+#endif
 
 /**
  * A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
@@ -1286,12 +1288,13 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
-// @advi3++: Use bilinear leveling (mesh)
+// @advi3++: Use bilinear leveling (mesh) or Mesg bed leveling in case of manual leveling
 #ifdef ADVi3PP_PROBE
 #define AUTO_BED_LEVELING_BILINEAR
+#else
+#define MESH_BED_LEVELING
 #endif
 //#define AUTO_BED_LEVELING_UBL
-//#define MESH_BED_LEVELING
 
 /**
  * Normally G28 leaves leveling disabled on completion. Enable

@@ -24,14 +24,16 @@
 
 namespace ADVi3pp {
 
-#ifdef ADVi3PP_PROBE
 //! Automatic Leveling Page
 struct AutomaticLeveling: Screen<AutomaticLeveling>
 {
     void leveling_finished(bool success);
 
 private:
+    bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void manual_command();
+    void start();
     bool leveling_failed();
 
 private:
@@ -39,17 +41,6 @@ private:
 
     friend Parent;
 };
-#else
-//! Automatic Leveling Page
-struct AutomaticLeveling: Screen<AutomaticLeveling>
-{
-    void g29_leveling_finished(bool) {}
-
-private:
-    Page do_prepare_page();
-    friend Parent;
-};
-#endif
 
 extern AutomaticLeveling automatic_leveling;
 

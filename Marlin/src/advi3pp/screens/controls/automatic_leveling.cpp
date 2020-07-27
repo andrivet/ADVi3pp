@@ -30,22 +30,54 @@ namespace ADVi3pp {
 
 AutomaticLeveling automatic_leveling;
 
-#ifdef ADVi3PP_PROBE
+bool AutomaticLeveling::do_dispatch(KeyValue key_value)
+{
+    if(Parent::do_dispatch(key_value))
+        return true;
+
+    switch(key_value)
+    {
+        case KeyValue::LevelingManual:	manual_command(); break;
+        default: return false;
+    }
+
+    return true;
+}
+
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
 Page AutomaticLeveling::do_prepare_page()
 {
+#ifdef ADVi3PP_PROBE
     if(!core.ensure_not_printing())
         return Page::None;
+    start();
+    return Page::None;
+#else
+    return Page::NoSensor;
+#endif
+}
+
+void AutomaticLeveling::manual_command()
+{
+    if(!core.ensure_not_printing())
+        return;
+    start();
+}
+
+void AutomaticLeveling::start()
+{
     sensor_interactive_leveling_ = true;
     pages.save_forward_page();
     wait.show(F("Homing..."));
 
     // homing, raise head, leveling, go back to corner, activate compensation
+#ifdef ADVi3PP_PROBE
     core.inject_commands(F("G28 F6000\nG1 Z4 F1200\nG29 E\nG28 X Y F6000\nM420 S1"));
-
-    return Page::None;
+#else
+    core.inject_commands(F("G28 F6000\nG1 Z4 F1200\nG29 S1\nG28 X Y F6000\nM420 S1"));
+#endif
 }
 
 //! Called by Marlin when G29 (automatic bed leveling) is finished.
@@ -84,15 +116,5 @@ bool AutomaticLeveling::leveling_failed()
     return true;
 }
 
-#else
-
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page AutomaticLeveling::do_prepare_page()
-{
-    return Page::NoSensor;
-}
-
-#endif
 
 }

@@ -82,11 +82,11 @@
   #endif
 #endif
 
-// @advi3++
-#if ENABLED(ADVi3PP_PROBE)
-  #define G29_RETURN(b) return ExtUI::onAutomaticLevelingFinished(!b)
+// @advi3++: PR candidate
+#if ENABLED(G29_RETRY_AND_RECOVER)
+  #define G29_RETURN(b) return b;
 #else
-  return TERN_(G29_RETRY_AND_RECOVER, b)
+  #define G29_RETURN(b) ExtUI::onAutomaticLevelingFinished(!b);
 #endif
 
 /**

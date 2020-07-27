@@ -247,6 +247,9 @@ enum class KeyValue: uint16_t
     LevelingPointC          = 0x0008,
     LevelingPointD          = 0x0009,
 
+    LevelingTest            = 0x0001,
+    LevelingManual          = 0x0002,
+
     TuningStart             = 0x0001,
     TuningSettings          = 0x0002,
 
