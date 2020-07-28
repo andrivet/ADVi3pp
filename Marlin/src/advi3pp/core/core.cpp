@@ -58,7 +58,6 @@
 #include "../screens/settings/step_settings.h"
 #include "../screens/settings/feedrate_settings.h"
 #include "../screens/settings/acceleration_settings.h"
-#include "../screens/settings/jerk_settings.h"
 #include "../screens/settings/linear_advance_settings.h"
 #include "../screens/info/versions.h"
 #include "../screens/info/statistics.h"
@@ -313,7 +312,6 @@ void Core::receive_lcd_serial_data()
         case Action::StepsSettings:         steps_settings.handle(key_value); break;
         case Action::FeedrateSettings:      feedrates_settings.handle(key_value); break;
         case Action::AccelerationSettings:  accelerations_settings.handle(key_value); break;
-        case Action::JerkSettings:          jerks_settings.handle(key_value); break;
         case Action::Copyrights:            copyrights.handle(key_value); break;
         case Action::SensorTuning:          sensor_tuning.handle(key_value); break;
         case Action::AutomaticLeveling:     automatic_leveling.handle(key_value); break;

@@ -31,13 +31,14 @@ AccelerationSettings accelerations_settings;
 Page AccelerationSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X)))
-          << Uint16(static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y)))
-          << Uint16(static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Z)))
-          << Uint16(static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::E0)))
-          << Uint16(static_cast<uint16_t>(ExtUI::getPrintingAcceleration_mm_s2()))
-          << Uint16(static_cast<uint16_t>(ExtUI::getRetractAcceleration_mm_s2()))
-          << Uint16(static_cast<uint16_t>(ExtUI::getTravelAcceleration_mm_s2()));
+    frame << Uint16{static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X))}
+          << Uint16{static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y))}
+          << Uint16{static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Z))}
+          << Uint16{static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::E0))}
+          << Uint16{static_cast<uint16_t>(ExtUI::getPrintingAcceleration_mm_s2())}
+          << Uint16{static_cast<uint16_t>(ExtUI::getRetractAcceleration_mm_s2())}
+          << Uint16{static_cast<uint16_t>(ExtUI::getTravelAcceleration_mm_s2())}
+          << Uint16{static_cast<uint16_t>(ExtUI::getJunctionDeviation_mm() * 100)};
     frame.send();
 
     return Page::AccelerationSettings;
@@ -53,8 +54,8 @@ void AccelerationSettings::do_save_command()
         return;
     }
 
-    Uint16 x, y, z, e, print, retract, travel;
-    response >> x >> y >> z >> e >> print >> retract >> travel;
+    Uint16 x, y, z, e, print, retract, travel, deviation;
+    response >> x >> y >> z >> e >> print >> retract >> travel >> deviation;
 
     ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(x.word), ExtUI::X);
     ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(y.word), ExtUI::Y);
@@ -63,6 +64,7 @@ void AccelerationSettings::do_save_command()
     ExtUI::setPrintingAcceleration_mm_s2(static_cast<float>(print.word));
     ExtUI::setRetractAcceleration_mm_s2(static_cast<float>(retract.word));
     ExtUI::setTravelAcceleration_mm_s2(static_cast<float>(travel.word));
+    ExtUI::setJunctionDeviation_mm(static_cast<float>(deviation.word / 100.0));
 
     Parent::do_save_command();
 }

@@ -824,9 +824,8 @@
  * When changing speed and direction, if the difference is less than the
  * value set here, it may happen instantaneously.
  */
-#define CLASSIC_JERK // TODO: use new jonction deviation
+// #define CLASSIC_JERK // @advi3++: use new junction deviation
 #if ENABLED(CLASSIC_JERK)
-// @advi3++: Set reasonable default values for Wanhao i3 Plus
   #define DEFAULT_XJERK 8.0
   #define DEFAULT_YJERK 8.0
   #define DEFAULT_ZJERK 0.4
