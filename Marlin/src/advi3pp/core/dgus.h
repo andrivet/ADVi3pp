@@ -325,7 +325,7 @@ template<size_t L> Frame& Frame::center(const ADVString<L>& data)
     // The string itself
     *this << data.get();
     // Fill the remaining of the string with spaces
-    for(size_t i = l; i < L; ++i)
+    for(size_t i = l + pad; i < L; ++i)
         *this << ' ';
     return *this;
 }
