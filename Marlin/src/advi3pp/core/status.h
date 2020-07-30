@@ -28,7 +28,7 @@
 namespace ADVi3pp {
 
 const size_t message_length = 48; //!< Size of messages to be displayed on the LCD Panel
-const size_t progress_name_length = 44; //!< Size of the progress name (i.e. filename) to be displayed on the LCD Panel
+const size_t filename_length = 44; //!< Size of the progress name (i.e. filename) to be displayed on the LCD Panel
 const size_t progress_text_length = 48; //!< Size of the progress message (filename and percent) to be displayed on the LCD Panel
 const size_t progress_percent_length = 8; //!< Size of the progress percent text to be displayed on the LCD Panel
 const size_t tc_length = 8; //!< Size of the time to complete message to be displayed on the LCD Panel
@@ -43,7 +43,7 @@ struct Status
     bool has() const;
 
     void send();
-    void set_progress_name(const char* name);
+    void set_filename(const char* name);
     void reset_progress();
 
 private:
@@ -53,7 +53,7 @@ private:
 
 private:
     bool has_status_ = false;
-    ADVString<progress_name_length> progress_name_;
+    ADVString<filename_length> filename_;
     int percent_ = -1;
     millis_t next_update_times_time_ = 0;
 };
