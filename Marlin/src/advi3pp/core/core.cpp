@@ -391,7 +391,7 @@ bool Core::ensure_not_printing()
     if(!ExtUI::isPrinting())
         return true;
 
-    wait.show_back(F("Not accessible when printing"));
+    wait.show_back(F("Not accessible when the printer is busy"));
     return false;
 }
 
