@@ -664,12 +664,6 @@
     <Compile Include="src\advi3pp\screens\settings\feedrate_settings.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\settings\jerk_settings.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\settings\jerk_settings.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\settings\lcd_settings.cpp">
       <SubType>compile</SubType>
     </Compile>
