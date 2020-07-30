@@ -95,7 +95,7 @@
 //
 // Temperature Sensors
 //
-#define TEMP_0_PIN              1  // PF1 / A1   Analog
+#define TEMP_0_PIN              1   // PF1 / A1   Analog
 #define TEMP_BED_PIN            14  // PK6 / A14  Analog
 
 //
@@ -105,6 +105,8 @@
 #define HEATER_BED_PIN          3  // PE5 / PWM3
 
 #define FAN_PIN                 5  // PE3 / PWM5
+
+#define FIL_RUNOUT_PIN          36 // PC1 / A9
 
 //
 // Misc. Functions
@@ -138,7 +140,7 @@
  * # Pin | ATMEGA2560 Pin | Arduino #
  * ##################################
  * #  1  | 52 / PG1 (!RD) |    40   #
- * #  2  | 95 / PF2 (A2)  |     2   #
+ * #  2  | 95 / PF2 (A2)  |    56   #
  * #  3  | 54 / PC1 (A9)  |    36   #
  * #  4  | 53 / PC0 (A8)  |    37   #
  * #  5  | 56 / PC3 (A11) |    34   #
