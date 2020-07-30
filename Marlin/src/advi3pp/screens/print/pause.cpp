@@ -21,6 +21,7 @@
 #include "../../parameters.h"
 #include "../../core/logging.h"
 #include "pause.h"
+#include "pause_options.h"
 #include "../core/wait.h"
 
 namespace ADVi3pp {
@@ -63,11 +64,7 @@ void Pause::cont(PGM_P message)
 
 void Pause::on_options()
 {
-    pause_menu_response = PAUSE_RESPONSE_WAIT_FOR;
-    wait.show(F("Press on Continue to purge more filament"),
-              WaitCallback{[]{ wait.show(F("Please wait..."), ShowOptions::None); pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT; return false; }},
-              WaitCallback{[]{ pause_menu_response = PAUSE_RESPONSE_EXTRUDE_MORE; return false; }},
-              ShowOptions::None);
+    pause_options.show(ShowOptions::None);
 }
 
 void Pause::on_status()

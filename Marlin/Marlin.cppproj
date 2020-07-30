@@ -622,6 +622,12 @@
     <Compile Include="src\advi3pp\screens\print\pause.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\print\pause_options.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\pause_options.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\screens\print\print.cpp">
       <SubType>compile</SubType>
     </Compile>

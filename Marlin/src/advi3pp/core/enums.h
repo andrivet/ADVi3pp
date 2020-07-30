@@ -56,9 +56,10 @@ enum class Page: uint8_t
     StepsSettings           = 72,
     FeedrateSettings        = 74,
     AccelerationSettings    = 76,
-    // UNUSED               = 78,
+    PauseOptions            = 78,
     PrintSettings           = 80,
     // UNUSED               = 82,
+    // UNUSED               = 84,
     Temperature             = 86,
     Infos                   = 88,
     Firmware                = 90,
@@ -158,7 +159,7 @@ enum class Action: uint16_t
     StepsSettings           = 0x0414,
     FeedrateSettings        = 0x0415,
     AccelerationSettings    = 0x0416,
-    // UNUSED               = 0x0417,
+    PauseOptions            = 0x0417,
     Copyrights              = 0x0418,
     SensorTuning            = 0x0419,
     SensorGrid              = 0x041A,
@@ -286,6 +287,9 @@ enum class KeyValue: uint16_t
     Baby1                   = 0x0001,
     Baby2                   = 0x0002,
     Baby3                   = 0x0003,
+
+    Extrude                 = 0x0001,
+    Resume                  = 0x0002,
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF

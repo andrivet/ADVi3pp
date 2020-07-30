@@ -40,6 +40,7 @@
 #include "../screens/controls/automatic_leveling.h"
 #include "../screens/controls/leveling_grid.h"
 #include "../screens/print/print.h"
+#include "../screens/print/pause_options.h"
 #include "../screens/print/sd_card.h"
 #include "../screens/print/change_filament.h"
 #include "../screens/print/temperatures.h"
@@ -312,6 +313,7 @@ void Core::receive_lcd_serial_data()
         case Action::StepsSettings:         steps_settings.handle(key_value); break;
         case Action::FeedrateSettings:      feedrates_settings.handle(key_value); break;
         case Action::AccelerationSettings:  accelerations_settings.handle(key_value); break;
+        case Action::PauseOptions:          pause_options.handle(key_value); break;
         case Action::Copyrights:            copyrights.handle(key_value); break;
         case Action::SensorTuning:          sensor_tuning.handle(key_value); break;
         case Action::AutomaticLeveling:     automatic_leveling.handle(key_value); break;
