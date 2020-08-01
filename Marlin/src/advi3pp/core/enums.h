@@ -62,7 +62,7 @@ enum class Page: uint8_t
     SetupNoSensor           = 84,
     Temperature             = 86,
     Infos                   = 88,
-    Firmware                = 90,
+    // UNUSED               = 90,
     NoSensor                = 92,
     SensorSettings          = 94,
     LCD                     = 96,
@@ -73,7 +73,11 @@ enum class Page: uint8_t
     ZHeightTuning           = 106,
     LinearAdvanceTuning     = 108,
     LinearAdvanceSettings   = 110,
-    Diagnosis               = 112,
+    IO                      = 112,
+    BLTouchTesting1         = 114,
+    BLTouchTesting2         = 116,
+    BLTouchTesting3         = 118,
+    BLTouchTesting4         = 120,
     Boot                    = 200
 };
 
