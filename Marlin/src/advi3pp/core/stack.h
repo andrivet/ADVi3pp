@@ -31,6 +31,7 @@ struct Stack
     void push(T e);
     T pop();
     bool is_empty() const;
+    void empty();
     bool contains(T e) const;
 
 private:
@@ -56,6 +57,12 @@ template<typename T, size_t S>
 bool Stack<T, S>::is_empty() const
 {
     return top_ == 0;
+}
+
+template<typename T, size_t S>
+void Stack<T, S>::empty()
+{
+    top_ = 0;
 }
 
 template<typename T, size_t S>
