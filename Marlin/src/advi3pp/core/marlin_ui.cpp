@@ -136,7 +136,7 @@ void MarlinUI::reset_status(const bool no_welcome)
     if(printingIsPaused())
         msg = GET_TEXT(MSG_PRINT_PAUSED);
     else if (IS_SD_PRINTING())
-        return set_status(card.longest_filename(), true);
+        msg = GET_TEXT(MSG_PRINTING);
     else if (print_job_timer.isRunning())
         msg = GET_TEXT(MSG_PRINTING);
     else if (!no_welcome)
