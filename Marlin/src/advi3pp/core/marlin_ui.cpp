@@ -66,7 +66,11 @@ void lcd_pause_show_message(const PauseMessage message, const PauseMode mode, co
 void MarlinUI::return_to_status()
 {
     Log::log() << F("return_to_status") << Log::endl();
-    pages.back_to_page(Page::Main);
+    pages.reset();
+    if(print_job_timer.isRunning())
+        pages.show_page(Page::Print, ShowOptions::SaveBack);
+    else
+        pages.show_page(Page::Main, ShowOptions::None);
 }
 
 void MarlinUI::reset_alert_level()
