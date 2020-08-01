@@ -43,6 +43,7 @@ struct Pages
     void show_back_page();
     void show_forward_page();
     void back_to_page(Page page);
+    void reset();
 
 private:
     Stack<Page, 8> back_pages_{};

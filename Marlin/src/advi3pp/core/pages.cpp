@@ -115,4 +115,9 @@ void Pages::back_to_page(Page page)
     }
 }
 
+void Pages::reset()
+{
+    back_pages_.empty();
+}
+
 }
