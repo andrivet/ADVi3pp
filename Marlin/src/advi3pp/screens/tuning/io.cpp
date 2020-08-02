@@ -19,7 +19,7 @@
  */
 
 #include "../../parameters.h"
-#include "diagnosis.h"
+#include "io.h"
 #include "../../core/task.h"
 #include "../../core/dgus.h"
 
@@ -27,40 +27,40 @@ namespace ADVi3pp {
 
 //! List of digital pins for the Diagnosis page
 const uint8_t diagnosis_digital_pins[] =
-        {
-                54,     // PF0 / ADC0 - A0
-                24,     // PA2 / AD2
-                23,     // PA1 / AD1
-                6,     // PH3 / OC4A
-                25,     // PA3 / AD3
+{
+        54,     // PF0 / ADC0 - A0
+        24,     // PA2 / AD2
+        23,     // PA1 / AD1
+         6,     // PH3 / OC4A
+        25,     // PA3 / AD3
 
-                40,     // PG1 / !RD
-                56,     // PF2 / ADC2 - A2
-                36,     // PC1 / A9
-                37,     // PC0 / A8
+        40,     // PG1 / !RD
+        56,     // PF2 / ADC2 - A2
+        36,     // PC1 / A9
+        37,     // PC0 / A8
 
-                34,     // PC3 / A11
-                35,     // PC2 / A10
-                32,     // PC5 / A13
-                33,     // PC4 / A12
-        };
+        34,     // PC3 / A11
+        35,     // PC2 / A10
+        32,     // PC5 / A13
+        33,     // PC4 / A12
+};
 
 //! List of analog pins for the Diagnosis page
 const uint8_t diagnosis_analog_pins[] = {55, 68, 54, 56}; // A1, A14, A0, A2
 
-Diagnosis diagnosis;
+IO io;
 
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page Diagnosis::do_prepare_page()
+Page IO::do_prepare_page()
 {
-    task.set_background_task(BackgroundTask{this, &Diagnosis::send_data}, 250);
-    return Page::Diagnosis;
+    task.set_background_task(BackgroundTask{this, &IO::send_data}, 250);
+    return Page::IO;
 }
 
 //! Execute the Back command
-void Diagnosis::do_back_command()
+void IO::do_back_command()
 {
     task.clear_background_task();
     Parent::do_back_command();
@@ -69,7 +69,7 @@ void Diagnosis::do_back_command()
 //! Get current digital pin state (adapted from Arduino source code).
 //! @param pin  Pin number to check.
 //! @return     The current state: On (input), Off (input), Output
-Diagnosis::State Diagnosis::get_pin_state(uint8_t pin)
+IO::State IO::get_pin_state(uint8_t pin)
 {
     uint8_t mask = digitalPinToBitMask(pin);
     uint8_t port = digitalPinToPort(pin);
@@ -88,7 +88,7 @@ Diagnosis::State Diagnosis::get_pin_state(uint8_t pin)
 }
 
 //! Send the current data to the LCD panel.
-void Diagnosis::send_data()
+void IO::send_data()
 {
     WriteRamDataRequest request{Variable::Value0};
 

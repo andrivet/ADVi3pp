@@ -53,7 +53,7 @@ I will change that in version 4.1.0 to make the sensor parameters configurable.
 ### New features
 
 * **#73** - Enable Linear Advance (LIN_ADVANCE). By default `K` is `0` but you can change it on the LCD Panel
-* **#75** - Diagnosis page with the live state of several digital and analog lines
+* **#75** - IO page with the live state of several digital and analog lines
 * **#81** - Multiple PID values recorded and auto PID tune. When a target temperature is set, choose the closest set of PID values.
 * **#101** - PID Tuning of Heated Bed
 * **#108** - Live Z adjustment (Babystepping)

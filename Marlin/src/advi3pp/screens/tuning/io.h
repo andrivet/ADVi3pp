@@ -25,7 +25,7 @@
 namespace ADVi3pp {
 
 //! Diagnosis Page
-struct Diagnosis: Screen<Diagnosis>
+struct IO: Screen<IO>
 {
     enum class State: uint8_t { Off = 0, On = 1, Output = 2};
 
@@ -38,6 +38,6 @@ private:
     friend Parent;
 };
 
-extern Diagnosis diagnosis;
+extern IO io;
 
 }
