@@ -46,10 +46,11 @@
 #include "../screens/print/temperatures.h"
 #include "../screens/tuning/extruder_tuning.h"
 #include "../screens/tuning/pid_tuning.h"
-#include "../screens/tuning/sensor_tuning.h"
+#include "../screens/tuning/bltouch_testing.h"
 #include "../screens/tuning/sensor_z_height.h"
 #include "../screens/tuning/io.h"
 #include "../screens/tuning/usb_to_lcd.h"
+#include "../screens/tuning/setup.h"
 #include "../screens/settings/eeprom_mismatch.h"
 #include "../screens/settings/factory_reset.h"
 #include "../screens/settings/sensor_settings.h"
@@ -315,16 +316,17 @@ void Core::receive_lcd_serial_data()
         case Action::AccelerationSettings:  accelerations_settings.handle(key_value); break;
         case Action::PauseOptions:          pause_options.handle(key_value); break;
         case Action::Copyrights:            copyrights.handle(key_value); break;
-        case Action::SensorTuning:          sensor_tuning.handle(key_value); break;
         case Action::AutomaticLeveling:     automatic_leveling.handle(key_value); break;
         case Action::SensorGrid:            leveling_grid.handle(key_value); break;
         case Action::SensorZHeight:         sensor_z_height.handle(key_value); break;
         case Action::ChangeFilament:        change_filament.handle(key_value); break;
         case Action::EEPROMMismatch:        eeprom_mismatch.handle(key_value); break;
         case Action::USB2LCD:               usb_2_lcd.handle(key_value); break;
+        case Action::BLTouchTesting:        bltouch_testing.handle(key_value); break;
         case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_value); break;
         case Action::Diagnosis:             io.handle(key_value); break;
         case Action::Temperatures:          temperatures.handle(key_value); break;
+        case Action::Setup:                 setup.handle(key_value); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;

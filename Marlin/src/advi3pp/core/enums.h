@@ -67,7 +67,7 @@ enum class Page: uint8_t
     SensorSettings          = 94,
     LCD                     = 96,
     Copyrights              = 98,
-    SensorTuning            = 100,
+    // UNUSED               = 100,
     SensorGrid              = 102,
     EEPROMMismatch          = 104,
     ZHeightTuning           = 106,
@@ -165,16 +165,17 @@ enum class Action: uint16_t
     AccelerationSettings    = 0x0416,
     PauseOptions            = 0x0417,
     Copyrights              = 0x0418,
-    SensorTuning            = 0x0419,
+    // Sponsors             = 0x0419,
     SensorGrid              = 0x041A,
     SensorZHeight           = 0x041B,
     ChangeFilament          = 0x041C,
     EEPROMMismatch          = 0x041D,
     USB2LCD                 = 0x041E,
-    // UNUSED               = 0x041F,
+    BLTouchTesting          = 0x041F,
     LinearAdvanceSettings   = 0x0420,
     Diagnosis               = 0x0421,
     Temperatures            = 0x0422,
+    Setup                   = 0x0423,
 
     // 6 - Moves
     MoveXMinus              = 0x0600,
@@ -294,6 +295,15 @@ enum class KeyValue: uint16_t
 
     Extrude                 = 0x0001,
     Resume                  = 0x0002,
+
+    BLTouchTestingStep2     = 0x0001,
+    BLTouchTestingStep2Yes  = 0x0002,
+    BLTouchTestingStep2No   = 0x0003,
+    BLTouchTestingStep3     = 0x0004,
+    BLTouchTestingStep3Yes  = 0x0005,
+    BLTouchTestingStep3No   = 0x0006,
+    BLTouchTestingStep4     = 0x0007,
+
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF

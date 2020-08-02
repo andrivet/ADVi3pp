@@ -24,24 +24,27 @@
 
 namespace ADVi3pp {
 
-#ifdef ADVi3PP_PROBE
-//! Sensor Tuning Page
-struct SensorTuning: Screen<SensorTuning>
+#ifdef BLTOUCH
+//! BLTouch Testing Page
+struct BLTouchTesting: Screen<BLTouchTesting>
 {
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void self_test_command();
-    void reset_command();
-    void deploy_command();
-    void stow_command();
+    void step2();
+    void step2yes();
+    void step2no();
+    void step3();
+    void step3yes();
+    void step3no();
+    void step4();
 
 private:
     friend Parent;
 };
 #else
-//! Sensor Tuning Page
-struct SensorTuning: Screen<SensorTuning>
+//! BLTouch Testing Page
+struct BLTouchTesting: Screen<BLTouchTesting>
 {
 private:
     Page do_prepare_page();
@@ -49,6 +52,6 @@ private:
 };
 #endif
 
-extern SensorTuning sensor_tuning;
+extern BLTouchTesting bltouch_testing;
 
 }

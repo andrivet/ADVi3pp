@@ -20,30 +20,33 @@
 
 #include "../../parameters.h"
 #include "../../core/core.h"
-#include "sensor_tuning.h"
+#include "bltouch_testing.h"
 
 namespace ADVi3pp {
 
-SensorTuning sensor_tuning;
+BLTouchTesting bltouch_testing;
 
 
-#ifdef ADVi3PP_PROBE
+#ifdef BLTOUCH
 
-//! Execute a Sensor Tuning command
+//! Execute acommand
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool SensorTuning::do_dispatch(KeyValue key_value)
+bool BLTouchTesting::do_dispatch(KeyValue key_value)
 {
     if(Parent::do_dispatch(key_value))
         return true;
 
     switch(key_value)
     {
-        case KeyValue::SensorSelfTest:  self_test_command(); break;
-        case KeyValue::SensorReset:     reset_command(); break;
-        case KeyValue::SensorDeploy:    deploy_command(); break;
-        case KeyValue::SensorStow:      stow_command(); break;
-        default:                        return false;
+        case KeyValue::BLTouchTestingStep2:     step2(); break;
+        case KeyValue::BLTouchTestingStep2Yes:  step2yes(); break;
+        case KeyValue::BLTouchTestingStep2No:   step2no(); break;
+        case KeyValue::BLTouchTestingStep3:     step3(); break;
+        case KeyValue::BLTouchTestingStep3Yes:  step3yes(); break;
+        case KeyValue::BLTouchTestingStep3No:   step3no(); break;
+        case KeyValue::BLTouchTestingStep4:     step4(); break;
+        default: return false;
     }
 
     return true;
@@ -51,42 +54,53 @@ bool SensorTuning::do_dispatch(KeyValue key_value)
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page SensorTuning::do_prepare_page()
+Page BLTouchTesting::do_prepare_page()
 {
     if(!core.ensure_not_printing())
         return Page::None;
-    return Page::SensorTuning;
+    return Page::BLTouchTesting1;
 }
 
-//! Execute the sensor Self-test command
-void SensorTuning::self_test_command()
+void BLTouchTesting::step2()
 {
-    core.inject_commands(F("M280 P0 S120"));
+    // TODO
 }
 
-//! Execute the sensor Reset command
-void SensorTuning::reset_command()
+void BLTouchTesting::step2yes()
 {
-    core.inject_commands(F("M280 P0 S160"));
+    // TODO
 }
 
-//! Execute the sensor Deploy command
-void SensorTuning::deploy_command()
+void BLTouchTesting::step2no()
 {
-    core.inject_commands(F("M280 P0 S10"));
+    // TODO
 }
 
-//! Execute the sensor Stow command
-void SensorTuning::stow_command()
+void BLTouchTesting::step3()
 {
-    core.inject_commands(F("M280 P0 S90"));
+    // TODO
+}
+
+void BLTouchTesting::step3yes()
+{
+    // TODO
+}
+
+void BLTouchTesting::step3no()
+{
+    // TODO
+}
+
+void BLTouchTesting::step4()
+{
+    // TODO
 }
 
 #else
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page SensorTuning::do_prepare_page()
+Page BLTouchTesting::do_prepare_page()
 {
     return Page::NoSensor;
 }
