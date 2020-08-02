@@ -706,10 +706,10 @@
     <Compile Include="src\advi3pp\screens\settings\step_settings.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\diagnosis.cpp">
+    <Compile Include="src\advi3pp\screens\tuning\bltouch_testing.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\diagnosis.h">
+    <Compile Include="src\advi3pp\screens\tuning\bltouch_testing.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\extruder_tuning.cpp">
@@ -718,22 +718,28 @@
     <Compile Include="src\advi3pp\screens\tuning\extruder_tuning.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\io.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\io.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\screens\tuning\pid_tuning.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\pid_tuning.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\sensor_tuning.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\sensor_tuning.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\tuning\sensor_z_height.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\sensor_z_height.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\setup.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\setup.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\usb_to_lcd.cpp">
