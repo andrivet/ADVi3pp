@@ -165,7 +165,7 @@ enum class Action: uint16_t
     AccelerationSettings    = 0x0416,
     PauseOptions            = 0x0417,
     Copyrights              = 0x0418,
-    // Sponsors             = 0x0419,
+    Sponsors                = 0x0419,
     SensorGrid              = 0x041A,
     SensorZHeight           = 0x041B,
     ChangeFilament          = 0x041C,

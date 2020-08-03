@@ -64,6 +64,7 @@
 #include "../screens/info/versions.h"
 #include "../screens/info/statistics.h"
 #include "../screens/info/copyrights.h"
+#include "../screens/info/sponsors.h"
 
 namespace ADVi3pp {
 
@@ -254,6 +255,12 @@ void Core::send_gplv3_7b_notice()
     SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2020 Sebastien Andrivet");
 }
 
+void Core::send_sponsors()
+{
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPGM("Sponsors: Alexander Cherenegar");
+}
+
 //! Update the progress bar if the printer is printing for the SD card
 void Core::update_progress()
 {
@@ -300,6 +307,7 @@ void Core::receive_lcd_serial_data()
         case Action::Preheat:               preheat.handle(key_value); break;
         case Action::Move:                  move.handle(key_value); break;
         case Action::SdCard:                sd_card.handle(key_value); break;
+        case Action::Sponsors:              sponsors.handle(key_value); break;
         case Action::FactoryReset:          factory_reset.handle(key_value); break;
         case Action::ManualLeveling:        manual_leveling.handle(key_value); break;
         case Action::ExtruderTuning:        extruder_tuning.handle(key_value); break;

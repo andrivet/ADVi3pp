@@ -42,6 +42,7 @@ struct Core
 private:
     bool init();
     void send_gplv3_7b_notice();
+    void send_sponsors();
     void update_progress();
 
     void receive_lcd_serial_data();
