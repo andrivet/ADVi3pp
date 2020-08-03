@@ -20,7 +20,12 @@
 
 #include "../../parameters.h"
 #include "../../core/core.h"
+#include "../../core/dgus.h"
+#include "../../core/status.h"
 #include "bltouch_testing.h"
+#ifdef BLTOUCH
+#include "../../../feature/bltouch.h"
+#endif
 
 namespace ADVi3pp {
 
@@ -28,6 +33,17 @@ BLTouchTesting bltouch_testing;
 
 
 #ifdef BLTOUCH
+
+void reset_bltouch_command()
+{
+    core.inject_commands(F("M280 P0 S160"));
+}
+
+void selftest_bltouch_command()
+{
+    core.inject_commands(F("M280 P0 S120"));
+}
+
 
 //! Execute acommand
 //! @param key_value    The sub-action to handle
@@ -39,13 +55,12 @@ bool BLTouchTesting::do_dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::BLTouchTestingStep2:     step2(); break;
+        case KeyValue::BLTouchTestingStep1Yes:  step1yes(); break;
+        case KeyValue::BLTouchTestingStep1No:   step1no(); break;
         case KeyValue::BLTouchTestingStep2Yes:  step2yes(); break;
         case KeyValue::BLTouchTestingStep2No:   step2no(); break;
-        case KeyValue::BLTouchTestingStep3:     step3(); break;
         case KeyValue::BLTouchTestingStep3Yes:  step3yes(); break;
         case KeyValue::BLTouchTestingStep3No:   step3no(); break;
-        case KeyValue::BLTouchTestingStep4:     step4(); break;
         default: return false;
     }
 
@@ -58,42 +73,103 @@ Page BLTouchTesting::do_prepare_page()
 {
     if(!core.ensure_not_printing())
         return Page::None;
+    step1();
     return Page::BLTouchTesting1;
+}
+
+void BLTouchTesting::step1()
+{
+    status.reset();
+    tested_ = ok_ = Wires::None;
+    set_bits(tested_, Wires::Brown | Wires::Red);
+    reset_bltouch_command();
+}
+
+void BLTouchTesting::step1yes()
+{
+    set_bits(ok_, Wires::Brown | Wires::Red);
+    step2();
+}
+
+void BLTouchTesting::step1no()
+{
+    status.set(F("Problem with Red/Brown wiring"));
+    step4();
 }
 
 void BLTouchTesting::step2()
 {
-    // TODO
+    set_bits(tested_, Wires::Orange);
+    selftest_bltouch_command();
+    pages.show_page(Page::BLTouchTesting2, ShowOptions::None);
 }
 
 void BLTouchTesting::step2yes()
 {
-    // TODO
+    set_bits(ok_, Wires::Orange);
+    reset_bltouch_command();
+    step3();
 }
 
 void BLTouchTesting::step2no()
 {
-    // TODO
+    reset_bltouch_command();
+    status.set(F("Problem with Orange wiring"));
+    step4();
 }
 
 void BLTouchTesting::step3()
 {
-    // TODO
+    set_bits(tested_, Wires::White | Wires::Black);
+    pages.show_page(Page::BLTouchTesting3, ShowOptions::None);
+    if(bltouch.deploy())
+    {
+        status.set(F("Deployment of BLTouch failed"));
+        if(bltouch.triggered())
+            clear_bits(ok_, Wires::Orange);
+        step4();
+    }
 }
 
 void BLTouchTesting::step3yes()
 {
-    // TODO
+    set_bits(ok_, Wires::White | Wires::Black);
+    step4();
 }
 
 void BLTouchTesting::step3no()
 {
-    // TODO
+    clear_bits(ok_, Wires::Orange);
+    bltouch.stow();
+    status.set(F("Problem with White/Black wiring"));
+    step4();
+}
+
+uint16_t BLTouchTesting::wire_value(Wires wire)
+{
+    return test_one_bit(ok_, wire) ? 1 : test_one_bit(tested_, wire) ? 2 : 0;
 }
 
 void BLTouchTesting::step4()
 {
-    // TODO
+    auto brown = wire_value(Wires::Brown);
+    auto red = wire_value(Wires::Red);
+    auto orange = wire_value(Wires::Orange);
+    auto black = wire_value(Wires::Black);
+    auto white = wire_value(Wires::White);
+
+    if(brown == 1 && red == 1 && orange == 1 && black == 1 && white == 1)
+        status.set(F("No problem detected with BLTouch"));
+
+    WriteRamDataRequest frame{Variable::Value0};
+    frame << Uint16{brown}
+          << Uint16{red}
+          << Uint16{orange}
+          << Uint16{black}
+          << Uint16{white};
+    frame.send();
+
+    pages.show_page(Page::BLTouchTesting4, ShowOptions::None);
 }
 
 #else

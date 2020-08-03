@@ -296,13 +296,12 @@ enum class KeyValue: uint16_t
     Extrude                 = 0x0001,
     Resume                  = 0x0002,
 
-    BLTouchTestingStep2     = 0x0001,
-    BLTouchTestingStep2Yes  = 0x0002,
-    BLTouchTestingStep2No   = 0x0003,
-    BLTouchTestingStep3     = 0x0004,
+    BLTouchTestingStep1Yes  = 0x0001,
+    BLTouchTestingStep1No   = 0x0002,
+    BLTouchTestingStep2Yes  = 0x0003,
+    BLTouchTestingStep2No   = 0x0004,
     BLTouchTestingStep3Yes  = 0x0005,
     BLTouchTestingStep3No   = 0x0006,
-    BLTouchTestingStep4     = 0x0007,
 
 
     Save                    = 0xFFFE,

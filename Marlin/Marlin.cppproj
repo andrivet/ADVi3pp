@@ -523,9 +523,6 @@
     <Compile Include="src\advi3pp\lib\ADVstd\ADVstd.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\lib\ADVstd\ADVstring.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\lib\ADVstd\ADVunique_ptr.h">
       <SubType>compile</SubType>
     </Compile>
@@ -596,6 +593,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\info\copyrights.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\sponsors.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\sponsors.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\info\statistics.cpp">

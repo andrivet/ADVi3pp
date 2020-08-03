@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "../../core/bitmasks.h"
 #include "../core/screen.h"
 
 namespace ADVi3pp {
@@ -29,8 +30,22 @@ namespace ADVi3pp {
 struct BLTouchTesting: Screen<BLTouchTesting>
 {
 private:
+    enum class Wires: uint8_t
+    {
+        None    = 0b00000000,
+        Brown   = 0b00000001,
+        Red     = 0b00000010,
+        Orange  = 0b00000100,
+        Black   = 0b00001000,
+        White   = 0b00010000
+    };
+
+private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void step1();
+    void step1yes();
+    void step1no();
     void step2();
     void step2yes();
     void step2no();
@@ -38,10 +53,17 @@ private:
     void step3yes();
     void step3no();
     void step4();
+    uint16_t wire_value(Wires wire);
 
 private:
+    Wires tested_ = Wires::None;
+    Wires ok_ = Wires::None;
+
     friend Parent;
 };
+
+ENABLE_BITMASK_OPERATOR(BLTouchTesting::Wires);
+
 #else
 //! BLTouch Testing Page
 struct BLTouchTesting: Screen<BLTouchTesting>
