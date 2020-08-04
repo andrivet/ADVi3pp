@@ -62,7 +62,7 @@ enum class Page: uint8_t
     SetupNoSensor           = 84,
     Temperature             = 86,
     Infos                   = 88,
-    // UNUSED               = 90,
+    VibrationsTuning        = 90,
     NoSensor                = 92,
     SensorSettings          = 94,
     LCD                     = 96,
@@ -153,7 +153,7 @@ enum class Action: uint16_t
     AutomaticLeveling       = 0x040A,
     PidTuning               = 0x040B,
     SensorSettings          = 0x040C,
-    // UNUSED               = 0x040D,
+    VibrationsTuning        = 0x040D,
     NoSensor                = 0x040E,
     LCD                     = 0x040F,
     Statistics              = 0x0410,
@@ -266,9 +266,6 @@ enum class KeyValue: uint16_t
     SensorSettingsPrevious  = 0x0001,
     SensorSettingsNext      = 0x0002,
 
-    //ThermalProtection       = 0x0001,
-    RunoutSensor            = 0x0002,
-
     LCDDimming              = 0x0001,
     BuzzerOnAction          = 0x0002,
     BuzzOnPress             = 0x0003,
@@ -303,6 +300,11 @@ enum class KeyValue: uint16_t
     BLTouchTestingStep3Yes  = 0x0005,
     BLTouchTestingStep3No   = 0x0006,
 
+    VibrationsX             = 0x0001,
+    VibrationsY             = 0x0001,
+    VibrationsXY            = 0x0001,
+    VibrationsYX            = 0x0001,
+    VibrationsZ             = 0x0001,
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF

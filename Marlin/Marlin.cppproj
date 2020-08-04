@@ -751,6 +751,12 @@
     <Compile Include="src\advi3pp\screens\tuning\usb_to_lcd.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\vibrations.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\vibrations.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\versions.h">
       <SubType>compile</SubType>
     </Compile>
