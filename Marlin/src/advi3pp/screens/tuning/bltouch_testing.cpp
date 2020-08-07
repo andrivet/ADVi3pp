@@ -120,13 +120,14 @@ void BLTouchTesting::step2no()
 
 void BLTouchTesting::step3()
 {
+    ExtUI::delay_ms(500);
+
     set_bits(tested_, Wires::White | Wires::Black);
     pages.show_page(Page::BLTouchTesting3, ShowOptions::None);
     if(bltouch.deploy())
     {
         status.set(F("Deployment of BLTouch failed"));
-        if(bltouch.triggered())
-            clear_bits(ok_, Wires::Orange);
+        clear_bits(ok_, Wires::Orange);
         step4();
     }
 }
@@ -140,7 +141,6 @@ void BLTouchTesting::step3yes()
 void BLTouchTesting::step3no()
 {
     clear_bits(ok_, Wires::Orange);
-    bltouch.stow();
     status.set(F("Problem with White/Black wiring"));
     step4();
 }
@@ -152,6 +152,8 @@ uint16_t BLTouchTesting::wire_value(Wires wire)
 
 void BLTouchTesting::step4()
 {
+    bltouch.stow();
+
     auto brown = wire_value(Wires::Brown);
     auto red = wire_value(Wires::Red);
     auto orange = wire_value(Wires::Orange);
