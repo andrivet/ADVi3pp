@@ -18,7 +18,7 @@ dgus="$( cd "${scripts}/../LCD-Panel/DGUS-root" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo "Clean the microSD..."
-sudo rm -Rf "${volume}/DWIN_SET/*"
+sudo rm -Rf "${volume}/DWIN_SET/"*
 echo "Copy files..."
 cp -R "${dgus}/DWIN_SET/" "${volume}/DWIN_SET/"
 sleep 2
