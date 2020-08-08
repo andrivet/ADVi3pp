@@ -67,7 +67,7 @@ enum class Page: uint8_t
     SensorSettings          = 94,
     LCD                     = 96,
     Copyrights              = 98,
-    // UNUSED               = 100,
+    KeyboardInteger         = 100,
     SensorGrid              = 102,
     EEPROMMismatch          = 104,
     ZHeightTuning           = 106,
@@ -78,6 +78,10 @@ enum class Page: uint8_t
     BLTouchTesting2         = 116,
     BLTouchTesting3         = 118,
     BLTouchTesting4         = 120,
+    KeyboardDecimal         = 122,
+    KeyboardSignedInteger   = 124,
+    KeyboardSignedDecimal   = 126,
+
     Boot                    = 200
 };
 
