@@ -16,14 +16,13 @@ If you like what I am doing, please consider supporting me as a supporter on [**
 
 The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
 
-* Based on the latest version of Marlin available (currently: 1.1.9 + post 1.1.9 fixes)
+* Based on the latest version of Marlin available (currently: 1.1.9, I am working on a Marlin 2 version)
 * As few modifications of the Marlin code as possible. The goal is to be able to port **ADVi3++** to new versions of Marlin with only a few effort.
-* Open source code.
+* Open source firmware (GPLv3 like Marlin)
 * Object-oriented code with as few hard-coded values as possible. For example, instead of constructing a frame by hand, use instances of classes that know how to construct themselves.
 * Documented code, logging and error handling (without using exceptions as they are not supported).
 * Full color and nice LCD screens.
 * Support of hardware such as the BLTouch sensor for automatic bed leveling.
-* Etc.
 
 ## ADVi3++ User Manual
 
@@ -32,7 +31,6 @@ A complete and up to date User Manual is published on [ADVi3++ Community Web Sit
 * [A list of features and of compatible printers](https://community.advi3pp.com/t/introduction/)
 * [How to Flash the firmware](https://community.advi3pp.com/t/how-to-flash/)
 * [LCD Touch Screen Guide](https://community.advi3pp.com/t/lcd-touch-screen-guide/)
-* [BLTouch Sensor installation instructions](https://community.advi3pp.com/t/add-a-bltouch-sensor/)
 * [Tuning instructions](https://community.advi3pp.com/t/tuning/)
 * [Default Settings used by ADVi3++](https://community.advi3pp.com/t/default-settings/)
 * [Starting and Ending G-Code](https://community.advi3pp.com/t/starting-and-ending-g-code/)
@@ -40,18 +38,17 @@ A complete and up to date User Manual is published on [ADVi3++ Community Web Sit
 
 [Sponsors of the **ADVI3++** project](https://www.patreon.com/andrivet) have also access to advanced topics:
 
+* [BLTouch Sensor installation instructions](https://community.advi3pp.com/t/add-a-bltouch-sensor/)
 * [Build ADVi3++ from Sources](https://community.advi3pp.com/t/build-advi3-from-sources/)
 * [Alternative ways to Flash](https://community.advi3pp.com/t/alternative-ways-to-flash/)
 
 ## Support
 
-You can get support from various resources:
+You can get support from those resources:
 
 * The [User Manual](https://community.advi3pp.com/c/user-manual). You may be especially interested by the [Troubleshooting part](https://community.advi3pp.com/c/user-manual/troubleshooting).
 * The [ADVi3++ Community - Get Help](https://community.advi3pp.com/c/get-help). It is a forum, based on [Discourse](https://www.discourse.org). In particular, it includes a [Search page](https://community.advi3pp.com/search?expanded=true).
 I monitor this forum and try to reply to all requests, from sponsors and non-sponsors of the ADVi3++ project.
-* The [Facebook ADVi3++ Page](http://facebook.com/advi3pp). I use it mainly for announcement, but I reply from time to time.
-* The [Patreon Page](https://www.patreon.com/andrivet). it **was** the may to get help during the development of ADVi3++ version 4. But it **no more the case**. I will no more reply to support on Patreon page and will redirect everybody to [ADVi3++ Community](https://community.advi3pp.com/c/get-help), open to everybody.
 
 # Wanhao Duplicator i3 Plus
 
@@ -61,13 +58,13 @@ I have posted an article on my web site: [Wanhao Duplicator i3 Plus 3D Printer -
 
 There are some other projects (I am aware of) on a similar topic:
 
-- [i3plus+](https://github.com/Silverquark/i3PlusPlus) from Leo Lüker (Silverquark): a modified version of the Marlin 1.1.2 firmware for the WANHAO Duplicator i3 Plus 3d printer. **Important**: No more actively developed (that's why I created ADVi3++).
+* [i3plus+](https://github.com/Silverquark/i3PlusPlus) from Leo Lüker (Silverquark): a modified version of the Marlin 1.1.2 firmware for the WANHAO Duplicator i3 Plus 3d printer. **Important**: No more actively developed (that's why I created ADVi3++).
 
-- [i3extra](https://github.com/nepeee/i3Extra) from Nemcsik Péter: a modified version of the Marlin 1.1.0-RC8 firmware and updated LCD resources. **Important**: this project is no more maintained.
+* [i3extra](https://github.com/nepeee/i3Extra) from Nemcsik Péter: a modified version of the Marlin 1.1.0-RC8 firmware and updated LCD resources. **Important**: this project is no more maintained.
 
-- [Wanhao-I3-Plus](https://github.com/jamesarm97/Wanhao-I3-Plus) by James Armstrong: Sources of version 2.18 of Mainboard firmware and LCD resources.
+* [Wanhao-I3-Plus](https://github.com/jamesarm97/Wanhao-I3-Plus) by James Armstrong: Sources of version 2.18 of Mainboard firmware and LCD resources.
 
-- [Wanhao-I3-Plus](https://github.com/garychen99/Duplicator-i3-plus) by WANHAO 3D PRINTER: Official sources of version 2.1.803 of Mainboard firmware and LCD resources.
+* [Wanhao-I3-Plus](https://github.com/garychen99/Duplicator-i3-plus) by WANHAO 3D PRINTER: Official sources of version 2.1.803 of Mainboard firmware and LCD resources.
 
 # Thanks
 
@@ -81,18 +78,18 @@ Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 
 ## ADVi3++
 
-* Copyright &copy; 2017-2019 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
-* Copyright &copy; 2016-2019 [MarlinFirmware](https://github.com/MarlinFirmware/Marlin)
+* Copyright &copy; 2017-2020 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
+* Copyright &copy; 2016-2020 [MarlinFirmware](https://github.com/MarlinFirmware/Marlin)
 * Based on Sprinter and grbl.
 * Copyright &copy; 2011 Camiel Gubbels / Erik van der Zalm
 
 ## ADVi3++ LCD Panels
 
-* Copyright &copy; 2017-2019 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
+* Copyright &copy; 2017-2020 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
 
 ## ADVi3++ User Manual
 
-* Copyright &copy; 2018-2019 Sebastien Andrivet
+* Copyright &copy; 2018-2020 Sebastien Andrivet
 
 # License
 
@@ -108,10 +105,14 @@ Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 
 ## ADVi3++ LCD Panels
 
-<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />ADVi3++ LCD Panels are licenses under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+![](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)
+
+ADVi3++ LCD Panels are licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
+Note: The sources of the LCD panels are the sketch file provided in the repository of ADVi3++ under `LCD-Panel/Masters`.
 
 ## ADVi3++ User Manual
 
-<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
-<img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This manual is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+![](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)
+
+This manual is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
