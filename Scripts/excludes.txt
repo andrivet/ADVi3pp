@@ -3,3 +3,4 @@
 /TFT/*
 DWprj.hmi
 DWprj.tft
+Thumbs.db
