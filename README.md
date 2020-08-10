@@ -101,9 +101,7 @@ Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 >
 > This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 >
-> You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-The sources of the ADVi3++ firmware are based (fork) on [Marlin firmware](http://marlinfw.org/) and located under `Marlin`.
+> You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 ## ADVi3++ LCD Panels
 
@@ -112,14 +110,6 @@ The sources of the ADVi3++ firmware are based (fork) on [Marlin firmware](http:/
 ADVi3++ LCD Panels are licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
 
 **IMPORTANT**: If you want to use these panels (or modified versions of them) for **commercial purposes**, [please contact me](https://community.advi3pp.com/u/andrivet).
-
-The sources of the LCD panels are:
- 
-* The [Sketch](https://www.sketch.com) file provided in the repository of ADVi3++ under `LCD-Panel/Masters`
-* The files provided under `LCD-Panel/DGUS-root` for DGUS SDK 5.1
-
-Those are the "true" sources, in the sense that everything is generated from them. 
-However, for convenience, I have also included under `LCD-Panel/DGUS-root` bitmaps (.BMP) generated from the Sketch file.
 
 ## ADVi3++ User Manual
 
