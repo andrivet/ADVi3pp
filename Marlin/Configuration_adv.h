@@ -1120,10 +1120,6 @@
     #endif
   #endif
 
-  #if HOTENDS
-    #define MATERIAL_PRESET_SUPPORT
-  #endif
-
 #endif // HAS_LCD_MENU
 
 // Scroll a longer status message into view
@@ -1476,10 +1472,6 @@
     #endif
   #endif
 #endif // HAS_DGUS_LCD
-
-// @advi3++
-#define MATERIAL_PRESET_SUPPORT
-#define NB_MATERIAL_PRESET 5
 
 //
 // Touch UI for the FTDI Embedded Video Engine (EVE)
@@ -1916,7 +1908,7 @@
 
 // The ASCII buffer for serial input
 #define MAX_CMD_SIZE 96
-#define BUFSIZE 5 // @advi3++ ADVi3++ needs at least just 4 commands, so 5 to be safe
+#define BUFSIZE 4
 
 // Transmission to Host Buffer Size
 // To save 386 bytes of PROGMEM (and TX_BUFFER_SIZE+3 bytes of RAM) set to 0.

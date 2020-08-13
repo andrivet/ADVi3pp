@@ -279,7 +279,7 @@ namespace ExtUI {
     void startBedPIDTune(const float);
   #endif
 
-  #if ENABLED(MATERIAL_PRESET_SUPPORT)
+  #if PREHEAT_COUNT
     uint8_t getNbMaterialPresets();
     int16_t getMaterialPresetHotendTemp_celsius(unsigned int index);
     int16_t getMaterialPresetBedTemp_celsius(unsigned int index);

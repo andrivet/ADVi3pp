@@ -861,8 +861,8 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
-// @advi3++
-#define S_CURVE_ACCELERATION
+// @advi3++: Disable it for the moment as it does not work well with Linear Advance
+//#define S_CURVE_ACCELERATION
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -1553,8 +1553,6 @@
 #endif
 
 //
-
-
 // Host Keepalive
 //
 // When enabled Marlin will send a busy status message to the host

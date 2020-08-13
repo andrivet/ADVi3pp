@@ -36,9 +36,7 @@
 
 using namespace ADVi3pp;
 
-int16_t MarlinUI::preheat_hotend_temp[NB_MATERIAL_PRESET];
-int16_t MarlinUI::preheat_bed_temp[NB_MATERIAL_PRESET];
-uint8_t MarlinUI::preheat_fan_speed[NB_MATERIAL_PRESET];
+preheat_t MarlinUI::material_preset[PREHEAT_COUNT];  // Initialized by settings.load()
 
 extern PauseMode pause_mode;
 
@@ -303,4 +301,24 @@ void MarlinUI::set_progress_done()
 uint8_t MarlinUI::get_progress_percent()
 {
     return card.isPrinting() ? card.percentDone() : progress;
+}
+
+void MarlinUI::media_changed(const uint8_t old_status, const uint8_t status)
+{
+    if (old_status == status) {
+        TERN_(EXTENSIBLE_UI, ExtUI::onMediaError()); // Failed to mount/unmount
+        return;
+    }
+
+    if (status) {
+        if (old_status < 2) {
+            ExtUI::onMediaInserted(); // ExtUI response
+            set_status_P(GET_TEXT(MSG_MEDIA_INSERTED));
+        }
+    }
+    else {
+        if (old_status < 2) {
+            ExtUI::onMediaRemoved(); // ExtUI response
+        }
+    }
 }

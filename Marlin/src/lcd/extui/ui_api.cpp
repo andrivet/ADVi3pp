@@ -1096,33 +1096,33 @@ namespace ExtUI {
       ::minkill(steppers_off);
   }
 
-  #if ENABLED(MATERIAL_PRESET_SUPPORT)
+  #if PREHEAT_COUNT
   uint8_t getNbMaterialPresets()
   {
-      static_assert(COUNT(ui.preheat_hotend_temp) == NB_MATERIAL_PRESET, "Update NB_MATERIAL_PRESET");
-      return NB_MATERIAL_PRESET;
+      static_assert(COUNT(ui.material_preset) == PREHEAT_COUNT, "Update PREHEAT_COUNT");
+      return PREHEAT_COUNT;
   }
 
   int16_t getMaterialPresetHotendTemp_celsius(unsigned int index)
   {
-      return ui.preheat_hotend_temp[index];
+      return ui.material_preset[index].hotend_temp;
   }
 
   int16_t getMaterialPresetBedTemp_celsius(unsigned int index)
   {
-      return ui.preheat_bed_temp[index];
+      return ui.material_preset[index].bed_temp;
   }
 
   uint8_t getMaterialPresetFanSpeed_percent(unsigned int index)
   {
-      return thermalManager.fanPercent(ui.preheat_fan_speed[index]);
+      return thermalManager.fanPercent(ui.material_preset[index].fan_speed);
   }
 
   void setMaterialPreset(unsigned int index, int16_t hotend_celcius, int16_t bed_celcius, uint8_t fan_percent)
   {
-        ui.preheat_hotend_temp[index] = hotend_celcius;
-        ui.preheat_bed_temp[index]    = bed_celcius;
-        ui.preheat_fan_speed[index]   = map(constrain(fan_percent, 0, 100), 0, 100, 0, 255);
+        ui.material_preset[index].hotend_temp = hotend_celcius;
+        ui.material_preset[index].bed_temp    = bed_celcius;
+        ui.material_preset[index].fan_speed   = map(constrain(fan_percent, 0, 100), 0, 100, 0, 255);
   }
 
   #endif

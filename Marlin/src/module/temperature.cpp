@@ -568,6 +568,7 @@ volatile bool Temperature::raw_temps_ready = false;
         #if HAS_TEMP_SENSOR
           print_heater_states(isbed ? active_extruder : heater_id);
           SERIAL_EOL();
+          // @advi3++
           #if ENABLED(EXTENSIBLE_UI)
             ExtUI::onPidTuningReportTemp(isbed ? active_extruder : heater);
           #endif

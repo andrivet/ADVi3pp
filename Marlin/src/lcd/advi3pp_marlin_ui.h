@@ -18,7 +18,7 @@
  *
  */
 
-// Minimal implementation of MarlinUI for ADVi3++
+// Minimal implementation of MarlinUI for ADVi3++, based on ultralcd.h
 
 #pragma once
 
@@ -34,6 +34,12 @@ void lcd_pause_show_message(const PauseMessage message,
                             const PauseMode mode=PAUSE_MODE_SAME,
                             const uint8_t extruder=active_extruder);
 #endif
+
+typedef struct {
+    uint16_t hotend_temp;
+    uint16_t bed_temp;
+    uint16_t fan_speed;
+} preheat_t;
 
 
 class MarlinUI {
@@ -74,8 +80,8 @@ public:
     static void release();
     static void chirp();
 
-    static int16_t preheat_hotend_temp[NB_MATERIAL_PRESET], preheat_bed_temp[NB_MATERIAL_PRESET];
-    static uint8_t preheat_fan_speed[NB_MATERIAL_PRESET];
+    static preheat_t material_preset[PREHEAT_COUNT];
+    static PGM_P get_preheat_label(const uint8_t m);
 
     typedef uint8_t progress_t;
     static void set_progress(const progress_t p);
@@ -87,6 +93,9 @@ public:
 #else
     static constexpr bool wait_for_move = true;
 #endif
+
+    static inline bool detected() { return true; }
+    static void media_changed(const uint8_t old_stat, const uint8_t stat);
 };
 
 extern MarlinUI ui;

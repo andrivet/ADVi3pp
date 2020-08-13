@@ -26,7 +26,6 @@
  */
 
 #include "gcode.h"
-#include "../advi3pp/inc/advi3pp.h" // @advi3++ For ADVi3++ custom commands
 GcodeSuite gcode;
 
 #if ENABLED(WIFI_CUSTOM_COMMAND)

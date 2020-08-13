@@ -337,6 +337,8 @@ public:
 
     static inline void set_input_temp_units(const TempUnit units) { input_temp_units = units; }
 
+    #if HAS_LCD_MENU && DISABLED(DISABLE_M503)
+
     static inline char temp_units_code() {
       return input_temp_units == TEMPUNIT_K ? 'K' : input_temp_units == TEMPUNIT_F ? 'F' : 'C';
     }
@@ -355,6 +357,7 @@ public:
       }
     }
 
+    #endif // HAS_LCD_MENU && !DISABLE_M503
 
     static inline float value_celsius() {
       const float f = value_float();

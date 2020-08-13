@@ -23,6 +23,7 @@
 
 #include "../inc/MarlinConfig.h"
 
+// @advi3++
 #ifdef ADVi3PP_UI
 #include "advi3pp_marlin_ui.h"
 #else
@@ -428,6 +429,12 @@ public:
 
       static uint8_t lcd_status_update_delay;
 
+      #if HAS_LCD_CONTRAST
+        static int16_t contrast;
+        static void set_contrast(const int16_t value);
+        FORCE_INLINE static void refresh_contrast() { set_contrast(contrast); }
+      #endif
+
       #if BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
         static millis_t next_filament_display;
       #endif
@@ -454,19 +461,6 @@ public:
 
       static void status_screen();
 
-    #endif
-
-    #if HAS_MARLINUI_U8GLIB
-      static bool drawing_screen, first_page;
-    #else
-      static constexpr bool drawing_screen = false, first_page = true;
-    #endif
-
-    // @advi3++ PR candidate
-    #if HAS_LCD_CONTRAST
-        static int16_t contrast;
-        static void set_contrast(const int16_t value);
-        FORCE_INLINE static void refresh_contrast() { set_contrast(contrast); }
     #endif
 
     static bool get_blink();
@@ -721,4 +715,4 @@ extern MarlinUI ui;
 #define LCD_MESSAGEPGM(x)        LCD_MESSAGEPGM_P(GET_TEXT(x))
 #define LCD_ALERTMESSAGEPGM(x)   LCD_ALERTMESSAGEPGM_P(GET_TEXT(x))
 
-#endif
+#endif // @advi3++

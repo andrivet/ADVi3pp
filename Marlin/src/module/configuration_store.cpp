@@ -1322,7 +1322,7 @@ void MarlinSettings::postprocess() {
     //
     #if ENABLED(EXTENSIBLE_UI)
       {
-        char extui_data[ExtUI::eeprom_data_size] = { };
+        char extui_data[ExtUI::eeprom_data_size] = { }; // @advi3++ do not initialize to 0 since it is empty
         ExtUI::onStoreSettings(extui_data);
         _FIELD_TEST(extui_data);
         EEPROM_WRITE(extui_data);
@@ -2187,7 +2187,7 @@ void MarlinSettings::postprocess() {
       #if ENABLED(EXTENSIBLE_UI)
         // This is a significant hardware change; don't reserve EEPROM space when not present
         {
-          const char extui_data[ExtUI::eeprom_data_size] = { };
+          const char extui_data[ExtUI::eeprom_data_size] = { };  // @advi3++ do not initialize to 0 since it is empty
           _FIELD_TEST(extui_data);
           EEPROM_READ(extui_data);
           if (!validating) ExtUI::onLoadSettings(extui_data);

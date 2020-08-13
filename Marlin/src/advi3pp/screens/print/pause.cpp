@@ -35,7 +35,7 @@ void Pause::show_message(PauseMessage message)
 {
     switch (message)
     {
-        case PAUSE_MESSAGE_PAUSING:     show(GET_TEXT(MSG_PAUSE_PRINT_INIT)); break;
+        case PAUSE_MESSAGE_PARKING:     show(GET_TEXT(MSG_PAUSE_PRINT_INIT)); break;
         case PAUSE_MESSAGE_CHANGING:    show(GET_TEXT(MSG_FILAMENT_CHANGE_INIT)); break;
         case PAUSE_MESSAGE_WAITING:     cont(GET_TEXT(MSG_ADVANCED_PAUSE_WAITING)); break;
         case PAUSE_MESSAGE_UNLOAD:      show(GET_TEXT(MSG_FILAMENT_CHANGE_UNLOAD)); break;
