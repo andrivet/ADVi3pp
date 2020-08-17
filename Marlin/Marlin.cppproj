@@ -835,18 +835,6 @@
     <Compile Include="src\feature\bedlevel\mbl\mesh_bed_leveling.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\feature\bedlevel\ubl\ubl.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\bedlevel\ubl\ubl.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\bedlevel\ubl\ubl_G29.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\bedlevel\ubl\ubl_motion.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\feature\binary_protocol.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -881,33 +869,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\feature\controllerfan.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\dac\dac_dac084s085.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\dac\dac_dac084s085.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\dac\dac_mcp4728.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\dac\dac_mcp4728.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\dac\stepper_dac.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\dac\stepper_dac.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\digipot\digipot.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\digipot\digipot_mcp4018.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\digipot\digipot_mcp4451.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\feature\encoder_i2c.cpp">
@@ -952,42 +913,6 @@
     <Compile Include="src\feature\joystick.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\feature\leds\blinkm.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\blinkm.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\leds.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\leds.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\neopixel.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\neopixel.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\pca9632.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\pca9632.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\printer_event_leds.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\printer_event_leds.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\tempstat.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\leds\tempstat.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\feature\max7219.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -998,12 +923,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\feature\mixing.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\mmu2\mmu2.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\mmu2\mmu2.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\feature\pause.cpp">
@@ -1060,12 +979,6 @@
     <Compile Include="src\feature\tmc_util.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\feature\touch\xpt2046.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\feature\touch\xpt2046.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\feature\twibus.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1097,12 +1010,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\bedlevel\mbl\M421.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\gcode\bedlevel\ubl\G29.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\gcode\bedlevel\ubl\M421.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\calibrate\G28.cpp">
@@ -1627,12 +1534,6 @@
     <Compile Include="src\HAL\AVR\watchdog.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\HAL\HAL.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\HAL\platforms.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\HAL\shared\Delay.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1642,10 +1543,19 @@
     <Compile Include="src\HAL\shared\eeprom_api.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\HAL\shared\eeprom_i2c.cpp">
+    <Compile Include="src\HAL\shared\eeprom_if.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\HAL\shared\eeprom_spi.cpp">
+    <Compile Include="src\HAL\shared\eeprom_if_i2c.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\eeprom_if_spi.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\esp_wifi.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\esp_wifi.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\HAL\shared\HAL_SPI.h">
@@ -2091,17 +2001,10 @@
     <Folder Include="src\feature\bedlevel" />
     <Folder Include="src\feature\bedlevel\abl" />
     <Folder Include="src\feature\bedlevel\mbl" />
-    <Folder Include="src\feature\bedlevel\ubl" />
-    <Folder Include="src\feature\dac" />
-    <Folder Include="src\feature\digipot" />
-    <Folder Include="src\feature\leds" />
-    <Folder Include="src\feature\mmu2" />
-    <Folder Include="src\feature\touch" />
     <Folder Include="src\gcode" />
     <Folder Include="src\gcode\bedlevel" />
     <Folder Include="src\gcode\bedlevel\abl" />
     <Folder Include="src\gcode\bedlevel\mbl" />
-    <Folder Include="src\gcode\bedlevel\ubl" />
     <Folder Include="src\gcode\calibrate" />
     <Folder Include="src\gcode\config" />
     <Folder Include="src\gcode\control" />
