@@ -38,7 +38,6 @@ void FactoryReset::do_save_command()
 {
     ExtUI::resetSettings();
     ExtUI::saveSettings();
-    pages.show_forward_page();
 }
 
 }

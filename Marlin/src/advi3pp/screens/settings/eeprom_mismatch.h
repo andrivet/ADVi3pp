@@ -27,12 +27,11 @@ namespace ADVi3pp {
 //! EEPROM Mismatch Page
 struct EepromMismatch: Screen<EepromMismatch>
 {
-    bool check();
     void set_mismatch();
     void reset_mismatch();
+    bool does_mismatch() const;
 
 private:
-    bool does_mismatch() const;
     Page do_prepare_page();
     void do_save_command();
 

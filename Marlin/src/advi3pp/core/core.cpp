@@ -148,6 +148,11 @@ uint16_t Facade::on_sizeof_settings()
 void Facade::on_factory_reset()
 {
     settings.reset();
+    if(eeprom_mismatch.does_mismatch())
+        return;
+
+    pages.reset();
+    setup.show(ShowOptions::None);
 }
 
 void Facade::on_settings_written(bool success)
@@ -223,7 +228,9 @@ bool Core::init()
     ExtUI::setLevelingActive(true);
 #endif
 
-    if(eeprom_mismatch.check())
+    if(eeprom_mismatch.does_mismatch())
+        eeprom_mismatch.show(ShowOptions::None);
+    else
         pages.show_page(Page::Boot, ShowOptions::None);
 
     return true;

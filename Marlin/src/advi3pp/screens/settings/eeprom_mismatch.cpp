@@ -25,19 +25,6 @@ namespace ADVi3pp {
 
 EepromMismatch eeprom_mismatch;
 
-//! Check if the EEPROM values are compatible or not. If not, display a message.
-//! @return False if the values are compatible
-bool EepromMismatch::check()
-{
-    if(does_mismatch())
-    {
-        show(ShowOptions::None);
-        return false;
-    }
-
-    return true;
-}
-
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
 Page EepromMismatch::do_prepare_page()
@@ -49,7 +36,7 @@ Page EepromMismatch::do_prepare_page()
 void EepromMismatch::do_save_command()
 {
     settings.save();
-    pages.show_page(Page::Main);
+    pages.show_page(Page::Setup, ShowOptions::None);
 }
 
 //! Check the EEPROM value mismatch flag.
