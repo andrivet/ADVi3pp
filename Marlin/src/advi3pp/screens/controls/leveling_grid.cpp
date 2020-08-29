@@ -38,7 +38,7 @@ Page LevelingGrid::do_prepare_page()
     WriteRamDataRequest frame{Variable::Value0};
     for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
         for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
-            frame << Uint16(static_cast<int16_t>(z_values[x][y] * 100));
+            frame << Uint16(static_cast<int16_t>(lround(z_values[x][y] * 100)));
     frame.send();
 
     return Page::SensorGrid;
@@ -47,7 +47,6 @@ Page LevelingGrid::do_prepare_page()
 //! Handles the Save (Continue) command
 void LevelingGrid::do_save_command()
 {
-    ExtUI::saveSettings();
     ExtUI::setLevelingActive(true);
     Parent::do_save_command();
 }
