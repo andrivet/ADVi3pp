@@ -16,13 +16,13 @@ If you like what I am doing, please consider supporting me as a supporter on [**
 
 The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
 
-* Based on the latest version of Marlin available (currently: 1.1.9, I am working on a Marlin 2 version)
+* Based on the latest version of Marlin available (currently: 2.0.6)
 * As few modifications of the Marlin code as possible. The goal is to be able to port **ADVi3++** to new versions of Marlin with only a few effort.
-* Open source firmware (GPLv3 like Marlin)
+* Open source firmware (GPLv3 like Marlin).
 * Object-oriented code with as few hard-coded values as possible. For example, instead of constructing a frame by hand, use instances of classes that know how to construct themselves.
 * Documented code, logging and error handling (without using exceptions as they are not supported).
 * Full color and nice LCD screens.
-* Support of hardware such as the BLTouch sensor for automatic bed leveling.
+* Support of hardware such as the BLTouch sensor for automatic bed leveling, powerloss module for Mark II printers, ...
 
 ## ADVi3++ User Manual
 
@@ -92,6 +92,8 @@ Thanks to [MarlinTeam](http://marlinfw.org/) for their great work.
 * Copyright &copy; 2018-2020 Sebastien Andrivet
 
 # License
+
+**Note**: For detailed information about ADVi3++ licenses, see [ADVi3++ and licenses: GPLv3 and CC BY-NC-SA 4.0](https://community.advi3pp.com/t/advi3-and-licenses-gplv3-and-cc-by-nc-sa-4-0/). 
 
 ## ADVi3++ Firmware
 
