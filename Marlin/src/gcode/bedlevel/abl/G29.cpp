@@ -642,7 +642,13 @@ G29_TYPE GcodeSuite::G29() {
           if (TERN0(IS_KINEMATIC, !probe.can_reach(probePos))) continue;
 
           if (verbose_level) SERIAL_ECHOLNPAIR("Probing mesh point ", int(pt_index), "/", abl_points, ".");
-          TERN_(HAS_DISPLAY, ui.status_printf_P(0, PSTR(S_FMT " %i/%i"), GET_TEXT(MSG_PROBING_MESH), int(pt_index), int(abl_points)));
+          // @advi3++: Display x, y
+          TERN_(HAS_DISPLAY, ui.status_printf_P(0, PSTR(S_FMT " %i/%i (%i, %i mm)"),
+                                                GET_TEXT(MSG_PROBING_MESH),
+                                                int(pt_index),
+                                                int(abl_points),
+                                                int(probePos.x),
+                                                int(probePos.y)));
 
           measured_z = faux ? 0.001f * random(-100, 101) : probe.probe_at_point(probePos, raise_after, verbose_level);
 
