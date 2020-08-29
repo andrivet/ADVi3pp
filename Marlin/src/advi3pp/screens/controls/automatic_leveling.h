@@ -32,7 +32,7 @@ struct AutomaticLeveling: Screen<AutomaticLeveling>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void manual_command();
+    void reset_command();
     void start();
     bool leveling_failed();
 

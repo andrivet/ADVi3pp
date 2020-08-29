@@ -28,6 +28,7 @@
 #include "../screens/controls/preheat.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/eeprom_mismatch.h"
+#include "../screens/tuning/xtwist.h"
 
 
 namespace ADVi3pp {
@@ -40,6 +41,7 @@ bool Settings::write(eeprom_write write, int& eeprom_index, uint16_t& working_cr
 
     eeprom.write(settings_version);
     pid_settings.write(eeprom);
+    x_twist.write(eeprom);
     eeprom.write(features_);
 
     return true;
@@ -58,6 +60,9 @@ bool Settings::validate(eeprom_read read, int& eeprom_index, uint16_t& working_c
     if(!pid_settings.validate(eeprom))
         valid = false;
 
+    if(!x_twist.validate(eeprom))
+        valid = false;
+
     Feature features = Feature::None;
     eeprom.read(features);
 
@@ -71,6 +76,7 @@ void Settings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
     uint16_t version = 0;
     eeprom.read(version);
     pid_settings.read(eeprom);
+    x_twist.read(eeprom);
     eeprom.read(features_);
 }
 
@@ -78,6 +84,7 @@ void Settings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 void Settings::reset()
 {
     pid_settings.reset();
+    x_twist.reset();
     features_ = DEFAULT_FEATURES;
 }
 
@@ -87,6 +94,7 @@ uint16_t Settings::size_of() const
     return
             sizeof(settings_version) +
             pid_settings.size_of() +
+            x_twist.size_of() +
             sizeof(features_);
 }
 

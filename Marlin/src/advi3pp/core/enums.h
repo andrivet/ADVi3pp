@@ -81,6 +81,9 @@ enum class Page: uint8_t
     KeyboardDecimal         = 122,
     KeyboardSignedInteger   = 124,
     KeyboardSignedDecimal   = 126,
+    LevelingNoSensor        = 128,
+    ManualMesh              = 130,
+    XTwist                  = 132,
 
     Boot                    = 200
 };
@@ -180,6 +183,7 @@ enum class Action: uint16_t
     Diagnosis               = 0x0421,
     Temperatures            = 0x0422,
     Setup                   = 0x0423,
+    XTwist                  = 0x0424,
 
     // 6 - Moves
     MoveXMinus              = 0x0600,
@@ -203,6 +207,8 @@ enum class Action: uint16_t
     HotendPlus              = 0x0612,
     BedMinus                = 0x0613,
     BedPlus                 = 0x0614,
+    XTwistMinus             = 0x0615,
+    XTwistPlus              = 0x0616,
 
     Undefined               = 0xFFFF
 };
@@ -258,7 +264,7 @@ enum class KeyValue: uint16_t
     LevelingPointD          = 0x0009,
 
     LevelingTest            = 0x0001,
-    LevelingManual          = 0x0002,
+    LevelingResetProbe      = 0x0002,
 
     TuningStart             = 0x0001,
     TuningSettings          = 0x0002,
@@ -289,6 +295,9 @@ enum class KeyValue: uint16_t
     Multiplier1             = 0x0001,
     Multiplier2             = 0x0002,
     Multiplier3             = 0x0003,
+    Point_L                 = 0x0004,
+    Point_M                 = 0x0005,
+    Point_R                 = 0x0006,
 
     Baby1                   = 0x0001,
     Baby2                   = 0x0002,

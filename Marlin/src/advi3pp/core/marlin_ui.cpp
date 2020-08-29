@@ -220,13 +220,11 @@ void MarlinUI::synchronize(PGM_P msg)
 
 void MarlinUI::set_contrast(const int16_t value)
 {
-    Log::log() << F("set_contrast") << Log::endl();
     contrast = value;
 }
 
 int16_t MarlinUI::get_contrast()
 {
-    Log::log() << F("get_contrast") << Log::endl();
     return contrast;
 }
 

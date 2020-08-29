@@ -37,7 +37,7 @@ bool AutomaticLeveling::do_dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::LevelingManual:	manual_command(); break;
+        case KeyValue::LevelingResetProbe:	reset_command(); break;
         default: return false;
     }
 
@@ -59,11 +59,9 @@ Page AutomaticLeveling::do_prepare_page()
 #endif
 }
 
-void AutomaticLeveling::manual_command()
+void AutomaticLeveling::reset_command()
 {
-    if(!core.ensure_not_printing())
-        return;
-    start();
+    core.inject_commands(F("M280 P0 S160"));
 }
 
 void AutomaticLeveling::start()

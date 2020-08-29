@@ -51,6 +51,7 @@
 #include "../screens/tuning/io.h"
 #include "../screens/tuning/usb_to_lcd.h"
 #include "../screens/tuning/setup.h"
+#include "../screens/tuning/xtwist.h"
 #include "../screens/tuning/vibrations.h"
 #include "../screens/settings/eeprom_mismatch.h"
 #include "../screens/settings/factory_reset.h"
@@ -167,6 +168,7 @@ void Facade::on_settings_loaded(bool success)
 
 void Facade::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval)
 {
+    x_twist.on_mesh_updated(xpos, ypos, zval);
 }
 
 void Facade::on_automatic_leveling_finished(bool success)
@@ -344,6 +346,7 @@ void Core::receive_lcd_serial_data()
         case Action::Diagnosis:             io.handle(key_value); break;
         case Action::Temperatures:          temperatures.handle(key_value); break;
         case Action::Setup:                 setup.handle(key_value); break;
+        case Action::XTwist:                x_twist.handle(key_value); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;
@@ -366,6 +369,8 @@ void Core::receive_lcd_serial_data()
         case Action::BedMinus:              print_settings.bed_minus_command(); break;
         case Action::BedPlus:               print_settings.bed_plus_command(); break;
         case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_value)); break;
+        case Action::XTwistMinus:           x_twist.minus(); break;
+        case Action::XTwistPlus:            x_twist.plus(); break;
 
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }

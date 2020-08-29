@@ -757,6 +757,12 @@
     <Compile Include="src\advi3pp\screens\tuning\vibrations.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\xtwist.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\tuning\xtwist.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\versions.h">
       <SubType>compile</SubType>
     </Compile>
