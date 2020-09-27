@@ -25,6 +25,7 @@
 namespace ADVi3pp {
 
 #ifdef ADVi3PP_PROBE
+
 //! X Twist Tuning Page
 struct XTwist: Screen<XTwist>
 {
@@ -66,10 +67,12 @@ private:
     int offsets_[GRID_MAX_POINTS_X] = {};
     friend Parent;
 };
+
 #else
-//! Sensor Z Height Tuning Page
-struct SensorZHeight: Screen<SensorZHeight>
+
+struct XTwist: Screen<XTwist>
 {
+    void on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval) {}
     void minus() {}
     void plus() {}
 
@@ -77,6 +80,7 @@ private:
     Page do_prepare_page();
     friend Parent;
 };
+
 #endif
 
 extern XTwist x_twist;
