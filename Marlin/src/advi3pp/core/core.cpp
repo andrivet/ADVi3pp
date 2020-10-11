@@ -20,7 +20,6 @@
 
 #include "../parameters.h"
 #include "../inc/advi3pp.h"
-#include "../../gcode/parser.h"
 #include "../versions.h"
 #include "core.h"
 #include "graphs.h"
@@ -83,7 +82,7 @@ void Facade::on_idle()
     core.idle();
 }
 
-void Facade::on_killed(PGM_P error, PGM_P component)
+void Facade::on_killed(PGM_P error, PGM_P /*component*/)
 {
     core.killed(reinterpret_cast<const FlashChar*>(error));
 }
@@ -100,8 +99,9 @@ void Facade::on_media_removed()
 {
 }
 
-void Facade::on_play_tone(const uint16_t frequency, const uint16_t duration)
+void Facade::on_play_tone(const uint16_t /*frequency*/, const uint16_t /*duration*/)
 {
+    // TODO
 }
 
 void Facade::on_print_started()
@@ -116,15 +116,15 @@ void Facade::on_print_stopped()
 {
 }
 
-void Facade::on_filament_runout(const ExtUI::extruder_t extruder)
+void Facade::on_filament_runout(const ExtUI::extruder_t /*extruder*/)
 {
 }
 
-void Facade::on_user_confirm_required(const char* msg)
+void Facade::on_user_confirm_required(const char* /*msg*/)
 {
 }
 
-void Facade::on_status_changed(const char* msg)
+void Facade::on_status_changed(const char* /*msg*/)
 {
 }
 
@@ -156,7 +156,7 @@ void Facade::on_factory_reset()
     setup.show(ShowOptions::None);
 }
 
-void Facade::on_settings_written(bool success)
+void Facade::on_settings_written(bool /*success*/)
 {
 }
 
@@ -295,6 +295,8 @@ void Core::receive_lcd_serial_data()
         Log::error() << F("reading incoming Frame") << Log::endl();
         return;
     }
+
+    // TODO: Move this later and check the command
 
     buzzer.buzz_on_press();
     dimming.reset();

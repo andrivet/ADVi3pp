@@ -94,7 +94,7 @@ void onFactoryReset()
     ADVi3pp::Facade::on_factory_reset();
 }
 
-void onStoreSettings(char *buff)
+void onStoreSettings(char * /*buff*/)
 {
     // Called when saving to EEPROM (i.e. M500). If the ExtUI needs
     // permanent data to be stored, it can write up to eeprom_data_size bytes
@@ -110,7 +110,7 @@ void onStoreSettingsEx(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& w
     ADVi3pp::Facade::on_store_settings(write, eeprom_index, working_crc);
 }
 
-void onLoadSettings(const char *buff)
+void onLoadSettings(const char */*buff*/)
 {
     // Called while loading settings from EEPROM. If the ExtUI
     // needs to retrieve data, it should copy up to eeprom_data_size bytes
@@ -175,7 +175,7 @@ void onPidTuningProgress(int cycleIndex, int nbCycles)
     ADVi3pp::Facade::on_pid_tuning_progress(cycleIndex, nbCycles);
 }
 
-void onPidTuningReportTemp(int heater)
+void onPidTuningReportTemp(int /*heater*/)
 {
     // Nothing to do
 }

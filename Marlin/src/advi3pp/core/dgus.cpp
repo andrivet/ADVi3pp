@@ -264,6 +264,8 @@ bool Frame::receive(bool log)
     //      2 |      1 |       1 |    N  bytes
     //  5A A5 |     06 |      83 |  ...
 
+    UNUSED(log);
+
 #ifdef ADVi3PP_LOG_ALL_FRAMES
     log = true;
 #endif

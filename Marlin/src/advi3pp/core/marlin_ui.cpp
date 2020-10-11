@@ -77,7 +77,7 @@ void MarlinUI::reset_alert_level()
     alert_level = 0;
 }
 
-void MarlinUI::finish_status(const bool persist)
+void MarlinUI::finish_status(const bool /*persist*/)
 {
     // Nothing to do
 }

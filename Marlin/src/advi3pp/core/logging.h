@@ -58,18 +58,18 @@ struct Log
 {
     struct EndOfLine {};
 
-    inline Log& operator<<(const char* data) { return log(); }
-    inline Log& operator<<(const FlashChar* data) { return log(); }
-    inline Log& operator<<(uint8_t data) { return log(); }
-    inline Log& operator<<(uint16_t data) { return log(); }
-    inline Log& operator<<(uint32_t data) { return log(); }
-    inline Log& operator<<(double data) { return log(); }
-    inline void operator<<(EndOfLine eol) {};
+    inline Log& operator<<(const char*) { return log(); }
+    inline Log& operator<<(const FlashChar*) { return log(); }
+    inline Log& operator<<(uint8_t) { return log(); }
+    inline Log& operator<<(uint16_t) { return log(); }
+    inline Log& operator<<(uint32_t) { return log(); }
+    inline Log& operator<<(double) { return log(); }
+    inline void operator<<(EndOfLine) {};
 
     inline static Log& log() { static Log log; return log; }
     inline static Log& error() { return log(); }
     inline static EndOfLine endl() { return EndOfLine{}; }
-    inline static void dump(const uint8_t* bytes, size_t size) {}
+    inline static void dump(const uint8_t*, size_t) {}
 
 #ifdef ADVi3PP_UNIT_TEST
     inline Log& operator<<(unsigned long data) { return log(); }
