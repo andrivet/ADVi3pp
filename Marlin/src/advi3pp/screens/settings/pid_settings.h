@@ -62,8 +62,8 @@ private:
     void get_current_hotend_pid();
     void send_data() const;
     void save_data();
-    Pid* get_pid(TemperatureKind kind);
-    const Pid* get_pid(TemperatureKind kind) const;
+    Pid* get_pid();
+    const Pid* get_pid() const;
 
 private:
     static const size_t NB_PIDs = 3;

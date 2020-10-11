@@ -188,7 +188,7 @@ void PidSettings::get_current_pid()
     }
 }
 
-Pid* PidSettings::get_pid(TemperatureKind kind)
+Pid* PidSettings::get_pid()
 {
     switch(kind_)
     {
@@ -198,7 +198,7 @@ Pid* PidSettings::get_pid(TemperatureKind kind)
     }
 }
 
-const Pid* PidSettings::get_pid(TemperatureKind kind) const
+const Pid* PidSettings::get_pid() const
 {
     switch(kind_)
     {
@@ -240,7 +240,7 @@ void PidSettings::get_current_bed_pid()
 void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
 {
     kind_ = kind;
-    Pid* pid = get_pid(kind_);
+    Pid* pid = get_pid();
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
         if(temperature == pid[i].temperature_)
@@ -272,7 +272,7 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
     kind_ = kind;
 
     uint16_t best_difference = 500;
-    Pid* pid = get_pid(kind_);
+    Pid* pid = get_pid();
 
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
@@ -292,7 +292,7 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
 //! Send the current data to the LCD panel.
 void PidSettings::send_data() const
 {
-    const Pid& pid = get_pid(kind_)[index_];
+    const Pid& pid = get_pid()[index_];
     Log::log() << F("Send ") << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID #") << index_
                << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
 
@@ -314,7 +314,7 @@ void PidSettings::send_data() const
 //! Save the settings from the LCD Panel.
 void PidSettings::save_data()
 {
-    Pid& pid = get_pid(kind_)[index_];
+    Pid& pid = get_pid()[index_];
 
     ReadRamData response{Variable::Value0, 5};
     if(!response.send_and_receive())
@@ -368,13 +368,13 @@ void PidSettings::do_back_command()
 
 void PidSettings::save_hotend_pid() const
 {
-    auto pid = get_pid(kind_)[index_];
+    auto pid = get_pid()[index_];
     ExtUI::setPIDValues(pid.Kp_, pid.Ki_, pid.Kd_, ExtUI::E0);
 }
 
 void PidSettings::save_bed_pid() const
 {
-    auto pid = get_pid(kind_)[index_];
+    auto pid = get_pid()[index_];
     ExtUI::setBedPIDValues(pid.Kp_, pid.Ki_, pid.Kd_);
 }
 
