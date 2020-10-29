@@ -1,7 +1,7 @@
 /**
  * ADVstd - Minimalist entities from the Standard Library
  *
- * Copyright (C) 2018 Sebastien Andrivet [https://github.com/andrivet/]
+ * Copyright (C) 2018-2020 Sebastien Andrivet [https://github.com/andrivet/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 
 #pragma once
 
-using size_t = decltype(sizeof(int));
+using size_t = unsigned int;
+using ptrdiff_t = int;
 using nullptr_t = decltype(nullptr);
 
 // Default placement new
