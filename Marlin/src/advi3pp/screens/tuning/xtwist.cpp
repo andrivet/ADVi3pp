@@ -122,14 +122,18 @@ void XTwist::post_home_task()
     pages.show_page(Page::XTwist, ShowOptions::None);
 
     ExtUI::setSoftEndstopState(false);
-    reset_mesh();
+    update_mesh(true);
+    offsets_.fill(0);
     point_M_command();
 }
 
 //! Execute the Back command
 void XTwist::do_back_command()
 {
-    update_mesh(); // Put back the mesh like it was before calling X Twist
+    // Put back the mesh like it was before calling X Twist
+    update_mesh(true);
+    offsets_ = old_offsets_;
+    update_mesh(false);
 
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
@@ -139,7 +143,7 @@ void XTwist::do_back_command()
     Parent::do_back_command();
 }
 
-void XTwist::update_mesh()
+void XTwist::update_mesh(bool reset)
 {
     Log::log() << F("Update mesh") << Log::endl();
 
@@ -150,26 +154,7 @@ void XTwist::update_mesh()
         for(uint8_t x = 0; x < GRID_MAX_POINTS_X; ++x)
         {
             xy.set(x, y);
-            auto z = ExtUI::getMeshPoint(xy) + offsets_[x] / 100.0;
-            log << z << F(" ");
-            ExtUI::setMeshPoint(xy, z);
-        }
-        log << Log::endl();
-    }
-}
-
-void XTwist::reset_mesh()
-{
-    Log::log() << F("Reset mesh") << Log::endl();
-
-    xy_uint8_t xy{};
-    for(uint8_t y = 0; y < GRID_MAX_POINTS_Y; ++y)
-    {
-        auto log = Log::log();
-        for(uint8_t x = 0; x < GRID_MAX_POINTS_X; ++x)
-        {
-            xy.set(x, y);
-            auto z = ExtUI::getMeshPoint(xy) - offsets_[x] / 100.0;
+            auto z = ExtUI::getMeshPoint(xy) + offsets_[x] / (reset ? -100.0 : 100.0);
             log << z << F(" ");
             ExtUI::setMeshPoint(xy, z);
         }

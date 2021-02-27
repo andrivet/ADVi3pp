@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "../../lib/ADVstd/array.h"
 #include "../core/screen.h"
 
 namespace ADVi3pp {
@@ -58,13 +59,13 @@ private:
     void adjust_height(double offset);
     void send_data() const;
     int& offset(Point x) { return offsets_[static_cast<unsigned >(x)]; };
-    void update_mesh();
-    void reset_mesh();
+    void update_mesh(bool reset = false);
 
 private:
     Point point_ = Point::M;
     Multiplier multiplier_ = Multiplier::M1;
-    int offsets_[GRID_MAX_POINTS_X] = {};
+    adv::array<int, GRID_MAX_POINTS_X> offsets_ = {};
+    adv::array<int, GRID_MAX_POINTS_X> old_offsets_ = {};
     friend Parent;
 };
 
