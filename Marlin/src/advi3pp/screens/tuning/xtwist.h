@@ -30,7 +30,7 @@ namespace ADVi3pp {
 //! X Twist Tuning Page
 struct XTwist: Screen<XTwist>
 {
-    void on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval);
+    void on_mesh_updated(int8_t xpos, int8_t ypos, float zval);
     void minus();
     void plus();
 
