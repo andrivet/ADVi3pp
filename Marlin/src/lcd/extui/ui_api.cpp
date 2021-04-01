@@ -52,7 +52,7 @@
 #include "../../module/probe.h"
 #include "../../module/temperature.h"
 #include "../../module/printcounter.h"
-#include "../../module/configuration_store.h"
+#include "../../module/settings.h"
 #include "../../libs/duration_t.h"
 #include "../../HAL/shared/Delay.h"
 #include "../../sd/cardreader.h"

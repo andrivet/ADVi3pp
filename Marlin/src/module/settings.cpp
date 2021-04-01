@@ -41,7 +41,10 @@
 
 // Check the integrity of data offsets.
 // Can be disabled for production build.
-//#define DEBUG_EEPROM_READWRITE
+// @advi3++: Enable in DEBUG builds
+#ifdef DEBUG
+#define DEBUG_EEPROM_READWRITE
+#endif
 
 #include "settings.h"
 
@@ -437,7 +440,8 @@ typedef struct SettingsDataStruct {
 
 MarlinSettings settings;
 
-uint16_t MarlinSettings::datasize() { return sizeof(SettingsData); }
+// @advi3++
+uint16_t MarlinSettings::datasize() { return sizeof(SettingsData) + ExtUI::getSizeofSettings(); }
 
 /**
  * Post-process after Retrieve or Reset
@@ -930,7 +934,7 @@ void MarlinSettings::postprocess() {
 
       const int16_t lcd_contrast =
         #if HAS_LCD_CONTRAST
-          ui.contrast
+          ui.get_contrast() // advi3++
         #else
           127
         #endif
@@ -1354,10 +1358,15 @@ void MarlinSettings::postprocess() {
     //
     #if ENABLED(EXTENSIBLE_UI)
       {
-        char extui_data[ExtUI::eeprom_data_size] = { 0 };
+        char extui_data[ExtUI::eeprom_data_size] = { }; // @advi3++ do not initialize to 0 since it is empty
         ExtUI::onStoreSettings(extui_data);
         _FIELD_TEST(extui_data);
         EEPROM_WRITE(extui_data);
+      }
+      
+      // @advi3++
+      {
+          ExtUI::onStoreSettingsEx(persistentStore.write_data, eeprom_index, working_crc);
       }
     #endif
 
@@ -2209,11 +2218,14 @@ void MarlinSettings::postprocess() {
       #if ENABLED(EXTENSIBLE_UI)
         // This is a significant hardware change; don't reserve EEPROM space when not present
         {
-          const char extui_data[ExtUI::eeprom_data_size] = { 0 };
+          const char extui_data[ExtUI::eeprom_data_size] = { };  // @advi3++ do not initialize to 0 since it is empty
           _FIELD_TEST(extui_data);
           EEPROM_READ(extui_data);
           if (!validating) ExtUI::onLoadSettings(extui_data);
         }
+         // @advi3++
+        if(!ExtUI::onLoadSettingsEx(persistentStore.read_data, eeprom_index, working_crc, validating))
+            eeprom_error = true;
       #endif
 
       //
@@ -3326,7 +3338,7 @@ void MarlinSettings::reset() {
     #if HAS_LCD_CONTRAST
       CONFIG_ECHO_HEADING("LCD Contrast:");
       CONFIG_ECHO_START();
-      SERIAL_ECHOLNPAIR("  M250 C", ui.contrast);
+      SERIAL_ECHOLNPAIR("  M250 C", ui.get_contrast()); // advi3++
     #endif
 
     TERN_(CONTROLLER_FAN_EDITABLE, M710_report(forReplay));
