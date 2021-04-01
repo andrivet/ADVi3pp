@@ -570,7 +570,7 @@ volatile bool Temperature::raw_temps_ready = false;
           SERIAL_EOL();
           // @advi3++
           #if ENABLED(EXTENSIBLE_UI)
-            ExtUI::onPidTuningReportTemp(isbed ? active_extruder : heater);
+            ExtUI::onPidTuningReportTemp(isbed ? active_extruder : heater_id);
           #endif
         #endif
         next_temp_ms = ms + 2000UL;
