@@ -687,7 +687,7 @@ bool extrude_filament(const float &purge_length)
     if (!ensure_safe_temperature(PAUSE_MODE_SAME))
         return false;
 
-	lcd_pause_show_message(PAUSE_MESSAGE_LOAD);
+    lcd_pause_show_message(PAUSE_MESSAGE_LOAD);
     unscaled_e_move(purge_length, ADVANCED_PAUSE_PURGE_FEEDRATE);
 
     return true;

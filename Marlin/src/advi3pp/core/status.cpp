@@ -77,7 +77,7 @@ void Status::send_progress()
     auto done = ExtUI::getProgress_percent();
     if(done == percent_)
         return;
-	percent_ = done;
+    percent_ = done;
 
     ADVString<progress_text_length> progress{filename_};
     if(progress.length() > 0)
