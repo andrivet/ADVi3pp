@@ -123,7 +123,6 @@ void XTwist::post_home_task()
 
     ExtUI::setSoftEndstopState(false);
     update_mesh(true);
-    offsets_.fill(0);
     point_M_command();
 }
 
