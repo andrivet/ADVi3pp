@@ -784,9 +784,6 @@
     <Compile Include="src\core\millis_t.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\core\multi_language.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\core\multi_language.h">
       <SubType>compile</SubType>
     </Compile>
@@ -841,10 +838,10 @@
     <Compile Include="src\feature\bedlevel\mbl\mesh_bed_leveling.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\feature\binary_protocol.cpp">
+    <Compile Include="src\feature\binary_stream.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\feature\binary_protocol.h">
+    <Compile Include="src\feature\binary_stream.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\feature\bltouch.cpp">
@@ -1030,7 +1027,7 @@
     <Compile Include="src\gcode\calibrate\G425.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\gcode\calibrate\G76_M871.cpp">
+    <Compile Include="src\gcode\calibrate\G76_M192_M871.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\calibrate\M100.cpp">
@@ -1645,10 +1642,10 @@
     <Compile Include="src\libs\duration_t.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\libs\hex_print_routines.cpp">
+    <Compile Include="src\libs\hex_print.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\libs\hex_print_routines.h">
+    <Compile Include="src\libs\hex_print.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\libs\least_squares_fit.cpp">
@@ -1691,12 +1688,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\MarlinCore.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\module\configuration_store.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\module\configuration_store.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\module\delta.cpp">
@@ -1751,6 +1742,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\module\servo.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\module\settings.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\module\speed_lookuptable.h">
