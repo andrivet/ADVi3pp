@@ -34,9 +34,8 @@ struct Wait: Screen<Wait>
     void show(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
     void show(const FlashChar* message, const WaitCallback& back, ShowOptions options = ShowOptions::SaveBack);
     void show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
-    void show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
     void show_continue(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
-    template<size_t L> void show_continue(const ADVString<L>& message, ShowOptions options = ShowOptions::SaveBack);
+    void show_continue(const char* message, ShowOptions options = ShowOptions::SaveBack);
     void show_back(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
     void set_message(const FlashChar* message);
     template<size_t L> void set_message(const ADVString<L>& message);
@@ -46,6 +45,7 @@ private:
     void do_save_command();
     void do_back_command();
     bool on_continue();
+    bool on_continue_back();
     bool on_back();
 
     WaitCallback back_;
@@ -61,20 +61,6 @@ extern Wait wait;
 template<size_t L> void Wait::set_message(const ADVString<L>& message)
 {
     status.set(message);
-}
-
-// --------------------------------------------------------------------
-//! Show a simple wait page without a message
-//! @param message  The message to display
-//! @param options  Options when displaying the page (i.e. save the current page or not)
-template<size_t L>
-void Wait::show_continue(const ADVString<L>& message, ShowOptions options)
-{
-    set_message(message);
-    back_ = nullptr;
-    continue_ = WaitCallback{this, &Wait::on_continue};
-    //advi3pp.buzz(); TODO
-    pages.show_page(Page::WaitContinue, options);
 }
 
 }

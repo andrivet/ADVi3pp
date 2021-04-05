@@ -120,8 +120,9 @@ void Facade::on_filament_runout(const ExtUI::extruder_t /*extruder*/)
 {
 }
 
-void Facade::on_user_confirm_required(const char* /*msg*/)
+void Facade::on_user_confirm_required(const char* msg)
 {
+    core.waitUserConfirm(msg);
 }
 
 void Facade::on_status_changed(const char* /*msg*/)
@@ -255,6 +256,11 @@ void Core::killed(const FlashChar* error)
     status.set(error);
     send_lcd_serial_data(true);
     pages.show_page(Page::Killed);
+}
+
+void Core::waitUserConfirm(const char* msg)
+{
+    wait.show_continue(msg);
 }
 
 //! Note to forks author:
