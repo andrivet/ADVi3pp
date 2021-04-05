@@ -33,7 +33,8 @@
 
 #if HAS_LCD_MENU
   #include "../../lcd/ultralcd.h"
-#elif ENABLED(EXTENSIBLE_UI)
+#endif // @advi3++
+#if ENABLED(EXTENSIBLE_UI)
   #include "../../lcd/extui/ui_api.h"
 #endif
 
@@ -54,20 +55,23 @@ void GcodeSuite::M0_M1() {
 
   #if HAS_LCD_MENU
 
-    if (parser.string_arg)
-      ui.set_status(parser.string_arg, true);
-    else {
-      LCD_MESSAGEPGM(MSG_USERWAIT);
-      #if ENABLED(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
-        ui.reset_progress_bar_timeout();
-      #endif
-    }
+    // @advi3++
+    #if ENABLED(EXTENSIBLE_UI)
+      if (parser.string_arg)
+        ExtUI::onUserConfirmRequired(parser.string_arg); // Can this take an SRAM string??
+      else
+        ExtUI::onUserConfirmRequired_P(GET_TEXT(MSG_USERWAIT));
+    #else
+      if (parser.string_arg)
+        ui.set_status(parser.string_arg, true);
+      else {
+        LCD_MESSAGEPGM(MSG_USERWAIT);
+        #if ENABLED(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
+          ui.reset_progress_bar_timeout();
+        #endif
+      }
+    #endif
 
-  #elif ENABLED(EXTENSIBLE_UI)
-    if (parser.string_arg)
-      ExtUI::onUserConfirmRequired(parser.string_arg); // Can this take an SRAM string??
-    else
-      ExtUI::onUserConfirmRequired_P(GET_TEXT(MSG_USERWAIT));
   #else
 
     if (parser.string_arg) {

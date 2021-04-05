@@ -75,24 +75,20 @@ void Wait::show(const FlashChar* message, const WaitCallback& back, const WaitCa
 
 //! Show a simple wait page with a message
 //! @param message  The message to display
-//! @param cont     Callback to be called when the continue button is pressed
-//! @param options  Options when displaying the page (i.e. save the current page or not)
-void Wait::show_continue(const FlashChar* message, const WaitCallback& cont, ShowOptions options)
-{
-    set_message(message);
-    back_ = nullptr;
-    continue_ = cont;
-    pages.show_page(Page::WaitContinue, options);
-}
-
-//! Show a simple wait page with a message
-//! @param message  The message to display
 //! @param options  Options when displaying the page (i.e. save the current page or not)
 void Wait::show_continue(const FlashChar* message, ShowOptions options)
 {
     set_message(message);
     back_ = nullptr;
-    continue_ = WaitCallback{this, &Wait::on_continue};
+    continue_ = WaitCallback{this, test_one_bit(options, ShowOptions::SaveBack) ? &Wait::on_continue_back : &Wait::on_continue};
+    pages.show_page(Page::WaitContinue, options);
+}
+
+void Wait::show_continue(const char* message, ShowOptions options)
+{
+    status.set(message);
+    back_ = nullptr;
+    continue_ = WaitCallback{this, test_one_bit(options, ShowOptions::SaveBack) ? &Wait::on_continue_back : &Wait::on_continue};
     pages.show_page(Page::WaitContinue, options);
 }
 
@@ -111,6 +107,15 @@ bool Wait::on_continue()
     ExtUI::setUserConfirmed();
     return false;
 }
+
+//! Default action when the continue button is pressed (inform Marlin)
+bool Wait::on_continue_back()
+{
+    ExtUI::setUserConfirmed();
+    pages.show_back_page();
+    return false;
+}
+
 
 //! Action when the back button is pressed
 bool Wait::on_back()

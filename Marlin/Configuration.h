@@ -2290,10 +2290,11 @@
 
 // @advi3++: ADVi3++ UI
 // Mini DGUS Touch Display (without DWIN OS)
+// Marlin is currently not clear of what HAS_LCD_MENU vs EXTENSIBLE_UI are doing so I need to allow both
+// and fix some issues
+#define HAS_LCD_MENU 1
 #define EXTENSIBLE_UI
 #define ADVi3PP_UI
-//#define EXTUI_EXAMPLE
-#define HAS_LCD_MENU 1
 #define PROGRESS_SCALE 1U
 
 #if ENABLED(EXTENSIBLE_UI)

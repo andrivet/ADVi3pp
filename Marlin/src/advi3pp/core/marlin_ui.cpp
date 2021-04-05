@@ -193,9 +193,7 @@ void MarlinUI::pause_print() {
 void MarlinUI::resume_print()
 {
     reset_status();
-#if ENABLED(PARK_HEAD_ON_PAUSE)
-    wait_for_heatup = wait_for_user = false;
-#endif
+    TERN_(PARK_HEAD_ON_PAUSE, wait_for_heatup = wait_for_user = false);
     if (IS_SD_PAUSED()) queue.inject_P(M24_STR);
 #ifdef ACTION_ON_RESUME
     host_action_resume();
