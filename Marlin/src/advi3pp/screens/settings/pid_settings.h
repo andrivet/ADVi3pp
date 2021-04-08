@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "../../lib/ADVstd/array.h"
 #include "../core/screen.h"
 
 namespace ADVi3pp {
@@ -39,6 +40,8 @@ struct PidSettings: Screen<PidSettings>
     void set_best_pid(TemperatureKind kind, uint16_t temperature);
 
 private:
+    static const size_t NB_PIDs = 3;
+
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_write(EepromWrite& eeprom) const;
@@ -62,13 +65,12 @@ private:
     void get_current_hotend_pid();
     void send_data() const;
     void save_data();
-    Pid* get_pid();
-    const Pid* get_pid() const;
+    adv::array<Pid, PidSettings::NB_PIDs>& get_pid();
+    const adv::array<Pid, PidSettings::NB_PIDs>& get_pid() const;
 
 private:
-    static const size_t NB_PIDs = 3;
-    Pid hotend_pid_[NB_PIDs] = {};
-    Pid bed_pid_[NB_PIDs] = {};
+    adv::array<Pid, NB_PIDs> hotend_pid_{};
+    adv::array<Pid, NB_PIDs> bed_pid_{};
     TemperatureKind kind_ = TemperatureKind::Hotend;
     size_t index_ = 0;
 

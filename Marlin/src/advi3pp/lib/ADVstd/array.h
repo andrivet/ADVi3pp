@@ -130,6 +130,14 @@ struct array
     using reverse_iterator          = adv::reverse_iterator<iterator>;
     using const_reverse_iterator    = adv::reverse_iterator<const_iterator>;
 
+    array()                 = default;
+    array(const array &)    = default;
+    array(array &&)         = default;
+    ~array()                = default;
+
+    array& operator=(const array&)  = default;
+    array& operator=(array&&)       = default;
+
     // Element access
     reference at(size_type pos)                                 { return elements_[pos]; } // WARNING: No check
     constexpr const_reference at(size_type pos) const           { return elements_[pos]; } // WARNING: No check
@@ -165,64 +173,9 @@ struct array
     void fill(const T& value);
     void swap(array& other) noexcept(noexcept(swap(adv::declval<T&>(), adv::declval<T&>())));
 
-private:
-    T elements_[N];
+    T elements_[N ? N : 1];
 };
 
-
-template<typename T>
-struct array<T, 0>
-{
-    using value_T                   = T;
-    using size_type                 = size_t;
-    using difference_type           = ptrdiff_t;
-    using pointer                   = T*;
-    using const_pointer             = const T*;
-    using reference                 = T&;
-    using const_reference           = const T&;
-    using iterator                  = T*;
-    using const_iterator            = const T*;
-    using reverse_iterator          = adv::reverse_iterator<iterator>;
-    using const_reverse_iterator    = adv::reverse_iterator<const_iterator>;
-
-    // Element access
-    reference at(size_type pos)                                 { return elements_[0]; } // WARNING: No check
-    constexpr const_reference at(size_type pos) const           { return elements_[0]; } // WARNING: No check
-    reference operator[](size_type pos)                         { return elements_[0]; }
-    constexpr const_reference operator[](size_type pos) const   { return elements_[0]; }
-    reference front()                                           { return elements_[0]; }
-    constexpr const_reference front() const                     { return elements_[0]; }
-    reference back()                                            { return elements_[0]; }
-    constexpr const_reference back() const                      { return elements_[0]; }
-    T* data() noexcept                                          { return nullptr; }
-    constexpr const T* data() const noexcept                    { return nullptr; }
-
-    // Iterators
-    iterator begin() noexcept                                   { return iterator{}; }
-    constexpr const_iterator begin() const noexcept             { return const_iterator{}; }
-    constexpr const_iterator cbegin() const noexcept            { return begin(); }
-    iterator end() noexcept                                     { return iterator{}; }
-    constexpr const_iterator end() const noexcept               { return const_iterator{}; }
-    constexpr const_iterator cend() const noexcept              { return end(); }
-    reverse_iterator rbegin() noexcept                          { return reverse_iterator{}; }
-    constexpr const_reverse_iterator rbegin() const noexcept    { return const_reverse_iterator{}; }
-    constexpr const_reverse_iterator crbegin() const noexcept   { return rbegin(); }
-    reverse_iterator rend() noexcept                            { return reverse_iterator(begin()); }
-    constexpr const_reverse_iterator rend() const noexcept      { return const_reverse_iterator(begin()); }
-    constexpr const_reverse_iterator crend() const noexcept     { return rend(); }
-
-    // Capacity
-    constexpr bool empty() const noexcept                       { return true; }
-    constexpr size_type size() const noexcept                   { return 0; }
-    constexpr size_type max_size() const noexcept               { return 0; }
-
-    // Operations
-    void fill(const T& value) {}
-    void swap(array& other) noexcept(noexcept(swap(adv::declval<T&>(), adv::declval<T&>()))) {}
-
-private:
-    T elements_[1]; // To be able to return a valid reference when needed
-};
 
 // Implementations
 

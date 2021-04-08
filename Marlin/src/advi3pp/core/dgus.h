@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "string.h"
+#include "../lib/ADVstd/array.h"
 
 namespace ADVi3pp {
 
@@ -190,7 +191,7 @@ protected:
     struct Position { enum { Header0 = 0, Header1 = 1, Length = 2, Command = 3, Data = 4, Register = 4, Variable = 4,
             NbBytes = 5, NbWords = 6 }; };
 
-    uint8_t buffer_[FRAME_BUFFER_SIZE] = {};
+    adv::array<uint8_t, FRAME_BUFFER_SIZE> buffer_ = {};
     uint8_t position_ = 0;
 };
 

@@ -64,8 +64,8 @@ private:
 private:
     Point point_ = Point::M;
     Multiplier multiplier_ = Multiplier::M1;
-    adv::array<int, GRID_MAX_POINTS_X> offsets_ = {};
-    adv::array<int, GRID_MAX_POINTS_X> old_offsets_ = {};
+    adv::array<int, GRID_MAX_POINTS_X> offsets_{};
+    adv::array<int, GRID_MAX_POINTS_X> old_offsets_{};
     friend Parent;
 };
 

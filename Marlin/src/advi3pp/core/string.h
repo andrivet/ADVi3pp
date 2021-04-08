@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../lib/ADVstd/array.h"
 #include "../../libs/duration_t.h"
 #include "flash_char.h"
 
@@ -98,7 +99,7 @@ struct ADVString
     const char* get() const;
 
 private:
-    char string_[L + 1] = {};
+    adv::array<char, L+1> string_{};
 };
 
 // --------------------------------------------------------------------
@@ -126,14 +127,14 @@ template<size_t L> template<size_t L2> inline ADVString<L>& ADVString<L>::operat
 
 template<size_t L> template<size_t L2> ADVString<L>& ADVString<L>::set(const ADVString<L2>& s)
 {
-    strlcpy(string_, s.get(), L + 1);
+    strlcpy(string_.data(), s.get(), L + 1);
     return *this;
 }
 
 template<size_t L>
 inline ADVString<L>& ADVString<L>::set(const char* s)
 {
-    strlcpy(string_, s, L + 1);
+    strlcpy(string_.data(), s, L + 1);
     return *this;
 }
 
@@ -151,7 +152,7 @@ ADVString<L>& ADVString<L>::set(const char c)
 template<size_t L>
 ADVString<L>& ADVString<L>::set(const char* fmt, va_list& args)
 {
-    vsnprintf(string_, L + 1, fmt, args);
+    vsnprintf(string_.data(), L + 1, fmt, args);
     return *this;
 }
 
@@ -160,14 +161,14 @@ ADVString<L>& ADVString<L>::set(const char* fmt, va_list& args)
 template<size_t L>
 inline ADVString<L>& ADVString<L>::set(const FlashChar* s)
 {
-    strlcpy_P(string_, reinterpret_cast<const char*>(s), L + 1);
+    strlcpy_P(string_.data(), reinterpret_cast<const char*>(s), L + 1);
     return *this;
 }
 
 template<size_t L>
 ADVString<L>& ADVString<L>::set(const FlashChar* fmt, va_list& args)
 {
-    vsnprintf_P(string_, L + 1, reinterpret_cast<const char*>(fmt), args);
+    vsnprintf_P(string_.data(), L + 1, reinterpret_cast<const char*>(fmt), args);
     return *this;
 }
 
@@ -247,7 +248,7 @@ template<size_t L> inline void ADVString<L>::operator+=(char c) { append(c); }
 template<size_t L>
 ADVString<L>& ADVString<L>::append(const char* s)
 {
-    strlcat(string_, s, L + 1);
+    strlcat(string_.data(), s, L + 1);
     return *this;
 }
 
@@ -266,7 +267,7 @@ ADVString<L>& ADVString<L>::append(char c)
 template<size_t L>
 ADVString<L>& ADVString<L>::append(const FlashChar* s)
 {
-    strlcat_P(string_, reinterpret_cast<const char*>(s), L + 1);
+    strlcat_P(string_.data(), reinterpret_cast<const char*>(s), L + 1);
     return *this;
 }
 
@@ -315,10 +316,10 @@ ADVString<L>& ADVString<L>::append(double n, uint8_t decimals)
     return *this;
 }
 
-template<size_t L> inline size_t ADVString<L>::length() const { return strlen(string_); }
+template<size_t L> inline size_t ADVString<L>::length() const { return strlen(string_.data()); }
 template<size_t L> inline char ADVString<L>::operator[](size_t i) const { return string_[i]; }
 template<size_t L> inline bool ADVString<L>::is_empty() const { return string_[0] == 0; }
-template<size_t L> inline const char* ADVString<L>::get() const { return string_; }
+template<size_t L> inline const char* ADVString<L>::get() const { return string_.data(); }
 
 
 }

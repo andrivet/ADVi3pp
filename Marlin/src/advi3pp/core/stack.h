@@ -21,6 +21,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "../lib/ADVstd/array.h"
 #include "logging.h"
 
 namespace ADVi3pp {
@@ -35,7 +36,7 @@ struct Stack
     bool contains(T e) const;
 
 private:
-    T elements_[S];
+    adv::array<T, S> elements_;
     size_t top_ = 0;
 };
 

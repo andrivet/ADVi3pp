@@ -188,7 +188,7 @@ void PidSettings::get_current_pid()
     }
 }
 
-Pid* PidSettings::get_pid()
+adv::array<Pid, PidSettings::NB_PIDs>& PidSettings::get_pid()
 {
     switch(kind_)
     {
@@ -198,7 +198,7 @@ Pid* PidSettings::get_pid()
     }
 }
 
-const Pid* PidSettings::get_pid() const
+const adv::array<Pid, PidSettings::NB_PIDs>& PidSettings::get_pid() const
 {
     switch(kind_)
     {
@@ -240,7 +240,7 @@ void PidSettings::get_current_bed_pid()
 void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
 {
     kind_ = kind;
-    Pid* pid = get_pid();
+    auto pid = get_pid();
     for(size_t i = 0; i < NB_PIDs; ++i)
     {
         if(temperature == pid[i].temperature_)
@@ -272,7 +272,7 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
     kind_ = kind;
 
     uint16_t best_difference = 500;
-    Pid* pid = get_pid();
+    auto pid = get_pid();
 
     for(size_t i = 0; i < NB_PIDs; ++i)
     {

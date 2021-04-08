@@ -146,7 +146,7 @@ Frame& operator<<(Frame& frame, const char* s)
 {
     auto l = strlen(s);
     size_t length = frame.position_ + l < Frame::FRAME_BUFFER_SIZE ? l : Frame::FRAME_BUFFER_SIZE - frame.position_;
-    memcpy(frame.buffer_ + frame.position_, s, length);
+    memcpy(&frame.buffer_[frame.position_], s, length);
     frame.position_ += length;
     frame.buffer_[Frame::Position::Length] += length;
     return frame;
@@ -190,7 +190,7 @@ bool Frame::send(bool logging)
 #endif
     }
     size_t size = 3 + buffer_[Position::Length];
-    return DgusSerial.write(buffer_, size) == size; // Header, length and data
+    return DgusSerial.write(buffer_.data(), size) == size; // Header, length and data
 }
 
 //! Reset this Frame as an input Frame
@@ -307,7 +307,7 @@ bool Frame::receive(bool log)
     buffer_[2] = length;
 
     wait_for_data(length);
-    auto read = DgusSerial.readBytes(buffer_ + 3, length);
+    auto read = DgusSerial.readBytes(&buffer_[3], length);
     if(read != length)
     {
         Log::error() << F("Invalid amount of bytes received: ") << read << F(" instead of ") << length << Log::endl();

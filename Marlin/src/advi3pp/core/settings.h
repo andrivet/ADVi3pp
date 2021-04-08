@@ -21,6 +21,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "../lib/ADVstd/array.h"
 #include "../../lcd/extui/ui_api.h"
 #include "enums.h"
 #include "eeprom.h"
@@ -58,7 +59,7 @@ private:
             Feature::BuzzOnAction;
 
     Feature features_ = DEFAULT_FEATURES;
-    uint16_t last_used_temperature_[nb_temperatures] = {default_bed_temperature, default_hotend_temperature};
+    adv::array<uint16_t, nb_temperatures> last_used_temperature_ {{default_bed_temperature, default_hotend_temperature}};
 };
 
 extern Settings settings;
