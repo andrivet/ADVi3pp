@@ -214,6 +214,7 @@ bool Core::init()
 
     Frame::setup_lcd();
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
+    send_sponsors();
     graphs.clear();
     dimming.reset(true);
     versions.send_versions();
