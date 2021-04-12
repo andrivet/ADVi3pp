@@ -101,7 +101,7 @@ void Facade::on_media_removed()
 
 void Facade::on_play_tone(const uint16_t /*frequency*/, const uint16_t /*duration*/)
 {
-    // TODO
+    buzzer.buzz_on_action();
 }
 
 void Facade::on_print_started()
