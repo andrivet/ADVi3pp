@@ -87,14 +87,14 @@ void LoadUnload::prepare()
 void LoadUnload::load_command()
 {
     prepare();
-    core.inject_commands(F("M701"));
+    core.inject_commands(F("M701\nM104 S0"));
 }
 
 //! Start Unload action.
 void LoadUnload::unload_command()
 {
     prepare();
-    core.inject_commands(F("M702"));
+    core.inject_commands(F("M702\nM104 S0"));
 }
 
 
