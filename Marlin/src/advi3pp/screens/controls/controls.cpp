@@ -43,12 +43,12 @@ bool Controls::do_dispatch(KeyValue key_value)
     {
         case KeyValue::Temps:           show_temps(); break;
         case KeyValue::Print:           show_print(); break;
-        case KeyValue::Controls:        pages.show_page(Page::Controls); break;
-        case KeyValue::Tuning:          pages.show_page(Page::Tuning); break;
-        case KeyValue::Settings:        pages.show_page(Page::Settings); break;
-        case KeyValue::Infos:           pages.show_page(Page::Infos); break;
-        case KeyValue::Motors:          pages.show_page(Page::MotorsSettings); break;
-        case KeyValue::Leveling:        pages.show_page(Page::Leveling); break;
+        case KeyValue::Controls:        pages.show(Page::Controls); break;
+        case KeyValue::Tuning:          pages.show(Page::Tuning); break;
+        case KeyValue::Settings:        pages.show(Page::Settings); break;
+        case KeyValue::Infos:           pages.show(Page::Infos); break;
+        case KeyValue::Motors:          pages.show(Page::MotorsSettings); break;
+        case KeyValue::Leveling:        pages.show(Page::Leveling); break;
         case KeyValue::PrintSettings:   show_print_settings(); break;
         case KeyValue::Back:            back_command(); break;
         default:                        return false;
@@ -68,7 +68,7 @@ void Controls::show_temps()
     }
 
     // If there is a print running (or paused), display the print screen.
-    pages.show_page(Page::Print);
+    pages.show(Page::Print);
 }
 
 //! Show Print Settings page (only if a print is running or paused)
@@ -81,7 +81,7 @@ void Controls::show_print_settings()
     }
 
     // If there is a print running (or paused), display the print settings.
-    print_settings.show(ShowOptions::SaveBack);
+    print_settings.show();
 }
 
 //! Show one of the Printing screens depending of the context:
@@ -92,11 +92,11 @@ void Controls::show_print()
     // If there is a print running (or paused), display the SD or USB print screen
     if(ExtUI::isPrinting() || ExtUI::isPrintingPaused())
     {
-        pages.show_page(Page::Print);
+        pages.show(Page::Print);
         return;
     }
 
-    wait.show(F("Accessing the SD card..."));
+    wait.wait(F("Accessing the SD card..."));
     task.set_background_task(BackgroundTask{this, &Controls::show_sd_or_temp_page});
 }
 
@@ -111,11 +111,11 @@ void Controls::show_sd_or_temp_page()
     if(!ExtUI::isMediaInserted())
     {
         // SD card not accessible so fall back to Temperatures
-        temperatures.show(ShowOptions::None);
+        temperatures.show();
         return;
     }
 
-    sd_card.show(ShowOptions::None);
+    sd_card.show();
 }
 
 }

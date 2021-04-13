@@ -69,7 +69,7 @@ Page ManualLeveling::do_prepare_page()
 {
     if(!core.ensure_not_printing())
         return Page::None;
-    wait.show(F("Homing..."));
+    wait.wait(F("Homing..."));
     ExtUI::setAllAxisUnhomed();
     ExtUI::setAllAxisPositionUnknown();
     core.inject_commands(F("G28 F6000")); // Homing
@@ -88,7 +88,7 @@ void ManualLeveling::leveling_task()
 
     Log::log() << F("Leveling Homed, start process") << Log::endl();
     task.clear_background_task();
-    pages.show_page(Page::ManualLeveling, ShowOptions::None);
+    pages.show(Page::ManualLeveling);
 }
 
 void ManualLeveling::move(int x, int y)

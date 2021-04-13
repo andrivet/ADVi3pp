@@ -36,7 +36,7 @@ Page EepromMismatch::do_prepare_page()
 void EepromMismatch::do_save_command()
 {
     settings.save();
-    pages.show_page(Page::Setup, ShowOptions::None);
+    pages.show(Page::Setup);
 }
 
 //! Check the EEPROM value mismatch flag.

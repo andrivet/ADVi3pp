@@ -101,7 +101,7 @@ void BLTouchTesting::step2()
 {
     set_bits(tested_, Wires::Orange);
     selftest_bltouch_command();
-    pages.show_page(Page::BLTouchTesting2, ShowOptions::None);
+    pages.show(Page::BLTouchTesting2);
 }
 
 void BLTouchTesting::step2yes()
@@ -123,7 +123,7 @@ void BLTouchTesting::step3()
     ExtUI::delay_ms(500);
 
     set_bits(tested_, Wires::White | Wires::Black);
-    pages.show_page(Page::BLTouchTesting3, ShowOptions::None);
+    pages.show(Page::BLTouchTesting3);
     if(bltouch.deploy())
     {
         status.set(F("Deployment of BLTouch failed"));
@@ -171,7 +171,7 @@ void BLTouchTesting::step4()
           << Uint16{white};
     frame.send();
 
-    pages.show_page(Page::BLTouchTesting4, ShowOptions::None);
+    pages.show(Page::BLTouchTesting4);
 }
 
 #else

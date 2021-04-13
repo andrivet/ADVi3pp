@@ -122,7 +122,7 @@ void Preheat::do_save_command()
 
     settings.save();
     status.set(F("Preheat..."));
-    temperatures.show(ShowOptions::None);
+    temperatures.show();
 }
 
 //! Cooldown the bed and the nozzle, turn off the fan

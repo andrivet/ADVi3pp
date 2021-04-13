@@ -29,22 +29,22 @@ Pages pages;
 
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
-void Pages::show_page(Page page, ShowOptions options)
+void Pages::show(Page new_page)
 {
-    Log::log() << F("Show page ") << static_cast<uint8_t>(page) << Log::endl();
+    Log::log() << F("Show page ") << static_cast<uint8_t>(new_page) << Log::endl();
 
-    if(test_one_bit(options, ShowOptions::SaveBack))
+    auto current = get_current_page();
+    if(!test_one_bit(current, Page::Temporary))
     {
-        auto current = get_current_page();
-        Log::log() << F("Save back page ") << static_cast<uint8_t>(current) << Log::endl();
+        Log::log() << F("Save back page ") << static_cast<uint16_t>(current) << Log::endl();
         back_pages_.push(current);
     }
 
     WriteRegisterDataRequest frame{Register::PictureID};
-    frame << 00_u8 << page;
+    frame << 00_u8 << clear_bits(current, Page::Temporary);;
     frame.send(true);
 
-    current_page_ = page;
+    current_page_ = new_page;
 }
 
 //! Retrieve the current page on the LCD screen
@@ -72,13 +72,13 @@ void Pages::show_back_page()
     if(back_pages_.is_empty())
     {
         Log::log() << F("No back page, show Main") << Log::endl();
-        show_page(Page::Main, ShowOptions::None);
+        show(Page::Main);
         return;
     }
 
     auto back = back_pages_.pop();
     Log::log() << F("Pop back page ") << static_cast<uint8_t>(back) << Log::endl();
-    show_page(back, ShowOptions::None);
+    show(back);
 }
 
 //! Show the "Next" page on the LCD display.
@@ -108,7 +108,7 @@ void Pages::back_to_page(Page page)
         if(back_page == page)
         {
             Log::log() << F("Show page ") << static_cast<uint8_t>(forward_page_) << Log::endl();
-            show_page(page, ShowOptions::None);
+            show(page);
             forward_page_ = Page::None;
             return;
         }

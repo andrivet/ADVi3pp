@@ -41,15 +41,15 @@ Page Temperatures::do_prepare_page()
 void Temperatures::show(const WaitCallback& back)
 {
     back_ = back;
-    Parent::show(ShowOptions::SaveBack);
+    Parent::show();
 }
 
 //! Show the temperature page
 //! @param options  Options when displaying the page (i.e. save the current page or not)
-void Temperatures::show(ShowOptions options)
+void Temperatures::show()
 {
     back_ = nullptr;
-    Parent::show(options);
+    Parent::show();
 }
 
 //! Execute the Back command

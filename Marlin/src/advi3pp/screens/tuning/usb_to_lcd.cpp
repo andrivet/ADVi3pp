@@ -31,7 +31,7 @@ Usb2Lcd usb_2_lcd;
 //! @return The index of the page to display
 Page Usb2Lcd::do_prepare_page()
 {
-    wait.show(F("USB is now connected to LCD serial port."), ShowOptions::None);
+    wait.wait(F("USB is now connected to LCD serial port."));
     Frame::forwarding_loop();
     return Page::None;
 }

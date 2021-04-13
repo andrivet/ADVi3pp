@@ -154,7 +154,7 @@ void Facade::on_factory_reset()
         return;
 
     pages.reset();
-    setup.show(ShowOptions::None);
+    setup.show();
 }
 
 void Facade::on_settings_written(bool /*success*/)
@@ -233,9 +233,9 @@ bool Core::init()
 #endif
 
     if(eeprom_mismatch.does_mismatch())
-        eeprom_mismatch.show(ShowOptions::None);
+        eeprom_mismatch.show();
     else
-        pages.show_page(Page::Boot, ShowOptions::None);
+        pages.show(Page::Boot);
 
     return true;
 }
@@ -256,12 +256,12 @@ void Core::killed(const FlashChar* error)
 {
     status.set(error);
     send_lcd_serial_data(true);
-    pages.show_page(Page::Killed);
+    pages.show(Page::Killed);
 }
 
 void Core::waitUserConfirm(const char* msg)
 {
-    wait.show_continue(msg);
+    wait.wait_continue(msg);
 }
 
 //! Note to forks author:
@@ -426,7 +426,7 @@ bool Core::ensure_not_printing()
     if(!ExtUI::isPrinting())
         return true;
 
-    wait.show_back(F("Not accessible when the printer is busy"));
+    wait.wait_back(F("Not accessible when the printer is busy"));
     return false;
 }
 

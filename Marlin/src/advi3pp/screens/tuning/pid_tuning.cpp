@@ -169,8 +169,7 @@ void PidTuning::finished(ExtUI::result_t result)
 
     pid_settings.add_pid(kind_, temperature_);
 
-    bool fromLCDMenu = test_one_bit(state_, State::FromLCDMenu);
-    pid_settings.show(fromLCDMenu ? ShowOptions::None : ShowOptions::SaveBack);
+    pid_settings.show();
 }
 
 

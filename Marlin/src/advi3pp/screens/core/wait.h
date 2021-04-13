@@ -31,21 +31,18 @@ namespace ADVi3pp {
 //! Display wait page and messages
 struct Wait: Screen<Wait>
 {
-    void show(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
-    void show(const FlashChar* message, const WaitCallback& back, ShowOptions options = ShowOptions::SaveBack);
-    void show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options = ShowOptions::SaveBack);
-    void show_continue(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
-    void show_continue(const char* message, ShowOptions options = ShowOptions::SaveBack);
-    void show_back(const FlashChar* message, ShowOptions options = ShowOptions::SaveBack);
-    void set_message(const FlashChar* message);
-    template<size_t L> void set_message(const ADVString<L>& message);
+    void wait(const FlashChar* message);
+    void wait_back(const FlashChar* message, const WaitCallback& back);
+    void wait_back(const FlashChar* message);
+    void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
+    void wait_continue(const FlashChar* message);
+    void wait_continue(const char* message);
 
 private:
     Page do_prepare_page();
     void do_save_command();
     void do_back_command();
     bool on_continue();
-    bool on_continue_back();
     bool on_back();
 
     WaitCallback back_;
@@ -57,11 +54,6 @@ private:
 extern Wait wait;
 
 // --------------------------------------------------------------------
-
-template<size_t L> void Wait::set_message(const ADVString<L>& message)
-{
-    status.set(message);
-}
 
 }
 

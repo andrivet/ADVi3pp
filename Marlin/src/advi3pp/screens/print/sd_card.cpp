@@ -159,7 +159,7 @@ void SdCard::select_file_command(uint16_t file_index)
     status.set_filename(filename);
     ExtUI::printFile(filename);
 
-    pages.show_page(Page::Print, ShowOptions::None);
+    pages.show(Page::Print);
 }
 
 }

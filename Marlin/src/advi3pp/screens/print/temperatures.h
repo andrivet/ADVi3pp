@@ -29,7 +29,7 @@ namespace ADVi3pp {
 struct Temperatures: Screen<Temperatures>
 {
     void show(const WaitCallback& back);
-    void show(ShowOptions options = ShowOptions::SaveBack);
+    void show();
 
 private:
     Page do_prepare_page();

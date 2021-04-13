@@ -36,7 +36,7 @@ struct Screen: adv::Crtp<Self, Screen>
 {
 public:
     void handle(KeyValue value);
-    void show(ShowOptions options);
+    void show();
 
     bool dispatch(KeyValue value) { return this->self().do_dispatch(value); }
     void show_command() { this->self().do_show_command(); }
@@ -103,17 +103,17 @@ void Screen<Self>::invalid(KeyValue value)
 }
 
 template<typename Self>
-void Screen<Self>::show(ShowOptions options)
+void Screen<Self>::show()
 {
     Page page = prepare_page();
     if(page != Page::None)
-        pages.show_page(page, options);
+        pages.show(page);
 }
 
 template<typename Self>
 void Screen<Self>::do_show_command()
 {
-    show(ShowOptions::SaveBack);
+    show();
 }
 
 template<typename Self>

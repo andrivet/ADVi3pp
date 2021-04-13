@@ -61,7 +61,7 @@ void Print::stop_command()
     if(!ExtUI::isPrinting())
         return;
 
-    wait.show(F("Stop printing..."), ShowOptions::SaveBack);
+    wait.wait(F("Stop printing..."));
     ExtUI::stopPrint();
 }
 
@@ -73,12 +73,12 @@ void Print::pause_resume_command()
 
     if(ExtUI::isPrintingPaused())
     {
-        wait.show(F("Resume printing..."), ShowOptions::SaveBack);
+        wait.wait(F("Resume printing..."));
         ExtUI::resumePrint();
     }
     else
     {
-        wait.show(F("Pause printing..."), ShowOptions::SaveBack);
+        wait.wait(F("Pause printing..."));
         ExtUI::pausePrint();
     }
 }
@@ -89,7 +89,7 @@ void Print::advanced_pause_command()
     if(!ExtUI::isPrinting())
         return;
 
-    wait.show(F("Pausing..."), ShowOptions::SaveBack);
+    wait.wait(F("Pausing..."));
     core.inject_commands(F("M600"));
 }
 

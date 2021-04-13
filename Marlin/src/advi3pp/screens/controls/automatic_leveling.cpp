@@ -72,7 +72,7 @@ void AutomaticLeveling::start()
 {
     sensor_interactive_leveling_ = true;
     pages.save_forward_page();
-    wait.show(F("Homing..."));
+    wait.wait(F("Homing..."));
 
     // homing, raise head, leveling, go back to corner, activate compensation
 #ifdef ADVi3PP_PROBE
@@ -89,7 +89,7 @@ void AutomaticLeveling::leveling_finished(bool success)
     if(!success)
     {
         if(sensor_interactive_leveling_)
-            wait.show(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::leveling_failed});
+            wait.wait_back(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::leveling_failed});
         else
             status.set(F("Leveling failed"));
 
@@ -102,7 +102,7 @@ void AutomaticLeveling::leveling_finished(bool success)
     if(sensor_interactive_leveling_)
     {
         sensor_interactive_leveling_ = false;
-        leveling_grid.show(ShowOptions::None);
+        leveling_grid.show();
     }
     else
     {

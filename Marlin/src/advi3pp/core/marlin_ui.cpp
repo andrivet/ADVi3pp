@@ -66,9 +66,9 @@ void MarlinUI::return_to_status()
     Log::log() << F("return_to_status") << Log::endl();
     pages.reset();
     if(print_job_timer.isRunning())
-        pages.show_page(Page::Print, ShowOptions::SaveBack);
+        pages.show(Page::Print);
     else
-        pages.show_page(Page::Main, ShowOptions::None);
+        pages.show(Page::Main);
 }
 
 void MarlinUI::reset_alert_level()
@@ -208,7 +208,7 @@ void MarlinUI::synchronize(PGM_P msg)
 
     if(msg == nullptr)
         msg = GET_TEXT(MSG_MOVING);
-    wait.show(reinterpret_cast<const FlashChar*>(msg));
+    wait.wait(reinterpret_cast<const FlashChar*>(msg));
 
     planner.synchronize(); // idle() is called until moves complete
     no_reentry = false;

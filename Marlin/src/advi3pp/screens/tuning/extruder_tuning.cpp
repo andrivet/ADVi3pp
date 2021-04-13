@@ -77,7 +77,7 @@ void ExtruderTuning::start_command()
 
     Uint16 temperature; frame >> temperature;
     ExtUI::setTargetTemp_celsius(temperature.word, ExtUI::E0);
-    wait.show(F("Heating the extruder..."), ShowOptions::None);
+    wait.wait(F("Heating the extruder..."));
 
     core.inject_commands(F("G1 Z20 F1200\nM83\nG92 E0"));   // raise head, relative E mode, reset E axis
 
@@ -97,7 +97,7 @@ void ExtruderTuning::after_extrusion()
     frame << 200_u16; // 20.0
     frame.send();
 
-    pages.show_page(Page::ExtruderTuningMeasure, ShowOptions::None);
+    pages.show(Page::ExtruderTuningMeasure);
 }
 
 //! Execute the Back command
@@ -131,7 +131,7 @@ void ExtruderTuning::settings_command()
             << F(", new = ") << new_value << Log::endl();
 
     ExtUI::setAxisSteps_per_mm(new_value, ExtUI::E0);
-    steps_settings.show(ShowOptions::None);
+    steps_settings.show();
 }
 
 }

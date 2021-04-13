@@ -32,74 +32,66 @@ Page Wait::do_prepare_page()
     return Page::Waiting;
 }
 
-void Wait::set_message(const FlashChar* message)
-{
-    status.set(message);
-}
-
 //! Show a simple wait page with a message
 //! @param message  The message to display
-//! @param options  Options when displaying the page (i.e. save the current page or not)
-void Wait::show(const FlashChar* message, ShowOptions options)
+void Wait::wait(const FlashChar* message)
 {
-    set_message(message);
+    status.set(message);
     back_ = nullptr;
     continue_ = nullptr;
-    pages.show_page(Page::Waiting, options);
+    pages.show(Page::Waiting);
 }
 
 //! Show a simple wait page with a message
 //! @param message  The message to display
 //! @param back     Callback to be called when the back button is pressed
-//! @param options  Options when displaying the page (i.e. save the current page or not)
-void Wait::show(const FlashChar* message, const WaitCallback& back, ShowOptions options)
+void Wait::wait_back(const FlashChar* message, const WaitCallback& back)
 {
-    set_message(message);
+    status.set(message);
     back_ = back;
     continue_ = nullptr;
-    pages.show_page(Page::WaitBack, options);
+    pages.show(Page::WaitBack);
+}
+
+//! Ensure a print is not running and if so, display a message
+void Wait::wait_back(const FlashChar* message)
+{
+    status.set(message);
+    back_ = WaitCallback{this, &Wait::on_back};
+    continue_ = nullptr;
+    pages.show(Page::WaitBack);
 }
 
 //! Show a simple wait page with a message
 //! @param message  The message to display
 //! @param back     Callback to be called when the back button is pressed
 //! @param cont     Callback to be called when the continue button is pressed
-//! @param options  Options when displaying the page (i.e. save the current page or not)
-void Wait::show(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont, ShowOptions options)
+void Wait::wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont)
 {
-    set_message(message);
+    status.set(message);
     back_ = back;
     continue_ = cont;
-    pages.show_page(Page::WaitBackContinue, options);
+    pages.show(Page::WaitBackContinue);
 }
 
 //! Show a simple wait page with a message
 //! @param message  The message to display
-//! @param options  Options when displaying the page (i.e. save the current page or not)
-void Wait::show_continue(const FlashChar* message, ShowOptions options)
-{
-    set_message(message);
-    back_ = nullptr;
-    continue_ = WaitCallback{this, test_one_bit(options, ShowOptions::SaveBack) ? &Wait::on_continue_back : &Wait::on_continue};
-    pages.show_page(Page::WaitContinue, options);
-}
-
-void Wait::show_continue(const char* message, ShowOptions options)
+void Wait::wait_continue(const FlashChar* message)
 {
     status.set(message);
     back_ = nullptr;
-    continue_ = WaitCallback{this, test_one_bit(options, ShowOptions::SaveBack) ? &Wait::on_continue_back : &Wait::on_continue};
-    pages.show_page(Page::WaitContinue, options);
+    continue_ = WaitCallback{this, &Wait::on_continue};
+    pages.show(Page::WaitContinue);
 }
 
-//! Ensure a print is not running and if so, display a message
-void Wait::show_back(const FlashChar* message, ShowOptions options)
+void Wait::wait_continue(const char* message)
 {
-    set_message(message);
-    back_ = WaitCallback{this, &Wait::on_back};
-    continue_ = nullptr;
-    pages.show_page(Page::WaitBack, options);
+    status.set(message);
+    back_ = nullptr;
+    continue_ = WaitCallback{this, &Wait::on_continue};
+    pages.show(Page::WaitContinue);
 }
+
 
 //! Default action when the continue button is pressed (inform Marlin)
 bool Wait::on_continue()
@@ -107,15 +99,6 @@ bool Wait::on_continue()
     ExtUI::setUserConfirmed();
     return false;
 }
-
-//! Default action when the continue button is pressed (inform Marlin)
-bool Wait::on_continue_back()
-{
-    ExtUI::setUserConfirmed();
-    pages.show_back_page();
-    return false;
-}
-
 
 //! Action when the back button is pressed
 bool Wait::on_back()

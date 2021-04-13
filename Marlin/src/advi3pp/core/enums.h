@@ -25,25 +25,27 @@
 
 namespace ADVi3pp {
 
-enum class Page: uint8_t
+enum class Page: uint16_t
 {
+    Temporary               = 0x8000,
+
     None                    = 0,
     Main                    = 22,
     Controls                = 24,
     Tuning                  = 26,
     Settings                = 28,
     LoadUnload              = 30,
-    WaitBack                = 32,
-    WaitBackContinue        = 34,
+    WaitBack                = 32 | Temporary,
+    WaitBackContinue        = 34 | Temporary,
     Preheat                 = 36,
     Move                    = 38,
     SdCard                  = 40,
     Print                   = 42,
     Sponsors                = 44,
-    Waiting                 = 46,
+    Waiting                 = 46 | Temporary,
     ManualLeveling          = 48,
     ExtruderTuningTemp      = 50,
-    WaitContinue            = 52,
+    WaitContinue            = 52 | Temporary,
     ExtruderTuningMeasure   = 54,
     Leveling                = 56,
     PidTuning               = 58,
@@ -56,7 +58,7 @@ enum class Page: uint8_t
     StepsSettings           = 72,
     FeedrateSettings        = 74,
     AccelerationSettings    = 76,
-    PauseOptions            = 78,
+    PauseOptions            = 78 | Temporary,
     PrintSettings           = 80,
     Setup                   = 82,
     SetupNoSensor           = 84,
@@ -87,6 +89,7 @@ enum class Page: uint8_t
 
     Boot                    = 200
 };
+ENABLE_BITMASK_OPERATOR(Page);
 
 //! List of variables and their addresses.
 enum class Variable: uint16_t

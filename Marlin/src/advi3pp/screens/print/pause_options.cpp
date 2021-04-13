@@ -60,7 +60,7 @@ void PauseOptions::extrude_command()
 
 void PauseOptions::resume_command()
 {
-    wait.show(F("Please wait..."), ShowOptions::None);
+    wait.wait(F("Please wait..."));
     pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT;
 }
 

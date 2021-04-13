@@ -22,22 +22,15 @@
 
 #include "stack.h"
 #include "enums.h"
+#include "task.h"
 
 namespace ADVi3pp {
-
-//! Options when pushing a page onto the stack
-enum class ShowOptions: uint8_t
-{
-    None     = 0x00, //!< No option
-    SaveBack = 0x01  //!< Save the current page onto the stack of back pages
-};
-ENABLE_BITMASK_OPERATOR(ShowOptions);
 
 
 //! Display a page on top of the others; display back and forward pages
 struct Pages
 {
-    void show_page(Page page, ShowOptions options = ShowOptions::SaveBack);
+    void show(Page page);
     Page get_current_page();
     void save_forward_page();
     void show_back_page();

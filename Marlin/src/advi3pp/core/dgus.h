@@ -80,7 +80,7 @@ enum class Register: uint8_t
 enum class Variable: uint16_t;
 enum class Action: uint16_t;
 enum class KeyValue: uint16_t;
-enum class Page: uint8_t;
+enum class Page: uint16_t;
 
 // --------------------------------------------------------------------
 // Uint8
