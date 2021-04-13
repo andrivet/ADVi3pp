@@ -118,16 +118,6 @@ Frame& operator<<(Frame& frame, Register reg)
     return frame;
 }
 
-//! Append a Page to this Frame.
-//! @param frame    The frame
-//! @param page     Page to be appended
-//! @return         Itself
-Frame& operator<<(Frame& frame, Page page)
-{
-    frame << Uint8(page);
-    return frame;
-}
-
 //! Append a Variable to this Frame.
 //! @param frame    The frame
 //! @param var      Variable to be appended

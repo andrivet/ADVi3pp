@@ -20,33 +20,19 @@
 
 #pragma once
 
-#include "stack.h"
-#include "enums.h"
-#include "task.h"
+#include "../../lib/array.h"
 
-namespace ADVi3pp {
-
-
-//! Display a page on top of the others; display back and forward pages
-struct Pages
+template <typename T>
+void endian_swap(T &val, typename std::enable_if<std::is_arithmetic<T>::value, std::nullptr_t>::type = nullptr)
 {
-    void show(Page page);
-    Page get_current_page();
-    void save_forward_page();
-    void show_back_page();
-    void show_forward_page();
-    void back_to_page(Page page);
-    void reset();
+    auto ptr = reinterpret_cast<std::uint8_t*>(&val);
+    std::array<std::uint8_t, sizeof(T)> raw_src, raw_dst;
 
-private:
-    void show_(Page page);
+    for(std::size_t i = 0; i < sizeof(T); ++i)
+        raw_src[i] = ptr[i];
 
-private:
-    Stack<Page, 8> back_pages_{};
-    Page forward_page_ = Page::None;
-    Page current_page_ = Page::Main;
-};
+    std::reverse_copy(raw_src.begin(), raw_src.end(), raw_dst.begin());
 
-extern Pages pages;
-
+    for(std::size_t i = 0; i < sizeof(T); ++i)
+        ptr[i] = raw_dst[i];
 }

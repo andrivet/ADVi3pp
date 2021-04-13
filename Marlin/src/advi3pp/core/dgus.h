@@ -92,7 +92,6 @@ struct Uint8
     uint8_t byte{}; //!< The actual value
     constexpr explicit Uint8(uint8_t value = 0) : byte{value} {}
     constexpr explicit Uint8(Register reg) : byte{static_cast<uint8_t>(reg)} {}
-    constexpr explicit Uint8(Page page) : byte{static_cast<uint8_t>(page)} {}
 };
 
 //! An unsigned 8 bits literal such as: 0_u8.
@@ -155,7 +154,6 @@ struct Frame
     friend Frame& operator<<(Frame& frame, const Uint8& data);
     friend Frame& operator<<(Frame& frame, const Uint16& data);
     friend Frame& operator<<(Frame& frame, const Uint32& data);
-    friend Frame& operator<<(Frame& frame, Page page);
     friend Frame& operator<<(Frame& frame, const char* s);
     friend Frame& operator<<(Frame& frame, char c);
     template<size_t L> friend Frame& operator<<(Frame& frame, const ADVString<L>& data);
