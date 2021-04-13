@@ -113,9 +113,20 @@ template<typename I, typename O>
 inline O copy(I first, I last, O d_first)
 {
     while(first != last)
-        *d_first++ = *first++;
+        *(d_first++) = *(first++);
     return d_first;
 }
+
+template<typename I, typename O>
+inline O reverse_copy(I first, I last, O d_first)
+{
+    while(first != last)
+        *(d_first++) = *(--last);
+    return d_first;
+}
+
+template<typename T>
+struct assert_false: false_type {};
 
 } // namespace adv
 

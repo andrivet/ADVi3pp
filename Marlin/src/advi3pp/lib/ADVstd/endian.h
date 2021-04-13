@@ -20,19 +20,72 @@
 
 #pragma once
 
-#include "../../lib/array.h"
+namespace adv {
 
-template <typename T>
-void endian_swap(T &val, typename std::enable_if<std::is_arithmetic<T>::value, std::nullptr_t>::type = nullptr)
+template<typename T>
+T endian_swap(T)
 {
-    auto ptr = reinterpret_cast<std::uint8_t*>(&val);
-    std::array<std::uint8_t, sizeof(T)> raw_src, raw_dst;
+    static_assert(assert_false<T>::value, "Not implemented for this type");
+}
 
-    for(std::size_t i = 0; i < sizeof(T); ++i)
-        raw_src[i] = ptr[i];
+template<>
+inline uint16_t endian_swap<uint16_t>(uint16_t value)
+{
+    return ((value & 0xFF00) >> 8) | ((value & 0x00FF) << 8);
+}
 
-    std::reverse_copy(raw_src.begin(), raw_src.end(), raw_dst.begin());
+template<>
+inline int16_t endian_swap<int16_t>(int16_t value)
+{
+    return ((value & 0xFF00) >> 8) | ((value & 0x00FF) << 8);
+}
 
-    for(std::size_t i = 0; i < sizeof(T); ++i)
-        ptr[i] = raw_dst[i];
+template<>
+inline uint32_t endian_swap(uint32_t value)
+{
+    return
+      ((value & 0x000000FF) << 24) |
+      ((value & 0x0000FF00) <<  8) |
+      ((value & 0x00FF0000) >>  8) |
+      ((value & 0xFF000000) >> 24);
+}
+
+template<>
+inline int32_t endian_swap(int32_t value)
+{
+    return
+      ((value & 0x000000FF) << 24) |
+      ((value & 0x0000FF00) <<  8) |
+      ((value & 0x00FF0000) >>  8) |
+      ((value & 0xFF000000) >> 24);
+}
+
+template<>
+inline uint64_t endian_swap(uint64_t value)
+{
+    return
+      ((value & 0x00000000000000FF) << 56) |
+      ((value & 0x000000000000FF00) << 40) |
+      ((value & 0x0000000000FF0000) << 24) |
+      ((value & 0x00000000FF000000) <<  8) |
+      ((value & 0x000000FF00000000) >>  8) |
+      ((value & 0x0000FF0000000000) >> 24) |
+      ((value & 0x00FF000000000000) >> 40) |
+      ((value & 0xFF00000000000000) >> 56);
+}
+
+template<>
+inline int64_t endian_swap(int64_t value)
+{
+    return
+      ((value & 0x00000000000000FF) << 56) |
+      ((value & 0x000000000000FF00) << 40) |
+      ((value & 0x0000000000FF0000) << 24) |
+      ((value & 0x00000000FF000000) <<  8) |
+      ((value & 0x000000FF00000000) >>  8) |
+      ((value & 0x0000FF0000000000) >> 24) |
+      ((value & 0x00FF000000000000) >> 40) |
+      ((value & 0xFF00000000000000) >> 56);
+}
+
 }
