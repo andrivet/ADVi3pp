@@ -26,15 +26,20 @@ namespace ADVi3pp {
 
 Pages pages;
 
+Log& operator<<(Log& log, Page page)
+{
+    log << static_cast<uint16_t>(page);
+    return log;
+}
 
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
 void Pages::show(Page page)
 {
     auto current = get_current_page();
-    if(!test_one_bit(current, Page::Temporary))
+    if(!test_one_bit(current, Page::Temporary) && current != Page::Main)
     {
-        Log::log() << F("Save back page ") << static_cast<uint16_t>(current) << Log::endl();
+        Log::log() << F("Save back page ") << current << Log::endl();
         back_pages_.push(current);
     }
 
@@ -43,10 +48,10 @@ void Pages::show(Page page)
 
 void Pages::show_(Page page)
 {
-    Log::log() << F("Show page ") << static_cast<uint16_t>(page) << Log::endl();
+    Log::log() << F("Show page ") << page << Log::endl();
 
     WriteRegisterDataRequest frame{Register::PictureID};
-    frame << Uint16{static_cast<uint16_t>(clear_bits(page, Page::Temporary))};
+    frame << Uint16{static_cast<uint16_t>(get_cleared_bits(page, Page::Temporary))};
     frame.send(true);
 
     current_page_ = page;
@@ -57,7 +62,7 @@ Page Pages::get_current_page()
 {
     // Boot page switches automatically (animation) to the Main page
 	if(current_page_ == Page::None || current_page_ == Page::Boot)
-		return Page::Main;
+        current_page_ = Page::Main;
     return current_page_;
 }
 
@@ -65,7 +70,7 @@ Page Pages::get_current_page()
 void Pages::save_forward_page()
 {
     auto current = get_current_page();
-    Log::log() << F("Save forward page ") << static_cast<uint16_t>(current) << Log::endl();
+    Log::log() << F("Save forward page ") << current << Log::endl();
     forward_page_ = current;
 }
 
@@ -77,12 +82,12 @@ void Pages::show_back_page()
     if(back_pages_.is_empty())
     {
         Log::log() << F("No back page, show Main") << Log::endl();
-        show(Page::Main);
+        show_(Page::Main);
         return;
     }
 
     auto back = back_pages_.pop();
-    Log::log() << F("Pop back page ") << static_cast<uint16_t>(back) << Log::endl();
+    Log::log() << F("Pop back page ") << back << Log::endl();
     show_(back);
 }
 
@@ -95,28 +100,21 @@ void Pages::show_forward_page()
         return;
     }
 
-    back_to_page(forward_page_);
-}
-
-void Pages::back_to_page(Page page)
-{
-    if(!back_pages_.contains(page))
-    {
-        Log::error() << F("Back pages do not contain page ") << static_cast<uint16_t>(page) << Log::endl();
-        return;
-    }
-
     while(!back_pages_.is_empty())
     {
         Page back_page = back_pages_.pop();
-        Log::log() << F("Pop back page ") << static_cast<uint16_t>(back_page) << Log::endl();
-        if(back_page == page)
+        Log::log() << F("Pop back page ") << back_page << Log::endl();
+        if(back_page == forward_page_)
         {
-            show_(page);
             forward_page_ = Page::None;
+            show_(forward_page_);
             return;
         }
     }
+
+    Log::error() << F("Back pages do not contain page ") << forward_page_ << Log::endl();
+    forward_page_ = Page::Main;
+    show_(forward_page_);
 }
 
 void Pages::reset()
