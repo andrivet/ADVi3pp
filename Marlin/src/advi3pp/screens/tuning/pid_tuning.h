@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../../core/bitmasks.h"
+#include "../../lib/ADVstd/bitmasks.h"
 #include "../core/screen.h"
 
 namespace ADVi3pp {

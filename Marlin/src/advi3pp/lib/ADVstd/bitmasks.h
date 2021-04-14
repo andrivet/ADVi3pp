@@ -1,7 +1,8 @@
 /**
- * ADVi3++ Firmware For Wanhao Duplicator i3 Plus (based on Marlin)
+ * bitmask - Helpers to handle enumerations
  *
- * Copyright (C) 2017-2021 Sebastien Andrivet [https://github.com/andrivet/]
+ * Copyright (C) 2018 Sebastien Andrivet [https://github.com/andrivet/]
+ * Copyright (C) 2017 Jonathan Boccara [https://www.fluentcpp.com/2017/05/19/crtp-helper/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +21,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include "ADVstd.h"
 
 namespace ADVi3pp {
 
@@ -41,35 +42,39 @@ template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, E>::type
 operator |(E lhs, E rhs)
 {
-    return static_cast<E>(static_cast<unsigned>(lhs) |  static_cast<unsigned>(rhs));
+    using U = adv::underlying_type_t<E>;
+    return static_cast<E>(static_cast<U>(lhs) | static_cast<U>(rhs));
 }
 
 template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, E>::type
 operator &(E lhs, E rhs)
 {
-    return static_cast<E>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
+    using U = adv::underlying_type_t<E>;
+    return static_cast<E>(static_cast<U>(lhs) & static_cast<U>(rhs));
 }
 
 template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, E>::type
 operator ^(E lhs, E rhs)
 {
-    return static_cast<E>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
+    using U = adv::underlying_type_t<E>;
+    return static_cast<E>(static_cast<U>(lhs) ^ static_cast<U>(rhs));
 }
 
 template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, E>::type
 operator ~(E rhs)
 {
-    return static_cast<E>(~static_cast<unsigned>(rhs));
+    using U = adv::underlying_type_t<E>;
+    return static_cast<E>(~static_cast<U>(rhs));
 }
 
 template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
 operator |=(E &lhs, E rhs)
 {
-    lhs = static_cast<E>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs));
+    lhs = lhs | rhs;
     return lhs;
 }
 
@@ -77,8 +82,7 @@ template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
 operator &=(E &lhs, E rhs)
 {
-    lhs = static_cast<E>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
-
+    lhs = lhs & rhs;
     return lhs;
 }
 
@@ -86,7 +90,7 @@ template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
 operator ^=(E &lhs, E rhs)
 {
-    lhs = static_cast<E>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
+    lhs = lhs ^ rhs;
     return lhs;
 }
 
@@ -101,32 +105,49 @@ template<typename E>
 typename enable_if<enable_bitmask_operators<E>::enable, bool>::type
 test_one_bit(E lhs, E rhs)
 {
-    return static_cast<uint16_t>(lhs & rhs) != 0;
+    return (lhs & rhs) != static_cast<E>(0);
 }
 
-template<typename E>
-typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
-flip_bits(E& lhs, E rhs)
+template<typename E, typename = typename enable_if<enable_bitmask_operators<E>::enable, E&>::type>
+void flip_bits(E& lhs, E rhs)
 {
     lhs ^= rhs;
-    return lhs;
 }
 
-template<typename E>
-typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
-set_bits(E& lhs, E rhs)
+template<typename E, typename = typename enable_if<enable_bitmask_operators<E>::enable, E&>::type>
+void set_bits(E& lhs, E rhs)
 {
     lhs |= rhs;
-    return lhs;
+}
+
+template<typename E, typename = typename enable_if<enable_bitmask_operators<E>::enable, E&>::type>
+void clear_bits(E& lhs, E rhs)
+{
+    lhs &= ~rhs;
 }
 
 template<typename E>
-typename enable_if<enable_bitmask_operators<E>::enable, E&>::type
-clear_bits(E& lhs, E rhs)
+typename enable_if<enable_bitmask_operators<E>::enable, E>::type
+get_flipped_bits(E lhs, E rhs)
 {
-    lhs &= ~rhs;
-    return lhs;
+    return lhs ^ rhs;
 }
+
+template<typename E>
+typename enable_if<enable_bitmask_operators<E>::enable, E>::type
+get_set_bits(E lhs, E rhs)
+{
+    return lhs | rhs;
+}
+
+template<typename E>
+typename enable_if<enable_bitmask_operators<E>::enable, E>::type
+get_cleared_bits(E lhs, E rhs)
+{
+    return lhs & ~rhs;
+}
+
+
 
 
 #define ENABLE_BITMASK_OPERATOR(E) \

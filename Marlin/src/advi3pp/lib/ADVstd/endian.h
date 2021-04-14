@@ -1,7 +1,8 @@
 /**
- * ADVi3++ Firmware For Wanhao Duplicator i3 Plus (based on Marlin)
+ * endian - Helpers to handle little and big endian
  *
- * Copyright (C) 2017-2021 Sebastien Andrivet [https://github.com/andrivet/]
+ * Copyright (C) 2018 Sebastien Andrivet [https://github.com/andrivet/]
+ * Copyright (C) 2017 Jonathan Boccara [https://www.fluentcpp.com/2017/05/19/crtp-helper/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

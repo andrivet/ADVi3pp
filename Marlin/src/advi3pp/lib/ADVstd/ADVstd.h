@@ -63,6 +63,8 @@ template<> struct is_void<void> { static const bool value = true; };
 
 template<typename...> using void_t = void;
 
+template <class _Tp> struct is_enum: public integral_constant<bool, __is_enum(_Tp)> {};
+
 template<class T, class U>
 struct is_same : false_type {};
 
@@ -127,6 +129,22 @@ inline O reverse_copy(I first, I last, O d_first)
 
 template<typename T>
 struct assert_false: false_type {};
+
+template <class T, bool = is_enum<T>::value>
+struct underlying_type_impl;
+
+template <class T>
+struct underlying_type_impl<T, false> {};
+
+template <class T> struct underlying_type_impl<T, true>
+{
+    typedef __underlying_type(T) type;
+};
+
+template <class T>
+struct underlying_type: underlying_type_impl<T, is_enum<T>::value> {};
+
+template <class T> using underlying_type_t = typename underlying_type<T>::type;
 
 } // namespace adv
 
