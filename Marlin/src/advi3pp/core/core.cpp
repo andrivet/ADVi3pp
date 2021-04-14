@@ -120,9 +120,9 @@ void Facade::on_filament_runout(const ExtUI::extruder_t /*extruder*/)
 {
 }
 
-void Facade::on_user_confirm_required(const char* msg)
+void Facade::on_user_confirm_required()
 {
-    core.waitUserConfirm(msg);
+    core.wait_user_confirm();
 }
 
 void Facade::on_status_changed(const char* /*msg*/)
@@ -259,9 +259,9 @@ void Core::killed(const FlashChar* error)
     pages.show(Page::Killed);
 }
 
-void Core::waitUserConfirm(const char* msg)
+void Core::wait_user_confirm()
 {
-    wait.wait_continue(msg);
+    wait.wait_continue();
 }
 
 //! Note to forks author:

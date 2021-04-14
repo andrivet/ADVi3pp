@@ -41,7 +41,7 @@ void Pause::show_message(PauseMessage message)
         case PAUSE_MESSAGE_UNLOAD:      show(GET_TEXT(MSG_FILAMENT_CHANGE_UNLOAD)); break;
         case PAUSE_MESSAGE_INSERT:      cont(GET_TEXT(MSG_FILAMENT_CHANGE_INSERT)); break;
         case PAUSE_MESSAGE_LOAD:        show(GET_TEXT(MSG_FILAMENT_CHANGE_LOAD)); break;
-        case PAUSE_MESSAGE_PURGE:       show(GET_TEXT(MSG_FILAMENT_CHANGE_PURGE)); break;
+        case PAUSE_MESSAGE_PURGE:       cont(GET_TEXT(MSG_FILAMENT_CHANGE_PURGE)); break;
         case PAUSE_MESSAGE_OPTION:      on_options(); break;
         case PAUSE_MESSAGE_RESUME:      show(GET_TEXT(MSG_FILAMENT_CHANGE_RESUME)); break;
         case PAUSE_MESSAGE_STATUS:      on_status(); break;

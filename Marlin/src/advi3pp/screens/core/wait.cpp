@@ -33,13 +33,19 @@ Page Wait::do_prepare_page()
 }
 
 //! Show a simple wait page with a message
+void Wait::wait()
+{
+    back_ = nullptr;
+    continue_ = nullptr;
+    pages.show(Page::Waiting);
+}
+
+//! Show a simple wait page with a message
 //! @param message  The message to display
 void Wait::wait(const FlashChar* message)
 {
     status.set(message);
-    back_ = nullptr;
-    continue_ = nullptr;
-    pages.show(Page::Waiting);
+    wait();
 }
 
 //! Show a simple wait page with a message
@@ -79,24 +85,28 @@ void Wait::wait_back_continue(const FlashChar* message, const WaitCallback& back
 void Wait::wait_continue(const FlashChar* message)
 {
     status.set(message);
-    back_ = nullptr;
-    continue_ = WaitCallback{this, &Wait::on_continue};
-    pages.show(Page::WaitContinue);
+    wait_continue();
 }
 
 void Wait::wait_continue(const char* message)
 {
     status.set(message);
+    wait_continue();
+}
+
+void Wait::wait_continue()
+{
+    ExtUI::waitUserConfirmation();
     back_ = nullptr;
     continue_ = WaitCallback{this, &Wait::on_continue};
     pages.show(Page::WaitContinue);
 }
 
-
 //! Default action when the continue button is pressed (inform Marlin)
 bool Wait::on_continue()
 {
     ExtUI::setUserConfirmed();
+    wait();
     return false;
 }
 

@@ -79,9 +79,10 @@ void onFilamentRunout(const extruder_t extruder)
     ADVi3pp::Facade::on_filament_runout(extruder);
 }
 
-void onUserConfirmRequired(const char * const msg)
+void onUserConfirmRequired(const char * const)
 {
-    ADVi3pp::Facade::on_user_confirm_required(msg);
+    // Ignore the string, looks more like a title than a message
+    ADVi3pp::Facade::on_user_confirm_required();
 }
 
 void onStatusChanged(const char * const msg)

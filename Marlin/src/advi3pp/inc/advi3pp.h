@@ -37,7 +37,7 @@ struct Facade
     static void on_print_paused();
     static void on_print_stopped();
     static void on_filament_runout(const ExtUI::extruder_t extruder);
-    static void on_user_confirm_required(const char* msg);
+    static void on_user_confirm_required();
     static void on_status_changed(const char* msg);
     static void on_factory_reset();
     static void on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc);

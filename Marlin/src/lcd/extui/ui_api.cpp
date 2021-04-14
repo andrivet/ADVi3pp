@@ -954,6 +954,11 @@ namespace ExtUI {
     TERN_(HAS_RESUME_CONTINUE, wait_for_user = false);
   }
 
+  // @advi3++
+  void waitUserConfirmation() {
+    wait_for_user = true;
+  }
+
   void printFile(const char *filename) {
     UNUSED(filename);
     IFSD(card.openAndPrintFile(filename), NOOP);
