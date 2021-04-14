@@ -21,7 +21,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "bitmasks.h"
+#include "../lib/ADVstd/bitmasks.h"
 
 namespace ADVi3pp {
 
@@ -87,7 +87,7 @@ enum class Page: uint16_t
     ManualMesh              = 130,              // 0x0082
     XTwist                  = 132,              // 0x0084
 
-    Boot                    = 200               // 0x00C8
+    Boot                    = 200 | Temporary   // 0x00C8
 };
 ENABLE_BITMASK_OPERATOR(Page);
 
