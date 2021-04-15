@@ -220,13 +220,7 @@ bool Core::init()
     versions.send_versions();
 
     SERIAL_ECHO_START();
-
-    ADVString<32> welcome;
-    welcome << F("ADVi3++ ");
-    core.convert_version(welcome, advi3_pp_version);
-    welcome << F(" is ready");
-    SERIAL_ECHOLN(welcome.get());
-    status.set(welcome.get());
+    Welcome();
 
 #if HAS_LEVELING
     ExtUI::setLevelingActive(true);
@@ -238,6 +232,16 @@ bool Core::init()
         pages.show(Page::Boot);
 
     return true;
+}
+
+void Core::Welcome()
+{
+    ADVString<32> welcome;
+    welcome << F("ADVi3++ ");
+    core.convert_version(welcome, advi3_pp_version);
+    welcome << F(" is ready");
+    SERIAL_ECHOLN(welcome.get());
+    status.set(welcome.get());
 }
 
 void Core::idle()
