@@ -54,12 +54,12 @@ void Pause::show_message(PauseMessage message)
 
 void Pause::show(PGM_P message)
 {
-    wait.wait(reinterpret_cast<const FlashChar*>(message));
+    wait.wait(to_flash(message));
 }
 
 void Pause::cont(PGM_P message)
 {
-    wait.wait_continue(reinterpret_cast<const FlashChar*>(message));
+    wait.wait_continue(to_flash(message));
 }
 
 void Pause::on_options()

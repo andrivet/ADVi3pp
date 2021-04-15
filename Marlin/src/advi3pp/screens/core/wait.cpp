@@ -33,7 +33,7 @@ Page Wait::do_prepare_page()
 }
 
 //! Show a simple wait page with a message
-void Wait::wait()
+void Wait::wait_()
 {
     back_ = nullptr;
     continue_ = nullptr;
@@ -41,11 +41,18 @@ void Wait::wait()
 }
 
 //! Show a simple wait page with a message
+void Wait::wait()
+{
+    status.set(F("Please wait..."));
+    wait_();
+}
+
+//! Show a simple wait page with a message
 //! @param message  The message to display
 void Wait::wait(const FlashChar* message)
 {
     status.set(message);
-    wait();
+    wait_();
 }
 
 //! Show a simple wait page with a message

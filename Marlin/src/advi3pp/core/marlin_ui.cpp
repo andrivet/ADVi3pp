@@ -105,7 +105,7 @@ void MarlinUI::status_printf_P(const uint8_t level, PGM_P const fmt, ...)
 
     va_list args;
     va_start(args, fmt);
-    status.set(reinterpret_cast<const FlashChar*>(fmt), args);
+    status.set(to_flash(fmt), args);
     va_end(args);
 
     finish_status(level > 0);
@@ -119,7 +119,7 @@ void MarlinUI::set_status_P(PGM_P const message, int8_t level)
     if (level < alert_level) return;
     alert_level = level;
 
-    status.set(reinterpret_cast<const FlashChar*>(message));
+    status.set(to_flash(message));
     finish_status(level > 0);
 }
 
@@ -208,7 +208,7 @@ void MarlinUI::synchronize(PGM_P msg)
 
     if(msg == nullptr)
         msg = GET_TEXT(MSG_MOVING);
-    wait.wait(reinterpret_cast<const FlashChar*>(msg));
+    wait.wait(to_flash(msg));
 
     planner.synchronize(); // idle() is called until moves complete
     no_reentry = false;

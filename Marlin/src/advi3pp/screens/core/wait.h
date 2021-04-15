@@ -46,6 +46,7 @@ private:
     void do_back_command();
     bool on_continue();
     bool on_back();
+    void wait_();
 
     WaitCallback back_;
     WaitCallback continue_;

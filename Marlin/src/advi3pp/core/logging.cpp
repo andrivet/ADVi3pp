@@ -48,7 +48,7 @@ Log& Log::operator<<(const char* data)
 
 Log& Log::operator<<(const FlashChar* data)
 {
-    serialprintPGM(reinterpret_cast<const char*>(data));
+    serialprintPGM(from_flash(data));
     return *this;
 }
 

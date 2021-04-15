@@ -26,4 +26,7 @@ namespace ADVi3pp {
 
 using FlashChar = __FlashStringHelper;
 
+inline PGM_P from_flash(const FlashChar* str) { return reinterpret_cast<PGM_P>(str); }
+inline const FlashChar* to_flash(PGM_P str) { return reinterpret_cast<const FlashChar*>(str); }
+
 }

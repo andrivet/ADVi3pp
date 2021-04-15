@@ -84,7 +84,7 @@ void Facade::on_idle()
 
 void Facade::on_killed(PGM_P error, PGM_P /*component*/)
 {
-    core.killed(reinterpret_cast<const FlashChar*>(error));
+    core.killed(to_flash(error));
 }
 
 void Facade::on_media_inserted()
@@ -441,7 +441,7 @@ bool Core::is_busy()
 
 void Core::inject_commands(const FlashChar* commands)
 {
-    ExtUI::injectCommands_P(reinterpret_cast<const char*>(commands));
+    ExtUI::injectCommands_P(from_flash(commands));
 }
 
 }
