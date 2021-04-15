@@ -275,7 +275,7 @@ void Core::send_gplv3_7b_notice()
 void Core::send_sponsors()
 {
     SERIAL_ECHO_START();
-    SERIAL_ECHOLNPGM("Sponsors: Alexander Cherenegar");
+    SERIAL_ECHOLNPGM("Premium Sponsor: Alexander Cherenegar");
 }
 
 //! Update the progress bar if the printer is printing for the SD card
