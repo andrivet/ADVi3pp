@@ -77,6 +77,17 @@ void Wait::wait_back(const FlashChar* message)
 
 //! Show a simple wait page with a message
 //! @param message  The message to display
+//! @param cont     Callback to be called when the continue button is pressed
+void Wait::wait_back_continue(const FlashChar* message, const WaitCallback& cont)
+{
+    status.set(message);
+    back_ = WaitCallback{this, &Wait::on_back};
+    continue_ = cont;
+    pages.show(Page::WaitBackContinue);
+}
+
+//! Show a simple wait page with a message
+//! @param message  The message to display
 //! @param back     Callback to be called when the back button is pressed
 //! @param cont     Callback to be called when the continue button is pressed
 void Wait::wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont)

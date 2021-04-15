@@ -36,6 +36,7 @@ struct Wait: Screen<Wait>
     void wait_back(const FlashChar* message, const WaitCallback& back);
     void wait_back(const FlashChar* message);
     void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
+    void wait_back_continue(const FlashChar* message, const WaitCallback& cont);
     void wait_continue(const FlashChar* message);
     void wait_continue(const char* message);
     void wait_continue();

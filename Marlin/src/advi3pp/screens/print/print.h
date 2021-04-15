@@ -35,6 +35,8 @@ private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void stop_command();
+    bool cancel_abort_print();
+    bool abort_print();
     void pause_resume_command();
     void advanced_pause_command();
 

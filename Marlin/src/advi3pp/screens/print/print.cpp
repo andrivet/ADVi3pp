@@ -61,8 +61,20 @@ void Print::stop_command()
     if(!ExtUI::isPrinting())
         return;
 
-    wait.wait(F("Stop printing..."));
+    wait.wait_back_continue(F("Abort printing?"),
+      WaitCallback{this, &Print::cancel_abort_print}, WaitCallback{this, &Print::abort_print});
+}
+
+bool Print::cancel_abort_print()
+{
+    status.set(F("Continue printing"));
+    return true;
+}
+
+bool Print::abort_print()
+{
     ExtUI::stopPrint();
+    return false;
 }
 
 //! Pause printing
