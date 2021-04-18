@@ -64,7 +64,7 @@ void AutomaticLeveling::reset_command()
 #ifdef ADVi3PP_PROBE
     core.inject_commands(F("M280 P0 S160"));
 #else
-    pages.show_page(Page::NoSensor);
+    pages.show(Page::NoSensor);
 #endif
 }
 
