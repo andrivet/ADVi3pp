@@ -106,8 +106,8 @@ void Pages::show_forward_page()
         Log::log() << F("Pop back page ") << back_page << Log::endl();
         if(back_page == forward_page_)
         {
-            forward_page_ = Page::None;
             show_(forward_page_);
+            forward_page_ = Page::None;
             return;
         }
     }
