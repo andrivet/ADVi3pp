@@ -25,7 +25,7 @@
 namespace ADVi3pp {
 
 //! List of multipliers in Print Settings
-const double BABYSTEPS_MULTIPLIERS[] = {0.01, 0.05, 0.10};
+const double BABYSTEPS_MULTIPLIERS[] = {0.02, 0.05, 0.10};
 
 PrintSettings print_settings;
 

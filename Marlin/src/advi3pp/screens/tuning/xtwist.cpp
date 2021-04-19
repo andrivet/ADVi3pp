@@ -30,7 +30,7 @@ XTwist x_twist;
 
 #ifdef ADVi3PP_PROBE
 
-const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.01, 0.10, 1.0};
+const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.02, 0.10, 1.0};
 
 
 //! Store current data in permanent memory (EEPROM)

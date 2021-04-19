@@ -33,6 +33,7 @@
 #include "../../sd/cardreader.h"
 #include "../../gcode/queue.h"
 #include "../../module/planner.h"
+#include "../../feature/host_actions.h"
 
 using namespace ADVi3pp;
 
