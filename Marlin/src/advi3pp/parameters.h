@@ -58,7 +58,7 @@
 #ifdef __CLION_IDE__
 #define DEBUG
 #define ADVi3PP_51
-//#define BLTOUCH
+#define BLTOUCH
 #endif
 
 #if defined(BLTOUCH) || defined(ADVi3PP_54)
