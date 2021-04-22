@@ -26,28 +26,38 @@
 
 namespace ADVi3pp {
 
-XTwist x_twist;
+XTwist xtwist;
 
 #ifdef ADVi3PP_PROBE
 
 const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.02, 0.10, 1.0};
 
 
+void x_twist(xyze_pos_t &pos)
+{
+    xtwist.twist(pos);
+}
+
+void x_untwist(xyze_pos_t &pos)
+{
+    xtwist.untwist(pos);
+}
+
 //! Store current data in permanent memory (EEPROM)
 //! @param eeprom EEPROM writer
 void XTwist::do_write(EepromWrite& eeprom) const
 {
-    for(auto offset : offsets_)
-        eeprom.write(offset);
+    eeprom.write(a_);
+    eeprom.write(b_);
 }
 
 //! Validate data from permanent memory (EEPROM).
 //! @param eeprom EEPROM reader
 bool XTwist::do_validate(EepromRead &eeprom)
 {
-    int dummy{};
-    for(const auto& offset : offsets_)
-        UNUSED(offset), eeprom.read(dummy);
+    float dummy{};
+    eeprom.read(dummy);
+    eeprom.read(dummy);
     return true;
 }
 
@@ -55,22 +65,22 @@ bool XTwist::do_validate(EepromRead &eeprom)
 //! @param eeprom EEPROM reader
 void XTwist::do_read(EepromRead& eeprom)
 {
-    for(auto& offset : offsets_)
-        eeprom.read(offset);
+    eeprom.read(a_);
+    eeprom.read(b_);
 }
 
 //! Reset settings
 void XTwist::do_reset()
 {
-    for(auto& offset : offsets_)
-        offset = 0;
+    a_ = 200.0f;
+    b_ = 0.0f;
 }
 
 //! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
 //! @return Number of bytes
 uint16_t XTwist::do_size_of() const
 {
-    return sizeof(offsets_);
+    return sizeof(a_) + sizeof(b_);
 }
 
 //! Handle Sensor Z Height command
@@ -122,17 +132,13 @@ void XTwist::post_home_task()
     pages.show(Page::XTwist);
 
     ExtUI::setSoftEndstopState(false);
-    update_mesh(true);
     point_M_command();
 }
 
 //! Execute the Back command
 void XTwist::do_back_command()
 {
-    // Put back the mesh like it was before calling X Twist
-    update_mesh(true);
     offsets_ = old_offsets_;
-    update_mesh(false);
 
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
@@ -142,29 +148,10 @@ void XTwist::do_back_command()
     Parent::do_back_command();
 }
 
-void XTwist::update_mesh(bool reset)
-{
-    Log::log() << F("Update mesh") << Log::endl();
-
-    xy_uint8_t xy{};
-    for(uint8_t y = 0; y < GRID_MAX_POINTS_Y; ++y)
-    {
-        auto log = Log::log();
-        for(uint8_t x = 0; x < GRID_MAX_POINTS_X; ++x)
-        {
-            xy.set(x, y);
-            auto z = ExtUI::getMeshPoint(xy) + offsets_[x] / (reset ? -100.0 : 100.0);
-            log << z << F(" ");
-            ExtUI::setMeshPoint(xy, z);
-        }
-        log << Log::endl();
-    }
-}
-
 //! Handles the Save (Continue) command
 void XTwist::do_save_command()
 {
-    update_mesh();
+    compute_factors();
 
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
@@ -174,16 +161,20 @@ void XTwist::do_save_command()
     Parent::do_save_command();
 }
 
-void XTwist::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval)
+void XTwist::compute_factors()
 {
-    xy_uint8_t xy{};
-    xy.set(static_cast<uint8_t>(xpos), static_cast<uint8_t>(ypos));
-    auto z = zval + offsets_[xy.x] / 100.0;
-    Log::log() << F("Update mesh @")
-               << static_cast<uint8_t>(xpos) << F(", ")
-               << static_cast<uint8_t>(ypos) << F(" = ")
-               << z << Log::endl();
-    ExtUI::setMeshPoint(xy, z);
+    a_ = probe.max_x() - probe.min_x();
+    b_ = offset(Point::R) - offset(Point::L);
+}
+
+void XTwist::twist(xyze_pos_t& pos)
+{
+    pos.z += b_ * pos.x / a_;
+}
+
+void XTwist::untwist(xyze_pos_t& pos)
+{
+    pos.z -= b_ * pos.x / a_;
 }
 
 //! Change the multiplier.
@@ -209,8 +200,8 @@ void XTwist::multiplier3_command()
 
 void XTwist::move_x(Point x)
 {
-    int x_mm = probe.min_x() + static_cast<int>(x) * (probe.max_x() - probe.min_x()) / (GRID_MAX_POINTS_X - 1);
-    int y_mm = probe.min_y() + (probe.max_y() - probe.min_y()) / (GRID_MAX_POINTS_Y - 1);
+    float x_mm = probe.min_x() + static_cast<int>(x) * (probe.max_x() - probe.min_x()) / 3;
+    float y_mm = probe.min_y() + (probe.max_y() - probe.min_y()) / 2;
 
     ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(4, ExtUI::Z);
@@ -222,7 +213,7 @@ void XTwist::move_x(Point x)
     ExtUI::setAxisPosition_mm(y_mm, ExtUI::Y);
 
     ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(offset(x) / 100.0, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(offset(x) / 100.0f, ExtUI::Z);
 
     point_ = x;
 }

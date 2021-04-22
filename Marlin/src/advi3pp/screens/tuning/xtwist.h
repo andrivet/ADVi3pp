@@ -33,6 +33,8 @@ struct XTwist: Screen<XTwist>
     void on_mesh_updated(int8_t xpos, int8_t ypos, float zval);
     void minus();
     void plus();
+    void twist(xyze_pos_t &pos);
+    void untwist(xyze_pos_t &pos);
 
     enum class Multiplier: uint8_t { M1, M2, M3 };
     enum class Point: uint8_t {L, M, R};
@@ -58,14 +60,15 @@ private:
     double get_multiplier_value() const;
     void adjust_height(double offset);
     void send_data() const;
-    int& offset(Point x) { return offsets_[static_cast<unsigned >(x)]; };
-    void update_mesh(bool reset = false);
+    float& offset(Point x) { return offsets_[static_cast<unsigned >(x)]; };
+    void compute_factors();
 
 private:
     Point point_ = Point::M;
     Multiplier multiplier_ = Multiplier::M1;
-    adv::array<int, GRID_MAX_POINTS_X> offsets_{};
-    adv::array<int, GRID_MAX_POINTS_X> old_offsets_{};
+    adv::array<float, GRID_MAX_POINTS_X> offsets_{};
+    adv::array<float, GRID_MAX_POINTS_X> old_offsets_{};
+    float a_ = 200.0f, b_ = 0.0f;
     friend Parent;
 };
 
@@ -84,6 +87,6 @@ private:
 
 #endif
 
-extern XTwist x_twist;
+extern XTwist xtwist;
 
 }

@@ -1028,7 +1028,11 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-// @advi3++: By default, Teaching Tech Left support offsets
+
+// @advi3++: "X Twist"
+#define ADVi3PP_X_TWIST 1
+
+// @advi3++: By default, Teaching Tech Left support offsets.
 #define NOZZLE_TO_PROBE_OFFSET { -24.00, -38.00, 0 }
 
 // Most probes should stay away from the edges of the bed, but

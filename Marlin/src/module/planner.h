@@ -62,6 +62,11 @@
   #include "../feature/mixing.h"
 #endif
 
+// @advi3++
+#if ENABLED(ADVi3PP_X_TWIST)
+  #include "../advi3pp/inc/x_twist.h"
+#endif
+
 #if HAS_CUTTER
   #include "../feature/spindle_laser_types.h"
 #endif
@@ -611,11 +616,13 @@ class Planner {
       FORCE_INLINE static void apply_modifiers(xyze_pos_t &pos, bool leveling=ENABLED(PLANNER_LEVELING)) {
         TERN_(SKEW_CORRECTION, skew(pos));
         if (leveling) apply_leveling(pos);
+        TERN_(ADVi3PP_X_TWIST, ADVi3pp::x_twist(pos)); // @advi3++
         TERN_(FWRETRACT, apply_retract(pos));
       }
 
       FORCE_INLINE static void unapply_modifiers(xyze_pos_t &pos, bool leveling=ENABLED(PLANNER_LEVELING)) {
         TERN_(FWRETRACT, unapply_retract(pos));
+          TERN_(ADVi3PP_X_TWIST, ADVi3pp::x_untwist(pos));  // @advi3++
         if (leveling) unapply_leveling(pos);
         TERN_(SKEW_CORRECTION, unskew(pos));
       }

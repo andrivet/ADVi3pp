@@ -1,8 +1,0 @@
-//
-// Created by Sebastien on 20.04.21.
-//
-
-#ifndef ADVI3PP_ADVI3PP_LINEAR_OFFSET_H
-#define ADVI3PP_ADVI3PP_LINEAR_OFFSET_H
-
-#endif //ADVI3PP_ADVI3PP_LINEAR_OFFSET_H
