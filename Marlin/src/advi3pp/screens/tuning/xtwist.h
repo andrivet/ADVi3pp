@@ -33,8 +33,6 @@ struct XTwist: Screen<XTwist>
     void on_mesh_updated(int8_t xpos, int8_t ypos, float zval);
     void minus();
     void plus();
-    void twist(xyze_pos_t &pos);
-    void untwist(xyze_pos_t &pos);
 
     enum class Multiplier: uint8_t { M1, M2, M3 };
     enum class Point: uint8_t {L, M, R};
@@ -68,7 +66,6 @@ private:
     Multiplier multiplier_ = Multiplier::M1;
     adv::array<float, GRID_MAX_POINTS_X> offsets_{};
     adv::array<float, GRID_MAX_POINTS_X> old_offsets_{};
-    float a_ = 200.0f, b_ = 0.0f;
     friend Parent;
 };
 

@@ -26,8 +26,16 @@
 
 namespace ADVi3pp
 {
-    void x_twist(xyze_pos_t &pos);
-    void x_untwist(xyze_pos_t &pos);
+    struct x_twist_factors_t
+    {
+        float a_ = 200.0f;
+        float b_ = 0.0f;
+    };
+
+    extern x_twist_factors_t x_twist_factors;
+
+    inline void x_twist(xyze_pos_t &pos)   { pos.z += x_twist_factors.b_ * pos.x / x_twist_factors.a_; }
+    inline void x_untwist(xyze_pos_t &pos) { pos.z -= x_twist_factors.b_ * pos.x / x_twist_factors.a_; }
 }
 
 #endif

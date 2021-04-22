@@ -22,33 +22,25 @@
 #include "../../core/core.h"
 #include "../core/wait.h"
 #include "xtwist.h"
+#include "../../inc/x_twist.h"
 #include "../../../module/probe.h"
 
 namespace ADVi3pp {
 
 XTwist xtwist;
+x_twist_factors_t x_twist_factors;
 
 #ifdef ADVi3PP_PROBE
 
 const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.02, 0.10, 1.0};
 
 
-void x_twist(xyze_pos_t &pos)
-{
-    xtwist.twist(pos);
-}
-
-void x_untwist(xyze_pos_t &pos)
-{
-    xtwist.untwist(pos);
-}
-
 //! Store current data in permanent memory (EEPROM)
 //! @param eeprom EEPROM writer
 void XTwist::do_write(EepromWrite& eeprom) const
 {
-    eeprom.write(a_);
-    eeprom.write(b_);
+    eeprom.write(x_twist_factors.a_);
+    eeprom.write(x_twist_factors.b_);
 }
 
 //! Validate data from permanent memory (EEPROM).
@@ -65,22 +57,22 @@ bool XTwist::do_validate(EepromRead &eeprom)
 //! @param eeprom EEPROM reader
 void XTwist::do_read(EepromRead& eeprom)
 {
-    eeprom.read(a_);
-    eeprom.read(b_);
+    eeprom.read(x_twist_factors.a_);
+    eeprom.read(x_twist_factors.b_);
 }
 
 //! Reset settings
 void XTwist::do_reset()
 {
-    a_ = 200.0f;
-    b_ = 0.0f;
+    x_twist_factors.a_ = 200.0f;
+    x_twist_factors.b_ = 0.0f;
 }
 
 //! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
 //! @return Number of bytes
 uint16_t XTwist::do_size_of() const
 {
-    return sizeof(a_) + sizeof(b_);
+    return sizeof(x_twist_factors.a_) + sizeof(x_twist_factors.b_);
 }
 
 //! Handle Sensor Z Height command
@@ -163,18 +155,8 @@ void XTwist::do_save_command()
 
 void XTwist::compute_factors()
 {
-    a_ = probe.max_x() - probe.min_x();
-    b_ = offset(Point::R) - offset(Point::L);
-}
-
-void XTwist::twist(xyze_pos_t& pos)
-{
-    pos.z += b_ * pos.x / a_;
-}
-
-void XTwist::untwist(xyze_pos_t& pos)
-{
-    pos.z -= b_ * pos.x / a_;
+    x_twist_factors.a_ = probe.max_x() - probe.min_x();
+    x_twist_factors.b_ = offset(Point::R) - offset(Point::L);
 }
 
 //! Change the multiplier.
