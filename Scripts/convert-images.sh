@@ -51,7 +51,7 @@ function convert_images() {
         filename=$(basename "$f")
         name="${filename%.*}"
         echo Convert "${name}"
-        convert "$f" "BMP3:$2/${name}.bmp"
+        convert "$f" -type truecolor "BMP3:$2/${name}.bmp"
         ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
     done
 
