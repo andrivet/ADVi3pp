@@ -22,7 +22,7 @@
 
 #if ENABLED(ADVi3PP_X_TWIST)
 
-#include "src/lcd/extui/ui_api.h"
+#include "../../lcd/extui/ui_api.h"
 
 namespace ADVi3pp
 {
