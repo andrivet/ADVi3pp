@@ -100,7 +100,7 @@ void SensorZHeight::do_back_command()
     // enable enstops, z-home, XY-homing, compensation
     ExtUI::setSoftEndstopState(true);
     ExtUI::setZOffset_mm(old_offset_);
-    core.inject_commands(F("G28 Z F1200\nG28 X Y F6000\nM420 S1"));
+    core.inject_commands(F("G28 Z F1200\nG28 X Y F6000"));
     Parent::do_back_command();
 }
 
@@ -113,7 +113,7 @@ void SensorZHeight::do_save_command()
     ExtUI::setSoftEndstopState(true);
     ExtUI::setFeedrate_mm_s(1200);
     ExtUI::setAxisPosition_mm(4, ExtUI::Z);
-    core.inject_commands(F("G28 X Y F6000\nM420 S1"));
+    core.inject_commands(F("G28 X Y F6000"));
     Parent::do_save_command();
 }
 
