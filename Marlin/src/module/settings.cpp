@@ -2548,7 +2548,7 @@ void MarlinSettings::reset() {
     #endif
   #endif
 
-  TERN_(EXTENSIBLE_UI, ExtUI::onFactoryReset());
+  // TERN_(EXTENSIBLE_UI, ExtUI::onFactoryReset()); // @advi3++ Why calling this two times?
 
   //
   // Case Light Brightness
