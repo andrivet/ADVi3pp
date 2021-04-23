@@ -45,6 +45,7 @@ struct Facade
     static uint16_t on_sizeof_settings();
     static void on_settings_written(bool success);
     static void on_settings_loaded(bool success);
+    static void on_settings_validated(bool success);
     static void on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval);
     static void on_automatic_leveling_finished(bool success);
 #if ENABLED(POWER_LOSS_RECOVERY)

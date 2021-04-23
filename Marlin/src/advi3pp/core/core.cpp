@@ -167,6 +167,12 @@ void Facade::on_settings_loaded(bool success)
         eeprom_mismatch.set_mismatch();
 }
 
+void Facade::on_settings_validated(bool success)
+{
+    if(!success)
+        eeprom_mismatch.set_mismatch();
+}
+
 void Facade::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval)
 {
 }

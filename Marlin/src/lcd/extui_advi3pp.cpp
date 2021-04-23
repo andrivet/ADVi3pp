@@ -146,6 +146,11 @@ void onConfigurationStoreRead(bool success)
     ADVi3pp::Facade::on_settings_loaded(success);
 }
 
+void onConfigurationStoreValidated(bool success)
+{
+    ADVi3pp::Facade::on_settings_validated(success);
+}
+
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, const float zval)
 {
     // Called when any mesh points are updated

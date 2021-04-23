@@ -2253,7 +2253,8 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(touch.calibration);
       #endif
 
-      eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
+      // @advi3++ Do not erase eeprom_error
+      eeprom_error |= size_error(eeprom_index - (EEPROM_OFFSET));
       if (eeprom_error) {
         DEBUG_ECHO_START();
         DEBUG_ECHOLNPAIR("Index: ", int(eeprom_index - (EEPROM_OFFSET)), " Size: ", datasize());
@@ -2332,6 +2333,7 @@ void MarlinSettings::postprocess() {
       const bool success = _load();
     #endif
     validating = false;
+    TERN_(EXTENSIBLE_UI, ExtUI::onConfigurationStoreValidated(success));
     return success;
   }
 

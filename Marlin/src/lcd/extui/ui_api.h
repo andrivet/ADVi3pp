@@ -365,6 +365,7 @@ namespace ExtUI {
   void onLoadSettings(const char *);
   void onConfigurationStoreWritten(bool success);
   void onConfigurationStoreRead(bool success);
+  void onConfigurationStoreValidated(bool success);
 
   // @advi3++ PR candidate
   #if ENABLED(EEPROM_SETTINGS)
