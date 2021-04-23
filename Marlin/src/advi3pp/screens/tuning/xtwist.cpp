@@ -64,8 +64,8 @@ void XTwist::do_read(EepromRead& eeprom)
 //! Reset settings
 void XTwist::do_reset()
 {
-    x_twist_factors.a_ = 200.0f;
-    x_twist_factors.b_ = 0.0f;
+    x_twist_factors.a_ = DEFAULT_X_TWIST_A;
+    x_twist_factors.b_ = DEFAULT_X_TWIST_B;
 }
 
 //! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
@@ -104,6 +104,8 @@ Page XTwist::do_prepare_page()
     if(!core.ensure_not_printing())
         return Page::None;
     pages.save_forward_page();
+
+    old_offsets_ = offsets_;
 
     wait.wait(F("Homing..."));
     core.inject_commands(F("G28 F6000"));  // homing
@@ -155,8 +157,10 @@ void XTwist::do_save_command()
 
 void XTwist::compute_factors()
 {
-    x_twist_factors.a_ = probe.max_x() - probe.min_x();
-    x_twist_factors.b_ = offset(Point::R) - offset(Point::L);
+    ExtUI::setZOffset_mm(ExtUI::getZOffset_mm() + get_offset(Point::M));
+
+    x_twist_factors.a_ = get_x_mm(Point::R) - get_x_mm(Point::L);
+    x_twist_factors.b_ = get_offset(Point::R) - get_offset(Point::L);
 }
 
 //! Change the multiplier.
@@ -180,22 +184,26 @@ void XTwist::multiplier3_command()
     send_data();
 }
 
+float XTwist::get_x_mm(Point x)
+{
+    const auto margin = max(probe.min_x(), X_BED_SIZE - probe.max_x());
+    const auto center = X_BED_SIZE / 2.0f;
+    return center + (x == Point::L ? -margin : (x == Point::R ? +margin : 0));
+}
+
 void XTwist::move_x(Point x)
 {
-    float x_mm = probe.min_x() + static_cast<int>(x) * (probe.max_x() - probe.min_x()) / 3;
-    float y_mm = probe.min_y() + (probe.max_y() - probe.min_y()) / 2;
-
     ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(4, ExtUI::Z);
 
     ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_XY);
-    ExtUI::setAxisPosition_mm(x_mm, ExtUI::X);
+    ExtUI::setAxisPosition_mm(get_x_mm(x), ExtUI::X);
 
     ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_XY);
-    ExtUI::setAxisPosition_mm(y_mm, ExtUI::Y);
+    ExtUI::setAxisPosition_mm(Y_BED_SIZE / 2.0f, ExtUI::Y);
 
     ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(offset(x) / 100.0f, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(get_offset(x), ExtUI::Z);
 
     point_ = x;
 }
@@ -245,7 +253,7 @@ void XTwist::adjust_height(double offset_value)
 {
     ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset_value, ExtUI::Z);
-    offset(point_) = lround(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100);
+    set_offset(point_, ExtUI::getAxisPosition_mm(ExtUI::Z));
 }
 
 //! Send the current data (i.e. multiplier) to the LCD panel.

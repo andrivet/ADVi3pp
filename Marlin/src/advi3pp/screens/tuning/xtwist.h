@@ -58,14 +58,16 @@ private:
     double get_multiplier_value() const;
     void adjust_height(double offset);
     void send_data() const;
-    float& offset(Point x) { return offsets_[static_cast<unsigned >(x)]; };
+    float get_offset(Point x) { return offsets_[static_cast<unsigned >(x)] / 100.0f; };
+    void set_offset(Point x, float z) { offsets_[static_cast<unsigned >(x)] = lround(z * 100); };
+    float get_x_mm(Point x);
     void compute_factors();
 
 private:
     Point point_ = Point::M;
     Multiplier multiplier_ = Multiplier::M1;
-    adv::array<float, GRID_MAX_POINTS_X> offsets_{};
-    adv::array<float, GRID_MAX_POINTS_X> old_offsets_{};
+    adv::array<long, GRID_MAX_POINTS_X> offsets_{};
+    adv::array<long, GRID_MAX_POINTS_X> old_offsets_{};
     friend Parent;
 };
 
