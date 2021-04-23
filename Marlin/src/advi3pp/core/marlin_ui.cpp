@@ -91,7 +91,6 @@ bool MarlinUI::has_status()
 
 void MarlinUI::set_status(const char* const message, const bool persist)
 {
-    Log::log() << F("set_status") << Log::endl();
     if(alert_level) return;
     status.set(message);
     finish_status(persist);
@@ -99,8 +98,6 @@ void MarlinUI::set_status(const char* const message, const bool persist)
 
 void MarlinUI::status_printf_P(const uint8_t level, PGM_P const fmt, ...)
 {
-    Log::log() << F("status_printf_P") << Log::endl();
-
     if (level < alert_level) return;
     alert_level = level;
 
@@ -114,8 +111,6 @@ void MarlinUI::status_printf_P(const uint8_t level, PGM_P const fmt, ...)
 
 void MarlinUI::set_status_P(PGM_P const message, int8_t level)
 {
-    Log::log() << F("set_status_P") << Log::endl();
-
     if (level < 0) level = alert_level = 0;
     if (level < alert_level) return;
     alert_level = level;
@@ -126,15 +121,12 @@ void MarlinUI::set_status_P(PGM_P const message, int8_t level)
 
 void MarlinUI::set_alert_status_P(PGM_P const message)
 {
-    Log::log() << F("set_alert_status_P") << Log::endl();
     set_status_P(message, 1);
     return_to_status();
 }
 
 void MarlinUI::reset_status(const bool no_welcome)
 {
-    Log::log() << F("reset_status") << Log::endl();
-
     PGM_P msg;
     if(printingIsPaused())
         msg = GET_TEXT(MSG_PRINT_PAUSED);
