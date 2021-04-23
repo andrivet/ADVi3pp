@@ -79,6 +79,7 @@ void SensorZHeight::post_home_task()
     task.clear_background_task();
     reset();
 
+    old_offset_ = ExtUI::getZOffset_mm();
     ExtUI::setZOffset_mm(0);
 
     ExtUI::setFeedrate_mm_s(1200);
@@ -98,6 +99,7 @@ void SensorZHeight::do_back_command()
 {
     // enable enstops, z-home, XY-homing, compensation
     ExtUI::setSoftEndstopState(true);
+    ExtUI::setZOffset_mm(old_offset_);
     core.inject_commands(F("G28 Z F1200\nG28 X Y F6000\nM420 S1"));
     Parent::do_back_command();
 }
