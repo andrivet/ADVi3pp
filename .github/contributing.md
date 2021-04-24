@@ -86,7 +86,7 @@ Feature Requests are tracked as [GitHub issues](https://guides.github.com/featur
 
 ### Pull Requests
 
-Pull Requests can either be targeted to the advi3++ branch or to development branches (e.g., `advi3++dev`). If this is your first Pull Request, please read Github's [Pull Request](https://help.github.com/articles/creating-a-pull-request/) documentation.
+Pull Requests have to be targeted to the advi3++ branch. The development branches (e.g., `advi3++dev`) is unstable so please do not submit PR for it. If this is your first Pull Request, please read Github's [Pull Request](https://help.github.com/articles/creating-a-pull-request/) documentation.
 
 * Fill in [the required template](pull_request_template.md).
 * Don't include issue numbers in the PR title.
