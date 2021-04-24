@@ -64,8 +64,7 @@ void XTwist::do_read(EepromRead& eeprom)
 //! Reset settings
 void XTwist::do_reset()
 {
-    x_twist_factors.a_ = DEFAULT_X_TWIST_A;
-    x_twist_factors.b_ = DEFAULT_X_TWIST_B;
+    x_twist_factors.reset();
 }
 
 //! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
@@ -106,6 +105,7 @@ Page XTwist::do_prepare_page()
     pages.save_forward_page();
 
     old_offsets_ = offsets_;
+
 
     wait.wait(F("Homing..."));
     core.inject_commands(F("G28 F6000"));  // homing
@@ -157,10 +157,15 @@ void XTwist::do_save_command()
 
 void XTwist::compute_factors()
 {
-    ExtUI::setZOffset_mm(ExtUI::getZOffset_mm() + get_offset(Point::M));
+    const auto offset = get_offset(Point::M);
+    ExtUI::setZOffset_mm(ExtUI::getZOffset_mm() + offset);
 
-    x_twist_factors.a_ = get_x_mm(Point::R) - get_x_mm(Point::L);
-    x_twist_factors.b_ = get_offset(Point::R) - get_offset(Point::L);
+    set_offset(Point::L, get_offset(Point::L) - offset);
+    set_offset(Point::R, get_offset(Point::R) - offset);
+    set_offset(Point::M, 0);
+
+    x_twist_factors.compute(get_x_mm(Point::L), get_offset(Point::L),
+                            get_x_mm(Point::R), get_offset(Point::R));
 }
 
 //! Change the multiplier.
@@ -187,8 +192,7 @@ void XTwist::multiplier3_command()
 float XTwist::get_x_mm(Point x)
 {
     const auto margin = max(probe.min_x(), X_BED_SIZE - probe.max_x());
-    const auto center = X_BED_SIZE / 2.0f;
-    return center + (x == Point::L ? -margin : (x == Point::R ? +margin : 0));
+    return (x == Point::L ? margin : (x == Point::R ? X_BED_SIZE - margin : (X_BED_SIZE / 2.0f)));
 }
 
 void XTwist::move_x(Point x)
