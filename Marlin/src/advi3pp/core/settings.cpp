@@ -24,11 +24,10 @@
 #include "../core/core.h"
 #include "../core/dgus.h"
 #include "../core/dimming.h"
-#include "../core/buzzer.h"
 #include "../screens/controls/preheat.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/eeprom_mismatch.h"
-#include "../screens/tuning/xtwist.h"
+#include "../screens/leveling/xtwist.h"
 
 
 namespace ADVi3pp {

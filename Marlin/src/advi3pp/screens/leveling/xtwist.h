@@ -21,7 +21,7 @@
 #pragma once
 
 #include "../../lib/ADVstd/array.h"
-#include "../core/screen.h"
+#include "../../screens/core/screen.h"
 
 namespace ADVi3pp {
 

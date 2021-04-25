@@ -19,9 +19,9 @@
  */
 
 #include "../../parameters.h"
-#include "manual_leveling.h"
+#include "manual.h"
 #include "../../core/core.h"
-#include "../core/wait.h"
+#include "../../screens/core/wait.h"
 
 namespace ADVi3pp {
 

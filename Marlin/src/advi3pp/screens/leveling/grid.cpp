@@ -21,7 +21,7 @@
 #include "../../parameters.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"
-#include "leveling_grid.h"
+#include "grid.h"
 
 namespace ADVi3pp {
 

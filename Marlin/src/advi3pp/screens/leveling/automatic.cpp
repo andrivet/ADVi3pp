@@ -21,10 +21,9 @@
 #include "../../parameters.h"
 #include "../../core/core.h"
 #include "../../core/status.h"
-#include "../core/wait.h"
-#include "../../../lcd/extui/ui_api.h"
-#include "leveling_grid.h"
-#include "automatic_leveling.h"
+#include "../../screens/core/wait.h"
+#include "grid.h"
+#include "automatic.h"
 
 namespace ADVi3pp {
 

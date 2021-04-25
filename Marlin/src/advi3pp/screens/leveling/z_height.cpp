@@ -20,8 +20,8 @@
 
 #include "../../parameters.h"
 #include "../../core/core.h"
-#include "../core/wait.h"
-#include "sensor_z_height.h"
+#include "../../screens/core/wait.h"
+#include "z_height.h"
 
 namespace ADVi3pp {
 
