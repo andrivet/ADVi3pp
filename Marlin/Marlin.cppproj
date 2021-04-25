@@ -547,34 +547,16 @@
     <Compile Include="src\advi3pp\parameters.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\controls\automatic_leveling.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\controls\automatic_leveling.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\controls\controls.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\controls\controls.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\controls\leveling_grid.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\controls\leveling_grid.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\controls\load_unload.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\controls\load_unload.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\controls\manual_leveling.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\controls\manual_leveling.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\controls\move.cpp">
@@ -629,6 +611,36 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\info\versions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\automatic.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\automatic.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\grid.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\grid.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\manual.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\manual.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\xtwist.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\xtwist.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\z_height.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\z_height.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\change_filament.cpp">
@@ -751,12 +763,6 @@
     <Compile Include="src\advi3pp\screens\tuning\pid_tuning.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\sensor_z_height.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\sensor_z_height.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\tuning\setup.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -773,12 +779,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\vibrations.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\xtwist.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\xtwist.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\versions.h">
@@ -2014,6 +2014,7 @@
     <Folder Include="src\advi3pp\screens\controls" />
     <Folder Include="src\advi3pp\screens\core" />
     <Folder Include="src\advi3pp\screens\info" />
+    <Folder Include="src\advi3pp\screens\leveling" />
     <Folder Include="src\advi3pp\screens\print" />
     <Folder Include="src\advi3pp\screens\settings" />
     <Folder Include="src\advi3pp\screens\tuning" />
