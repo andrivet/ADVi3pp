@@ -12,11 +12,11 @@ set(CMAKE_CONFIGURATION_TYPES "advi3pp-51;advi3pp-51-bltouch;advi3pp-52c;advi3pp
 
 SET(CMAKE_C_COMPILER "$ENV{HOME}/.platformio/packages/toolchain-atmelavr/bin/avr-gcc")
 SET(CMAKE_CXX_COMPILER "$ENV{HOME}/.platformio/packages/toolchain-atmelavr/bin/avr-g++")
-SET(CMAKE_CXX_FLAGS "-std=c++14 -fno-exceptions -fno-threadsafe-statics -fpermissive -std=gnu++11 -fno-tree-scev-cprop -fno-split-wide-types -mcall-prologues -Wall -Wno-unknown-pragmas -Os -Wall -ffunction-sections -fdata-sections -flto -mmcu=atmega2560")
+SET(CMAKE_CXX_FLAGS "-std=gnu++17 -fno-exceptions -fno-threadsafe-statics -fpermissive -fno-tree-scev-cprop -fno-split-wide-types -mcall-prologues -Wall -Wno-unknown-pragmas -Os -Wall -ffunction-sections -fdata-sections -flto -mmcu=atmega2560")
 SET(CMAKE_C_FLAGS "-std=gnu11 -fno-fat-lto-objects -fno-tree-scev-cprop -fno-split-wide-types -mcall-prologues -Wall -Wno-unknown-pragmas -Os -Wall -ffunction-sections -fdata-sections -flto -mmcu=atmega2560")
 
 SET(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 if (CMAKE_BUILD_TYPE MATCHES "advi3pp-51-bltouch")
     add_definitions(-D'PLATFORMIO=50101')
