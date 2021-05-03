@@ -58,6 +58,9 @@ Page SensorZHeight::do_prepare_page()
         return Page::None;
     pages.save_forward_page();
 
+    old_offset_ = ExtUI::getZOffset_mm();
+    ExtUI::setZOffset_mm(0); // Before homing otherwise, Marlin is lost
+
     wait.wait(F("Homing..."));
     core.inject_commands(F("G28 F6000"));  // homing
     task.set_background_task(BackgroundTask(this, &SensorZHeight::post_home_task), 200);
@@ -79,11 +82,7 @@ void SensorZHeight::post_home_task()
     task.clear_background_task();
     reset();
 
-    old_offset_ = ExtUI::getZOffset_mm();
-    ExtUI::setZOffset_mm(0);
-
     ExtUI::setFeedrate_mm_s(1200);
-    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
     ExtUI::setAxisPosition_mm(100, ExtUI::X);
     ExtUI::setAxisPosition_mm(100, ExtUI::Y);
     ExtUI::setAxisPosition_mm(0, ExtUI::Z);
@@ -100,7 +99,7 @@ void SensorZHeight::do_back_command()
     // enable enstops, z-home, XY-homing, compensation
     ExtUI::setSoftEndstopState(true);
     ExtUI::setZOffset_mm(old_offset_);
-    core.inject_commands(F("G28 Z F1200\nG28 X Y F6000"));
+    core.inject_commands(F("G28 Z F1200\nG28 X Y F6000")); // G28 is important to take into account the Z height
     Parent::do_back_command();
 }
 
@@ -113,7 +112,7 @@ void SensorZHeight::do_save_command()
     ExtUI::setSoftEndstopState(true);
     ExtUI::setFeedrate_mm_s(1200);
     ExtUI::setAxisPosition_mm(4, ExtUI::Z);
-    core.inject_commands(F("G28 X Y F6000"));
+    core.inject_commands(F("G28 Z F1200\nG28 X Y F6000")); // G28 is important to take into account the Z height
     Parent::do_save_command();
 }
 

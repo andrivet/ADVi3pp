@@ -28,18 +28,19 @@ namespace ADVi3pp
 {
     struct x_twist_factors_t
     {
-        void twist(xyze_pos_t &pos)   { pos.z += get_z(pos.x); }
-        void untwist(xyze_pos_t &pos) { pos.z -= get_z(pos.x); }
+        void twist(xyze_pos_t &pos) const   { pos.z += get_z(pos.x); }
+        void untwist(xyze_pos_t &pos) const { pos.z -= get_z(pos.x); }
         void reset() { a_ = DEFAULT_X_TWIST_A; b_ = DEFAULT_X_TWIST_B; }
         void compute(float x0, float z0, float x1, float z1) { a_ = x1 - x0; b_ = z1 - z0; }
+        float get_a() const { return a_; }
+        float get_b() const { return b_; }
+        void set_a_b(float a, float b) { a_ = a; b_ = b; }
 
     private:
-        friend class XTwist;
-
         const float DEFAULT_X_TWIST_A = 100.0;
         const float DEFAULT_X_TWIST_B = 0.0;
 
-        float get_z(float x) { return b_ * (x - X_BED_SIZE / 2) / a_; }
+        float get_z(float x) const { return b_ * (x - X_BED_SIZE / 2) / a_; }
 
         float a_ = DEFAULT_X_TWIST_A;
         float b_ = DEFAULT_X_TWIST_B;

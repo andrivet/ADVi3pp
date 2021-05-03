@@ -52,6 +52,7 @@
 #include "planner.h"
 #include "stepper.h"
 #include "temperature.h"
+#include "../advi3pp/inc/x_twist.h"
 
 #if ENABLED(DWIN_CREALITY_LCD)
   #include "../lcd/dwin/e3v2/dwin.h"
@@ -3397,6 +3398,13 @@ void MarlinSettings::reset() {
         #endif
         , LINEAR_UNIT(probe.offset.z)
       );
+
+      // advi3++
+      config_heading(forReplay, PSTR("X-Twist"), false);
+      if (!forReplay) say_units(true);
+      CONFIG_ECHO_START();
+      SERIAL_ECHOLNPAIR_P(PSTR("  A"), LINEAR_UNIT(ADVi3pp::x_twist_factors.get_a()),
+                          PSTR(" B"), LINEAR_UNIT(ADVi3pp::x_twist_factors.get_b()));
     #endif
 
     /**

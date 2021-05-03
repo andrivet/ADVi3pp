@@ -23,7 +23,6 @@
 #include "../../screens/core/wait.h"
 #include "xtwist.h"
 #include "../../inc/x_twist.h"
-#include "../../../module/probe.h"
 
 namespace ADVi3pp {
 
@@ -33,14 +32,14 @@ x_twist_factors_t x_twist_factors;
 #ifdef ADVi3PP_PROBE
 
 const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.02, 0.10, 1.0};
-
+const int MARGIN = 10;
 
 //! Store current data in permanent memory (EEPROM)
 //! @param eeprom EEPROM writer
 void XTwist::do_write(EepromWrite& eeprom) const
 {
-    eeprom.write(x_twist_factors.a_);
-    eeprom.write(x_twist_factors.b_);
+    eeprom.write(x_twist_factors.get_a());
+    eeprom.write(x_twist_factors.get_b());
 }
 
 //! Validate data from permanent memory (EEPROM).
@@ -57,8 +56,10 @@ bool XTwist::do_validate(EepromRead &eeprom)
 //! @param eeprom EEPROM reader
 void XTwist::do_read(EepromRead& eeprom)
 {
-    eeprom.read(x_twist_factors.a_);
-    eeprom.read(x_twist_factors.b_);
+    float a, b;
+    eeprom.read(a);
+    eeprom.read(b);
+    x_twist_factors.set_a_b(a, b);
 }
 
 //! Reset settings
@@ -71,7 +72,7 @@ void XTwist::do_reset()
 //! @return Number of bytes
 uint16_t XTwist::do_size_of() const
 {
-    return sizeof(x_twist_factors.a_) + sizeof(x_twist_factors.b_);
+    return 2 * sizeof(float);
 }
 
 //! Handle Sensor Z Height command
@@ -191,8 +192,7 @@ void XTwist::multiplier3_command()
 
 float XTwist::get_x_mm(Point x)
 {
-    const auto margin = max(probe.min_x(), X_BED_SIZE - probe.max_x());
-    return (x == Point::L ? margin : (x == Point::R ? X_BED_SIZE - margin : (X_BED_SIZE / 2.0f)));
+    return (x == Point::L ? MARGIN : (x == Point::R ? X_BED_SIZE - MARGIN : (X_BED_SIZE / 2.0f)));
 }
 
 void XTwist::move_x(Point x)
