@@ -27,19 +27,25 @@
 namespace ADVi3pp {
 
 XTwist xtwist;
-x_twist_factors_t x_twist_factors;
 
 #ifdef ADVi3PP_PROBE
 
 const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.02, 0.10, 1.0};
 const int MARGIN = 10;
 
+void twist(xyze_pos_t &pos) { pos.z += xtwist.compute_z(pos.x); }
+void untwist(xyze_pos_t &pos) { pos.z -= xtwist.compute_z(pos.x); }
+float twist_a() { return xtwist.get_a(); }
+float twist_b() { return xtwist.get_b(); }
+float twist_c() { return xtwist.get_c(); }
+
 //! Store current data in permanent memory (EEPROM)
 //! @param eeprom EEPROM writer
 void XTwist::do_write(EepromWrite& eeprom) const
 {
-    eeprom.write(x_twist_factors.get_a());
-    eeprom.write(x_twist_factors.get_b());
+    eeprom.write(a_);
+    eeprom.write(b_);
+    eeprom.write(c_);
 }
 
 //! Validate data from permanent memory (EEPROM).
@@ -49,6 +55,7 @@ bool XTwist::do_validate(EepromRead &eeprom)
     float dummy{};
     eeprom.read(dummy);
     eeprom.read(dummy);
+    eeprom.read(dummy);
     return true;
 }
 
@@ -56,23 +63,24 @@ bool XTwist::do_validate(EepromRead &eeprom)
 //! @param eeprom EEPROM reader
 void XTwist::do_read(EepromRead& eeprom)
 {
-    float a, b;
-    eeprom.read(a);
-    eeprom.read(b);
-    x_twist_factors.set_a_b(a, b);
+    eeprom.read(a_);
+    eeprom.read(b_);
+    eeprom.read(c_);
 }
 
 //! Reset settings
 void XTwist::do_reset()
 {
-    x_twist_factors.reset();
+    a_ = 0.0;
+    b_ = 0.0;
+    c_ = 0.0;
 }
 
 //! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
 //! @return Number of bytes
 uint16_t XTwist::do_size_of() const
 {
-    return 2 * sizeof(float);
+    return 3 * sizeof(float);
 }
 
 //! Handle Sensor Z Height command
@@ -165,8 +173,25 @@ void XTwist::compute_factors()
     set_offset(Point::R, get_offset(Point::R) - offset);
     set_offset(Point::M, 0);
 
-    x_twist_factors.compute(get_x_mm(Point::L), get_offset(Point::L),
-                            get_x_mm(Point::R), get_offset(Point::R));
+    double x0 = get_x_mm(Point::L);
+    double y0 = get_offset(Point::L);
+    double x1 = get_x_mm(Point::M);
+    double y1 = get_offset(Point::M); // Will be 0.0
+    double x2 = get_x_mm(Point::R);
+    double y2 = get_offset(Point::R);
+
+    // Quadratic equation - Newton's divided differences interpolation polynomial
+    a_ = y0;
+    b_ = (y1 - y0) / (x1 - x0);
+    float b2 = (y2 - y1) / (x2 - x1);
+    c_ = (b2 - b_) / (x2 - x1);
+}
+
+float XTwist::compute_z(float x) const
+{
+    double x0 = get_x_mm(Point::L);
+    double x1 = get_x_mm(Point::M);
+    return a_ + (x - x0) * b_ + (x - x0) * (x - x1) * c_;
 }
 
 //! Change the multiplier.
@@ -190,7 +215,7 @@ void XTwist::multiplier3_command()
     send_data();
 }
 
-float XTwist::get_x_mm(Point x)
+float XTwist::get_x_mm(Point x) const
 {
     return (x == Point::L ? MARGIN : (x == Point::R ? X_BED_SIZE - MARGIN : (X_BED_SIZE / 2.0f)));
 }
