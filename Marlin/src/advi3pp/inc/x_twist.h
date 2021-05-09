@@ -28,9 +28,8 @@ namespace ADVi3pp
 {
     void twist(xyze_pos_t &pos);
     void untwist(xyze_pos_t &pos);
-    float twist_a();
-    float twist_b();
-    float twist_c();
+    float twist_offset_x0();
+    float twist_offset_x2();
 }
 
 #endif

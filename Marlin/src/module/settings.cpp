@@ -3403,9 +3403,8 @@ void MarlinSettings::reset() {
       config_heading(forReplay, PSTR("X-Twist"), false);
       if (!forReplay) say_units(true);
       CONFIG_ECHO_START();
-      SERIAL_ECHOLNPAIR_P(PSTR(" A"), LINEAR_UNIT(ADVi3pp::twist_a()),
-                          PSTR(" B"), LINEAR_UNIT(ADVi3pp::twist_b()),
-                          PSTR(" C"), LINEAR_UNIT(ADVi3pp::twist_c()));
+      SERIAL_ECHOLNPAIR_P(PSTR("  A"), LINEAR_UNIT(ADVi3pp::twist_offset_x0()),
+                          PSTR(" B"), LINEAR_UNIT(ADVi3pp::twist_offset_x2()));
     #endif
 
     /**

@@ -33,19 +33,29 @@ XTwist xtwist;
 const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.02, 0.10, 1.0};
 const int MARGIN = 10;
 
-void twist(xyze_pos_t &pos) { pos.z += xtwist.compute_z(pos.x); }
-void untwist(xyze_pos_t &pos) { pos.z -= xtwist.compute_z(pos.x); }
-float twist_a() { return xtwist.get_a(); }
-float twist_b() { return xtwist.get_b(); }
-float twist_c() { return xtwist.get_c(); }
+void twist(xyze_pos_t &pos)
+{
+    auto z = xtwist.compute_z(pos.x);
+    Log::log() << F("X-Twist(") << pos.x << F(") = ") << z << Log::endl();
+    pos.z += z;
+}
+
+void untwist(xyze_pos_t &pos)
+{
+    auto z = xtwist.compute_z(pos.x);
+    Log::log() << F("X-UnTwist(") << pos.x << F(") = ") << z << Log::endl();
+    pos.z -= z;
+}
+
+float twist_offset_x0() { return xtwist.get_offset(XTwist::Point::L); }
+float twist_offset_x2() { return xtwist.get_offset(XTwist::Point::R); }
 
 //! Store current data in permanent memory (EEPROM)
 //! @param eeprom EEPROM writer
 void XTwist::do_write(EepromWrite& eeprom) const
 {
-    eeprom.write(a_);
-    eeprom.write(b_);
-    eeprom.write(c_);
+    eeprom.write(offset(Point::L));
+    eeprom.write(offset(Point::R));
 }
 
 //! Validate data from permanent memory (EEPROM).
@@ -55,7 +65,6 @@ bool XTwist::do_validate(EepromRead &eeprom)
     float dummy{};
     eeprom.read(dummy);
     eeprom.read(dummy);
-    eeprom.read(dummy);
     return true;
 }
 
@@ -63,24 +72,24 @@ bool XTwist::do_validate(EepromRead &eeprom)
 //! @param eeprom EEPROM reader
 void XTwist::do_read(EepromRead& eeprom)
 {
-    eeprom.read(a_);
-    eeprom.read(b_);
-    eeprom.read(c_);
+    eeprom.read(offset(Point::L));
+    eeprom.read(offset(Point::R));
+    offset(Point::M) = 0;
+    compute_factors();
 }
 
 //! Reset settings
 void XTwist::do_reset()
 {
-    a_ = 0.0;
-    b_ = 0.0;
-    c_ = 0.0;
+    offsets_.fill(0);
+    a_ = b_ = c_ = 0.0;
 }
 
 //! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
 //! @return Number of bytes
 uint16_t XTwist::do_size_of() const
 {
-    return 3 * sizeof(float);
+    return 2 * sizeof(long);
 }
 
 //! Handle Sensor Z Height command
@@ -114,34 +123,37 @@ Page XTwist::do_prepare_page()
     pages.save_forward_page();
 
     old_offsets_ = offsets_;
-
+    a_ = b_ = c_ = 0.0;
 
     wait.wait(F("Homing..."));
     core.inject_commands(F("G28 F6000"));  // homing
     task.set_background_task(BackgroundTask(this, &XTwist::post_home_task), 200);
+
     return Page::None;
 }
 
-//! Check if the printer is homed, and continue the Z Height Tuning process.
+//! Check if the printer is homed, and continue the process.
 void XTwist::post_home_task()
 {
-    if(!ExtUI::isMachineHomed() || core.is_busy())
+    if(core.is_busy() || !ExtUI::isMachineHomed())
         return;
 
     task.clear_background_task();
+
     send_data();
     status.reset();
 
-    pages.show(Page::XTwist);
-
     ExtUI::setSoftEndstopState(false);
     point_M_command();
+
+    pages.show(Page::XTwist);
 }
 
 //! Execute the Back command
 void XTwist::do_back_command()
 {
     offsets_ = old_offsets_;
+    compute_factors();
 
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
@@ -174,17 +186,16 @@ void XTwist::compute_factors()
     set_offset(Point::M, 0);
 
     double x0 = get_x_mm(Point::L);
-    double y0 = get_offset(Point::L);
+    double z0 = get_offset(Point::L);
     double x1 = get_x_mm(Point::M);
-    double y1 = get_offset(Point::M); // Will be 0.0
     double x2 = get_x_mm(Point::R);
-    double y2 = get_offset(Point::R);
+    double z2 = get_offset(Point::R);
 
     // Quadratic equation - Newton's divided differences interpolation polynomial
-    a_ = y0;
-    b_ = (y1 - y0) / (x1 - x0);
-    float b2 = (y2 - y1) / (x2 - x1);
-    c_ = (b2 - b_) / (x2 - x1);
+    a_ = z0;
+    b_ = -z0 / (x1 - x0);
+    float b2 = z2 / (x2 - x1);
+    c_ = (b2 - b_) / (x2 - x0);
 }
 
 float XTwist::compute_z(float x) const

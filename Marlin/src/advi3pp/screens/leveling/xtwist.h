@@ -30,21 +30,20 @@ namespace ADVi3pp {
 //! X Twist Tuning Page
 struct XTwist: Screen<XTwist>
 {
-    void on_mesh_updated(int8_t xpos, int8_t ypos, float zval);
+    enum class Point: uint8_t {L, M, R};
+
     void minus();
     void plus();
 
+    float get_offset(Point x) { return offset(x) / 100.0f; };
     float compute_z(float x) const;
-    float get_a() const { return a_; }
-    float get_b() const { return b_; }
-    float get_c() const { return c_; }
-
-    enum class Multiplier: uint8_t { M1, M2, M3 };
-    enum class Point: uint8_t {L, M, R};
 
 private:
+    enum class Multiplier: uint8_t { M1, M2, M3 };
+
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void post_home_task();
     void do_write(EepromWrite& eeprom) const;
     bool do_validate(EepromRead& eeprom);
     void do_read(EepromRead& eeprom);
@@ -52,7 +51,6 @@ private:
     uint16_t do_size_of() const;
     void do_save_command();
     void do_back_command();
-    void post_home_task();
     void multiplier1_command();
     void multiplier2_command();
     void multiplier3_command();
@@ -63,8 +61,9 @@ private:
     double get_multiplier_value() const;
     void adjust_height(double offset);
     void send_data() const;
-    float get_offset(Point x) { return offsets_[static_cast<unsigned >(x)] / 100.0f; };
-    void set_offset(Point x, float z) { offsets_[static_cast<unsigned >(x)] = lround(z * 100.0); };
+    long& offset(Point x) { return offsets_[static_cast<unsigned>(x)]; }
+    long offset(Point x) const { return offsets_[static_cast<unsigned>(x)]; }
+    void set_offset(Point x, float z) { offset(x) = lround(z * 100.0); };
     float get_x_mm(Point x) const;
     void compute_factors();
 
