@@ -311,3 +311,8 @@ void MarlinUI::media_changed(const uint8_t old_status, const uint8_t status)
         }
     }
 }
+
+void MarlinUI::buzz(const long duration, const uint16_t freq)
+{
+    buzzer.buzz_on_action();
+}

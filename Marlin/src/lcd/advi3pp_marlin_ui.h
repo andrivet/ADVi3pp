@@ -87,6 +87,7 @@ public:
     static void set_progress(const progress_t p);
     static void set_progress_done();
     static uint8_t get_progress_percent();
+    static void buzz(const long duration, const uint16_t freq);
 
 #if LCD_HAS_WAIT_FOR_MOVE
     static bool wait_for_move;

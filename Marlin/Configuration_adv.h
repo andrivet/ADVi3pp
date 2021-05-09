@@ -3604,3 +3604,6 @@
 
 // Enable Marlin dev mode which adds some special commands
 //#define MARLIN_DEV_MODE
+
+// @advi3++: Enable buzzer
+#define ADVi3PP_BUZZER 1
