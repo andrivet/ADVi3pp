@@ -34,8 +34,8 @@ Global
 		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1BL Debug|AVR.Build.0 = Debug|AVR
 		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1BL Release|AVR.ActiveCfg = Release|AVR
 		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.5.1BL Release|AVR.Build.0 = Release|AVR
-		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.Simulator|AVR.ActiveCfg = Simulator|AVR
-		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.Simulator|AVR.Build.0 = Simulator|AVR
+		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.Simulator|AVR.ActiveCfg = Release|AVR
+		{631F1062-A317-4A38-B4F2-8E3CE4E1B021}.Simulator|AVR.Build.0 = Release|AVR
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
