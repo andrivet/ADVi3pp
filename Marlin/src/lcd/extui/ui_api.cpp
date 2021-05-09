@@ -101,6 +101,9 @@
   #include "../../feature/host_actions.h"
 #endif
 
+// @advi3++
+#include "../../gcode/gcode.h"
+
 namespace ExtUI {
   static struct {
     uint8_t printer_killed : 1;
@@ -891,6 +894,9 @@ namespace ExtUI {
   void injectCommands(char * const gcode)  { queue.inject(gcode); }
 
   bool commandsInQueue() { return (planner.movesplanned() || queue.has_commands_queued()); }
+
+  // @advi3++
+  MarlinBusyState getBusyState() { return static_cast<MarlinBusyState>(GcodeSuite::busy_state); }
 
   bool isAxisPositionKnown(const axis_t axis) { return TEST(axis_known_position, axis); }
   bool isAxisPositionKnown(const extruder_t) { return TEST(axis_known_position, E_AXIS); }

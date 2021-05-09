@@ -76,7 +76,7 @@ void SensorZHeight::reset()
 //! Check if the printer is homed, and continue the Z Height Tuning process.
 void SensorZHeight::post_home_task()
 {
-    if(!ExtUI::isMachineHomed() || core.is_busy())
+    if(core.is_busy() || !ExtUI::isMachineHomed())
         return;
 
     task.clear_background_task();

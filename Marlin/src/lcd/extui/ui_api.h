@@ -77,6 +77,16 @@ namespace ExtUI {
   void injectCommands(char * const);
   bool commandsInQueue();
 
+  // @advi3++
+  enum MarlinBusyState : char {
+      NOT_BUSY,           // Not in a handler
+      IN_HANDLER,         // Processing a GCode
+      IN_PROCESS,         // Known to be blocking command input (as in G29)
+      PAUSED_FOR_USER,    // Blocking pending any input
+      PAUSED_FOR_INPUT    // Blocking pending text input (concept)
+  };
+  MarlinBusyState getBusyState();
+
   bool isHeaterIdle(const heater_t);
   bool isHeaterIdle(const extruder_t);
   void enableHeater(const heater_t);

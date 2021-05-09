@@ -441,7 +441,7 @@ bool Core::ensure_not_printing()
 
 bool Core::is_busy()
 {
-    return ExtUI::isMoving() || ExtUI::commandsInQueue(); // TODO it is enough (we are not looking at busy_state)?
+    return ExtUI::isMoving() || ExtUI::commandsInQueue() || ExtUI::getBusyState() == ExtUI::IN_HANDLER || ExtUI::getBusyState() == ExtUI::IN_PROCESS;
 }
 
 void Core::inject_commands(const FlashChar* commands)
