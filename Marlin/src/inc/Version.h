@@ -82,14 +82,14 @@
  * providing the source code to your customers.)
  */
 #ifndef SOURCE_CODE_URL
-  #define SOURCE_CODE_URL "https://github.com/MarlinFirmware/Marlin"
+  #define SOURCE_CODE_URL "https://github.com/andrivet/ADVi3pp/" // @advi3++
 #endif
 
 /**
  * Default generic printer UUID.
  */
 #ifndef DEFAULT_MACHINE_UUID
-  #define DEFAULT_MACHINE_UUID "cede2a2f-41a2-4748-9b12-c55c62f367ff"
+  #define DEFAULT_MACHINE_UUID "44b2f5d6-e7e4-47bf-be81-c2a6b4fc7975" // @advi3++
 #endif
 
   /**
@@ -97,7 +97,7 @@
    * documentation about a specific Marlin release. Displayed in the Info Menu.
    */
 #ifndef WEBSITE_URL
-  #define WEBSITE_URL "https://marlinfw.org"
+  #define WEBSITE_URL "https://community.advi3pp.com/c/user-manual" // @advi3++
 #endif
 
 /**
