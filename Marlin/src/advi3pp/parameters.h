@@ -59,6 +59,7 @@
 #define DEBUG
 #define ADVi3PP_51
 #define BLTOUCH
+#define ADVi3PP_LOG
 #endif
 
 #if defined(BLTOUCH) || defined(ADVi3PP_54)
