@@ -26,10 +26,17 @@
 
 namespace ADVi3pp
 {
+#if ENABLED(ADVi3PP_PROBE)
     void twist(xyze_pos_t &pos);
     void untwist(xyze_pos_t &pos);
     float twist_offset_x0();
     float twist_offset_x2();
+#else
+    inline void twist(xyze_pos_t &pos) {}
+    inline void untwist(xyze_pos_t &pos) {}
+    inline float twist_offset_x0() { return 0; }
+    inline float twist_offset_x2() { return 0; }
+#endif
 }
 
 #endif
