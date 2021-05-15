@@ -46,19 +46,17 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 echo
 echo "***** Compile Mainboard firmwares..."
 echo
-platformio -f -c clion run -d "${advi3pp}" -e i3plus -e i3plus-bltouch -e i3plus-bltouch3 -e i3plus-mark2 -e i3plus-he180021 -e i3plus-he180021-bltouch -e i3plus-he180021-bltouch3
+platformio -f -c clion run -d "${advi3pp}" -e advi3pp-51 -e advi3pp-51-bltouch -e advi3pp-52c -e advi3pp-52c-bltouch -e advi3pp-54
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo
 echo "***** Copy Mainboard firmwares..."
 echo
-cp "${advi3pp}/.pioenvs/i3plus/firmware.hex" "${release}/ADVi3pp-Mainboard-${version}.hex" && \
-cp "${advi3pp}/.pioenvs/i3plus-bltouch/firmware.hex" "${release}/ADVi3pp-BLTouch-Mainboard-${version}.hex"
-cp "${advi3pp}/.pioenvs/i3plus-bltouch3/firmware.hex" "${release}/ADVi3pp-BLTouch3-Mainboard-${version}.hex"
-cp "${advi3pp}/.pioenvs/i3plus-mark2/firmware.hex" "${release}/ADVi3pp-Mark2-Mainboard-${version}.hex"
-cp "${advi3pp}/.pioenvs/i3plus-he180021/firmware.hex" "${release}/ADVi3pp-HE180021-Mainboard-${version}.hex"
-cp "${advi3pp}/.pioenvs/i3plus-he180021-bltouch/firmware.hex" "${release}/ADVi3pp-HE180021-BLTouch-Mainboard-${version}.hex"
-cp "${advi3pp}/.pioenvs/i3plus-he180021-bltouch3/firmware.hex" "${release}/ADVi3pp-HE180021-BLTouch3-Mainboard-${version}.hex"
+cp "${advi3pp}/.pioenvs/advi3pp-51/firmware.hex" "${release}/ADVi3pp-Mainboard-51-${version}.hex" && \
+cp "${advi3pp}/.pioenvs/advi3pp-51-bltouch/firmware.hex" "${release}/ADVi3pp-Mainboard-51-BLTouch-${version}.hex"
+cp "${advi3pp}/.pioenvs/advi3pp-52c/firmware.hex" "${release}/ADVi3pp-Mainboard-52c-${version}.hex"
+cp "${advi3pp}/.pioenvs/advi3pp-52c-bltouch/firmware.hex" "${release}/ADVi3pp-Mainboard-52c-BLTouch-${version}.hex"
+cp "${advi3pp}/.pioenvs/advi3pp-54/firmware.hex" "${release}/ADVi3pp-Mainboard-54-${version}.hex"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo

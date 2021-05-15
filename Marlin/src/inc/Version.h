@@ -21,6 +21,23 @@
  */
 #pragma once
 
+// @advi3++: Change the name depending of the model of the printer and the model of the sensor
+#if defined(ADVi3PP_54)
+    #define ADVi3PP_NAME "ADVi3++MarkII"
+#elif defined(ADVi3PP_52C)
+    #if defined(BLTOUCH)
+      #define ADVi3PP_NAME "ADVi3++HE180021-BLTouch"
+    #else
+      #define ADVi3PP_NAME "ADVi3++HE180021"
+    #endif
+#else
+#if defined(BLTOUCH)
+    #define ADVi3PP_NAME "ADVi3++BLTouch"
+#else
+    #define ADVi3PP_NAME "ADVi3++"
+#endif
+#endif
+
 /**
  * Release version. Leave the Marlin version or apply a custom scheme.
  */
@@ -33,7 +50,7 @@
  * vendor name, download location, GitHub account, etc.
  */
 #ifndef DETAILED_BUILD_VERSION
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 5.0.0-dev)"
 #endif
 
 /**
@@ -42,7 +59,7 @@
  * version was tagged.
  */
 #ifndef STRING_DISTRIBUTION_DATE
-  #define STRING_DISTRIBUTION_DATE "2020-10-15"
+  #define STRING_DISTRIBUTION_DATE "2021-05-15"
 #endif
 
 /**

@@ -1,5 +1,9 @@
 # ADVi3++ Changelog
 
+## 5.0.0-beta.1 (2021-05-15)
+
+* Beta 1 based on Marlin 2.0.7
+
 ## 4.0.6 (2020-02-23)
 
 * **#236** - platformio.ini file contained a configuration to upload the firmware using a Dragon AVR programmer
