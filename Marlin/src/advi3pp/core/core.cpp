@@ -205,7 +205,7 @@ void Facade::on_pid_tuning(const ExtUI::result_t rst)
 
 void Core::startup()
 {
-#ifdef DEBUG
+#ifdef ADVi3PP_DEBUG
     pinMode(LED_PIN, OUTPUT); // To help debugging when serial is not available
 #endif
     Frame::open();

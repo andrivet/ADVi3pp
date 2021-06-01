@@ -36,7 +36,7 @@
 // build a BLTouch release.
 // #define BLTOUCH
 
-#ifdef DEBUG
+#ifdef ADVi3PP_DEBUG
 
 // To log various aspects of ADVi3++
 #define ADVi3PP_LOG
@@ -56,7 +56,7 @@
 
 // This is only to ensure that Jetbrains CLion is parsing code properly inside the IDE (intellisense)
 #ifdef __CLION_IDE__
-#define DEBUG
+#define ADVi3PP_DEBUG
 #define ADVi3PP_51
 #define BLTOUCH
 #define ADVi3PP_LOG
