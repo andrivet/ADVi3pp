@@ -65,5 +65,3 @@ void Temperatures::do_back_command()
 }
 
 }
-
-#pragma clang diagnostic pop
