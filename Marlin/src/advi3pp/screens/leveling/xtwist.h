@@ -37,6 +37,7 @@ struct XTwist: Screen<XTwist>
 
     float get_offset(Point x) { return offset(x) / 100.0f; };
     float compute_z(float x) const;
+    void reset();
 
 private:
     enum class Multiplier: uint8_t { M1, M2, M3 };

@@ -20,6 +20,7 @@
 
 #include "../../parameters.h"
 #include "manual.h"
+#include "xtwist.h"
 #include "../../core/core.h"
 #include "../../screens/core/wait.h"
 
@@ -62,6 +63,13 @@ void ManualLeveling::do_back_command()
     ExtUI::setAxisPosition_mm(30, ExtUI::Z);
     Parent::do_back_command();
 }
+
+void ManualLeveling::do_save_command()
+{
+    xtwist.reset();
+    ExtUI::setLevelingActive(false);
+}
+
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display

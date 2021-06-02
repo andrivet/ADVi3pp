@@ -176,6 +176,11 @@ void XTwist::do_save_command()
     Parent::do_save_command();
 }
 
+void XTwist::reset()
+{
+    do_reset();
+}
+
 void XTwist::compute_factors()
 {
     const auto offset = get_offset(Point::M);
