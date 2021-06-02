@@ -989,10 +989,15 @@ namespace ExtUI {
     return (commandsInQueue() || isPrintingFromMedia() || IFSD(IS_SD_PRINTING(), false));
   }
 
-  // @advi3++ PR candidate
+  // @advi3++
   bool isPrintingPaused() {
     return printingIsPaused();
   }
+
+  // @advi3++
+  void mountMedia() {
+        card.mount();
+    }
 
   bool isMediaInserted() {
     return IFSD(IS_SD_INSERTED() && card.isMounted(), false);

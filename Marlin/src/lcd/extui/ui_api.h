@@ -319,6 +319,7 @@ namespace ExtUI {
    *
    * Should be used by the EXTENSIBLE_UI to operate on files
    */
+  void mountMedia(); // @advi3++
   bool isMediaInserted();
   bool isPrintingFromMediaPaused();
   bool isPrintingFromMedia();

@@ -35,7 +35,7 @@ private:
     void show_temps();
     void show_print_settings();
     void show_print();
-    void show_sd_or_temp_page();
+    void show_sd();
 
 private:
     friend Parent;

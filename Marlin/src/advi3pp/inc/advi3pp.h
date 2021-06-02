@@ -29,9 +29,6 @@ struct Facade
     static void on_startup();
     static void on_idle();
     static void on_killed(PGM_P error, PGM_P component);
-    static void on_media_inserted();
-    static void on_media_error();
-    static void on_media_removed();
     static void on_play_tone(const uint16_t frequency, const uint16_t duration);
     static void on_print_started();
     static void on_print_paused();

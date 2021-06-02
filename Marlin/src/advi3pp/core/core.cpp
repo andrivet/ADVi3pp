@@ -87,18 +87,6 @@ void Facade::on_killed(PGM_P error, PGM_P /*component*/)
     core.killed(to_flash(error));
 }
 
-void Facade::on_media_inserted()
-{
-}
-
-void Facade::on_media_error()
-{
-}
-
-void Facade::on_media_removed()
-{
-}
-
 void Facade::on_play_tone(const uint16_t /*frequency*/, const uint16_t /*duration*/)
 {
     buzzer.buzz_on_action();

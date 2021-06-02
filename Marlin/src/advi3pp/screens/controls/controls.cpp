@@ -97,21 +97,21 @@ void Controls::show_print()
     }
 
     wait.wait(F("Accessing the SD card..."));
-    task.set_background_task(BackgroundTask{this, &Controls::show_sd_or_temp_page});
+    task.set_background_task(BackgroundTask{this, &Controls::show_sd});
 }
 
-//! Show the SD card page (if a SD card is inserted) or the Temperature page
-void Controls::show_sd_or_temp_page()
+//! Show the SD card page (if a SD card is inserted)
+void Controls::show_sd()
 {
     task.clear_background_task();
 
-    // TODO Be sure that initsd() is not required
+    ExtUI::mountMedia();
     ExtUI::FileList{}.refresh();
     status.reset();
     if(!ExtUI::isMediaInserted())
     {
-        // SD card not accessible so fall back to Temperatures
-        temperatures.show();
+        status.set(F("No SD card detected."));
+        pages.show_back_page();
         return;
     }
 

@@ -292,26 +292,6 @@ uint8_t MarlinUI::get_progress_percent()
     return card.isPrinting() ? card.percentDone() : progress;
 }
 
-void MarlinUI::media_changed(const uint8_t old_status, const uint8_t status)
-{
-    if (old_status == status) {
-        TERN_(EXTENSIBLE_UI, ExtUI::onMediaError()); // Failed to mount/unmount
-        return;
-    }
-
-    if (status) {
-        if (old_status < 2) {
-            ExtUI::onMediaInserted(); // ExtUI response
-            set_status_P(GET_TEXT(MSG_MEDIA_INSERTED));
-        }
-    }
-    else {
-        if (old_status < 2) {
-            ExtUI::onMediaRemoved(); // ExtUI response
-        }
-    }
-}
-
 void MarlinUI::buzz(const long duration, const uint16_t freq)
 {
     buzzer.buzz_on_action();

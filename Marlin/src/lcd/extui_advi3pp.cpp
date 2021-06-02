@@ -39,20 +39,10 @@ void onPrinterKilled(PGM_P const error, PGM_P const component)
     ADVi3pp::Facade::on_killed(error, component);
 }
 
-void onMediaInserted()
-{
-    ADVi3pp::Facade::on_media_inserted();
-}
-
-void onMediaError()
-{
-    ADVi3pp::Facade::on_media_error();
-}
-
-void onMediaRemoved()
-{
-    ADVi3pp::Facade::on_media_removed();
-}
+// There is no way to detect media changes, so this part is not implemented
+void onMediaInserted() { }
+void onMediaError() { }
+void onMediaRemoved() { }
 
 void onPlayTone(const uint16_t frequency, const uint16_t duration)
 {

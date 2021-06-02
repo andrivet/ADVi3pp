@@ -95,8 +95,9 @@ public:
     static constexpr bool wait_for_move = true;
 #endif
 
+    // There is no way to detect media changes, so this part is not implemented
     static inline bool detected() { return true; }
-    static void media_changed(const uint8_t old_stat, const uint8_t stat);
+    static inline void media_changed(const uint8_t old_stat, const uint8_t stat) {}
 };
 
 extern MarlinUI ui;
