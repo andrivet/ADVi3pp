@@ -25,9 +25,6 @@
 #include "../../core/settings.h"
 #include "../../core/dgus.h"
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
-
 namespace ADVi3pp {
 
 LoadUnload load_unload;

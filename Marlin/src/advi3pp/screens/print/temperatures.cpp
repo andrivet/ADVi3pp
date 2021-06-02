@@ -21,9 +21,6 @@
 #include "../../parameters.h"
 #include "temperatures.h"
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "HidingNonVirtualFunction"
-
 namespace ADVi3pp {
 
 Temperatures temperatures;
