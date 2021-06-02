@@ -44,6 +44,10 @@ void onMediaInserted() { }
 void onMediaError() { }
 void onMediaRemoved() { }
 
+void onMediaOpenError(const char* filename) {
+    ADVi3pp::Facade::on_media_open_error(filename);
+}
+
 void onPlayTone(const uint16_t frequency, const uint16_t duration)
 {
     ADVi3pp::Facade::on_play_tone(frequency, duration);

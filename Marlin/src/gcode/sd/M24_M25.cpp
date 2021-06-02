@@ -73,7 +73,7 @@ void GcodeSuite::M24() {
     TERN_(HOST_PROMPT_SUPPORT, host_prompt_open(PROMPT_INFO, PSTR("Resuming SD"), DISMISS_STR));
   #endif
 
-  ui.reset_status();
+  // ui.reset_status(); @advi3++ disable this line otherwise, any error message is overidden
 }
 
 /**

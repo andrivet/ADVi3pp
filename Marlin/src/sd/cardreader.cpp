@@ -513,6 +513,7 @@ void CardReader::getAbsFilename(char *dst) {
 
 void openFailed(const char * const fname) {
   SERIAL_ECHOLNPAIR(STR_SD_OPEN_FILE_FAIL, fname, ".");
+  ExtUI::onMediaOpenError(fname);
 }
 
 void announceOpen(const uint8_t doing, const char * const path) {
