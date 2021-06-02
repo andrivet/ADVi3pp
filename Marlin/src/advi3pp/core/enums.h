@@ -39,7 +39,7 @@ enum class Page: uint16_t
     WaitBackContinue        = 34 | Temporary,   // 0x8022
     Preheat                 = 36,               // 0x0024
     Move                    = 38,               // 0x0026
-    SdCard                  = 40,               // 0x0028
+    SdCard                  = 40 | Temporary,   // 0x0028
     Print                   = 42,               // 0x002A
     Sponsors                = 44,               // 0x002C
     Waiting                 = 46 | Temporary,   // 0x802E
