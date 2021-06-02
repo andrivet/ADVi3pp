@@ -153,10 +153,13 @@ void SdCard::select_file_command(uint16_t file_index)
     if(files.isDir())
         return;
 
-    const char* filename = files.filename();
+    const char* filename = files.shortFilename();
     if(filename == nullptr) // If the SD card is not readable
+    {
+        ExtUI::onMediaOpenError(filename);
         return;
-    status.set_filename(filename);
+    }
+    status.set_filename(files.longFilename());
     ExtUI::printFile(filename);
 
     pages.show(Page::Print);
