@@ -22,11 +22,11 @@
 
 #pragma once
 
-#include "../inc/MarlinConfig.h"
+#include "../../inc/MarlinConfig.h"
 
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
-#include "../feature/pause.h"
-#include "../module/motion.h" // for active_extruder
+#include "../../feature/pause.h"
+#include "../../module/motion.h" // for active_extruder
 #endif
 
 #if ENABLED(ADVANCED_PAUSE_FEATURE)

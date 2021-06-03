@@ -18,9 +18,9 @@
  *
  */
 
-#include "../inc/MarlinConfigPre.h"
-#include "extui/ui_api.h"
-#include "../advi3pp/inc/advi3pp.h"
+#include "../../inc/MarlinConfigPre.h"
+#include "../../lcd/extui/ui_api.h"
+#include "../inc/advi3pp.h"
 
 namespace ExtUI {
 

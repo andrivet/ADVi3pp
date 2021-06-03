@@ -21,9 +21,9 @@
 // Minimal implementation of MarlinUI for ADVi3++
 
 #include "../parameters.h"
-#include "logging.h"
-#include "status.h"
-#include "buzzer.h"
+#include "../core/logging.h"
+#include "../core/status.h"
+#include "../core/buzzer.h"
 #include "../screens/print/pause.h"
 #include "../screens/core/wait.h"
 

@@ -64,7 +64,7 @@
 
 // @advi3++
 #if ENABLED(ADVi3PP_X_TWIST)
-  #include "../advi3pp/inc/x_twist.h"
+  #include "../advi3pp/inc/advi3pp.h"
 #endif
 
 #if HAS_CUTTER

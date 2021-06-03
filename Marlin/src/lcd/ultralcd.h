@@ -25,7 +25,7 @@
 
 // @advi3++
 #ifdef ADVi3PP_UI
-#include "advi3pp_marlin_ui.h"
+#include "../advi3pp/inc/advi3pp_marlin_ui.h"
 #else
 
 #if HAS_BUZZER
@@ -715,4 +715,4 @@ extern MarlinUI ui;
 #define LCD_MESSAGEPGM(x)        LCD_MESSAGEPGM_P(GET_TEXT(x))
 #define LCD_ALERTMESSAGEPGM(x)   LCD_ALERTMESSAGEPGM_P(GET_TEXT(x))
 
-#endif // @advi3++
+#endif

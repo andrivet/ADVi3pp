@@ -52,7 +52,7 @@
 #include "planner.h"
 #include "stepper.h"
 #include "temperature.h"
-#include "../advi3pp/inc/x_twist.h"
+#include "../advi3pp/inc/advi3pp.h" // @advi3++
 
 #if ENABLED(DWIN_CREALITY_LCD)
   #include "../lcd/dwin/e3v2/dwin.h"
