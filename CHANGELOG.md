@@ -1,5 +1,7 @@
 # ADVi3++ Changelog
 
+## 5.0.0-beta.2 (2021-06-03)
+
 ## 5.0.0-beta.1 (2021-05-15)
 
 * Beta 1 based on Marlin 2.0.7
