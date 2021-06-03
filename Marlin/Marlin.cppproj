@@ -423,96 +423,96 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Simulator' ">
     <ToolchainSettings>
       <AvrGccCpp>
-  <avrgcc.common.Device>-mmcu=atmega2560 -B "%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\gcc\dev\atmega2560"</avrgcc.common.Device>
-  <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
-  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
-  <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
-  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-  <avrgcc.compiler.symbols.DefSymbols>
-    <ListValues>
-      <Value>__MARLIN_FIRMWARE__</Value>
-      <Value>ARDUINO_AVR_MEGA2560</Value>
-      <Value>F_CPU=16000000L</Value>
-      <Value>ARDUINO_ARCH_AVR</Value>
-      <Value>__AVR_ATmega2560__</Value>
-      <Value>ARDUINO=10808</Value>
-      <Value>ADVi3PP_51</Value>
-      <Value>BLTOUCH</Value>
-      <Value>DEBUG</Value>
-      <Value>ADVi3PP_DEBUG</Value>
-      <Value>ADVi3PP_HARDWARE_SIMULATOR</Value>
-    </ListValues>
-  </avrgcc.compiler.symbols.DefSymbols>
-  <avrgcc.compiler.directories.IncludePaths>
-    <ListValues>
-      <Value>%24(ProjectDir)\..\ArduinoCore\include</Value>
-      <Value>%24(ProjectDir)\..\ArduinoCore\include\core</Value>
-      <Value>%24(ProjectDir)\..\ArduinoCore\include\variants\mega</Value>
-      <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
-    </ListValues>
-  </avrgcc.compiler.directories.IncludePaths>
-  <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
-  <avrgcc.compiler.optimization.OtherFlags>-fno-threadsafe-statics</avrgcc.compiler.optimization.OtherFlags>
-  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
-  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-  <avrgcc.compiler.warnings.ExtraWarnings>True</avrgcc.compiler.warnings.ExtraWarnings>
-  <avrgcc.compiler.warnings.InhibitAllWarnings>True</avrgcc.compiler.warnings.InhibitAllWarnings>
-  <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -std=gnu11</avrgcc.compiler.miscellaneous.OtherFlags>
-  <avrgcccpp.compiler.general.SubroutinesFunctionPrologues>True</avrgcccpp.compiler.general.SubroutinesFunctionPrologues>
-  <avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>
-  <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
-  <avrgcccpp.compiler.symbols.DefSymbols>
-    <ListValues>
-      <Value>__MARLIN_FIRMWARE__</Value>
-      <Value>ARDUINO_AVR_MEGA2560</Value>
-      <Value>F_CPU=16000000L</Value>
-      <Value>ARDUINO_ARCH_AVR</Value>
-      <Value>__AVR_ATmega2560__</Value>
-      <Value>ARDUINO=10808</Value>
-      <Value>ADVi3PP_51</Value>
-      <Value>BLTOUCH</Value>
-      <Value>DEBUG</Value>
-      <Value>ADVi3PP_DEBUG</Value>
-      <Value>ADVi3PP_HARDWARE_SIMULATOR</Value>
-    </ListValues>
-  </avrgcccpp.compiler.symbols.DefSymbols>
-  <avrgcccpp.compiler.directories.IncludePaths>
-    <ListValues>
-      <Value>%24(ProjectDir)\..\ArduinoCore\include</Value>
-      <Value>%24(ProjectDir)\..\ArduinoCore\include\core</Value>
-      <Value>%24(ProjectDir)\..\ArduinoCore\include\variants\mega</Value>
-      <Value>%24(ProjectDir)\src</Value>
-      <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
-    </ListValues>
-  </avrgcccpp.compiler.directories.IncludePaths>
-  <avrgcccpp.compiler.optimization.level>Optimize for size (-Os)</avrgcccpp.compiler.optimization.level>
-  <avrgcccpp.compiler.optimization.OtherFlags>-fno-threadsafe-statics -fmerge-all-constants -fno-tree-scev-cprop -fno-split-wide-types</avrgcccpp.compiler.optimization.OtherFlags>
-  <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
-  <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
-  <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
-  <avrgcccpp.compiler.warnings.AllWarnings>True</avrgcccpp.compiler.warnings.AllWarnings>
-  <avrgcccpp.compiler.warnings.Undefined>True</avrgcccpp.compiler.warnings.Undefined>
-  <avrgcccpp.compiler.warnings.InhibitAllWarnings>True</avrgcccpp.compiler.warnings.InhibitAllWarnings>
-  <avrgcccpp.compiler.miscellaneous.OtherFlags>-std=gnu++17</avrgcccpp.compiler.miscellaneous.OtherFlags>
-  <avrgcccpp.linker.libraries.Libraries>
-    <ListValues>
-      <Value>libm</Value>
-    </ListValues>
-  </avrgcccpp.linker.libraries.Libraries>
-  <avrgcccpp.linker.miscellaneous.LinkerFlags>-Os</avrgcccpp.linker.miscellaneous.LinkerFlags>
-  <avrgcccpp.assembler.general.IncludePaths>
-    <ListValues>
-      <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
-    </ListValues>
-  </avrgcccpp.assembler.general.IncludePaths>
-  <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
-</AvrGccCpp>
+        <avrgcc.common.Device>-mmcu=atmega2560 -B "%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\gcc\dev\atmega2560"</avrgcc.common.Device>
+        <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+        <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>__MARLIN_FIRMWARE__</Value>
+            <Value>ARDUINO_AVR_MEGA2560</Value>
+            <Value>F_CPU=16000000L</Value>
+            <Value>ARDUINO_ARCH_AVR</Value>
+            <Value>__AVR_ATmega2560__</Value>
+            <Value>ARDUINO=10808</Value>
+            <Value>ADVi3PP_51</Value>
+            <Value>BLTOUCH</Value>
+            <Value>DEBUG</Value>
+            <Value>ADVi3PP_DEBUG</Value>
+            <Value>ADVi3PP_HARDWARE_SIMULATOR</Value>
+          </ListValues>
+        </avrgcc.compiler.symbols.DefSymbols>
+        <avrgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\core</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\variants\mega</Value>
+            <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
+          </ListValues>
+        </avrgcc.compiler.directories.IncludePaths>
+        <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+        <avrgcc.compiler.optimization.OtherFlags>-fno-threadsafe-statics</avrgcc.compiler.optimization.OtherFlags>
+        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+        <avrgcc.compiler.warnings.ExtraWarnings>True</avrgcc.compiler.warnings.ExtraWarnings>
+        <avrgcc.compiler.warnings.InhibitAllWarnings>True</avrgcc.compiler.warnings.InhibitAllWarnings>
+        <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -std=gnu11</avrgcc.compiler.miscellaneous.OtherFlags>
+        <avrgcccpp.compiler.general.SubroutinesFunctionPrologues>True</avrgcccpp.compiler.general.SubroutinesFunctionPrologues>
+        <avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcccpp.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>__MARLIN_FIRMWARE__</Value>
+            <Value>ARDUINO_AVR_MEGA2560</Value>
+            <Value>F_CPU=16000000L</Value>
+            <Value>ARDUINO_ARCH_AVR</Value>
+            <Value>__AVR_ATmega2560__</Value>
+            <Value>ARDUINO=10808</Value>
+            <Value>ADVi3PP_51</Value>
+            <Value>BLTOUCH</Value>
+            <Value>DEBUG</Value>
+            <Value>ADVi3PP_DEBUG</Value>
+            <Value>ADVi3PP_HARDWARE_SIMULATOR</Value>
+          </ListValues>
+        </avrgcccpp.compiler.symbols.DefSymbols>
+        <avrgcccpp.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\core</Value>
+            <Value>%24(ProjectDir)\..\ArduinoCore\include\variants\mega</Value>
+            <Value>%24(ProjectDir)\src</Value>
+            <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
+          </ListValues>
+        </avrgcccpp.compiler.directories.IncludePaths>
+        <avrgcccpp.compiler.optimization.level>Optimize for size (-Os)</avrgcccpp.compiler.optimization.level>
+        <avrgcccpp.compiler.optimization.OtherFlags>-fno-threadsafe-statics -fmerge-all-constants -fno-tree-scev-cprop -fno-split-wide-types</avrgcccpp.compiler.optimization.OtherFlags>
+        <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
+        <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
+        <avrgcccpp.compiler.warnings.AllWarnings>True</avrgcccpp.compiler.warnings.AllWarnings>
+        <avrgcccpp.compiler.warnings.Undefined>True</avrgcccpp.compiler.warnings.Undefined>
+        <avrgcccpp.compiler.warnings.InhibitAllWarnings>True</avrgcccpp.compiler.warnings.InhibitAllWarnings>
+        <avrgcccpp.compiler.miscellaneous.OtherFlags>-std=gnu++17</avrgcccpp.compiler.miscellaneous.OtherFlags>
+        <avrgcccpp.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </avrgcccpp.linker.libraries.Libraries>
+        <avrgcccpp.linker.miscellaneous.LinkerFlags>-Os</avrgcccpp.linker.miscellaneous.LinkerFlags>
+        <avrgcccpp.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.6.364\include\</Value>
+          </ListValues>
+        </avrgcccpp.assembler.general.IncludePaths>
+        <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
+      </AvrGccCpp>
     </ToolchainSettings>
     <OutputPath>bin\Simulator\</OutputPath>
   </PropertyGroup>
@@ -582,9 +582,6 @@
     <Compile Include="src\advi3pp\core\logging.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\core\marlin_ui.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\core\pages.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -618,9 +615,6 @@
     <Compile Include="src\advi3pp\inc\advi3pp.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\inc\x_twist.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\lib\ADVstd\ADVcallback.h">
       <SubType>compile</SubType>
     </Compile>
@@ -646,6 +640,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\lib\ADVstd\unique_ptr.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\marlin\extui_advi3pp.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\marlin\marlin_ui.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\parameters.h">
@@ -894,6 +894,9 @@
     <Compile Include="src\core\debug_out.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\core\debug_section.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\core\drivers.h">
       <SubType>compile</SubType>
     </Compile>
@@ -960,6 +963,18 @@
     <Compile Include="src\feature\bedlevel\mbl\mesh_bed_leveling.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\feature\bedlevel\ubl\ubl.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\ubl\ubl.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\ubl\ubl_G29.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\bedlevel\ubl\ubl_motion.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\feature\binary_stream.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -994,6 +1009,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\feature\controllerfan.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\direct_stepping.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\direct_stepping.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\feature\encoder_i2c.cpp">
@@ -1032,6 +1053,12 @@
     <Compile Include="src\feature\host_actions.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\feature\hotend_idle.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\hotend_idle.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\feature\joystick.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1068,6 +1095,12 @@
     <Compile Include="src\feature\powerloss.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\feature\power_monitor.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\power_monitor.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\feature\probe_temp_comp.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1098,6 +1131,9 @@
     <Compile Include="src\feature\spindle_laser.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\feature\spindle_laser_types.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\feature\tmc_util.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1125,6 +1161,9 @@
     <Compile Include="src\gcode\bedlevel\G26.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\gcode\bedlevel\G35.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\bedlevel\G42.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1137,10 +1176,19 @@
     <Compile Include="src\gcode\bedlevel\mbl\M421.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\gcode\bedlevel\ubl\G29.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\bedlevel\ubl\M421.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\calibrate\G28.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\calibrate\G33.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\G34.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\calibrate\G34_M422.cpp">
@@ -1266,6 +1314,9 @@
     <Compile Include="src\gcode\control\M85.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\gcode\control\M993_M994.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\control\M997.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1365,6 +1416,9 @@
     <Compile Include="src\gcode\feature\powerloss\M413.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\gcode\feature\power_monitor\M430.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\feature\prusa_MMU2\M403.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1387,6 +1441,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\gcode.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\gcode_d.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\geometry\G17-G19.cpp">
@@ -1422,6 +1479,9 @@
     <Compile Include="src\gcode\host\M16.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\gcode\host\M360.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\host\M876.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1443,6 +1503,9 @@
     <Compile Include="src\gcode\lcd\M73.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\gcode\lcd\M995.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\motion\G0_G1.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1453,6 +1516,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\motion\G5.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\motion\G6.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\motion\G80.cpp">
@@ -1732,9 +1798,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\lcd\extui\ui_api.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\lcd\extui_advi3pp.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\lcd\thermistornames.h">
@@ -2043,6 +2106,9 @@
     <Compile Include="src\module\tool_change.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\pins\mega\pins_ADVI3PP.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\pins\pins.h">
       <SubType>compile</SubType>
     </Compile>
@@ -2114,6 +2180,8 @@
     <Folder Include="src\advi3pp\inc" />
     <Folder Include="src\advi3pp\lib" />
     <Folder Include="src\advi3pp\lib\ADVstd" />
+    <Folder Include="src\advi3pp\marlin\" />
+    <Folder Include="src\advi3pp\marlin\" />
     <Folder Include="src\advi3pp\screens" />
     <Folder Include="src\advi3pp\screens\controls" />
     <Folder Include="src\advi3pp\screens\core" />
@@ -2127,10 +2195,12 @@
     <Folder Include="src\feature\bedlevel" />
     <Folder Include="src\feature\bedlevel\abl" />
     <Folder Include="src\feature\bedlevel\mbl" />
+    <Folder Include="src\feature\bedlevel\ubl\" />
     <Folder Include="src\gcode" />
     <Folder Include="src\gcode\bedlevel" />
     <Folder Include="src\gcode\bedlevel\abl" />
     <Folder Include="src\gcode\bedlevel\mbl" />
+    <Folder Include="src\gcode\bedlevel\ubl\" />
     <Folder Include="src\gcode\calibrate" />
     <Folder Include="src\gcode\config" />
     <Folder Include="src\gcode\control" />
@@ -2153,6 +2223,7 @@
     <Folder Include="src\gcode\feature\mixing" />
     <Folder Include="src\gcode\feature\pause" />
     <Folder Include="src\gcode\feature\powerloss" />
+    <Folder Include="src\gcode\feature\power_monitor\" />
     <Folder Include="src\gcode\feature\prusa_MMU2" />
     <Folder Include="src\gcode\feature\runout" />
     <Folder Include="src\gcode\feature\trinamic" />
@@ -2179,6 +2250,7 @@
     <Folder Include="src\module\stepper" />
     <Folder Include="src\module\thermistor" />
     <Folder Include="src\pins" />
+    <Folder Include="src\pins\mega\" />
     <Folder Include="src\sd" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
