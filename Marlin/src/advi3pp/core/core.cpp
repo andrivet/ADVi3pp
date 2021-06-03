@@ -72,128 +72,6 @@ namespace ADVi3pp {
 Core core;
 
 
-void Facade::on_startup()
-{
-    core.startup();
-}
-
-void Facade::on_idle()
-{
-    core.idle();
-}
-
-void Facade::on_killed(PGM_P error, PGM_P /*component*/)
-{
-    core.killed(to_flash(error));
-}
-
-void Facade::on_play_tone(const uint16_t /*frequency*/, const uint16_t /*duration*/)
-{
-    buzzer.buzz_on_action();
-}
-
-void Facade::on_media_open_error(const char* filename)
-{
-    status.set(F("Error opening file"));
-}
-
-void Facade::on_print_started()
-{
-}
-
-void Facade::on_print_paused()
-{
-}
-
-void Facade::on_print_stopped()
-{
-}
-
-void Facade::on_filament_runout(const ExtUI::extruder_t /*extruder*/)
-{
-}
-
-void Facade::on_user_confirm_required()
-{
-    core.wait_user_confirm();
-}
-
-void Facade::on_status_changed(const char* /*msg*/)
-{
-}
-
-void Facade::on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc)
-{
-    settings.write(write, eeprom_index, working_crc);
-}
-
-bool Facade::on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating)
-{
-    if(validating)
-        return settings.validate(read, eeprom_index, working_crc);
-    settings.read(read, eeprom_index, working_crc);
-    return true;
-}
-
-uint16_t Facade::on_sizeof_settings()
-{
-    return settings.size_of();
-}
-
-void Facade::on_factory_reset()
-{
-    settings.reset();
-    if(eeprom_mismatch.does_mismatch())
-        return;
-
-    pages.reset();
-    setup.show();
-}
-
-void Facade::on_settings_written(bool /*success*/)
-{
-}
-
-void Facade::on_settings_loaded(bool success)
-{
-    if(!success)
-        eeprom_mismatch.set_mismatch();
-}
-
-void Facade::on_settings_validated(bool success)
-{
-    if(!success)
-        eeprom_mismatch.set_mismatch();
-}
-
-void Facade::on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval)
-{
-}
-
-void Facade::on_automatic_leveling_finished(bool success)
-{
-#if HAS_LEVELING
-    automatic_leveling.leveling_finished(success);
-#endif
-}
-
-#if ENABLED(POWER_LOSS_RECOVERY)
-void Facade::on_power_less_resume()
-{
-}
-#endif
-
-void Facade::on_pid_tuning_progress(int cycle, int nb)
-{
-    pid_tuning.on_progress(cycle, nb);
-}
-
-void Facade::on_pid_tuning(const ExtUI::result_t rst)
-{
-    pid_tuning.finished(rst);
-}
-
-
 // ----------------------------------------------------------------------------
 
 void Core::startup()
@@ -438,5 +316,7 @@ void Core::inject_commands(const FlashChar* commands)
 {
     ExtUI::injectCommands_P(from_flash(commands));
 }
+
+
 
 }

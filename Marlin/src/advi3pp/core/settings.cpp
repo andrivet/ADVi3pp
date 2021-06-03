@@ -27,12 +27,58 @@
 #include "../screens/controls/preheat.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/eeprom_mismatch.h"
+#include "../screens/tuning/setup.h"
 #include "../screens/leveling/xtwist.h"
 
 
 namespace ADVi3pp {
 
 Settings settings;
+
+
+void Settings::on_factory_reset()
+{
+    settings.reset();
+    if(eeprom_mismatch.does_mismatch())
+        return;
+
+    pages.reset();
+    setup.show();
+}
+
+void Settings::on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+{
+    settings.write(write, eeprom_index, working_crc);
+}
+
+bool Settings::on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating)
+{
+    if(validating)
+        return settings.validate(read, eeprom_index, working_crc);
+    settings.read(read, eeprom_index, working_crc);
+    return true;
+}
+
+uint16_t Settings::on_sizeof_settings()
+{
+    return settings.size_of();
+}
+
+void Settings::on_settings_written(bool success)
+{
+}
+
+void Settings::on_settings_loaded(bool success)
+{
+    if(!success)
+        eeprom_mismatch.set_mismatch();
+}
+
+void Settings::on_settings_validated(bool success)
+{
+    if(!success)
+        eeprom_mismatch.set_mismatch();
+}
 
 bool Settings::write(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {

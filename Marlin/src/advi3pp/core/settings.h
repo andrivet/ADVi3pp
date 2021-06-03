@@ -37,6 +37,14 @@ const uint16_t default_hotend_temperature = 200; //!< Default target temperature
 
 struct Settings
 {
+    void on_factory_reset();
+    uint16_t on_sizeof_settings();
+    void on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    bool on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
+    void on_settings_written(bool success);
+    void on_settings_loaded(bool success);
+    void on_settings_validated(bool success);
+
     uint16_t size_of() const;
     bool write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     void read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);

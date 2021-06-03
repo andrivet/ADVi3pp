@@ -24,7 +24,7 @@
 
 namespace ADVi3pp {
 
-struct Facade
+/*struct Facade
 {
     static void on_startup();
     static void on_idle();
@@ -51,7 +51,7 @@ struct Facade
 #endif
     static void on_pid_tuning(const ExtUI::result_t rst);
     static void on_pid_tuning_progress(int cycle, int nb);
-};
+};*/
 
 
 #if ENABLED(ADVi3PP_X_TWIST)
