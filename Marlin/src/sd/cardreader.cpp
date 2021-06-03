@@ -138,7 +138,8 @@ CardReader::CardReader() {
   file_subcall_ctr = 0;
 
   workDirDepth = 0;
-  ZERO(workDirParents);
+  // ZERO(workDirParents); @advi3++ avoid compilation warning with memset
+  for(auto i = 0; i < MAX_DIR_DEPTH; ++i) workDirParents[i] = {};
 
   // Disable autostart until card is initialized
   autostart_index = -1;
