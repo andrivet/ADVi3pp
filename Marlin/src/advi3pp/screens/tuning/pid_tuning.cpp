@@ -105,7 +105,7 @@ void PidTuning::step2_command()
 
     if(kind_ == TemperatureKind::Hotend)
     {
-        ExtUI::setTargetFan_percent(0, ExtUI::FAN0); // Turn on fan (only for hotend)
+        ExtUI::setTargetFan_percent(100, ExtUI::FAN0); // Turn on fan (only for hotend)
         ExtUI::startPIDTune(temperature_, ExtUI::E0);
     }
     else
@@ -119,6 +119,7 @@ bool PidTuning::cancel_pid()
 {
     status.set(F("Canceling PID tuning"));
     ExtUI::cancelWaitForHeatup();
+    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
     state_ = State::None;
     return false;
 }
