@@ -59,15 +59,20 @@ void ManualLeveling::do_back_command()
 #if HAS_LEVELING
     ExtUI::setLevelingActive(true); // Enable back compensation
 #endif
-    ExtUI::setFeedrate_mm_s(1200);
-    ExtUI::setAxisPosition_mm(30, ExtUI::Z);
+    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z);
     Parent::do_back_command();
 }
 
 void ManualLeveling::do_save_command()
 {
+#if HAS_LEVELING
     xtwist.reset();
-    ExtUI::setLevelingActive(false);
+    ExtUI::setLevelingActive(false); // Disable ABL mesh (already disabled but prefer to be explicit)
+#endif
+    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z);
+    Parent::do_save_command();
 }
 
 
@@ -77,6 +82,7 @@ Page ManualLeveling::do_prepare_page()
 {
     if(!core.ensure_not_printing())
         return Page::None;
+    pages.save_forward_page();
     wait.wait(F("Homing..."));
     ExtUI::setAllAxisUnhomed();
     ExtUI::setAllAxisPositionUnknown();
@@ -101,14 +107,14 @@ void ManualLeveling::leveling_task()
 
 void ManualLeveling::move(int x, int y)
 {
-    ExtUI::setFeedrate_mm_s(1200);
-    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
+    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setAxisPosition_mm(Z_HOMING_HEIGHT, ExtUI::Z);
 
-    ExtUI::setFeedrate_mm_s(6000);
+    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_XY);
     ExtUI::setAxisPosition_mm(x, ExtUI::X);
     ExtUI::setAxisPosition_mm(y, ExtUI::Y);
 
-    ExtUI::setFeedrate_mm_s(1200);
+    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(0, ExtUI::Z);
 }
 

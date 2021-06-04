@@ -31,7 +31,7 @@ private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void do_back_command();
-    static void do_save_command();
+    void do_save_command();
     void point1_command();
     void point2_command();
     void point3_command();
