@@ -73,6 +73,7 @@ Page BLTouchTesting::do_prepare_page()
 {
     if(!core.ensure_not_printing())
         return Page::None;
+    pages.save_forward_page();
     step1();
     return Page::BLTouchTesting1;
 }
