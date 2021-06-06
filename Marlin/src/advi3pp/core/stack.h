@@ -34,6 +34,7 @@ struct Stack
     bool is_empty() const;
     void empty();
     bool contains(T e) const;
+    void log(Log& l) const;
 
 private:
     adv::array<T, S> elements_;
@@ -73,6 +74,17 @@ bool Stack<T, S>::contains(T e) const
         if(elements_[top_ - i - 1] == e)
             return true;
     return false;
+}
+
+template<typename T, size_t S>
+void Stack<T, S>::log(Log& l) const
+{
+#ifdef ADVi3PP_DEBUG
+    if(is_empty())
+        l << F("<empty>");
+    for(size_t i = 0; i < top_; ++i)
+        l << F(" ") << elements_[i];
+#endif
 }
 
 }
