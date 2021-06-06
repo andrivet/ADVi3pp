@@ -26,15 +26,17 @@ namespace ADVi3pp {
 
 StepSettings steps_settings;
 
+static const unsigned SCALE = 10;
+
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
 Page StepSettings::do_prepare_page()
 {
     WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::X) * 10)
-          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::Y) * 10)
-          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::Z) * 10)
-          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::E0) * 10);
+    frame << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::X) * SCALE)
+          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::Y) * SCALE)
+          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::Z) * SCALE)
+          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::E0) * SCALE);
     frame.send();
 
     return Page::StepsSettings;
@@ -53,10 +55,10 @@ void StepSettings::do_save_command()
     Uint16 x, y, z, e;
     response >> x >> y >> z >> e;
 
-    ExtUI::setAxisSteps_per_mm(static_cast<float>(x.word) / 10, ExtUI::X);
-    ExtUI::setAxisSteps_per_mm(static_cast<float>(y.word) / 10, ExtUI::Y);
-    ExtUI::setAxisSteps_per_mm(static_cast<float>(z.word) / 10, ExtUI::Z);
-    ExtUI::setAxisSteps_per_mm(static_cast<float>(e.word) / 10, ExtUI::E0);
+    ExtUI::setAxisSteps_per_mm(static_cast<float>(x.word) / SCALE, ExtUI::X);
+    ExtUI::setAxisSteps_per_mm(static_cast<float>(y.word) / SCALE, ExtUI::Y);
+    ExtUI::setAxisSteps_per_mm(static_cast<float>(z.word) / SCALE, ExtUI::Z);
+    ExtUI::setAxisSteps_per_mm(static_cast<float>(e.word) / SCALE, ExtUI::E0);
 
     Parent::do_save_command();
 }
