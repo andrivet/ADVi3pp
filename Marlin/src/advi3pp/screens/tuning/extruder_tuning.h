@@ -30,10 +30,8 @@ struct ExtruderTuning: Screen<ExtruderTuning>
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
-    void do_back_command();
     void start_command();
     void settings_command();
-    void after_extrusion();
     void send_data();
 
 private:

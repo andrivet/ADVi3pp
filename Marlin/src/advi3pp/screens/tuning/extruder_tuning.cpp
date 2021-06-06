@@ -61,6 +61,7 @@ Page ExtruderTuning::do_prepare_page()
 {
     if(!core.ensure_not_printing())
         return Page::None;
+    pages.save_forward_page();
     send_data();
     return Page::ExtruderTuningTemp;
 }
@@ -79,36 +80,20 @@ void ExtruderTuning::start_command()
     ExtUI::setTargetTemp_celsius(temperature.word, ExtUI::E0);
     wait.wait(F("Heating the extruder..."));
 
-    core.inject_commands(F("G1 Z20 F1200\nM83\nG92 E0"));   // raise head, relative E mode, reset E axis
+    core.inject_commands(F("G1 Z10 F1200\nM83\nG92 E0"));   // raise head, relative E mode, reset E axis
 
     auto before = ExtUI::getAxisPosition_mm(ExtUI::E0); // should be 0 (because of G92) but prefer to be sure
     ExtUI::extrudeFilament(tuning_extruder_filament);
     extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0) - before;
 
-    after_extrusion();
+    ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+    core.inject_commands(F("M82\nG92 E0"));  // absolute E mode, reset E axis
 
-    //task.set_background_task(BackgroundTask(this, &ExtruderTuning::heating_task));
-}
-
-void ExtruderTuning::after_extrusion()
-{
     // Always set to default 20mm
-    WriteRamDataRequest frame{Variable::Value0};
     frame << 200_u16; // 20.0
     frame.send();
 
     pages.show(Page::ExtruderTuningMeasure);
-}
-
-//! Execute the Back command
-void ExtruderTuning::do_back_command()
-{
-    task.clear_background_task();
-
-    ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
-    core.inject_commands(F("M82\nG92 E0"));       // absolute E mode, reset E axis
-
-    Parent::do_back_command();
 }
 
 //! Compute the extruder (E axis) new value and show the steps settings.
