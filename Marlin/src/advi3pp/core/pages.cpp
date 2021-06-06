@@ -32,6 +32,18 @@ Log& operator<<(Log& log, Page page)
     return log;
 }
 
+#ifdef ADVi3PP_DEBUG
+void Pages::log()
+{
+    auto l = Log::log();
+
+    l << F("Pages stack:");
+    back_pages_.log(l);
+    l << F(", Current page: ") << current_page_;
+    l << F(", Forward page: ") << forward_page_ << Log::endl();
+}
+#endif
+
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
 void Pages::show(Page page)
@@ -55,6 +67,7 @@ void Pages::show_(Page page)
     frame.send(true);
 
     current_page_ = page;
+    log();
 }
 
 //! Retrieve the current page on the LCD screen
@@ -72,13 +85,12 @@ void Pages::save_forward_page()
     auto current = get_current_page();
     Log::log() << F("Save forward page ") << current << Log::endl();
     forward_page_ = current;
+    log();
 }
 
 //! Show the "Back" page on the LCD display.
 void Pages::show_back_page()
 {
-    forward_page_ = Page::None;
-
     if(back_pages_.is_empty())
     {
         Log::log() << F("No back page, show Main") << Log::endl();
@@ -87,6 +99,8 @@ void Pages::show_back_page()
     }
 
     auto back = back_pages_.pop();
+    if(back == forward_page_)
+        forward_page_ = Page::None;
     Log::log() << F("Pop back page ") << back << Log::endl();
     show_(back);
 }
@@ -113,8 +127,9 @@ void Pages::show_forward_page()
     }
 
     Log::error() << F("Back pages do not contain page ") << forward_page_ << Log::endl();
-    forward_page_ = Page::Main;
-    show_(forward_page_);
+    forward_page_ = Page::None;
+    reset();
+    show_(Page::Main);
 }
 
 void Pages::reset()
