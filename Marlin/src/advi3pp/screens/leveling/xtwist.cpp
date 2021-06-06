@@ -119,6 +119,13 @@ Page XTwist::do_prepare_page()
 {
     if(!core.ensure_not_printing())
         return Page::None;
+
+    if(!ExtUI::getLevelingActive())
+    {
+        wait.wait_back(F("Please do an automated bed leveling."));
+        return Page::None;
+    }
+
     pages.save_forward_page();
 
     old_offsets_ = offsets_;
