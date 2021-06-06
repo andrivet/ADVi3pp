@@ -52,6 +52,10 @@ bool Print::do_dispatch(KeyValue value)
 //! @return The index of the page to display
 Page Print::do_prepare_page()
 {
+#ifdef ADVi3PP_PROBE
+    if(!ExtUI::getLevelingActive())
+        status.set(F("WARNING: Bed leveling not active."));
+#endif
     return Page::Print;
 }
 
