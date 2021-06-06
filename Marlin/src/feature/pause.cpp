@@ -688,7 +688,7 @@ bool extrude_filament(const float &purge_length)
         return false;
 
     lcd_pause_show_message(PAUSE_MESSAGE_LOAD);
-    unscaled_e_move(purge_length, ADVANCED_PAUSE_PURGE_FEEDRATE);
+    unscaled_e_move(purge_length, 50.0 / 60);
 
     return true;
 }
