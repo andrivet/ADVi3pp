@@ -161,9 +161,29 @@ void Core::update_progress()
     // TODO Not sure it is necessary
 }
 
+struct Reentrant
+{
+    static bool reentrant_;
+    Reentrant() {}
+    ~Reentrant() { reentrant_ = false; }
+    bool reentrant()
+    {
+        if(reentrant_)
+        {
+            Log::log() << F("Reentrancy detected") << Log::endl();
+            return true;
+        }
+        reentrant_ = true; return false;
+    }
+};
+
+bool Reentrant::reentrant_ = false;
+
 //! Read a frame from the LCD and act accordingly.
 void Core::receive_lcd_serial_data()
 {
+    Reentrant reentrant;
+
     // Format of the frame (example):
     // header | length | command | action | nb words | key code
     // -------|--------|---------|--------|----------|---------
@@ -181,6 +201,8 @@ void Core::receive_lcd_serial_data()
     }
 
     // TODO: Move this later and check the command
+
+    if(reentrant.reentrant()) return;
 
     buzzer.buzz_on_press();
     dimming.reset();
@@ -290,7 +312,7 @@ void Core::send_lcd_serial_data(bool force_update)
           << Uint16(lround(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100.0))
           << Uint16(progress_bar_low)
           << Uint16(progress_var_high)
-          << 0_u16 // TODO
+          << 0_u16 // Reserved
           << Uint16(probe_state)
           << Uint16(ExtUI::getFeedrate_percent());
     frame.send(false);
