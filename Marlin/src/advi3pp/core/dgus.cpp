@@ -336,7 +336,7 @@ const uint8_t* Frame::get_data() const
 }
 #endif
 
-void Frame::forwarding_loop()
+[[noreturn]] void Frame::forwarding_loop()
 {
     while(true)
     {

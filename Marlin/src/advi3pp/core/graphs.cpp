@@ -57,7 +57,7 @@ void Graphs::send_data()
 //! Clear the graphs
 void Graphs::clear()
 {
-    WriteRegisterDataRequest request{Register::TrendlineClear}; // TODO: Fix this (Mini DGUS)
+    WriteRegisterDataRequest request{Register::TrendlineClear};
     request << 0x55_u8;
     request.send();
 }

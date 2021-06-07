@@ -142,7 +142,8 @@ struct Frame
 {
     static void open();
     static void setup_lcd();
-    static void forwarding_loop();
+
+    [[noreturn]] static void forwarding_loop();
 
     bool send(bool logging = true); // Logging is only used in DEBUG builds
     bool available(uint8_t bytes = 3);
