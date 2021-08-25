@@ -103,9 +103,11 @@ struct Dgus
     static void setup();
     [[noreturn]] static void forwarding_loop();
 
+#ifdef ADV_UNIT_TESTS
     static void reset();
     template<size_t S>
     static void reset(const uint8_t (&buffer)[S]);
+#endif
 
     static bool write_header(Command cmd, uint8_t param_size, uint8_t data_size);
     static bool receive(Command cmd, ReceiveMode mode);
@@ -339,11 +341,13 @@ struct WriteCurveRequest: WriteOutFrame<uint8_t, Command::WriteCurve>
 // Dgus
 // --------------------------------------------------------------------
 
+#ifdef ADV_UNIT_TESTS
 template<size_t S>
 void Dgus::reset(const uint8_t (&buffer)[S]) {
   reset();
   Serial2.reset(buffer);
 }
+#endif
 
 // --------------------------------------------------------------------
 // OutFrame

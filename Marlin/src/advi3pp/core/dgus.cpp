@@ -91,6 +91,7 @@ void Dgus::forwarding_loop()
     }
 }
 
+#ifdef ADV_UNIT_TESTS
 void Dgus::reset() {
   DgusSerial.reset();
   state_ = State::Start;
@@ -98,6 +99,7 @@ void Dgus::reset() {
   read_ = 0;
   command_ = Command::None;
 }
+#endif
 
 bool Dgus::write_header(Command cmd, uint8_t param_size, uint8_t data_size)
 {
