@@ -20,6 +20,8 @@
 
 #pragma once
 
+#ifndef ADV_UNIT_TESTS
+
 #include <WString.h>
 
 namespace ADVi3pp {
@@ -30,3 +32,5 @@ inline PGM_P from_flash(const FlashChar* str) { return reinterpret_cast<PGM_P>(s
 inline const FlashChar* to_flash(PGM_P str) { return reinterpret_cast<const FlashChar*>(str); }
 
 }
+
+#endif

@@ -25,8 +25,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../lib/ADVstd/array.h"
+#ifndef ADV_UNIT_TESTS
 #include "../../libs/duration_t.h"
 #include "flash_char.h"
+#endif
 
 namespace ADVi3pp {
 

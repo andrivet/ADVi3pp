@@ -20,6 +20,7 @@
 
 #pragma once
 
+#ifndef ADV_UNIT_TESTS
 using size_t = unsigned int;
 using ptrdiff_t = int;
 using nullptr_t = decltype(nullptr);
@@ -28,6 +29,7 @@ using nullptr_t = decltype(nullptr);
 inline void* operator new(size_t, void* p) noexcept { return p; }
 inline void* operator new[](size_t, void* p) noexcept { return p; }
 inline void operator delete(void*, unsigned int) { }
+#endif
 
 namespace adv {
 
