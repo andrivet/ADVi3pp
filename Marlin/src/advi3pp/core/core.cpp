@@ -79,7 +79,7 @@ void Core::startup()
 #ifdef ADVi3PP_DEBUG
     pinMode(LED_PIN, OUTPUT); // To help debugging when serial is not available
 #endif
-    Frame::open();
+    Dgus::open();
 }
 
 bool Core::init()
@@ -88,7 +88,7 @@ bool Core::init()
         return false;
     init_ = true;
 
-    Frame::setup_lcd();
+    Dgus::setup();
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     send_sponsors();
     graphs.clear();
@@ -122,7 +122,6 @@ void Core::idle()
     init();
 
     receive_lcd_serial_data();
-    dimming.check();
     task.execute_background_task();
     update_progress();
     send_lcd_serial_data();
@@ -164,7 +163,7 @@ void Core::update_progress()
 struct Reentrant
 {
     static bool reentrant_;
-    Reentrant() {}
+    Reentrant() = default;
     ~Reentrant() { reentrant_ = false; }
     bool reentrant()
     {
@@ -173,7 +172,8 @@ struct Reentrant
             Log::log() << F("Reentrancy detected") << Log::endl();
             return true;
         }
-        reentrant_ = true; return false;
+        reentrant_ = true;
+        return false;
     }
 };
 
@@ -183,78 +183,74 @@ bool Reentrant::reentrant_ = false;
 void Core::receive_lcd_serial_data()
 {
     Reentrant reentrant;
+    if(reentrant.reentrant()) return;
 
-    // Format of the frame (example):
+    // Format of the frame (examples):
     // header | length | command | action | nb words | key code
     // -------|--------|---------|--------|----------|---------
     //      2 |      1 |       1 |      2 |        1 |        2   bytes
     //  5A A5 |     06 |      83 |  04 60 |       01 |    01 50
 
-    IncomingFrame frame;
-    if(!frame.available())
-        return;
+    /*dimming.send();
+    if(dimming.receive())
+        return;*/
 
+    ReadAction frame{};
     if(!frame.receive())
-    {
-        Log::error() << F("reading incoming Frame") << Log::endl();
         return;
-    }
-
-    // TODO: Move this later and check the command
-
-    if(reentrant.reentrant()) return;
 
     buzzer.buzz_on_press();
     dimming.reset();
 
-    Command command{}; Action action{}; Uint8 nb_words; Uint16 value;
-    frame >> command >> action >> nb_words >> value;
-    auto key_value = static_cast<KeyValue>(value.word);
+    Action action = frame.get_parameter();
+    uint8_t nb_words = frame.read_byte();
+    uint16_t value = frame.read_word();
+    auto key_code = static_cast<KeyValue>(value);
 
 #ifdef ADVi3PP_LOG_FRAMES
     Log::log() << F("=R=> ") << nb_words.byte << F(" words, Action = 0x") << static_cast<uint16_t>(action)
-               << F(", KeyValue = 0x") << value.word << Log::endl();
+    << F(", KeyValue = 0x") << value << Log::endl();
 #endif
 
     switch(action)
     {
-        case Action::Controls:              controls.handle(key_value); break;
-        case Action::PrintCommand:          print.handle(key_value); break;
-        case Action::Wait:                  wait.handle(key_value); break;
-        case Action::LoadUnload:            load_unload.handle(key_value); break;
-        case Action::Preheat:               preheat.handle(key_value); break;
-        case Action::Move:                  move.handle(key_value); break;
-        case Action::SdCard:                sd_card.handle(key_value); break;
-        case Action::Sponsors:              sponsors.handle(key_value); break;
-        case Action::FactoryReset:          factory_reset.handle(key_value); break;
-        case Action::ManualLeveling:        manual_leveling.handle(key_value); break;
-        case Action::ExtruderTuning:        extruder_tuning.handle(key_value); break;
-        case Action::PidTuning:             pid_tuning.handle(key_value); break;
-        case Action::SensorSettings:        sensor_settings.handle(key_value); break;
-        case Action::VibrationsTuning:      vibrations.handle(key_value); break;
-        case Action::NoSensor:              no_sensor.handle(key_value); break;
-        case Action::LCD:                   lcd_settings.handle(key_value); break;
-        case Action::Statistics:            statistics.handle(key_value); break;
-        case Action::Versions:              versions.handle(key_value); break;
-        case Action::PrintSettings:         print_settings.handle(key_value); break;
-        case Action::PIDSettings:           pid_settings.handle(key_value); break;
-        case Action::StepsSettings:         steps_settings.handle(key_value); break;
-        case Action::FeedrateSettings:      feedrates_settings.handle(key_value); break;
-        case Action::AccelerationSettings:  accelerations_settings.handle(key_value); break;
-        case Action::PauseOptions:          pause_options.handle(key_value); break;
-        case Action::Copyrights:            copyrights.handle(key_value); break;
-        case Action::AutomaticLeveling:     automatic_leveling.handle(key_value); break;
-        case Action::SensorGrid:            leveling_grid.handle(key_value); break;
-        case Action::SensorZHeight:         sensor_z_height.handle(key_value); break;
-        case Action::ChangeFilament:        change_filament.handle(key_value); break;
-        case Action::EEPROMMismatch:        eeprom_mismatch.handle(key_value); break;
-        case Action::USB2LCD:               usb_2_lcd.handle(key_value); break;
-        case Action::BLTouchTesting:        bltouch_testing.handle(key_value); break;
-        case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_value); break;
-        case Action::Diagnosis:             io.handle(key_value); break;
-        case Action::Temperatures:          temperatures.handle(key_value); break;
-        case Action::Setup:                 setup.handle(key_value); break;
-        case Action::XTwist:                xtwist.handle(key_value); break;
+        case Action::Controls:              controls.handle(key_code); break;
+        case Action::PrintCommand:          print.handle(key_code); break;
+        case Action::Wait:                  wait.handle(key_code); break;
+        case Action::LoadUnload:            load_unload.handle(key_code); break;
+        case Action::Preheat:               preheat.handle(key_code); break;
+        case Action::Move:                  move.handle(key_code); break;
+        case Action::SdCard:                sd_card.handle(key_code); break;
+        case Action::Sponsors:              sponsors.handle(key_code); break;
+        case Action::FactoryReset:          factory_reset.handle(key_code); break;
+        case Action::ManualLeveling:        manual_leveling.handle(key_code); break;
+        case Action::ExtruderTuning:        extruder_tuning.handle(key_code); break;
+        case Action::PidTuning:             pid_tuning.handle(key_code); break;
+        case Action::SensorSettings:        sensor_settings.handle(key_code); break;
+        case Action::VibrationsTuning:      vibrations.handle(key_code); break;
+        case Action::NoSensor:              no_sensor.handle(key_code); break;
+        case Action::LCD:                   lcd_settings.handle(key_code); break;
+        case Action::Statistics:            statistics.handle(key_code); break;
+        case Action::Versions:              versions.handle(key_code); break;
+        case Action::PrintSettings:         print_settings.handle(key_code); break;
+        case Action::PIDSettings:           pid_settings.handle(key_code); break;
+        case Action::StepsSettings:         steps_settings.handle(key_code); break;
+        case Action::FeedrateSettings:      feedrates_settings.handle(key_code); break;
+        case Action::AccelerationSettings:  accelerations_settings.handle(key_code); break;
+        case Action::PauseOptions:          pause_options.handle(key_code); break;
+        case Action::Copyrights:            copyrights.handle(key_code); break;
+        case Action::AutomaticLeveling:     automatic_leveling.handle(key_code); break;
+        case Action::SensorGrid:            leveling_grid.handle(key_code); break;
+        case Action::SensorZHeight:         sensor_z_height.handle(key_code); break;
+        case Action::ChangeFilament:        change_filament.handle(key_code); break;
+        case Action::EEPROMMismatch:        eeprom_mismatch.handle(key_code); break;
+        case Action::USB2LCD:               usb_2_lcd.handle(key_code); break;
+        case Action::BLTouchTesting:        bltouch_testing.handle(key_code); break;
+        case Action::LinearAdvanceSettings: linear_advance_settings.handle(key_code); break;
+        case Action::Diagnosis:             io.handle(key_code); break;
+        case Action::Temperatures:          temperatures.handle(key_code); break;
+        case Action::Setup:                 setup.handle(key_code); break;
+        case Action::XTwist:                xtwist.handle(key_code); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;
@@ -276,7 +272,7 @@ void Core::receive_lcd_serial_data()
         case Action::HotendPlus:            print_settings.hotend_plus_command(); break;
         case Action::BedMinus:              print_settings.bed_minus_command(); break;
         case Action::BedPlus:               print_settings.bed_plus_command(); break;
-        case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_value)); break;
+        case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_code)); break;
         case Action::XTwistMinus:           xtwist.minus(); break;
         case Action::XTwistPlus:            xtwist.plus(); break;
 
@@ -302,20 +298,23 @@ void Core::send_lcd_serial_data(bool force_update)
     uint16_t probe_state = 0;
 #endif
 
+    adv::array<uint16_t, 11> data
+    {
+        static_cast<uint16_t>(ExtUI::getTargetTemp_celsius(ExtUI::BED)),
+        static_cast<uint16_t>(ExtUI::getActualTemp_celsius(ExtUI::BED)),
+        static_cast<uint16_t>(ExtUI::getTargetTemp_celsius(ExtUI::E0)),
+        static_cast<uint16_t>(ExtUI::getActualTemp_celsius(ExtUI::E0)),
+        static_cast<uint16_t>(ExtUI::getActualFan_percent(ExtUI::FAN0)),
+        static_cast<uint16_t>(lround(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100.0)),
+        static_cast<uint16_t>(progress_bar_low),
+        static_cast<uint16_t>(progress_var_high),
+        0, // Reserved
+        static_cast<uint16_t>(probe_state),
+        static_cast<uint16_t>(ExtUI::getFeedrate_percent())
+    };
+
     // Send the current status in one frame
-    WriteRamDataRequest frame{Variable::TargetBed};
-    frame << Uint16(ExtUI::getTargetTemp_celsius(ExtUI::BED))
-          << Uint16(ExtUI::getActualTemp_celsius(ExtUI::BED))
-          << Uint16(ExtUI::getTargetTemp_celsius(ExtUI::E0))
-          << Uint16(ExtUI::getActualTemp_celsius(ExtUI::E0))
-          << Uint16(ExtUI::getActualFan_percent(ExtUI::FAN0))
-          << Uint16(lround(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100.0))
-          << Uint16(progress_bar_low)
-          << Uint16(progress_var_high)
-          << 0_u16 // Reserved
-          << Uint16(probe_state)
-          << Uint16(ExtUI::getFeedrate_percent());
-    frame.send(false);
+    WriteRamRequest{Variable::TargetBed}.write_words(data);
 
     status.send();
 }

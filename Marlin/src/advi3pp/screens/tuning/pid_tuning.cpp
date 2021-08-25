@@ -64,10 +64,11 @@ Page PidTuning::do_prepare_page()
 //! Send the current data to the LCD panel.
 void PidTuning::send_data()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(temperature_)
-          << Uint16(kind_ != TemperatureKind::Hotend);
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 2>
+    {
+        temperature_,
+        kind_ != TemperatureKind::Hotend
+    });
 }
 
 //! Select the hotend PID
@@ -91,14 +92,15 @@ void PidTuning::step2_command()
 {
     status.reset();
 
-    ReadRamData frame{Variable::Value0, 2};
-    if(!frame.send_and_receive())
+    ReadRam frame{Variable::Value0};
+    if(!frame.send_receive(2))
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
 
-    Uint16 temperature, kind; frame >> temperature >> kind; temperature_ = temperature.word; // kind is not used here, it is already set
+    temperature_ = frame.read_word();
+    uint16_t kind = frame.read_word(); // kind is not used here, it is already set
 
     state_ |= State::FromLCDMenu;
     temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});

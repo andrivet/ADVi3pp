@@ -21,325 +21,65 @@
 #include "../parameters.h"
 #include "logging.h"
 #include "dgus.h"
+#ifndef ADV_UNIT_TESTS
 #include "../../lcd/extui/ui_api.h"
+#endif
 
 namespace ADVi3pp {
 
 namespace
 {
-    HardwareSerial& DgusSerial = Serial2;
+    auto& DgusSerial = Serial2;
     const uint32_t  LCD_BAUDRATE = 115200; // Between the LCD panel and the mainboard
-	const size_t    MAX_GARBAGE_BYTES = 5;
-	const uint16_t  LCD_READ_DELAY = 50; // ms
-	const uint16_t  LCD_READ_KILL_COUNT = 100; // must be less that the watchdog time
-	const byte      R2 = 0x0D; // SYS_CFG, disable buzzer, L22 init, auto key codes
+    const uint16_t  LCD_READ_DELAY = 50; // ms
+    const uint16_t  LCD_READ_KILL_COUNT = 100; // must be less that the watchdog time
+    const byte      R2 = 0x0D; // SYS_CFG, disable buzzer, L22 init, auto key codes
 }
 
 // --------------------------------------------------------------------
-// Frame
+// Dgus - DGUS LCD panel
 // --------------------------------------------------------------------
 
-//! Construct an input, empty, Frame.
-Frame::Frame()
-    : position_{0}
-{
-}
-
-//! Construct an output Frame.
-//! @param command  The command to be set into this Frame
-Frame::Frame(Command command)
-{
-    buffer_[Position::Header0] = HEADER_BYTE_0;
-    buffer_[Position::Header1] = HEADER_BYTE_1;
-    buffer_[Position::Length] = 1;
-    buffer_[Position::Command] = static_cast<uint8_t>(command);
-    position_ = Position::Data;
-}
-
-//! Append a byte to this Frame.
-//! @param frame    The frame
-//! @param data     Byte to be appended
-//! @return         Itself
-Frame& operator<<(Frame& frame, const Uint8 &data)
-{
-    if(frame.position_ < Frame::FRAME_BUFFER_SIZE)
-    {
-        frame.buffer_[frame.position_++] = data.byte;
-        frame.buffer_[Frame::Position::Length] += 1;
-    }
-    else
-        Log::error() << F("Data truncated") << Log::endl();
-    return frame;
-}
-
-//! Append a word to this Frame.
-//! @param frame    The frame
-//! @param data     Word to be appended
-//! @return         Itself
-Frame& operator<<(Frame& frame, const Uint16 &data)
-{
-    if(frame.position_ < Frame::FRAME_BUFFER_SIZE - 1)
-    {
-        frame.buffer_[frame.position_++] = highByte(data.word);
-        frame.buffer_[frame.position_++] = lowByte(data.word);
-        frame.buffer_[Frame::Position::Length] += 2;
-    }
-    else
-        Log::error() << F("Data truncated") << Log::endl();
-    return frame;
-}
-
-//! Append a dword to this Frame.
-//! @param frame    The frame
-//! @param data     DWord to be appended
-//! @return         Itself
-Frame& operator<<(Frame& frame, const Uint32 &data)
-{
-    if(frame.position_ < Frame::FRAME_BUFFER_SIZE - 3)
-    {
-        frame.buffer_[frame.position_++] = static_cast<uint8_t>(data.dword >> 24);
-        frame.buffer_[frame.position_++] = static_cast<uint8_t>(data.dword >> 16);
-        frame.buffer_[frame.position_++] = static_cast<uint8_t>(data.dword >> 8);
-        frame.buffer_[frame.position_++] = static_cast<uint8_t>(data.dword & 0xFF);
-        frame.buffer_[Frame::Position::Length] += 4;
-    }
-    else
-        Log::error() << F("Data truncated") << Log::endl();
-    return frame;
-}
-
-//! Append a Register to this Frame.
-//! @param frame    The frame
-//! @param reg      Register to be appended
-//! @return         Itself
-Frame& operator<<(Frame& frame, Register reg)
-{
-    frame << Uint8(reg);
-    return frame;
-}
-
-//! Append a Variable to this Frame.
-//! @param frame    The frame
-//! @param var      Variable to be appended
-//! @return         Itself
-Frame& operator<<(Frame& frame, Variable var)
-{
-    frame << Uint16(var);
-    return frame;
-}
-
-//! Append a string to this Frame.
-//! @param frame    The frame
-//! @param s        String to be appended
-//! @return         Itself
-Frame& operator<<(Frame& frame, const char* s)
-{
-    auto l = strlen(s);
-    size_t length = frame.position_ + l < Frame::FRAME_BUFFER_SIZE ? l : Frame::FRAME_BUFFER_SIZE - frame.position_;
-    memcpy(&frame.buffer_[frame.position_], s, length);
-    frame.position_ += length;
-    frame.buffer_[Frame::Position::Length] += length;
-    return frame;
-}
-
-//! Append a character to this Frame.
-//! @param frame    The frame
-//! @param c        Character to be appended
-//! @return         Itself
-Frame& operator<<(Frame& frame, char c)
-{
-    if(frame.position_ >= Frame::FRAME_BUFFER_SIZE - 1)
-        return frame; // The buffer is full
-
-    frame.buffer_[frame.position_] = c;
-    frame.position_ += 1;
-    frame.buffer_[Frame::Position::Length] += 1;
-    return frame;
-}
+Dgus::State Dgus::state_ = State::Start;
+uint8_t Dgus::length_ = 0;
+uint8_t Dgus::read_ = 0;
+Command Dgus::command_ = Command::None;
+uint8_t Dgus::pushed_back_[Dgus::MAX_PUSH_BACK] = {};
 
 //! Open the serial communication between the mainboard and the LCD panel
-void Frame::open()
+void Dgus::open()
 {
     DgusSerial.begin(LCD_BAUDRATE);
 }
 
-//! Send this Frame to the LCD display.
-//! @param logging  Enable logging in DEBUG release
-bool Frame::send(bool logging)
+void Dgus::setup()
 {
-#ifdef ADVi3PP_LOG_ALL_FRAMES
-    logging = true;
-#endif
-
-    if(logging)
-    {
-#ifdef ADVi3PP_LOG_FRAMES
-        Log::log() << F("<=S= 0x") << get_length() << F(" bytes, cmd = 0x") << static_cast<uint8_t>(get_command()) << Log::endl();
-        Log::log() << F(" ");
-        Log::dump(buffer_, get_length() + 3);
-#endif
-    }
-    size_t size = 3 + buffer_[Position::Length];
-    return DgusSerial.write(buffer_.data(), size) == size; // Header, length and data
-}
-
-//! Reset this Frame as an input Frame
-void Frame::reset()
-{
-    position_ = 0;
-}
-
-//! Reset this Frame as an output Frame.
-//! @param command      The command to be set into this Frame
-void Frame::reset(Command command)
-{
-    buffer_[Position::Header0] = HEADER_BYTE_0;
-    buffer_[Position::Header1] = HEADER_BYTE_1;
-    buffer_[Position::Length] = 1;
-    buffer_[Position::Command] = static_cast<uint8_t>(command);
-    position_ = Position::Data;
-}
-
-//! Wait for the given amount of bytes from the LCD display.
-//! @param length       Number of bytes to be available before returning
-void Frame::wait_for_data(uint8_t length)
-{
-	unsigned count = 0;
-    while(DgusSerial.available() < length)
-	{
-		delay(LCD_READ_DELAY);
-		count += 1;
-		if(count > LCD_READ_KILL_COUNT)
-			kill();
-	}
-}
-
-void Frame::setup_lcd()
-{
-    ReadRegister read{Register::R2, 1};
-    if(!read.send_and_receive())
+    ReadRegister read{Register::R2};
+    if(!read.send_receive(1))
         kill();
-    Uint8 r2;
-    read >> r2;
+    uint8_t r2 = read.read_byte();
 
-    if(r2.byte == R2)
+    if(r2 == R2)
         return;
 
-    WriteRegisterDataRequest request{Register::R2};
-    request << Uint8(R2);
-    request.send();
+    Log::log() << F("Reprogram R2 register to 0x") << R2 << F(", was 0x") << r2 << Log::endl();
+    WriteRegisterRequest{Register::R2}.write_byte(R2);
 }
 
-void Frame::kill()
+void Dgus::kill()
 {
+#ifndef ADV_UNIT_TESTS
     SERIAL_ERROR_START();
     SERIAL_ECHOLNPGM("LCD panel does not respond. Check cable between mainboard and LCD Panel. Printer is stopped.");
     ExtUI::killRightNow();
-}
-
-//! Check if data (bytes) are available.
-//! @param bytes    The amount of bytes
-//! @return         True if the amount of bytes is available
-bool Frame::available(uint8_t bytes)
-{
-    return DgusSerial.available() >= bytes;
-}
-
-//! Receive data from the LCD display.
-bool Frame::receive(bool log)
-{
-    // Format of the frame:
-    // header | length | command | data
-    // -------|--------|---------|------
-    //      2 |      1 |       1 |    N  bytes
-    //  5A A5 |     06 |      83 |  ...
-
-    UNUSED(log);
-
-#ifdef ADVi3PP_LOG_ALL_FRAMES
-    log = true;
 #endif
-
-    uint8_t header0 = 0;
-    for(size_t index = 0; index < MAX_GARBAGE_BYTES; ++index)
-    {
-        wait_for_data(1);
-        header0 = static_cast<uint8_t>(DgusSerial.read());
-        if(header0 == HEADER_BYTE_0)
-            break;
-        Log::error() << F("Garbage read: ") << header0 << Log::endl();
-    }
-    if(header0 != HEADER_BYTE_0)
-    {
-        Log::error() << F("Not able to locate frame in data received, abort receiving") << Log::endl();
-        return false;
-    }
-
-    wait_for_data(2);
-    auto header1 = static_cast<uint8_t>(DgusSerial.read());
-    if(header1 != HEADER_BYTE_1)
-    {
-        Log::error() << F("Invalid header when receiving a Frame: ") << header0 << ", " << header1 << Log::endl();
-        return false;
-    }
-
-    auto length = static_cast<uint8_t>(DgusSerial.read());
-
-    buffer_[0] = HEADER_BYTE_0;
-    buffer_[1] = HEADER_BYTE_1;
-
-    if(length >= FRAME_BUFFER_SIZE - 3)
-    {
-        Log::error() << F("Data to be received is too big for the Frame buffer so skip it") << Log::endl();
-        return false;
-    }
-
-    buffer_[2] = length;
-
-    wait_for_data(length);
-    auto read = DgusSerial.readBytes(&buffer_[3], length);
-    if(read != length)
-    {
-        Log::error() << F("Invalid amount of bytes received: ") << read << F(" instead of ") << length << Log::endl();
-        return false;
-    }
-
-#ifdef ADVi3PP_LOG_FRAMES
-    if(log)
-    {
-        Log::log() << F("=R=> ") << length << F(" bytes. ");
-        Log::dump(buffer_, length + 3);
-    }
-#endif
-
-    position_ = Position::Command;
-    return true;
 }
 
-//! Get the Command set inside this Frame.
-Command Frame::get_command() const
-{
-    return static_cast<Command>(buffer_[Position::Command]);
-}
-
-//! Return the length of the data portion (including the Command).
-size_t Frame::get_length() const
-{
-    return static_cast<size_t>(buffer_[Position::Length]);
-}
-
-#ifdef ADVi3PP_UNIT_TEST
-//! Return the raw data. This is used by unit testing.
-const uint8_t* Frame::get_data() const
-{
-    return buffer_;
-}
-#endif
-
-[[noreturn]] void Frame::forwarding_loop()
+void Dgus::forwarding_loop()
 {
     while(true)
     {
+#ifndef ADV_UNIT_TESTS
         ExtUI::watchdogReset();
 
         if(MYSERIAL0.available())
@@ -347,262 +87,263 @@ const uint8_t* Frame::get_data() const
 
         if(DgusSerial.available())
             MYSERIAL0.write(DgusSerial.read());
+#endif
     }
 }
 
-
-//! Extract the next byte from this input Frame.
-//! @param frame    The Frame
-//! @param data     Next byte extracted from this Frame
-//! @return         Itself
-Frame& operator>>(Frame& frame, Uint8& data)
-{
-    if(frame.position_ >= 3 + frame.get_length())
-    {
-        Log::log() << F("Try to read a byte after the end of data") << Log::endl();
-        return frame;
-    }
-
-    data.byte = frame.buffer_[frame.position_++];
-    return frame;
+void Dgus::reset() {
+  DgusSerial.reset();
+  state_ = State::Start;
+  length_ = 0;
+  read_ = 0;
+  command_ = Command::None;
 }
 
-//! Extract the next word from this input Frame.
-//! @param frame    The Frame
-//! @param data     Next word extracted from this Frame
-//! @return         Itself
-Frame& operator>>(Frame& frame, Uint16& data)
-{
-    if(frame.position_ >= 3 + frame.get_length() - 1)
-    {
-        Log::log() << F("Try to read a word after the end of data") << Log::endl();
-        return frame;
-    }
-
-    Uint8 msb, lsb;
-    frame >> msb >> lsb;
-    data.word = lsb.byte + 256 * msb.byte;
-    return frame;
-}
-
-//! Extract the next dword from this input Frame.
-//! @param frame    The Frame
-//! @param data     Next dword extracted from this Frame
-//! @return         Itself
-Frame& operator>>(Frame& frame, Uint32& data)
-{
-    if(frame.position_ >= 3 + frame.get_length() - 3)
-    {
-        Log::log() << F("Try to read a dword after the end of data") << Log::endl();
-        return frame;
-    }
-
-    Uint8 b0, b1, b2, b3;
-    frame >> b0 >> b1 >> b2 >> b3;
-    data.dword = (((static_cast<uint32_t>(b0.byte) * 256 + b0.byte) * 256 + b1.byte) * 256 + b2.byte) * 256 + b3.byte;
-    return frame;
-}
-
-//! Extract the Action from this input Frame.
-//! @param frame    The Frame
-//! @param action   Action extracted from this Frame
-//! @return         Itself
-Frame& operator>>(Frame& frame, Action& action)
-{
-    Uint16 value;
-    frame >> value;
-    action = static_cast<Action>(value.word);
-    return frame;
-}
-
-//! Extract the Command from this input Frame.
-//! @param frame    The Frame
-//! @param command  Command extracted
-//! @return         Itself
-Frame& operator>>(Frame& frame, Command& command)
-{
-    Uint8 value;
-    frame >> value;
-    command = static_cast<Command>(value.byte);
-    return frame;
-}
-
-//! Extract a Register from this Frame
-//! @param frame    The Frame
-//! @param reg      Register extracted
-//! @return         Itself
-Frame& operator>>(Frame& frame, Register& reg)
-{
-    Uint8 value;
-    frame >> value;
-    reg = static_cast<Register>(value.byte);
-    return frame;
-}
-
-//! Extract a Variable from this Frame
-//! @param frame    The Frame
-//! @param var      Variable extracted
-//! @return         Itself
-Frame& operator>>(Frame& frame, Variable& var)
-{
-    Uint16 value;
-    frame >> value;
-    var = static_cast<Variable>(value.word);
-    return frame;
-}
-
-WriteRegisterDataRequest::WriteRegisterDataRequest(Register reg)
-        : Frame(Command::WriteRegisterData)
-{
-    *this << reg;
-}
-
-ReadRegisterDataRequest::ReadRegisterDataRequest(Register reg, uint8_t nb_bytes)
-        : Frame{Command::ReadRegisterData}
-{
-    *this << reg << Uint8{nb_bytes};
-}
-
-Register ReadRegisterDataRequest::get_register() const
-{
-    return static_cast<Register>(buffer_[Position::Register]);
-}
-
-uint8_t ReadRegisterDataRequest::get_nb_bytes() const
-{
-    return buffer_[Position::NbBytes];
-}
-
-bool ReadRegisterDataResponse::receive(Register reg, uint8_t nb_bytes, bool log)
-{
-    if(!Frame::receive(log))
-        return false;
-
-    Command command{}; Register frame_reg{}; Uint8 frame_nb_bytes;
-    *this >> command >> frame_reg >> frame_nb_bytes;
-    if(command != Command::ReadRegisterData)
-    {
-        Log::error() << F("Command in response (") << static_cast<uint8_t>(command) << F(") does not correspond to request (") << static_cast<uint8_t>(Command::ReadRegisterData) << F(")") << Log::endl();
-        return false;
-    }
-    if(frame_reg != reg)
-    {
-        Log::error() << F("Register in response (") << static_cast<uint8_t>(frame_reg) << F(") does not correspond to request (") << static_cast<uint8_t>(reg) << F(")") << Log::endl();
-        return false;
-    }
-    if(frame_nb_bytes.byte != nb_bytes)
-    {
-        Log::error() << F("Data length in response (") << frame_nb_bytes.byte << F(") does not correspond to request (") << nb_bytes << F(")") << Log::endl();
-        return false;
-    }
-
-    return true;
-}
-
-bool ReadRegisterDataResponse::receive(const ReadRegisterDataRequest& request, bool log)
-{
-    return receive(request.get_register(), request.get_nb_bytes(), log);
-}
-
-ReadRegister::ReadRegister(Register reg, uint8_t nb_bytes)
-        : request{reg, nb_bytes}
-{
-}
-
-bool ReadRegister::send_and_receive(bool log)
-{
-    if(!request.send(log))
-        return false;
-    return receive(request, log);
-}
-
-
-WriteRamDataRequest::WriteRamDataRequest(Variable var)
-        : Frame{Command::WriteRamData}
-{
-    *this << var;
-}
-
-void WriteRamDataRequest::reset(Variable var)
-{
-    Frame::reset(get_command());
-    *this << var;
-}
-
-ReadRamDataRequest::ReadRamDataRequest(Variable var, uint8_t nb_words)
-        : Frame{Command::ReadRamData}
-{
-    auto h = static_cast<uint8_t>(static_cast<uint16_t>(var) / 256);
-    auto l = static_cast<uint8_t>(static_cast<uint16_t>(var) % 256);
-    *this << Uint8{h} << Uint8{l} << Uint8{nb_words};
-}
-
-Variable ReadRamDataRequest::get_variable() const
-{
-    auto h = buffer_[Position::Variable];
-    auto l = buffer_[Position::Variable + 1];
-    return static_cast<Variable>(h * 256 + l);
-}
-
-uint8_t ReadRamDataRequest::get_nb_words() const
-{
-    return buffer_[Position::NbWords];
-}
-
-
-bool ReadRamDataResponse::receive(Variable var, uint8_t nb_words)
+bool Dgus::write_header(Command cmd, uint8_t param_size, uint8_t data_size)
 {
     // Format of the frame:
-    // header | length | command | variable | nb words | value
-    // -------|--------|---------|----------|----------|------
-    //      2 |      1 |       1 |        2 |        1 |     2   bytes
-    //  5A A5 |     06 |      83 |     0460 |       01 | 01 50
+    // header | length | command | parameter | data
+    // -------|--------|---------|-----------|-------
+    //      2 |      1 |       1 | 1 or 2    | N bytes
+    //  5A A5 |     06 |      80 | ...       | ...
 
-    if(!Frame::receive())
-        return false;
-    Command command{}; Variable frame_var{}; Uint8 frame_nb_words;
-    *this >> command >> frame_var >> frame_nb_words;
-    if(command != Command::ReadRamData)
+    adv::array<uint8_t, 4> header =
     {
-        Log::error() << F("Command in response (") << static_cast<uint8_t>(command) << F(") does not correspond to request (") << static_cast<uint8_t>(Command::ReadRamData) << F(")") << Log::endl();
+        HEADER_BYTE_0,
+        HEADER_BYTE_1,
+        static_cast<uint8_t>(1 + param_size + data_size),
+        static_cast<uint8_t>(cmd)
+    };
+
+    if(header.size() != DgusSerial.write(header.data(), header.size()))
         return false;
-    }
-    if(frame_var != var)
+
+    return true;
+}
+
+//! Wait for the given amount of bytes from the LCD display.
+//! @param length       Number of bytes to be available before returning
+bool Dgus::wait_for_data(uint8_t size, ReceiveMode mode)
+{
+    auto pushed_back = static_cast<uint8_t>(state_) - static_cast<uint8_t>(State::PushedBack);
+    if(pushed_back >= size)
+        return true;
+    size -= pushed_back;
+
+    if(mode == ReceiveMode::NonBlocking && DgusSerial.available() < size)
+        return false;
+
+    unsigned count = 0;
+    while(DgusSerial.available() < size)
     {
-        Log::error() << F("Register in response (") << static_cast<uint16_t>(frame_var) << ") does not correspond to request (" << static_cast<uint16_t>(var) << F(")") << Log::endl();
-        return false;
-    }
-    if(frame_nb_words.byte != nb_words)
-    {
-        Log::error() << F("Data length in response (") << frame_nb_words.byte << ") does not correspond to request (" << nb_words << ")" << Log::endl();
-        return false;
+        delay(LCD_READ_DELAY);
+        count += 1;
+        if(count > LCD_READ_KILL_COUNT)
+            kill();
     }
 
     return true;
 }
 
-bool ReadRamDataResponse::receive(const ReadRamDataRequest& request)
+bool Dgus::receive_header()
 {
-    return receive(request.get_variable(), request.get_nb_words());
-}
+    for(size_t index = 0; ; ++index)
+    {
+        uint8_t header0 = DgusSerial.read();
+        if(header0 != HEADER_BYTE_0 && index >= MAX_GARBAGE_BYTES)
+            return false;
+        if(header0 == HEADER_BYTE_0)
+            break;
+    }
 
-ReadRamData::ReadRamData(Variable var, uint8_t nb_words)
-        : request{var, nb_words}
-{
-}
-
-bool ReadRamData::send_and_receive()
-{
-    if(!request.send())
+    uint8_t header1 = DgusSerial.read();
+    if(header1 != HEADER_BYTE_1)
         return false;
-    return receive(request);
+
+    return true;
 }
 
-
-WriteCurveDataRequest::WriteCurveDataRequest(uint8_t channels)
-        : Frame{Command::WriteCurveData}
+bool Dgus::receive(Command cmd, ReceiveMode mode)
 {
-    *this << Uint8{channels};
+    // Format of the frame:
+    // header | length | command | data
+    // -------|--------|---------|------
+    //      2 |      1 |       1 |    N  bytes
+    //  5A A5 |     06 |      83 |  ...
+
+    if(state_ == State::Start)
+    {
+        if(!wait_for_data(4, mode))
+            return false;
+
+        if(!receive_header())
+            return false;
+
+        auto length = static_cast<uint8_t>(DgusSerial.read());
+        if(length < 3)
+        {
+            Log::error() << F("Invalid frame length: 0x") << length << Log::endl();
+            return false;
+        }
+        auto command = static_cast<uint8_t>(DgusSerial.read());
+        if(command < 0x80 || command > 0x84)
+        {
+            Log::error() << F("Invalid frame command: 0x") << command << Log::endl();
+            return false;
+        }
+
+        length_ = length;
+        command_ = static_cast<Command>(command);
+        state_ = State::Command;
+        read_ = 1; // Command is 1 byte
+
+        Log::log() << F("Receive frame length: 0x") << length << F(", cmd: 0x") << command << Log::endl();
+    }
+
+    if(command_ != cmd)
+        return false;
+
+    return true;
 }
+
+bool Dgus::has_pushed_back()
+{
+    const auto pushed_back_state = static_cast<size_t>(State::PushedBack);
+    const auto state = static_cast<size_t>(state_);
+    return state >= pushed_back_state && state <= pushed_back_state + MAX_PUSH_BACK;
+}
+
+uint8_t Dgus::get_pushed_back()
+{
+    const auto pushed_back_state = static_cast<size_t>(State::PushedBack);
+    const auto state = static_cast<size_t>(state_);
+    uint8_t byte = pushed_back_[state - pushed_back_state];
+    state_ = static_cast<State>(state - 1);
+    return byte;
+}
+
+uint8_t Dgus::read_byte()
+{
+    uint8_t byte = has_pushed_back() ? get_pushed_back() : DgusSerial.read();
+    read_ += 1;
+    if(read_ == length_)
+        state_ = State::Start;
+    return byte;
+}
+
+size_t Dgus::read_bytes(uint8_t *buffer, size_t length)
+{
+    size_t n = length;
+    while(n--)
+        *(buffer++) = read_byte();
+    return length;
+}
+
+void Dgus::push_back(uint8_t byte)
+{
+    const auto pushed_back_state = static_cast<size_t>(State::PushedBack);
+    const auto state = static_cast<size_t>(state_);
+
+    if(state >= pushed_back_state + MAX_PUSH_BACK)
+    {
+        Log::error() << F("Pushback overflow") << Log::endl();
+        return;
+    }
+
+    if(state_ < State::Command)
+    {
+        Log::error() << F("Invalid Pushback state") << Log::endl();
+        return;
+    }
+
+    size_t new_state = state + 1;
+    state_ = static_cast<State>(new_state);
+    pushed_back_[new_state] = byte;
+    assert(read_ > 0);
+    read_ -= 1;
+}
+
+bool Dgus::write_byte(uint8_t byte)
+{
+    return DgusSerial.write(byte);
+}
+
+bool Dgus::write_bytes(const uint8_t *bytes, size_t length)
+{
+    return DgusSerial.write(bytes, length);
+}
+
+bool Dgus::write_bytes(const char *bytes, size_t length)
+{
+    return DgusSerial.write(bytes, length);
+}
+
+bool Dgus::write_words(const uint16_t *words, size_t length)
+{
+    for(size_t i = 0; i < length; ++i)
+    {
+        if(!Dgus::write_byte(highByte(words[i])) || !Dgus::write_byte(lowByte(words[i])))
+            return false;
+    }
+    return true;
+}
+
+bool Dgus::write_text(const char* text, size_t text_length, size_t total_length)
+{
+    if(!Dgus::write_bytes(text, text_length))
+        return false;
+    // Fill the remaining of string with spaces
+    for(size_t i =text_length; i < total_length; ++i)
+    {
+        if(!write_byte(' '))
+            return false;
+    }
+    return true;
+}
+
+bool Dgus::write_centered_text(const char* text, size_t text_length, size_t total_length)
+{
+    // Pad the beginning to center the string
+    auto pad = (total_length - text_length) / 2;
+    for(size_t i = 0; i < pad; ++i)
+    {
+        if(!Dgus::write_byte(' '))
+            return false;
+    }
+    // The string itself
+    if(!Dgus::write_bytes(text, text_length))
+        return false;
+    // Fill the remaining of the string with spaces
+    for(size_t i = text_length + pad; i < total_length; ++i)
+    {
+        if(!Dgus::write_byte(' '))
+            return false;
+    }
+    return true;
+}
+
+// --------------------------------------------------------------------
+
+/*
+bool ReadRegister::send_and_receive()
+{
+    ReadRegisterRequest request{register_, nb_bytes_};
+    if(!request.write())
+        return false;
+    return receive(ReceiveMode::Blocking);
+}
+
+bool ReadRam::send_and_receive()
+{
+    ReadRamRequest request{variable_};
+    if(!request.write_byte(1))
+        return false;
+    return receive(ReceiveMode::Blocking);
+}
+*/
+// --------------------------------------------------------------------
+
+
+Command last_command_;
 
 }

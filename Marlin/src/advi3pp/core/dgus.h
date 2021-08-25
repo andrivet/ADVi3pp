@@ -24,17 +24,20 @@
 #include <stddef.h>
 #include "string.h"
 #include "../lib/ADVstd/array.h"
+#include "../lib/ADVstd/endian.h"
+#include "../lib/ADVstd/bitmasks.h"
 
 namespace ADVi3pp {
 
 //! List of commands and their values (DGUS Mini)
 enum class Command: uint8_t
 {
-    WriteRegisterData       = 0x80, // 128
-    ReadRegisterData        = 0x81, // 129
-    WriteRamData            = 0x82, // 130
-    ReadRamData             = 0x83, // 131
-    WriteCurveData          = 0x84  // 132
+    None                    = 0x00,
+    WriteRegister           = 0x80, // 128
+    ReadRegister            = 0x81, // 129
+    WriteRam                = 0x82, // 130
+    ReadRam                 = 0x83, // 131
+    WriteCurve              = 0x84  // 132
 };
 
 //! List of registers and their values (DGUS Mini)
@@ -81,216 +84,244 @@ enum class Variable: uint16_t;
 enum class Action: uint16_t;
 enum class KeyValue: uint16_t;
 enum class Page: uint16_t;
+enum class ReceiveMode { Blocking, NonBlocking };
 
-// --------------------------------------------------------------------
-// Uint8
-// --------------------------------------------------------------------
-
-//! An unsigned 8 bits value.
-struct Uint8
+namespace
 {
-    uint8_t byte{}; //!< The actual value
-    constexpr explicit Uint8(uint8_t value = 0) : byte{value} {}
-    constexpr explicit Uint8(Register reg) : byte{static_cast<uint8_t>(reg)} {}
-};
-
-//! An unsigned 8 bits literal such as: 0_u8.
-constexpr Uint8  operator "" _u8(unsigned long long int byte)  { return Uint8(static_cast<uint8_t>(byte)); }
+    const uint8_t HEADER_BYTE_0 = 0x5A;
+    const uint8_t HEADER_BYTE_1 = 0xA5;
+    const size_t MAX_GARBAGE_BYTES = 5;
+}
 
 // --------------------------------------------------------------------
-// Uint16
+// Dgus - DGUS LCD panel
 // --------------------------------------------------------------------
 
-//! An unsigned 16 bits value.
-struct Uint16
-{
-    uint16_t word; //!< The actual value
-    constexpr explicit Uint16(uint16_t value = 0) : word{value} {}
-    constexpr explicit Uint16(int16_t value) : word{static_cast<uint16_t>(value)} {}
-    constexpr explicit Uint16(long value) : word{static_cast<uint16_t>(value)} {}
-    constexpr explicit Uint16(double value) : word{static_cast<uint16_t>(value)} {}
-    constexpr explicit Uint16(bool value) : word{static_cast<uint16_t>(value)} {}
-    constexpr explicit Uint16(Variable var) : word{static_cast<uint16_t>(var)} {}
-};
-
-//! An unsigned 16 bits literal such as: 0_u16.
-constexpr Uint16 operator "" _u16(unsigned long long int word) { return Uint16(static_cast<uint16_t>(word)); }
-
-// --------------------------------------------------------------------
-// Uint32
-// --------------------------------------------------------------------
-
-//! An unsigned 32 bits value.
-struct Uint32
-{
-    uint32_t dword; //!< The actual value
-    constexpr explicit Uint32(uint32_t value = 0) : dword{value} {}
-    constexpr explicit Uint32(int32_t value) : dword{static_cast<uint32_t>(value)} {}
-    constexpr explicit Uint32(double value) : dword{static_cast<uint32_t>(value)} {}
-};
-
-//! An unsigned 32 bits literal such as: 0_u32.
-constexpr Uint32 operator "" _u32(unsigned long long int dword) { return Uint32(static_cast<uint32_t>(dword)); }
-
-
-// --------------------------------------------------------------------
-// Frame
-// --------------------------------------------------------------------
-
-//! A frame to be send to the LCD or received from the LCD
-struct Frame
+struct Dgus
 {
     static void open();
-    static void setup_lcd();
-
+    static void setup();
     [[noreturn]] static void forwarding_loop();
 
-    bool send(bool logging = true); // Logging is only used in DEBUG builds
-    bool available(uint8_t bytes = 3);
-    bool receive(bool logging = true); // Logging is only used in DEBUG builds
-    Command get_command() const;
-    size_t get_length() const;
-    void reset();
+    static void reset();
+    template<size_t S>
+    static void reset(const uint8_t (&buffer)[S]);
 
-    friend Frame& operator<<(Frame& frame, const Uint8& data);
-    friend Frame& operator<<(Frame& frame, const Uint16& data);
-    friend Frame& operator<<(Frame& frame, const Uint32& data);
-    friend Frame& operator<<(Frame& frame, const char* s);
-    friend Frame& operator<<(Frame& frame, char c);
-    template<size_t L> friend Frame& operator<<(Frame& frame, const ADVString<L>& data);
-    template<size_t L> Frame& center(const ADVString<L>& data);
+    static bool write_header(Command cmd, uint8_t param_size, uint8_t data_size);
+    static bool receive(Command cmd, ReceiveMode mode);
 
-    friend Frame& operator>>(Frame& frame, Uint8& data);
-    friend Frame& operator>>(Frame& frame, Uint16& data);
-    friend Frame& operator>>(Frame& frame, Uint32& data);
-    friend Frame& operator>>(Frame& frame, Action& action);
-    friend Frame& operator>>(Frame& frame, Command& command);
-    friend Frame& operator>>(Frame& frame, Register& reg);
-    friend Frame& operator>>(Frame& frame, Variable& var);
-
-#ifdef ADVi3PP_UNIT_TEST
-    const uint8_t* get_data() const;
-#endif
-
-protected:
-    Frame();
-    explicit Frame(Command command);
-    void reset(Command command);
-    friend Frame& operator<<(Frame& frame, Register reg);
-    friend Frame& operator<<(Frame& frame, Variable var);
+    static uint8_t read_byte();
+    static size_t read_bytes(uint8_t *buffer, size_t length);
+    static void push_back(uint8_t byte);
+    static bool write_byte(uint8_t byte);
+    static bool write_bytes(const uint8_t *bytes, size_t length);
+    static bool write_bytes(const char *bytes, size_t length);
+    static bool write_words(const uint16_t *words, size_t length);
+    static bool write_text(const char* text, size_t text_length, size_t total_length);
+    static bool write_centered_text(const char* text, size_t text_length, size_t total_length);
+    static bool wait_for_data(uint8_t size, ReceiveMode mode);
 
 private:
-    void wait_for_data(uint8_t length);
     static void kill();
+    static bool receive_header();
+    static bool has_pushed_back();
+    static uint8_t get_pushed_back();
+
+    static const size_t MAX_PUSH_BACK = 5;
+    enum class State { Start = 0, Command = 1, PushedBack = 2};
+
+    static State   state_;
+    static uint8_t length_;
+    static uint8_t read_;
+    static Command command_;
+    static uint8_t pushed_back_[MAX_PUSH_BACK];
+};
+
+// --------------------------------------------------------------------
+// OutFrame - Frame sent to the LCD panel
+// --------------------------------------------------------------------
+
+template<typename Param, Command>
+struct OutFrame
+{
 
 protected:
-    static const size_t FRAME_BUFFER_SIZE = 255;
-    static const uint8_t HEADER_BYTE_0 = 0x5A;
-    static const uint8_t HEADER_BYTE_1 = 0xA5;
-    struct Position { enum { Header0 = 0, Header1 = 1, Length = 2, Command = 3, Data = 4, Register = 4, Variable = 4,
-            NbBytes = 5, NbWords = 6 }; };
+    explicit OutFrame(Param param): parameter_{param} {}
+    bool write_header(uint8_t data_size);
+    bool write_parameter() const;
 
-    adv::array<uint8_t, FRAME_BUFFER_SIZE> buffer_ = {};
-    uint8_t position_ = 0;
+private:
+    bool write_byte_parameter() const;
+    bool write_word_parameter() const;
+
+private:
+    const Param parameter_{};
+};
+
+// --------------------------------------------------------------------
+// ReadOutFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd>
+struct ReadOutFrame: OutFrame<Param, cmd>
+{
+    using Parent = OutFrame<Param, cmd>;
+    explicit ReadOutFrame(Param param): Parent{param} {}
+    bool write(uint8_t nb_bytes);
+};
+
+// --------------------------------------------------------------------
+// WriteOutFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd>
+struct WriteOutFrame: OutFrame<Param, cmd>
+{
+    using Parent = OutFrame<Param, cmd>;
+    explicit WriteOutFrame(Param param): Parent{param} {};
+
+    bool write_byte(uint8_t value);
+    bool write_word(uint16_t value);
+    bool write_page(Page page);
+
+    template<size_t N> bool write_bytes(const adv::array<uint8_t , N>& data);
+    template<size_t N> bool write_words(const adv::array<uint16_t , N>& data);
+    template<size_t N> bool write_text(const ADVString<N>& data);
+    template<size_t N> bool write_centered_text(const ADVString<N>& data);
+};
+
+// --------------------------------------------------------------------
+// InFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command, ReceiveMode>
+struct InFrame
+{
+    InFrame() = default;
+    ~InFrame();
+
+    bool receive();
+    Param get_parameter() const;
+    uint8_t get_nb_data() const;
+    uint8_t read_byte();
+    uint16_t read_word();
+
+protected:
+    explicit InFrame(Param param): parameter_{param} {}
+    bool read_parameter();
+    bool read_byte_parameter();
+    bool read_word_parameter();
+
+private:
+    uint8_t data_expected_{};
+    uint8_t data_read_{};
+
+protected:
+    Param parameter_{};
+};
+
+// --------------------------------------------------------------------
+// OutInFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd, ReceiveMode mode>
+struct OutInFrame: InFrame<Param, cmd, mode>
+{
+    using Parent = InFrame<Param, cmd, mode>;
+    explicit OutInFrame(Param param): Parent{param} {}
+    bool send_receive(uint8_t nb_bytes);
 };
 
 
 // --------------------------------------------------------------------
-// IncomingFrame
+// WriteRegisterRequest
 // --------------------------------------------------------------------
 
-struct IncomingFrame: Frame
+struct WriteRegisterRequest: WriteOutFrame<Register, Command::WriteRegister>
 {
-    IncomingFrame(): Frame{} {}
+    using Parent = WriteOutFrame<Register, Command::WriteRegister>;
+    explicit WriteRegisterRequest(Register reg): Parent{reg} {}
 };
 
 // --------------------------------------------------------------------
-// WriteRegisterDataRequest
+// ReadRegisterRequest
 // --------------------------------------------------------------------
 
-struct WriteRegisterDataRequest: Frame
+struct ReadRegisterRequest: ReadOutFrame<Register, Command::ReadRegister>
 {
-    explicit WriteRegisterDataRequest(Register reg);
-};
-
-// --------------------------------------------------------------------
-// ReadRegisterDataRequest
-// --------------------------------------------------------------------
-
-struct ReadRegisterDataRequest: Frame
-{
-    ReadRegisterDataRequest(Register reg, uint8_t nb_bytes);
-    Register get_register() const;
-    uint8_t get_nb_bytes() const;
+    using Parent = ReadOutFrame<Register, Command::ReadRegister>;
+    explicit ReadRegisterRequest(Register reg): Parent{reg} {}
 };
 
 // --------------------------------------------------------------------
 // ReadRegisterDataResponse
 // --------------------------------------------------------------------
 
-struct ReadRegisterDataResponse: Frame
+struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMode::Blocking>
 {
-    ReadRegisterDataResponse() = default;
-    bool receive(Register reg, uint8_t nb_bytes, bool log = true);  // Logging is only used in DEBUG builds
-    bool receive(const ReadRegisterDataRequest& request, bool log = true);  // Logging is only used in DEBUG builds
+    using Parent = InFrame<Register, Command::ReadRegister, ReceiveMode::Blocking>;
+    explicit ReadRegisterResponse(Register reg): Parent{reg} {}
 };
 
 // --------------------------------------------------------------------
 // ReadRegister (Request and Response)
 // --------------------------------------------------------------------
 
-struct ReadRegister: ReadRegisterDataResponse
+struct ReadRegister: OutInFrame<Register, Command::ReadRegister, ReceiveMode::Blocking>
 {
-    ReadRegister(Register reg, uint8_t nb_bytes);
-    bool send_and_receive(bool log = true); // Logging is only used in DEBUG builds
-
-private:
-    ReadRegisterDataRequest request;
+    using Parent = OutInFrame<Register, Command::ReadRegister, ReceiveMode::Blocking>;
+    explicit ReadRegister(Register reg): Parent{reg} {}
 };
 
 // --------------------------------------------------------------------
-// WriteRamDataRequest
+// WriteRamRequest
 // --------------------------------------------------------------------
 
-struct WriteRamDataRequest: Frame
+struct WriteRamRequest: WriteOutFrame<Variable, Command::WriteRam>
 {
-    explicit WriteRamDataRequest(Variable var);
-    void reset(Variable var);
+    using Parent = WriteOutFrame<Variable, Command::WriteRam>;
+    explicit WriteRamRequest(Variable var): Parent{var} {}
 };
 
 // --------------------------------------------------------------------
 // ReadRamDataRequest
 // --------------------------------------------------------------------
 
-struct ReadRamDataRequest: Frame
+struct ReadRamRequest: ReadOutFrame<Variable, Command::ReadRam>
 {
-    ReadRamDataRequest(Variable var, uint8_t nb_words);
-    Variable get_variable() const;
-    uint8_t get_nb_words() const;
+    using Parent = ReadOutFrame<Variable, Command::ReadRam>;
+    explicit ReadRamRequest(Variable var): Parent{var} {}
 };
 
 // --------------------------------------------------------------------
 // ReadRamDataResponse
 // --------------------------------------------------------------------
 
-struct ReadRamDataResponse: Frame
+struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Blocking>
 {
-    ReadRamDataResponse() = default;
-    bool receive(Variable var, uint8_t nb_words);
-    bool receive(const ReadRamDataRequest& request);
+    using Parent = InFrame<Variable, Command::ReadRam, ReceiveMode::Blocking>;
+    explicit ReadRamResponse(Variable var): Parent{var} {}
+};
+
+
+// --------------------------------------------------------------------
+// ReadAction
+// --------------------------------------------------------------------
+
+struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Blocking>
+{
+    using Parent = InFrame<Action, Command::ReadRam, ReceiveMode::Blocking>;
+    ReadAction(): Parent{} {}
 };
 
 // --------------------------------------------------------------------
-// ReadRamData (Request and Response)
+// ReadRam (Request and Response)
 // --------------------------------------------------------------------
 
-struct ReadRamData: ReadRamDataResponse
+struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Blocking>
 {
-    ReadRamData(Variable var, uint8_t nb_words);
-    bool send_and_receive();
-
-private:
-    ReadRamDataRequest request;
+    using Parent = OutInFrame<Variable, Command::ReadRam, ReceiveMode::Blocking>;
+    explicit ReadRam(Variable var): Parent{var} {}
 };
 
 
@@ -298,36 +329,193 @@ private:
 // WriteCurveDataRequest
 // --------------------------------------------------------------------
 
-struct WriteCurveDataRequest: Frame
+struct WriteCurveRequest: WriteOutFrame<uint8_t, Command::WriteCurve>
 {
-    explicit WriteCurveDataRequest(uint8_t channels);
+    using Parent = WriteOutFrame<uint8_t, Command::WriteCurve>;
+    explicit WriteCurveRequest(uint8_t channels): Parent{channels} {}
 };
 
 // --------------------------------------------------------------------
+// Dgus
+// --------------------------------------------------------------------
 
-template<size_t L>
-Frame& operator<<(Frame& frame, const ADVString<L>& data)
-{
-    frame << data.get();
-    // Fill the remaining of the string with spaces
-    for(size_t i = data.length(); i < L; ++i)
-        frame << ' ';
-    return frame;
+template<size_t S>
+void Dgus::reset(const uint8_t (&buffer)[S]) {
+  reset();
+  Serial2.reset(buffer);
 }
 
-template<size_t L> Frame& Frame::center(const ADVString<L>& data)
+// --------------------------------------------------------------------
+// OutFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd>
+bool OutFrame<Param, cmd>::write_header(uint8_t data_size)
 {
-    auto l = data.length();
-    // Pad the beginning to center the string
-    auto pad = (L - l) / 2;
-    for(size_t i = 0; i < pad; ++i)
-        *this << ' ';
-    // The string itself
-    *this << data.get();
-    // Fill the remaining of the string with spaces
-    for(size_t i = l + pad; i < L; ++i)
-        *this << ' ';
-    return *this;
+    return Dgus::write_header(cmd, sizeof(Param), data_size) && write_parameter();
 }
+
+template<typename Param, Command cmd>
+bool OutFrame<Param, cmd>::write_parameter() const
+{
+    return sizeof(Param) == 1 ? write_byte_parameter() : write_word_parameter();
+}
+
+template<typename Param, Command cmd>
+bool OutFrame<Param, cmd>::write_byte_parameter() const
+{
+    return Dgus::write_byte(static_cast<uint8_t>(parameter_));
+}
+
+template<typename Param, Command cmd>
+bool OutFrame<Param, cmd>::write_word_parameter() const
+{
+    auto value = static_cast<uint16_t>(parameter_);
+    return Dgus::write_byte(highByte(value)) && Dgus::write_byte(lowByte(value));
+}
+
+// --------------------------------------------------------------------
+// ReadOutFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd>
+bool ReadOutFrame<Param, cmd>::write(uint8_t nb_bytes)
+{
+    return Parent::write_header(1) && Dgus::write_byte(nb_bytes);
+}
+
+// --------------------------------------------------------------------
+// WriteOutFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd>
+bool WriteOutFrame<Param, cmd>::write_byte(uint8_t value)
+{
+    return Parent::write_header(1) && Dgus::write_byte(value);
+}
+
+template<typename Param, Command cmd>
+bool WriteOutFrame<Param, cmd>::write_word(uint16_t value)
+{
+    return Parent::write_header(2) &&
+    Dgus::write_byte(highByte(value)) && Dgus::write_byte(lowByte(value));
+}
+
+template<typename Param, Command cmd>
+bool WriteOutFrame<Param, cmd>::write_page(Page page)
+{
+    return write_word(static_cast<uint16_t>(page));
+}
+
+template<typename Param, Command cmd>
+template<size_t N>
+bool WriteOutFrame<Param, cmd>::write_bytes(const adv::array<uint8_t , N>& data)
+{
+    return Parent::write_header(data.size()) && Dgus::write_bytes(data.data(), data.size());
+}
+
+template<typename Param, Command cmd>
+template<size_t N>
+bool WriteOutFrame<Param, cmd>::write_words(const adv::array<uint16_t , N>& data)
+{
+    return Parent::write_header(N * 2) && Dgus::write_words(data.data(), N);
+}
+
+template<typename Param, Command cmd>
+template<size_t N>
+bool WriteOutFrame<Param, cmd>::write_text(const ADVString<N>& data)
+{
+    return Parent::write_header(N) && Dgus::write_text(data.get(), data.length(), N);
+}
+
+template<typename Param, Command cmd>
+template<size_t N>
+bool WriteOutFrame<Param, cmd>::write_centered_text(const ADVString<N>& data)
+{
+    return Parent::write_header(N) && Dgus::write_centered_text(data.get(), data.length(), N);
+}
+
+// --------------------------------------------------------------------
+// InFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd, ReceiveMode mode>
+InFrame<Param, cmd, mode>::~InFrame()
+{
+    //Dgus::check_read_bytes(data_expected_, data_read_);
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+bool InFrame<Param, cmd, mode>::receive()
+{
+    if(!Dgus::receive(cmd, mode) || !read_parameter())
+        return false;
+    data_expected_ = Dgus::read_byte();
+    return true;
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+uint8_t InFrame<Param, cmd, mode>::read_byte()
+{
+    data_read_ += 1;
+    return Dgus::read_byte();
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+uint16_t InFrame<Param, cmd, mode>::read_word()
+{
+    data_read_ += 1; // Yes, it is not a typo
+    return adv::word_from_bytes(Dgus::read_byte(), Dgus::read_byte());
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+Param InFrame<Param, cmd, mode>::get_parameter() const
+{
+    return parameter_;
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+uint8_t InFrame<Param, cmd, mode>::get_nb_data() const
+{
+  return data_expected_;
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+bool InFrame<Param, cmd, mode>::read_parameter()
+{
+    return sizeof(Param) == 1 ? read_byte_parameter() : read_word_parameter();
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+bool InFrame<Param, cmd, mode>::read_byte_parameter()
+{
+    if(!Dgus::wait_for_data(1, mode))
+        return false;
+    parameter_ = static_cast<Param>(Dgus::read_byte());
+    return true;
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+bool InFrame<Param, cmd, mode>::read_word_parameter()
+{
+    if(!Dgus::wait_for_data(1, mode))
+        return false;
+    parameter_ = static_cast<Param>(adv::word_from_bytes(Dgus::read_byte(), Dgus::read_byte()));
+    return true;
+}
+
+// --------------------------------------------------------------------
+// OutInFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd, ReceiveMode mode>
+bool OutInFrame<Param, cmd, mode>::send_receive(uint8_t nb_bytes)
+{
+    if(!ReadOutFrame<Param, cmd>{Parent::parameter_}.write(nb_bytes))
+        return false;
+    return Parent::receive();
+}
+
+// --------------------------------------------------------------------
 
 }

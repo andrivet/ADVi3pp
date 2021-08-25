@@ -86,9 +86,8 @@ void Status::send_progress()
     Log::log() << F("Progress: " ) << progress.get() << Log::endl();
     Log::log() << F("Percent: " ) << progress_percent.get() << Log::endl();
 
-    WriteRamDataRequest frame{Variable::ProgressText};
-    frame << progress << progress_percent;
-    frame.send();
+    WriteRamRequest{Variable::ProgressText}.write_text(progress);
+    WriteRamRequest{Variable::ProgressPercent}.write_text(progress_percent);
 }
 
 void Status::send_times()
@@ -114,9 +113,8 @@ void Status::send_times()
     else
         tc.set(duration_t{tcSec}, Duration::digital);
 
-    WriteRamDataRequest frame{Variable::ET};
-    frame << et << tc;
-    frame.send(false);
+    WriteRamRequest{Variable::ET}.write_text(et);
+    WriteRamRequest{Variable::TC}.write_text(tc);
 }
 
 //! Set the name for the progress message. Usually, it is the name of the file printed.
@@ -141,10 +139,7 @@ void Status::reset_progress()
 
 void Status::send_status(ADVString<message_length>& message)
 {
-    WriteRamDataRequest frame{Variable::Message};
-    frame << message;
-    frame.center(message);
-    frame.send(false);
+    WriteRamRequest{Variable::Message}.write_centered_text(message);
 }
 
 }

@@ -23,6 +23,11 @@
 
 namespace adv {
 
+inline uint16_t word_from_bytes(uint8_t high, uint8_t low)
+{
+    return static_cast<uint16_t>(high) << 8 | low;
+}
+
 template<typename T>
 T endian_swap(T)
 {

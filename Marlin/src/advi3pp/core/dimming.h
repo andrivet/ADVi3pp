@@ -30,7 +30,8 @@ struct Dimming
 {
     Dimming();
 
-    void check();
+    void send();
+    bool receive();
     void reset(bool force = false);
     void change_brightness(int16_t brightness);
 

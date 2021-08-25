@@ -30,41 +30,47 @@ AccelerationSettings accelerations_settings;
 //! @return The index of the page to display
 Page AccelerationSettings::do_prepare_page()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16{static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X))}
-          << Uint16{static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y))}
-          << Uint16{static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Z))}
-          << Uint16{static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::E0))}
-          << Uint16{static_cast<uint16_t>(ExtUI::getPrintingAcceleration_mm_s2())}
-          << Uint16{static_cast<uint16_t>(ExtUI::getRetractAcceleration_mm_s2())}
-          << Uint16{static_cast<uint16_t>(ExtUI::getTravelAcceleration_mm_s2())}
-          << Uint16{static_cast<uint16_t>(ExtUI::getJunctionDeviation_mm() * 100)};
-    frame.send();
-
+    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 8>
+    {
+        static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X)),
+        static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y)),
+        static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Z)),
+        static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::E0)),
+        static_cast<uint16_t>(ExtUI::getPrintingAcceleration_mm_s2()),
+        static_cast<uint16_t>(ExtUI::getRetractAcceleration_mm_s2()),
+        static_cast<uint16_t>(ExtUI::getTravelAcceleration_mm_s2()),
+        static_cast<uint16_t>(ExtUI::getJunctionDeviation_mm() * 100)
+    });
     return Page::AccelerationSettings;
 }
 
 //! Save the Acceleration settings
 void AccelerationSettings::do_save_command()
 {
-    ReadRamData response{Variable::Value0, 7};
-    if(!response.send_and_receive())
+    ReadRam response{Variable::Value0};
+    if(!response.send_receive(7))
     {
         Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
         return;
     }
 
-    Uint16 x, y, z, e, print, retract, travel, deviation;
-    response >> x >> y >> z >> e >> print >> retract >> travel >> deviation;
+    uint16_t x = response.read_word();
+    uint16_t y = response.read_word();
+    uint16_t z = response.read_word();
+    uint16_t e = response.read_word();
+    uint16_t print = response.read_word();
+    uint16_t retract = response.read_word();
+    uint16_t travel = response.read_word();
+    uint16_t deviation = response.read_word();
 
-    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(x.word), ExtUI::X);
-    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(y.word), ExtUI::Y);
-    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(z.word), ExtUI::Z);
-    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<uint32_t>(e.word), ExtUI::E0);
-    ExtUI::setPrintingAcceleration_mm_s2(static_cast<float>(print.word));
-    ExtUI::setRetractAcceleration_mm_s2(static_cast<float>(retract.word));
-    ExtUI::setTravelAcceleration_mm_s2(static_cast<float>(travel.word));
-    ExtUI::setJunctionDeviation_mm(static_cast<float>(deviation.word / 100.0));
+    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<float>(x), ExtUI::X);
+    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<float>(y), ExtUI::Y);
+    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<float>(z), ExtUI::Z);
+    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<float>(e), ExtUI::E0);
+    ExtUI::setPrintingAcceleration_mm_s2(static_cast<float>(print));
+    ExtUI::setRetractAcceleration_mm_s2(static_cast<float>(retract));
+    ExtUI::setTravelAcceleration_mm_s2(static_cast<float>(travel));
+    ExtUI::setJunctionDeviation_mm(static_cast<float>(deviation / 100.0));
 
     Parent::do_save_command();
 }

@@ -296,19 +296,18 @@ void PidSettings::send_data() const
     Log::log() << F("Send ") << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID #") << index_
                << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
 
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << (kind_ == TemperatureKind::Hotend ? 0_u16 : 1_u16)
-          << Uint16(pid.temperature_)
-          << Uint16(pid.Kp_ * 100)
-          << Uint16(pid.Ki_ * 100)
-          << Uint16(pid.Kd_ * 100);
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 5>
+    {
+        static_cast<uint16_t>(kind_ == TemperatureKind::Hotend ? 0u : 1u),
+        pid.temperature_,
+        static_cast<uint16_t>(pid.Kp_ * 100),
+        static_cast<uint16_t>(pid.Ki_ * 100),
+        static_cast<uint16_t>(pid.Kd_ * 100)
+    });
 
     ADVString<8> indexes;
     indexes << index_ + 1 << F(" / ") << NB_PIDs;
-    frame.reset(Variable::ShortText0);
-    frame << indexes;
-    frame.send();
+    WriteRamRequest{Variable::ShortText0}.write_text(indexes);
 }
 
 //! Save the settings from the LCD Panel.
@@ -316,21 +315,24 @@ void PidSettings::save_data()
 {
     Pid& pid = get_pid()[index_];
 
-    ReadRamData response{Variable::Value0, 5};
-    if(!response.send_and_receive())
+    ReadRam response{Variable::Value0};
+    if(!response.send_receive(5))
     {
         Log::error() << F("Receiving Frame (PID Settings)") << Log::endl();
         return;
     }
 
-    Uint16 kind, temperature, p, i, d;
-    response >> kind >> temperature >> p >> i >> d;
+    uint16_t kind = response.read_word();
+    uint16_t temperature = response.read_word();
+    uint16_t p = response.read_word();
+    uint16_t i = response.read_word();
+    uint16_t d = response.read_word();
 
-    assert(kind.word == (kind_ == TemperatureKind::Hotend ? 0 : 1));
+    assert(kind == (kind_ == TemperatureKind::Hotend ? 0 : 1));
 
-    pid.Kp_ = static_cast<float>(p.word) / 100;
-    pid.Ki_ = static_cast<float>(i.word) / 100;
-    pid.Kd_ = static_cast<float>(d.word) / 100;
+    pid.Kp_ = static_cast<float>(p) / 100;
+    pid.Ki_ = static_cast<float>(i) / 100;
+    pid.Kd_ = static_cast<float>(d) / 100;
 
     set_current_pid();
 }

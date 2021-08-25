@@ -62,9 +62,7 @@ void Pages::show_(Page page)
 {
     Log::log() << F("Show page ") << page << Log::endl();
 
-    WriteRegisterDataRequest frame{Register::PictureID};
-    frame << Uint16{static_cast<uint16_t>(get_cleared_bits(page, Page::Temporary))};
-    frame.send(true);
+    WriteRegisterRequest{Register::PictureID}.write_page(get_cleared_bits(page, Page::Temporary));
 
     current_page_ = page;
     log();

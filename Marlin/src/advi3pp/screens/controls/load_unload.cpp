@@ -50,9 +50,7 @@ bool LoadUnload::do_dispatch(KeyValue key_value)
 
 void LoadUnload::send_data()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(settings.get_last_used_temperature(TemperatureKind::Hotend));
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_word(settings.get_last_used_temperature(TemperatureKind::Hotend));
 }
 
 //! Prepare the page before being displayed and return the right Page value
@@ -69,15 +67,14 @@ Page LoadUnload::do_prepare_page()
 //! @param background Background task to detect if it is time for step #2
 void LoadUnload::prepare()
 {
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
+    ReadRam frame{Variable::Value0};
+    if(!frame.send_receive(1))
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
 
-    Uint16 temperature; frame >> temperature;
-    ExtUI::setTargetTemp_celsius(temperature.word, ExtUI::E0);
+    ExtUI::setTargetTemp_celsius(frame.read_word(), ExtUI::E0);
 }
 
 //! Start Load action.

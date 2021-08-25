@@ -310,9 +310,7 @@ void XTwist::adjust_height(double offset_value)
 //! Send the current data (i.e. multiplier) to the LCD panel.
 void XTwist::send_data() const
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(static_cast<uint16_t>(multiplier_));
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_word(static_cast<uint16_t>(multiplier_));
 }
 
 #else

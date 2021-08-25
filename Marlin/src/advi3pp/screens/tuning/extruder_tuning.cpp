@@ -50,9 +50,7 @@ bool ExtruderTuning::do_dispatch(KeyValue key_value)
 
 void ExtruderTuning::send_data()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(settings.get_last_used_temperature(TemperatureKind::Hotend));
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_word(settings.get_last_used_temperature(TemperatureKind::Hotend));
 }
 
 //! Prepare the page before being displayed and return the right Page value
@@ -69,15 +67,15 @@ Page ExtruderTuning::do_prepare_page()
 //! Start extruder tuning.
 void ExtruderTuning::start_command()
 {
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
+    ReadRam frame{Variable::Value0};
+    if(!frame.send_receive(1))
     {
         Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
         return;
     }
 
-    Uint16 temperature; frame >> temperature;
-    ExtUI::setTargetTemp_celsius(temperature.word, ExtUI::E0);
+    uint16_t temperature = frame.read_word();
+    ExtUI::setTargetTemp_celsius(temperature, ExtUI::E0);
     wait.wait(F("Heating the extruder..."));
 
     core.inject_commands(F("G1 Z10 F1200\nM83\nG92 E0"));   // raise head, relative E mode, reset E axis
@@ -90,8 +88,7 @@ void ExtruderTuning::start_command()
     core.inject_commands(F("M82\nG92 E0"));  // absolute E mode, reset E axis
 
     // Always set to default 20mm
-    frame << 200_u16; // 20.0
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_word(200);
 
     pages.show(Page::ExtruderTuningMeasure);
 }
@@ -99,20 +96,20 @@ void ExtruderTuning::start_command()
 //! Compute the extruder (E axis) new value and show the steps settings.
 void ExtruderTuning::settings_command()
 {
-    ReadRamData frame{Variable::Value0, 1};
-    if(!frame.send_and_receive())
+    ReadRam frame{Variable::Value0};
+    if(!frame.send_receive(1))
     {
         Log::error() << F("Receiving Frame (Measures)") << Log::endl();
         return;
     }
 
-    Uint16 e; frame >> e;
-    auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + tuning_extruder_delta - e.word / 10.0);
+    uint16_t e = frame.read_word();
+    auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + tuning_extruder_delta - e / 10.0);
 
     Log::log()
             << F("Adjust: old = ") << ExtUI::getAxisSteps_per_mm(ExtUI::E0)
             << F(", expected = ") << extruded_
-            << F(", measured = ") << (extruded_ + tuning_extruder_delta - e.word)
+            << F(", measured = ") << (extruded_ + tuning_extruder_delta - e)
             << F(", new = ") << new_value << Log::endl();
 
     ExtUI::setAxisSteps_per_mm(new_value, ExtUI::E0);

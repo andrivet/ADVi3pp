@@ -52,9 +52,7 @@ void Buzzer::send_buzz_command_to_lcd(long duration)
 {
     duration /= 10;
 
-    WriteRegisterDataRequest request{Register::BuzzerBeepingTime};
-    request << Uint8(static_cast<uint8_t>(duration > UINT8_MAX ? UINT8_MAX : duration));
-    request.send();
+    WriteRegisterRequest{Register::BuzzerBeepingTime}.write_byte(static_cast<uint8_t>(duration > UINT8_MAX ? UINT8_MAX : duration));
 }
 
 //! Buzz briefly when the LCD panel is pressed.

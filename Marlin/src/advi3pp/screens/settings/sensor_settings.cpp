@@ -133,48 +133,45 @@ void SensorSettings::next_command()
 
 void SensorSettings::send_values() const
 {
-    WriteRamDataRequest frame{Variable::Value0};
-
     if(index_ == 0)
-    {
-        frame << Uint16{ExtUI::getProbeOffset_mm(ExtUI::X) * 100}
-              << Uint16{ExtUI::getProbeOffset_mm(ExtUI::Y) * 100}
-              << Uint16{ExtUI::getZOffset_mm() * 100};
-    }
+        WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 3>
+        {
+            static_cast<uint16_t>(ExtUI::getProbeOffset_mm(ExtUI::X) * 100),
+            static_cast<uint16_t>(ExtUI::getProbeOffset_mm(ExtUI::Y) * 100),
+            static_cast<uint16_t>(ExtUI::getZOffset_mm() * 100)
+        });
     else
-    {
-        frame << Uint16{SENSOR_POSITION[index_ - 1].x}
-              << Uint16{SENSOR_POSITION[index_ - 1].y}
-              << Uint16{ExtUI::getZOffset_mm() * 100};;
-    }
-
-    frame.send();
+        WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 3>
+        {
+            static_cast<uint16_t>(SENSOR_POSITION[index_ - 1].x),
+            static_cast<uint16_t>(SENSOR_POSITION[index_ - 1].y),
+            static_cast<uint16_t>(ExtUI::getZOffset_mm() * 100)
+        });
 }
 
 void SensorSettings::send_name() const
 {
     ADVString<28> title{get_sensor_name(index_)};
-    WriteRamDataRequest frame{Variable::LongTextCentered0};
-    frame.center(title);
-    frame.send();
+    WriteRamRequest{Variable::LongTextCentered0}.write_centered_text(title);
 }
 
 //! Get current data from the LCD Panel.
 void SensorSettings::get_values()
 {
-    ReadRamData frame{Variable::Value0, 3};
-    if(!frame.send_and_receive())
+    ReadRam frame{Variable::Value0};
+    if(!frame.send_receive(3))
     {
         Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
         return;
     }
 
-    Uint16 x, y, z;
-    frame >> x >> y >> z;
+    uint16_t x = frame.read_word();
+    uint16_t y = frame.read_word();
+    uint16_t z = frame.read_word();
 
-    ExtUI::setProbeOffset_mm(static_cast<int16_t>(x.word) / 100.0, ExtUI::X);
-    ExtUI::setProbeOffset_mm(static_cast<int16_t>(y.word) / 100.0, ExtUI::Y);
-    ExtUI::setZOffset_mm(static_cast<int16_t>(z.word) / 100.0);
+    ExtUI::setProbeOffset_mm(x / 100.0, ExtUI::X);
+    ExtUI::setProbeOffset_mm(y / 100.0, ExtUI::Y);
+    ExtUI::setZOffset_mm(z / 100.0);
 }
 
 #else

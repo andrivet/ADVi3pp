@@ -170,9 +170,10 @@ bool Settings::is_feature_enabled(Feature features) const
 
 void Settings::send_lcd_values(Variable features)
 {
-    WriteRamDataRequest frame{features};
-    frame << Uint16(static_cast<uint16_t>(features_)) << Uint16(ExtUI::get_lcd_contrast());
-    frame.send();
+    WriteRamRequest{features}.write_words(adv::array<uint16_t, 2>{
+        static_cast<uint16_t>(features_),
+        ExtUI::get_lcd_contrast()
+    });
 }
 
 //! Get the last used temperature for the hotend or the bad

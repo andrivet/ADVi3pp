@@ -30,25 +30,22 @@ LinearAdvanceSettings linear_advance_settings;
 //! @return The index of the page to display
 Page LinearAdvanceSettings::do_prepare_page()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 100);
-    frame.send();
-
+    WriteRamRequest{Variable::Value0}.write_word(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 100);
     return Page::LinearAdvanceSettings;
 }
 
 //! Handles the Save (Continue) command
 void LinearAdvanceSettings::do_save_command()
 {
-    ReadRamData response{Variable::Value0, 1};
-    if(!response.send_and_receive())
+    ReadRam response{Variable::Value0};
+    if(!response.send_receive(1))
     {
         Log::error() << F("Receiving Frame (Linear Advance Settings)") << Log::endl();
         return;
     }
 
-    Uint16 k; response >> k;
-    ExtUI::setLinearAdvance_mm_mm_s(k.word / 100.0, ExtUI::E0);
+    uint16_t k = response.read_word();
+    ExtUI::setLinearAdvance_mm_mm_s(k / 100.0, ExtUI::E0);
 
     Parent::do_save_command();
 }

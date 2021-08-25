@@ -32,33 +32,35 @@ static const unsigned SCALE = 10;
 //! @return The index of the page to display
 Page StepSettings::do_prepare_page()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::X) * SCALE)
-          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::Y) * SCALE)
-          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::Z) * SCALE)
-          << Uint16(ExtUI::getAxisSteps_per_mm(ExtUI::E0) * SCALE);
-    frame.send();
-
+    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 4>
+    {
+        static_cast<uint16_t>(ExtUI::getAxisSteps_per_mm(ExtUI::X) * SCALE),
+        static_cast<uint16_t>(ExtUI::getAxisSteps_per_mm(ExtUI::Y) * SCALE),
+        static_cast<uint16_t>(ExtUI::getAxisSteps_per_mm(ExtUI::Z) * SCALE),
+        static_cast<uint16_t>(ExtUI::getAxisSteps_per_mm(ExtUI::E0) * SCALE)
+    });
     return Page::StepsSettings;
 }
 
 //! Save the Steps settings
 void StepSettings::do_save_command()
 {
-    ReadRamData response{Variable::Value0, 4};
-    if(!response.send_and_receive())
+    ReadRam response{Variable::Value0};
+    if(!response.send_receive(4))
     {
         Log::error() << F("Receiving Frame (Steps Settings)") << Log::endl();
         return;
     }
 
-    Uint16 x, y, z, e;
-    response >> x >> y >> z >> e;
+    uint16_t x = response.read_word();
+    uint16_t y = response.read_word();
+    uint16_t z = response.read_word();
+    uint16_t e = response.read_word();
 
-    ExtUI::setAxisSteps_per_mm(static_cast<float>(x.word) / SCALE, ExtUI::X);
-    ExtUI::setAxisSteps_per_mm(static_cast<float>(y.word) / SCALE, ExtUI::Y);
-    ExtUI::setAxisSteps_per_mm(static_cast<float>(z.word) / SCALE, ExtUI::Z);
-    ExtUI::setAxisSteps_per_mm(static_cast<float>(e.word) / SCALE, ExtUI::E0);
+    ExtUI::setAxisSteps_per_mm(static_cast<float>(x) / SCALE, ExtUI::X);
+    ExtUI::setAxisSteps_per_mm(static_cast<float>(y) / SCALE, ExtUI::Y);
+    ExtUI::setAxisSteps_per_mm(static_cast<float>(z) / SCALE, ExtUI::Z);
+    ExtUI::setAxisSteps_per_mm(static_cast<float>(e) / SCALE, ExtUI::E0);
 
     Parent::do_save_command();
 }

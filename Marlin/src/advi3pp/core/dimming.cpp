@@ -63,31 +63,30 @@ uint8_t Dimming::get_adjusted_brightness()
     return static_cast<uint8_t>(brightness);
 }
 
-//! Check the dimming state: LCD Panel was touched? Dimming delay was elapsed?
-void Dimming::check()
+
+void Dimming::send()
 {
     if(!settings.is_feature_enabled(Feature::Dimming) || !ELAPSED(millis(), next_check_time_))
         return;
     set_next_checking_time();
 
-    ReadRegister read{Register::TouchPanelFlag, 1};
-    if(!read.send_and_receive(false))
-    {
-        Log::error() << F("Reading TouchPanelFlag") << Log::endl();
-        return;
-    }
-    Uint8 value; read >> value;
+    ReadRegisterRequest{Register::TouchPanelFlag}.write(1);
+}
 
-    // Reset TouchPanelFlag
-    WriteRegisterDataRequest request{Register::TouchPanelFlag};
-    request << 00_u8;
-    request.send(false);
+bool Dimming::receive()
+{
+    ReadRegisterResponse response{Register::TouchPanelFlag};
+    if(!response.receive())
+        return false;
 
-    if(value.byte == 0x5A)
+    if(response.read_byte() == 0x5A)
     {
+        // Reset TouchPanelFlag
+        WriteRegisterRequest{Register::TouchPanelFlag}.write_byte(0);
+
         Log::log() << F("Panel touched, reset dimming") << Log::endl();
         reset();
-        return;
+        return true;
     }
 
     if(!dimmed_ && ELAPSED(millis(), next_dimming_time_))
@@ -96,6 +95,8 @@ void Dimming::check()
         dimmed_ = true;
         send_brightness();
     }
+
+    return true;
 }
 
 //! Reset the dimming
@@ -115,9 +116,7 @@ void Dimming::send_brightness()
 {
     auto brightness = get_adjusted_brightness();
 
-    WriteRegisterDataRequest frame{Register::Brightness};
-    frame << Uint8{brightness};
-    frame.send(true);
+    WriteRegisterRequest{Register::Brightness}.write_byte(brightness);
 }
 
 //! Change the brightness of the LCD Panel.

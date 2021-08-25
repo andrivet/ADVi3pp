@@ -37,30 +37,25 @@ Page Statistics::do_prepare_page()
 
 void Statistics::send_stats()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(ExtUI::getTotalPrints())
-          << Uint16(ExtUI::getFinishedPrints())
-          << Uint16(static_cast<uint16_t>(freeMemory()));
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 3>
+    {
+        ExtUI::getTotalPrints(),
+        ExtUI::getFinishedPrints(),
+        static_cast<uint16_t>(freeMemory())
+    });
 
     // Minimize the RAM used so send each value separately.
     char buffer[21];
     ADVString<16> value;
 
     value.set(ExtUI::getTotalPrintTime_str(buffer));
-    frame.reset(Variable::LongText0);
-    frame << value;
-    frame.send();
+    WriteRamRequest{Variable::LongText0}.write_text(value);
 
     value.set(ExtUI::getLongestPrint_str(buffer));
-    frame.reset(Variable::LongText1);
-    frame << value;
-    frame.send();
+    WriteRamRequest{Variable::LongText1}.write_text(value);
 
     value.set(ExtUI::getFilamentUsed_str(buffer));
-    frame.reset(Variable::LongText2);
-    frame << value;
-    frame.send();
+    WriteRamRequest{Variable::LongText2}.write_text(value);
 }
 
 }

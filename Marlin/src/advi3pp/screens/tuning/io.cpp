@@ -90,20 +90,18 @@ IO::State IO::get_pin_state(uint8_t pin)
 //! Send the current data to the LCD panel.
 void IO::send_data()
 {
-    WriteRamDataRequest request{Variable::Value0};
+    WriteRamRequest request{Variable::Value0};
 
     for(size_t i = 0; i < adv::count_of(diagnosis_digital_pins); ++i)
     {
-        request.reset(static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + i));
-        request << Uint16{static_cast<uint16_t>(get_pin_state(diagnosis_digital_pins[i]))};
-        request.send(false);
+        auto var = static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + i);
+        WriteRamRequest{var}.write_word(static_cast<uint16_t>(get_pin_state(diagnosis_digital_pins[i])));
     }
 
     for(size_t i = 0; i < adv::count_of(diagnosis_analog_pins); ++i)
     {
-        request.reset(static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + 0x20 + i));
-        request << Uint16{static_cast<uint16_t>(analogRead(diagnosis_analog_pins[i]))};
-        request.send(false);
+        auto var = static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + 0x20 + i);
+        WriteRamRequest{var}.write_word(static_cast<uint16_t>(analogRead(diagnosis_analog_pins[i])));
     }
 }
 

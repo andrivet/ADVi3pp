@@ -48,18 +48,18 @@ void Graphs::update()
 //! Update the graphs on the LCD panel (two channels: the bed and the hotend).
 void Graphs::send_data()
 {
-    WriteCurveDataRequest frame{0b00000011};
-    frame << Uint16{ExtUI::getActualTemp_celsius(ExtUI::BED)}
-          << Uint16{ExtUI::getActualTemp_celsius(ExtUI::E0)};
-    frame.send(false);
+    adv::array<uint16_t, 2> data = {
+        static_cast<uint16_t>(ExtUI::getActualTemp_celsius(ExtUI::BED)),
+        static_cast<uint16_t>(ExtUI::getActualTemp_celsius(ExtUI::E0))
+    };
+
+    WriteCurveRequest{0b00000011}.write_words(data);
 }
 
 //! Clear the graphs
 void Graphs::clear()
 {
-    WriteRegisterDataRequest request{Register::TrendlineClear};
-    request << 0x55_u8;
-    request.send();
+    WriteRegisterRequest{Register::TrendlineClear}.write_byte(0x55);
 }
 
 }

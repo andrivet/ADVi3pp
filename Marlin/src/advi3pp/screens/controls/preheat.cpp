@@ -52,33 +52,33 @@ bool Preheat::do_dispatch(KeyValue key_value)
 void Preheat::send_presets()
 {
     Log::log() << F("Preheat page") << Log::endl();
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(ExtUI::getMaterialPresetHotendTemp_celsius(index_))
-          << Uint16(ExtUI::getMaterialPresetBedTemp_celsius(index_))
-          << Uint16(ExtUI::getMaterialPresetFanSpeed_percent(index_));
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 3>
+    {
+        static_cast<uint16_t>(ExtUI::getMaterialPresetHotendTemp_celsius(index_)),
+        static_cast<uint16_t>(ExtUI::getMaterialPresetBedTemp_celsius(index_)),
+        static_cast<uint16_t>(ExtUI::getMaterialPresetFanSpeed_percent(index_))
+    });
 
     ADVString<8> preset;
     preset << index_ + 1 << F(" / ") << NB_PRESETS;
-    frame.reset(Variable::ShortText0);
-    frame << preset;
-    frame.send();
+    WriteRamRequest{Variable::ShortText0}.write_text(preset);
 }
 
 //! Retrieve presets values from the LCD Panel
 void Preheat::retrieve_presets()
 {
-    ReadRamData frame{Variable::Value0, 3};
-    if(!frame.send_and_receive())
+    ReadRam frame{Variable::Value0};
+    if(!frame.send_receive(2))
     {
         Log::error() << F("Error receiving presets") << Log::endl();
         return;
     }
 
-    Uint16 hotend, bed, fan;
-    frame >> hotend >> bed >> fan;
+    uint16_t hotend = frame.read_word();
+    uint16_t bed = frame.read_word();
+    uint16_t fan = frame.read_word();
 
-    ExtUI::setMaterialPreset(index_, hotend.word, bed.word, fan.word);
+    ExtUI::setMaterialPreset(index_, hotend, bed, fan);
 }
 
 //! Prepare the page before being displayed and return the right Page value

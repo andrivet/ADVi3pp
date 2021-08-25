@@ -35,18 +35,19 @@ Versions versions;
 template<size_t L>
 ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
 {
-    ReadRegister response{Register::Version, 1};
-    if(!response.send_and_receive())
+    ReadRegister response{Register::Version};
+    if(!response.send_receive(1))
     {
         Log::error() << F("Receiving Frame (Version)") << Log::endl();
         return lcd_version;
     }
 
-    Uint8 version; response >> version;
-    Log::log() << F("LCD Firmware raw version = ") << version.byte << Log::endl();
+    uint8_t version = response.read_byte();
+
+    Log::log() << F("LCD Firmware raw version = ") << version << Log::endl();
 
 	lcd_version.reset();
-    lcd_version << (version.byte / 0x10) << '.' << (version.byte % 0x10);
+    lcd_version << (version / 0x10) << '.' << (version % 0x10);
     return lcd_version;
 }
 
@@ -58,9 +59,7 @@ void Versions::send_versions() const
 	
 	ADVString<16> text;
     core.convert_version(text, advi3_pp_version);
-	WriteRamDataRequest frame{Variable::ADVi3ppVersion};
-	frame << text;
-	frame.send();
+	WriteRamRequest{Variable::ADVi3ppVersion}.write_text(text);
 
     text.reset();
     text << (YEAR__ - 2000)
@@ -69,19 +68,13 @@ void Versions::send_versions() const
          << (HOUR__  < 10 ? "0" : "") << HOUR__
          << (MIN__   < 10 ? "0" : "") << MIN__
          << (SEC__   < 10 ? "0" : "") << SEC__;
-	frame.reset(Variable::ADVi3ppBuild);
-	frame << text;
-	frame.send();
+    WriteRamRequest{Variable::ADVi3ppBuild}.write_text(text);
 	
     get_lcd_firmware_version(text);
-	frame.reset(Variable::ADVi3ppDGUSVersion);
-	frame << text;
-	frame.send();
+    WriteRamRequest{Variable::ADVi3ppDGUSVersion}.write_text(text);
 		
     text.set(SHORT_BUILD_VERSION);
-	frame.reset(Variable::ADVi3ppMarlinVersion);
-	frame << text;
-	frame.send();
+    WriteRamRequest{Variable::ADVi3ppMarlinVersion}.write_text(text);
 }
 
 //! Prepare the page before being displayed and return the right Page value

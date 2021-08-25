@@ -30,37 +30,41 @@ FeedrateSettings feedrates_settings;
 //! @return The index of the page to display
 Page FeedrateSettings::do_prepare_page()
 {
-    WriteRamDataRequest frame{Variable::Value0};
-    frame << Uint16(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::X))
-          << Uint16(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Y))
-          << Uint16(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Z))
-          << Uint16(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::E0))
-          << Uint16(ExtUI::getMinFeedrate_mm_s())
-          << Uint16(ExtUI::getMinTravelFeedrate_mm_s());
-    frame.send();
-
+    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 6>
+    {
+        static_cast<uint16_t>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::X)),
+        static_cast<uint16_t>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Y)),
+        static_cast<uint16_t>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Z)),
+        static_cast<uint16_t>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::E0)),
+        static_cast<uint16_t>(ExtUI::getMinFeedrate_mm_s()),
+        static_cast<uint16_t>(ExtUI::getMinTravelFeedrate_mm_s())
+    });
     return Page::FeedrateSettings;
 }
 
 //! Save the Feedrate settings
 void FeedrateSettings::do_save_command()
 {
-    ReadRamData response{Variable::Value0, 6};
-    if(!response.send_and_receive())
+    ReadRam response{Variable::Value0};
+    if(!response.send_receive(6))
     {
         Log::error() << F("Receiving Frame (Feedrate Settings)") << Log::endl();
         return;
     }
 
-    Uint16 x, y, z, e, min, travel;
-    response >> x >> y >> z >> e >> min >> travel;
+    uint16_t x = response.read_word();
+    uint16_t y = response.read_word();
+    uint16_t z = response.read_word();
+    uint16_t e = response.read_word();
+    uint16_t min = response.read_word();
+    uint16_t travel = response.read_word();
 
-    ExtUI::setAxisMaxFeedrate_mm_s(static_cast<float>(x.word), ExtUI::X);
-    ExtUI::setAxisMaxFeedrate_mm_s(static_cast<float>(y.word), ExtUI::Y);
-    ExtUI::setAxisMaxFeedrate_mm_s(static_cast<float>(z.word), ExtUI::Z);
-    ExtUI::setAxisMaxFeedrate_mm_s(static_cast<float>(e.word), ExtUI::E0);
-    ExtUI::setMinFeedrate_mm_s(static_cast<float>(min.word));
-    ExtUI::setMinTravelFeedrate_mm_s(static_cast<float>(travel.word));
+    ExtUI::setAxisMaxFeedrate_mm_s(static_cast<float>(x), ExtUI::X);
+    ExtUI::setAxisMaxFeedrate_mm_s(static_cast<float>(y), ExtUI::Y);
+    ExtUI::setAxisMaxFeedrate_mm_s(static_cast<float>(z), ExtUI::Z);
+    ExtUI::setAxisMaxFeedrate_mm_s(static_cast<float>(e), ExtUI::E0);
+    ExtUI::setMinFeedrate_mm_s(static_cast<float>(min));
+    ExtUI::setMinTravelFeedrate_mm_s(static_cast<float>(travel));
 
     Parent::do_save_command();
 }

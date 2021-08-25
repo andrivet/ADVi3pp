@@ -104,8 +104,6 @@ void SdCard::up_command()
 //! Show the list of files on SD (current page)
 void SdCard::show_current_page()
 {
-    WriteRamDataRequest frame{Variable::LongText0};
-
     ADVString<sd_file_length> name;
     ADVString<48> aligned_name;
 
@@ -113,13 +111,11 @@ void SdCard::show_current_page()
     {
         get_file_name(index, name);
         aligned_name.set(name);
-        frame << aligned_name;
+        Variable var = static_cast<Variable>(static_cast<uint16_t>(Variable::LongText0) + 8 * index);
+        WriteRamRequest{var}.write_text(aligned_name);
     }
-    frame.send(true);
 
-    frame.reset(Variable::Value0);
-    frame << Uint16{page_index_ + 1};
-    frame.send();
+    WriteRamRequest{Variable::Value0}.write_word(page_index_ + 1);
 }
 
 //! Get a filename with a given index.
