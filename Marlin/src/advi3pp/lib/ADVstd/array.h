@@ -130,14 +130,6 @@ struct array
     using reverse_iterator          = adv::reverse_iterator<iterator>;
     using const_reverse_iterator    = adv::reverse_iterator<const_iterator>;
 
-    array()                 = default;
-    array(const array &)    = default;
-    array(array &&)         = default;
-    ~array()                = default;
-
-    array& operator=(const array&)  = default;
-    array& operator=(array&&)       = default;
-
     // Element access
     reference at(size_type pos)                                 { return elements_[pos]; } // WARNING: No check
     constexpr const_reference at(size_type pos) const           { return elements_[pos]; } // WARNING: No check
