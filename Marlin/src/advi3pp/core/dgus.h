@@ -84,7 +84,7 @@ enum class Variable: uint16_t;
 enum class Action: uint16_t;
 enum class KeyValue: uint16_t;
 enum class Page: uint16_t;
-enum class ReceiveMode { Blocking, NonBlocking };
+enum class ReceiveMode { Known, Unknown };
 
 namespace
 {
@@ -110,7 +110,7 @@ struct Dgus
 #endif
 
     static bool write_header(Command cmd, uint8_t param_size, uint8_t data_size);
-    static bool receive(Command cmd, ReceiveMode mode);
+    static bool receive(Command cmd, bool blocking);
 
     static uint8_t read_byte();
     static size_t read_bytes(uint8_t *buffer, size_t length);
@@ -121,7 +121,7 @@ struct Dgus
     static bool write_words(const uint16_t *words, size_t length);
     static bool write_text(const char* text, size_t text_length, size_t total_length);
     static bool write_centered_text(const char* text, size_t text_length, size_t total_length);
-    static bool wait_for_data(uint8_t size, ReceiveMode mode);
+    static bool wait_for_data(uint8_t size, bool blocking);
 
 private:
     static void kill();
@@ -130,12 +130,13 @@ private:
     static uint8_t get_pushed_back();
 
     static const size_t MAX_PUSH_BACK = 5;
-    enum class State { Start = 0, Command = 1, PushedBack = 2};
+    enum class State { Start = 0, Command = 1, Data = 2};
 
     static State   state_;
     static uint8_t length_;
     static uint8_t read_;
     static Command command_;
+    static uint8_t nb_pushed_back_;
     static uint8_t pushed_back_[MAX_PUSH_BACK];
 };
 
@@ -196,7 +197,7 @@ struct WriteOutFrame: OutFrame<Param, cmd>
 // InFrame
 // --------------------------------------------------------------------
 
-template<typename Param, Command, ReceiveMode>
+template<typename Param, Command, ReceiveMode mode = ReceiveMode::Unknown>
 struct InFrame
 {
     InFrame() = default;
@@ -213,6 +214,8 @@ protected:
     bool read_parameter();
     bool read_byte_parameter();
     bool read_word_parameter();
+    bool check_byte_parameter() const;
+    bool check_word_parameter() const;
 
 private:
     uint8_t data_expected_{};
@@ -259,9 +262,9 @@ struct ReadRegisterRequest: ReadOutFrame<Register, Command::ReadRegister>
 // ReadRegisterDataResponse
 // --------------------------------------------------------------------
 
-struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMode::Blocking>
+struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMode::Known>
 {
-    using Parent = InFrame<Register, Command::ReadRegister, ReceiveMode::Blocking>;
+    using Parent = InFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
     explicit ReadRegisterResponse(Register reg): Parent{reg} {}
 };
 
@@ -269,9 +272,9 @@ struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMod
 // ReadRegister (Request and Response)
 // --------------------------------------------------------------------
 
-struct ReadRegister: OutInFrame<Register, Command::ReadRegister, ReceiveMode::Blocking>
+struct ReadRegister: OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known>
 {
-    using Parent = OutInFrame<Register, Command::ReadRegister, ReceiveMode::Blocking>;
+    using Parent = OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
     explicit ReadRegister(Register reg): Parent{reg} {}
 };
 
@@ -299,9 +302,9 @@ struct ReadRamRequest: ReadOutFrame<Variable, Command::ReadRam>
 // ReadRamDataResponse
 // --------------------------------------------------------------------
 
-struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Blocking>
+struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Known>
 {
-    using Parent = InFrame<Variable, Command::ReadRam, ReceiveMode::Blocking>;
+    using Parent = InFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
     explicit ReadRamResponse(Variable var): Parent{var} {}
 };
 
@@ -310,9 +313,9 @@ struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Blockin
 // ReadAction
 // --------------------------------------------------------------------
 
-struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Blocking>
+struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Known>
 {
-    using Parent = InFrame<Action, Command::ReadRam, ReceiveMode::Blocking>;
+    using Parent = InFrame<Action, Command::ReadRam, ReceiveMode::Known>;
     ReadAction(): Parent{} {}
 };
 
@@ -320,9 +323,9 @@ struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Blocking>
 // ReadRam (Request and Response)
 // --------------------------------------------------------------------
 
-struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Blocking>
+struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>
 {
-    using Parent = OutInFrame<Variable, Command::ReadRam, ReceiveMode::Blocking>;
+    using Parent = OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
     explicit ReadRam(Variable var): Parent{var} {}
 };
 
@@ -452,7 +455,7 @@ InFrame<Param, cmd, mode>::~InFrame()
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::receive()
 {
-    if(!Dgus::receive(cmd, mode) || !read_parameter())
+    if(!Dgus::receive(cmd, mode == ReceiveMode::Known) || !read_parameter())
         return false;
     data_expected_ = Dgus::read_byte();
     return true;
@@ -487,13 +490,16 @@ uint8_t InFrame<Param, cmd, mode>::get_nb_data() const
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::read_parameter()
 {
+  if(mode == ReceiveMode::Known)
+    return sizeof(Param) == 1 ? check_byte_parameter() : check_word_parameter();
+  else
     return sizeof(Param) == 1 ? read_byte_parameter() : read_word_parameter();
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::read_byte_parameter()
 {
-    if(!Dgus::wait_for_data(1, mode))
+    if(!Dgus::wait_for_data(1, mode == ReceiveMode::Known))
         return false;
     parameter_ = static_cast<Param>(Dgus::read_byte());
     return true;
@@ -502,10 +508,40 @@ bool InFrame<Param, cmd, mode>::read_byte_parameter()
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::read_word_parameter()
 {
-    if(!Dgus::wait_for_data(1, mode))
+    if(!Dgus::wait_for_data(2, mode == ReceiveMode::Known))
         return false;
     parameter_ = static_cast<Param>(adv::word_from_bytes(Dgus::read_byte(), Dgus::read_byte()));
     return true;
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+bool InFrame<Param, cmd, mode>::check_byte_parameter() const
+{
+  if(!Dgus::wait_for_data(1, mode == ReceiveMode::Known))
+    return false;
+  auto byte = Dgus::read_byte();
+  Param parameter = static_cast<Param>(byte);
+  if(parameter != parameter_) {
+    Dgus::push_back(byte);
+    return false;
+  }
+  return true;
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
+bool InFrame<Param, cmd, mode>::check_word_parameter() const
+{
+  if(!Dgus::wait_for_data(2, mode == ReceiveMode::Known))
+    return false;
+  auto byte0 = Dgus::read_byte();
+  auto byte1 = Dgus::read_byte();
+  Param parameter = static_cast<Param>(adv::word_from_bytes(byte0, byte1));
+  if(parameter != parameter_) {
+    Dgus::push_back(byte1);
+    Dgus::push_back(byte0);
+    return false;
+  }
+  return true;
 }
 
 // --------------------------------------------------------------------

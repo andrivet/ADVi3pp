@@ -44,6 +44,7 @@ Dgus::State Dgus::state_ = State::Start;
 uint8_t Dgus::length_ = 0;
 uint8_t Dgus::read_ = 0;
 Command Dgus::command_ = Command::None;
+uint8_t Dgus::nb_pushed_back_ = 0;
 uint8_t Dgus::pushed_back_[Dgus::MAX_PUSH_BACK] = {};
 
 //! Open the serial communication between the mainboard and the LCD panel
@@ -98,6 +99,7 @@ void Dgus::reset() {
   length_ = 0;
   read_ = 0;
   command_ = Command::None;
+  nb_pushed_back_ = 0;
 }
 #endif
 
@@ -125,14 +127,13 @@ bool Dgus::write_header(Command cmd, uint8_t param_size, uint8_t data_size)
 
 //! Wait for the given amount of bytes from the LCD display.
 //! @param length       Number of bytes to be available before returning
-bool Dgus::wait_for_data(uint8_t size, ReceiveMode mode)
+bool Dgus::wait_for_data(uint8_t size, bool blocking)
 {
-    auto pushed_back = static_cast<uint8_t>(state_) - static_cast<uint8_t>(State::PushedBack);
-    if(pushed_back >= size)
+    if(nb_pushed_back_ >= size)
         return true;
-    size -= pushed_back;
+    size -= nb_pushed_back_;
 
-    if(mode == ReceiveMode::NonBlocking && DgusSerial.available() < size)
+    if(!blocking && DgusSerial.available() < size)
         return false;
 
     unsigned count = 0;
@@ -165,7 +166,7 @@ bool Dgus::receive_header()
     return true;
 }
 
-bool Dgus::receive(Command cmd, ReceiveMode mode)
+bool Dgus::receive(Command cmd, bool blocking)
 {
     // Format of the frame:
     // header | length | command | data
@@ -175,7 +176,7 @@ bool Dgus::receive(Command cmd, ReceiveMode mode)
 
     if(state_ == State::Start)
     {
-        if(!wait_for_data(4, mode))
+        if(!wait_for_data(4, blocking))
             return false;
 
         if(!receive_header())
@@ -210,18 +211,13 @@ bool Dgus::receive(Command cmd, ReceiveMode mode)
 
 bool Dgus::has_pushed_back()
 {
-    const auto pushed_back_state = static_cast<size_t>(State::PushedBack);
-    const auto state = static_cast<size_t>(state_);
-    return state >= pushed_back_state && state <= pushed_back_state + MAX_PUSH_BACK;
+  return nb_pushed_back_ > 0;
 }
 
 uint8_t Dgus::get_pushed_back()
 {
-    const auto pushed_back_state = static_cast<size_t>(State::PushedBack);
-    const auto state = static_cast<size_t>(state_);
-    uint8_t byte = pushed_back_[state - pushed_back_state];
-    state_ = static_cast<State>(state - 1);
-    return byte;
+  read_ += 1;
+  return pushed_back_[--nb_pushed_back_];
 }
 
 uint8_t Dgus::read_byte()
@@ -243,24 +239,13 @@ size_t Dgus::read_bytes(uint8_t *buffer, size_t length)
 
 void Dgus::push_back(uint8_t byte)
 {
-    const auto pushed_back_state = static_cast<size_t>(State::PushedBack);
-    const auto state = static_cast<size_t>(state_);
-
-    if(state >= pushed_back_state + MAX_PUSH_BACK)
+    if(nb_pushed_back_ >= MAX_PUSH_BACK)
     {
         Log::error() << F("Pushback overflow") << Log::endl();
         return;
     }
 
-    if(state_ < State::Command)
-    {
-        Log::error() << F("Invalid Pushback state") << Log::endl();
-        return;
-    }
-
-    size_t new_state = state + 1;
-    state_ = static_cast<State>(new_state);
-    pushed_back_[new_state] = byte;
+    pushed_back_[nb_pushed_back_++] = byte;
     assert(read_ > 0);
     read_ -= 1;
 }
