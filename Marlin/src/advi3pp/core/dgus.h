@@ -147,7 +147,6 @@ private:
 template<typename Param, Command>
 struct OutFrame
 {
-
 protected:
     explicit OutFrame(Param param): parameter_{param} {}
     bool write_header(uint8_t data_size);
@@ -168,9 +167,9 @@ private:
 template<typename Param, Command cmd>
 struct ReadOutFrame: OutFrame<Param, cmd>
 {
-    using Parent = OutFrame<Param, cmd>;
-    explicit ReadOutFrame(Param param): Parent{param} {}
-    bool write(uint8_t nb_bytes);
+  using Parent = OutFrame<Param, cmd>;
+  explicit ReadOutFrame(Param param): Parent{param} {}
+  bool write(uint8_t nb_bytes);
 };
 
 // --------------------------------------------------------------------
@@ -180,49 +179,49 @@ struct ReadOutFrame: OutFrame<Param, cmd>
 template<typename Param, Command cmd>
 struct WriteOutFrame: OutFrame<Param, cmd>
 {
+protected:
     using Parent = OutFrame<Param, cmd>;
     explicit WriteOutFrame(Param param): Parent{param} {};
 
     bool write_byte(uint8_t value);
     bool write_word(uint16_t value);
-    bool write_page(Page page);
 
     template<size_t N> bool write_bytes(const adv::array<uint8_t , N>& data);
     template<size_t N> bool write_words(const adv::array<uint16_t , N>& data);
-    template<size_t N> bool write_text(const ADVString<N>& data);
-    template<size_t N> bool write_centered_text(const ADVString<N>& data);
 };
 
 // --------------------------------------------------------------------
 // InFrame
 // --------------------------------------------------------------------
 
-template<typename Param, Command, ReceiveMode mode = ReceiveMode::Unknown>
+template<typename Param, Command, ReceiveMode mode>
 struct InFrame
 {
-    InFrame() = default;
-    ~InFrame();
+  InFrame() = default;
+  ~InFrame();
 
-    bool receive();
-    Param get_parameter() const;
-    uint8_t get_nb_data() const;
-    uint8_t read_byte();
-    uint16_t read_word();
+  bool receive();
+  Param get_parameter() const;
 
 protected:
-    explicit InFrame(Param param): parameter_{param} {}
-    bool read_parameter();
-    bool read_byte_parameter();
-    bool read_word_parameter();
-    bool check_byte_parameter() const;
-    bool check_word_parameter() const;
+  explicit InFrame(Param param) : parameter_{param} {}
+
+  uint8_t get_nb_data() const;
+  uint8_t read_byte();
+  uint16_t read_word();
+
+  bool read_parameter();
+  bool read_byte_parameter();
+  bool read_word_parameter();
+  bool check_byte_parameter() const;
+  bool check_word_parameter() const;
 
 private:
-    uint8_t data_expected_{};
-    uint8_t data_read_{};
+  uint8_t data_expected_{};
+  uint8_t data_read_{};
 
 protected:
-    Param parameter_{};
+  Param parameter_{};
 };
 
 // --------------------------------------------------------------------
@@ -232,9 +231,11 @@ protected:
 template<typename Param, Command cmd, ReceiveMode mode>
 struct OutInFrame: InFrame<Param, cmd, mode>
 {
+  bool send_receive(uint8_t nb_bytes);
+
+protected:
     using Parent = InFrame<Param, cmd, mode>;
     explicit OutInFrame(Param param): Parent{param} {}
-    bool send_receive(uint8_t nb_bytes);
 };
 
 
@@ -244,8 +245,10 @@ struct OutInFrame: InFrame<Param, cmd, mode>
 
 struct WriteRegisterRequest: WriteOutFrame<Register, Command::WriteRegister>
 {
-    using Parent = WriteOutFrame<Register, Command::WriteRegister>;
-    explicit WriteRegisterRequest(Register reg): Parent{reg} {}
+  using Parent = WriteOutFrame<Register, Command::WriteRegister>;
+  explicit WriteRegisterRequest(Register reg): Parent{reg} {}
+  using Parent::write_byte;
+  bool write_page(Page page) {  return write_word(static_cast<uint16_t>(page)); }
 };
 
 // --------------------------------------------------------------------
@@ -264,8 +267,11 @@ struct ReadRegisterRequest: ReadOutFrame<Register, Command::ReadRegister>
 
 struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMode::Known>
 {
-    using Parent = InFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
-    explicit ReadRegisterResponse(Register reg): Parent{reg} {}
+  using Parent = InFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
+  explicit ReadRegisterResponse(Register reg): Parent{reg} {}
+  uint8_t get_nb_bytes() const { return get_nb_data(); }
+  using Parent::read_byte;
+  using Parent::read_word;
 };
 
 // --------------------------------------------------------------------
@@ -274,8 +280,10 @@ struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMod
 
 struct ReadRegister: OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known>
 {
-    using Parent = OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
-    explicit ReadRegister(Register reg): Parent{reg} {}
+  using Parent = OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
+  explicit ReadRegister(Register reg): Parent{reg} {}
+  using Parent::read_byte;
+  using Parent::read_word;
 };
 
 // --------------------------------------------------------------------
@@ -284,8 +292,12 @@ struct ReadRegister: OutInFrame<Register, Command::ReadRegister, ReceiveMode::Kn
 
 struct WriteRamRequest: WriteOutFrame<Variable, Command::WriteRam>
 {
-    using Parent = WriteOutFrame<Variable, Command::WriteRam>;
-    explicit WriteRamRequest(Variable var): Parent{var} {}
+  using Parent = WriteOutFrame<Variable, Command::WriteRam>;
+  explicit WriteRamRequest(Variable var): Parent{var} {}
+  using Parent::write_word;
+  using Parent::write_words;
+  template<size_t N> bool write_text(const ADVString<N>& data);
+  template<size_t N> bool write_centered_text(const ADVString<N>& data);
 };
 
 // --------------------------------------------------------------------
@@ -304,8 +316,10 @@ struct ReadRamRequest: ReadOutFrame<Variable, Command::ReadRam>
 
 struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Known>
 {
-    using Parent = InFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
-    explicit ReadRamResponse(Variable var): Parent{var} {}
+  using Parent = InFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
+  explicit ReadRamResponse(Variable var): Parent{var} {}
+  uint16_t get_nb_words() const { return get_nb_data(); }
+  using Parent::read_word;
 };
 
 
@@ -313,10 +327,11 @@ struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Known>
 // ReadAction
 // --------------------------------------------------------------------
 
-struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Known>
+struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Unknown>
 {
-    using Parent = InFrame<Action, Command::ReadRam, ReceiveMode::Known>;
+    using Parent = InFrame<Action, Command::ReadRam, ReceiveMode::Unknown>;
     ReadAction(): Parent{} {}
+    KeyValue read_key_value() { return static_cast<KeyValue>(read_word()); }
 };
 
 // --------------------------------------------------------------------
@@ -327,6 +342,7 @@ struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>
 {
     using Parent = OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
     explicit ReadRam(Variable var): Parent{var} {}
+    using Parent::read_word;
 };
 
 
@@ -338,6 +354,7 @@ struct WriteCurveRequest: WriteOutFrame<uint8_t, Command::WriteCurve>
 {
     using Parent = WriteOutFrame<uint8_t, Command::WriteCurve>;
     explicit WriteCurveRequest(uint8_t channels): Parent{channels} {}
+    using Parent::write_words;
 };
 
 // --------------------------------------------------------------------
@@ -409,12 +426,6 @@ bool WriteOutFrame<Param, cmd>::write_word(uint16_t value)
 }
 
 template<typename Param, Command cmd>
-bool WriteOutFrame<Param, cmd>::write_page(Page page)
-{
-    return write_word(static_cast<uint16_t>(page));
-}
-
-template<typename Param, Command cmd>
 template<size_t N>
 bool WriteOutFrame<Param, cmd>::write_bytes(const adv::array<uint8_t , N>& data)
 {
@@ -428,16 +439,18 @@ bool WriteOutFrame<Param, cmd>::write_words(const adv::array<uint16_t , N>& data
     return Parent::write_header(N * 2) && Dgus::write_words(data.data(), N);
 }
 
-template<typename Param, Command cmd>
+// --------------------------------------------------------------------
+// WriteRamRequest
+// --------------------------------------------------------------------
+
 template<size_t N>
-bool WriteOutFrame<Param, cmd>::write_text(const ADVString<N>& data)
+bool WriteRamRequest::write_text(const ADVString<N>& data)
 {
     return Parent::write_header(N) && Dgus::write_text(data.get(), data.length(), N);
 }
 
-template<typename Param, Command cmd>
 template<size_t N>
-bool WriteOutFrame<Param, cmd>::write_centered_text(const ADVString<N>& data)
+bool WriteRamRequest::write_centered_text(const ADVString<N>& data)
 {
     return Parent::write_header(N) && Dgus::write_centered_text(data.get(), data.length(), N);
 }
