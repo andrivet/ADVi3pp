@@ -99,46 +99,47 @@ namespace
 
 struct Dgus
 {
-    static void open();
-    static void setup();
-    [[noreturn]] static void forwarding_loop();
+    void open();
+    void setup();
+    [[noreturn]] void forwarding_loop();
 
 #ifdef ADV_UNIT_TESTS
-    static void reset();
-    template<size_t S>
-    static void reset(const uint8_t (&buffer)[S]);
+    void reset();
+    template<size_t S> void reset(const uint8_t (&buffer)[S]);
 #endif
 
-    static bool write_header(Command cmd, uint8_t param_size, uint8_t data_size);
-    static bool receive(Command cmd, bool blocking);
+    bool write_header(Command cmd, uint8_t param_size, uint8_t data_size);
+    bool receive(Command cmd, bool blocking);
 
-    static uint8_t read_byte();
-    static size_t read_bytes(uint8_t *buffer, size_t length);
-    static void push_back(uint8_t byte);
-    static bool write_byte(uint8_t byte);
-    static bool write_bytes(const uint8_t *bytes, size_t length);
-    static bool write_bytes(const char *bytes, size_t length);
-    static bool write_words(const uint16_t *words, size_t length);
-    static bool write_text(const char* text, size_t text_length, size_t total_length);
-    static bool write_centered_text(const char* text, size_t text_length, size_t total_length);
-    static bool wait_for_data(uint8_t size, bool blocking);
+    uint8_t read_byte();
+    size_t read_bytes(uint8_t *buffer, size_t length);
+    void push_back(uint8_t byte);
+    bool write_byte(uint8_t byte);
+    bool write_bytes(const uint8_t *bytes, size_t length);
+    bool write_bytes(const char *bytes, size_t length);
+    bool write_words(const uint16_t *words, size_t length);
+    bool write_text(const char* text, size_t text_length, size_t total_length);
+    bool write_centered_text(const char* text, size_t text_length, size_t total_length);
+    bool wait_for_data(uint8_t size, bool blocking);
 
 private:
-    static void kill();
-    static bool receive_header();
-    static bool has_pushed_back();
-    static uint8_t get_pushed_back();
+    void kill();
+    bool receive_header();
+    bool has_pushed_back();
+    uint8_t get_pushed_back();
 
     static const size_t MAX_PUSH_BACK = 5;
     enum class State { Start = 0, Command = 1, Data = 2};
 
-    static State   state_;
-    static uint8_t length_;
-    static uint8_t read_;
-    static Command command_;
-    static uint8_t nb_pushed_back_;
-    static uint8_t pushed_back_[MAX_PUSH_BACK];
+    State   state_ = State::Start;
+    uint8_t length_ = 0;
+    uint8_t read_ = 0;
+    Command command_ = Command::None;
+    uint8_t nb_pushed_back_ = 0;
+    uint8_t pushed_back_[MAX_PUSH_BACK];
 };
+
+extern Dgus dgus; // Singleton
 
 // --------------------------------------------------------------------
 // OutFrame - Frame sent to the LCD panel
@@ -376,7 +377,7 @@ void Dgus::reset(const uint8_t (&buffer)[S]) {
 template<typename Param, Command cmd>
 bool OutFrame<Param, cmd>::write_header(uint8_t data_size)
 {
-    return Dgus::write_header(cmd, sizeof(Param), data_size) && write_parameter();
+    return dgus.write_header(cmd, sizeof(Param), data_size) && write_parameter();
 }
 
 template<typename Param, Command cmd>
@@ -388,14 +389,14 @@ bool OutFrame<Param, cmd>::write_parameter() const
 template<typename Param, Command cmd>
 bool OutFrame<Param, cmd>::write_byte_parameter() const
 {
-    return Dgus::write_byte(static_cast<uint8_t>(parameter_));
+    return dgus.write_byte(static_cast<uint8_t>(parameter_));
 }
 
 template<typename Param, Command cmd>
 bool OutFrame<Param, cmd>::write_word_parameter() const
 {
     auto value = static_cast<uint16_t>(parameter_);
-    return Dgus::write_byte(highByte(value)) && Dgus::write_byte(lowByte(value));
+    return dgus.write_byte(highByte(value)) && dgus.write_byte(lowByte(value));
 }
 
 // --------------------------------------------------------------------
@@ -405,7 +406,7 @@ bool OutFrame<Param, cmd>::write_word_parameter() const
 template<typename Param, Command cmd>
 bool ReadOutFrame<Param, cmd>::write(uint8_t nb_bytes)
 {
-    return Parent::write_header(1) && Dgus::write_byte(nb_bytes);
+    return Parent::write_header(1) && dgus.write_byte(nb_bytes);
 }
 
 // --------------------------------------------------------------------
@@ -415,28 +416,28 @@ bool ReadOutFrame<Param, cmd>::write(uint8_t nb_bytes)
 template<typename Param, Command cmd>
 bool WriteOutFrame<Param, cmd>::write_byte(uint8_t value)
 {
-    return Parent::write_header(1) && Dgus::write_byte(value);
+    return Parent::write_header(1) && dgus.write_byte(value);
 }
 
 template<typename Param, Command cmd>
 bool WriteOutFrame<Param, cmd>::write_word(uint16_t value)
 {
     return Parent::write_header(2) &&
-    Dgus::write_byte(highByte(value)) && Dgus::write_byte(lowByte(value));
+    dgus.write_byte(highByte(value)) && dgus.write_byte(lowByte(value));
 }
 
 template<typename Param, Command cmd>
 template<size_t N>
 bool WriteOutFrame<Param, cmd>::write_bytes(const adv::array<uint8_t , N>& data)
 {
-    return Parent::write_header(data.size()) && Dgus::write_bytes(data.data(), data.size());
+    return Parent::write_header(data.size()) && dgus.write_bytes(data.data(), data.size());
 }
 
 template<typename Param, Command cmd>
 template<size_t N>
 bool WriteOutFrame<Param, cmd>::write_words(const adv::array<uint16_t , N>& data)
 {
-    return Parent::write_header(N * 2) && Dgus::write_words(data.data(), N);
+    return Parent::write_header(N * 2) && dgus.write_words(data.data(), N);
 }
 
 // --------------------------------------------------------------------
@@ -446,13 +447,13 @@ bool WriteOutFrame<Param, cmd>::write_words(const adv::array<uint16_t , N>& data
 template<size_t N>
 bool WriteRamRequest::write_text(const ADVString<N>& data)
 {
-    return Parent::write_header(N) && Dgus::write_text(data.get(), data.length(), N);
+    return Parent::write_header(N) && dgus.write_text(data.get(), data.length(), N);
 }
 
 template<size_t N>
 bool WriteRamRequest::write_centered_text(const ADVString<N>& data)
 {
-    return Parent::write_header(N) && Dgus::write_centered_text(data.get(), data.length(), N);
+    return Parent::write_header(N) && dgus.write_centered_text(data.get(), data.length(), N);
 }
 
 // --------------------------------------------------------------------
@@ -462,15 +463,15 @@ bool WriteRamRequest::write_centered_text(const ADVString<N>& data)
 template<typename Param, Command cmd, ReceiveMode mode>
 InFrame<Param, cmd, mode>::~InFrame()
 {
-    //Dgus::check_read_bytes(data_expected_, data_read_);
+    //dgus.check_read_bytes(data_expected_, data_read_);
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::receive()
 {
-    if(!Dgus::receive(cmd, mode == ReceiveMode::Known) || !read_parameter())
+    if(!dgus.receive(cmd, mode == ReceiveMode::Known) || !read_parameter())
         return false;
-    data_expected_ = Dgus::read_byte();
+    data_expected_ = dgus.read_byte();
     return true;
 }
 
@@ -478,14 +479,14 @@ template<typename Param, Command cmd, ReceiveMode mode>
 uint8_t InFrame<Param, cmd, mode>::read_byte()
 {
     data_read_ += 1;
-    return Dgus::read_byte();
+    return dgus.read_byte();
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
 uint16_t InFrame<Param, cmd, mode>::read_word()
 {
     data_read_ += 1; // Yes, it is not a typo
-    return adv::word_from_bytes(Dgus::read_byte(), Dgus::read_byte());
+    return adv::word_from_bytes(dgus.read_byte(), dgus.read_byte());
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
@@ -512,30 +513,30 @@ bool InFrame<Param, cmd, mode>::read_parameter()
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::read_byte_parameter()
 {
-    if(!Dgus::wait_for_data(1, mode == ReceiveMode::Known))
+    if(!dgus.wait_for_data(1, mode == ReceiveMode::Known))
         return false;
-    parameter_ = static_cast<Param>(Dgus::read_byte());
+    parameter_ = static_cast<Param>(dgus.read_byte());
     return true;
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::read_word_parameter()
 {
-    if(!Dgus::wait_for_data(2, mode == ReceiveMode::Known))
+    if(!dgus.wait_for_data(2, mode == ReceiveMode::Known))
         return false;
-    parameter_ = static_cast<Param>(adv::word_from_bytes(Dgus::read_byte(), Dgus::read_byte()));
+    parameter_ = static_cast<Param>(adv::word_from_bytes(dgus.read_byte(), dgus.read_byte()));
     return true;
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::check_byte_parameter() const
 {
-  if(!Dgus::wait_for_data(1, mode == ReceiveMode::Known))
+  if(!dgus.wait_for_data(1, mode == ReceiveMode::Known))
     return false;
-  auto byte = Dgus::read_byte();
+  auto byte = dgus.read_byte();
   Param parameter = static_cast<Param>(byte);
   if(parameter != parameter_) {
-    Dgus::push_back(byte);
+    dgus.push_back(byte);
     return false;
   }
   return true;
@@ -544,14 +545,14 @@ bool InFrame<Param, cmd, mode>::check_byte_parameter() const
 template<typename Param, Command cmd, ReceiveMode mode>
 bool InFrame<Param, cmd, mode>::check_word_parameter() const
 {
-  if(!Dgus::wait_for_data(2, mode == ReceiveMode::Known))
+  if(!dgus.wait_for_data(2, mode == ReceiveMode::Known))
     return false;
-  auto byte0 = Dgus::read_byte();
-  auto byte1 = Dgus::read_byte();
+  auto byte0 = dgus.read_byte();
+  auto byte1 = dgus.read_byte();
   Param parameter = static_cast<Param>(adv::word_from_bytes(byte0, byte1));
   if(parameter != parameter_) {
-    Dgus::push_back(byte1);
-    Dgus::push_back(byte0);
+    dgus.push_back(byte1);
+    dgus.push_back(byte0);
     return false;
   }
   return true;

@@ -30,7 +30,7 @@ SCENARIO("Write in RAM")
 {
   GIVEN("WriteRamRequest frame")
   {
-    Dgus::reset();
+    dgus.reset();
     WriteRamRequest frame{Variable::TargetHotEnd};
 
     WHEN("When a 16-bit data is written")
@@ -60,7 +60,7 @@ SCENARIO("Read from RAM")
 {
   GIVEN("A ReadRamRequest frame")
   {
-    Dgus::reset();
+    dgus.reset();
     ReadRamRequest frame{Variable::Value1};
 
     WHEN("When 7 bytes are requested")
@@ -76,7 +76,7 @@ SCENARIO("Read from RAM")
 
   GIVEN("A ReadRamResponse simulated response")
   {
-    Dgus::reset({0x5A, 0xA5, 0x06, 0x83, 0x04, 0x60, 0x01, 0x01, 0x50});
+    dgus.reset({0x5A, 0xA5, 0x06, 0x83, 0x04, 0x60, 0x01, 0x01, 0x50});
     ReadRamResponse response{static_cast<Variable>(0x0460)};
     WHEN("Data are received")
     {
@@ -98,7 +98,7 @@ SCENARIO("Write to a register")
 {
   GIVEN("A WriteRegisterRequest frame")
   {
-    Dgus::reset();
+    dgus.reset();
     WriteRegisterRequest frame{Register::PictureID};
 
     WHEN("When a byte data is written")
@@ -117,7 +117,7 @@ SCENARIO("Read a byte from a register")
 {
   GIVEN("A ReadRegisterDataRequest frame")
   {
-    Dgus::reset();
+    dgus.reset();
     ReadRegisterRequest frame{Register::Version};
 
     WHEN("The command is sent")
@@ -133,7 +133,7 @@ SCENARIO("Read a byte from a register")
 
   GIVEN("A ReadRegisterResponse frame and a simulated response")
   {
-    Dgus::reset({0x5A, 0xA5, 0x04, 0x81, 0x00, 0x01, 0x22});
+    dgus.reset({0x5A, 0xA5, 0x04, 0x81, 0x00, 0x01, 0x22});
     ReadRegisterResponse response{Register::Version};
 
     WHEN("Data are received")
@@ -157,7 +157,7 @@ SCENARIO("Read a word from a register")
 {
   GIVEN("A ReadRegisterRequest frame")
   {
-    Dgus::reset();
+    dgus.reset();
     ReadRegisterRequest frame{Register::PictureID};
 
     WHEN("The command is sent")
@@ -173,7 +173,7 @@ SCENARIO("Read a word from a register")
 
   GIVEN("A ReadRegisterResponse frame and a simulated response")
   {
-    Dgus::reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
+    dgus.reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
     ReadRegisterResponse response{Register::PictureID};
 
     WHEN("Data are received")
@@ -193,7 +193,7 @@ SCENARIO("Read a word from a register")
 
   GIVEN("A wrong ReadRegisterResponse frame and a simulated response")
   {
-    Dgus::reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
+    dgus.reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
     ReadRegisterResponse response{Register::Version};
 
     THEN("Data are not received")
@@ -222,7 +222,7 @@ SCENARIO("Read the right frame")
 {
   GIVEN("A simulated response")
   {
-    Dgus::reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
+    dgus.reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
 
     WHEN("Trying to read it as a read RAM response")
     {
@@ -255,7 +255,7 @@ SCENARIO("Read the right frame with the right parameter value")
 {
   GIVEN("A simulated response")
   {
-    Dgus::reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
+    dgus.reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
 
     WHEN("Trying to read it as a read RAM response")
     {
@@ -288,7 +288,7 @@ SCENARIO("Read an incoming frame")
 {
   GIVEN("A simulated response")
   {
-    Dgus::reset({0x5A, 0xA5, 0x06, 0x83, 0x04, 0x00, 0x01, 0x00, 0x05});
+    dgus.reset({0x5A, 0xA5, 0x06, 0x83, 0x04, 0x00, 0x01, 0x00, 0x05});
 
     WHEN("Reading the frame")
     {

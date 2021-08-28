@@ -32,7 +32,7 @@ Usb2Lcd usb_2_lcd;
 Page Usb2Lcd::do_prepare_page()
 {
     wait.wait(F("USB is now connected to LCD serial port."));
-    Dgus::forwarding_loop();
+    dgus.forwarding_loop();
     return Page::None;
 }
 

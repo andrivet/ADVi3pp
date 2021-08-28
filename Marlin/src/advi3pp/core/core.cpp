@@ -79,7 +79,7 @@ void Core::startup()
 #ifdef ADVi3PP_DEBUG
     pinMode(LED_PIN, OUTPUT); // To help debugging when serial is not available
 #endif
-    Dgus::open();
+    dgus.open();
 }
 
 bool Core::init()
@@ -88,7 +88,7 @@ bool Core::init()
         return false;
     init_ = true;
 
-    Dgus::setup();
+    dgus.setup();
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     send_sponsors();
     graphs.clear();
@@ -203,9 +203,7 @@ void Core::receive_lcd_serial_data()
     dimming.reset();
 
     Action action = frame.get_parameter();
-    uint8_t nb_words = frame.read_byte();
-    uint16_t value = frame.read_word();
-    auto key_code = static_cast<KeyValue>(value);
+    auto key_code = frame.read_key_value();
 
 #ifdef ADVi3PP_LOG_FRAMES
     Log::log() << F("=R=> ") << nb_words.byte << F(" words, Action = 0x") << static_cast<uint16_t>(action)

@@ -36,16 +36,11 @@ namespace
     const byte      R2 = 0x0D; // SYS_CFG, disable buzzer, L22 init, auto key codes
 }
 
+Dgus dgus;
+
 // --------------------------------------------------------------------
 // Dgus - DGUS LCD panel
 // --------------------------------------------------------------------
-
-Dgus::State Dgus::state_ = State::Start;
-uint8_t Dgus::length_ = 0;
-uint8_t Dgus::read_ = 0;
-Command Dgus::command_ = Command::None;
-uint8_t Dgus::nb_pushed_back_ = 0;
-uint8_t Dgus::pushed_back_[Dgus::MAX_PUSH_BACK] = {};
 
 //! Open the serial communication between the mainboard and the LCD panel
 void Dgus::open()
