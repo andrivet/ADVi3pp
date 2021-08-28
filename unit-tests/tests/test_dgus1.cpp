@@ -84,7 +84,7 @@ SCENARIO("Read from RAM")
 
       THEN("The response has the expected number of words")
       {
-        REQUIRE(response.get_nb_data() == 1);
+        REQUIRE(response.get_nb_words() == 1);
       }
       AND_THEN("The response has the expected content")
       {
@@ -142,7 +142,7 @@ SCENARIO("Read a byte from a register")
 
       THEN("The frame has the expected length")
       {
-        REQUIRE(response.get_nb_data() == 1);
+        REQUIRE(response.get_nb_bytes() == 1);
       }
       AND_THEN("The response has the expected content")
       {
@@ -174,7 +174,7 @@ SCENARIO("Read a word from a register")
   GIVEN("A ReadRegisterResponse frame and a simulated response")
   {
     Dgus::reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
-    ReadRegisterResponse response{Register::Version};
+    ReadRegisterResponse response{Register::PictureID};
 
     WHEN("Data are received")
     {
@@ -182,14 +182,124 @@ SCENARIO("Read a word from a register")
 
       THEN("The frame has the expected length")
       {
-        REQUIRE(response.get_nb_data() == 2);
+        REQUIRE(response.get_nb_bytes() == 2);
       }
       AND_THEN("The response has the expected content")
       {
         REQUIRE(response.read_word() == 0x15);
       }
     }
+  }
 
+  GIVEN("A wrong ReadRegisterResponse frame and a simulated response")
+  {
+    Dgus::reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
+    ReadRegisterResponse response{Register::Version};
+
+    THEN("Data are not received")
+    {
+      REQUIRE(!response.receive());
+
+      GIVEN("A right ReadRegisterResponse")
+      {
+        ReadRegisterResponse response2{Register::PictureID};
+
+        THEN("Data are received")
+        {
+          REQUIRE(response2.receive());
+
+          THEN("The response has the expected content")
+          {
+            REQUIRE(response2.read_word() == 0x15);
+          }
+        }
+      }
+    }
   }
 }
 
+SCENARIO("Read the right frame")
+{
+  GIVEN("A simulated response")
+  {
+    Dgus::reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
+
+    WHEN("Trying to read it as a read RAM response")
+    {
+      ReadRamResponse response{Variable::Value1};
+      THEN("Its fails")
+      {
+        REQUIRE(!response.receive());
+
+        WHEN("Trying to read it as a read register response")
+        {
+          ReadRegisterResponse response2{Register::PictureID};
+
+          THEN("It succeeds")
+          {
+            REQUIRE(response2.receive());
+
+            THEN("The response has the expected content")
+            {
+              REQUIRE(response2.get_nb_bytes() == 2);
+              REQUIRE(response2.read_word() == 0x15);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+SCENARIO("Read the right frame with the right parameter value")
+{
+  GIVEN("A simulated response")
+  {
+    Dgus::reset({0x5A, 0xA5, 0x05, 0x81, 0x03, 0x02, 0x00, 0x15});
+
+    WHEN("Trying to read it as a read RAM response")
+    {
+      ReadRamResponse response{Variable::Value1};
+      THEN("Its fails")
+      {
+        REQUIRE(!response.receive());
+
+        WHEN("Trying to read it as a read register response")
+        {
+          ReadRegisterResponse response2{Register::PictureID};
+
+          THEN("It succeeds")
+          {
+            REQUIRE(response2.receive());
+
+            THEN("The response has the expected content")
+            {
+              REQUIRE(response2.get_nb_bytes() == 2);
+              REQUIRE(response2.read_word() == 0x15);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+SCENARIO("Read an incoming frame")
+{
+  GIVEN("A simulated response")
+  {
+    Dgus::reset({0x5A, 0xA5, 0x06, 0x83, 0x04, 0x00, 0x01, 0x00, 0x05});
+
+    WHEN("Reading the frame")
+    {
+      ReadAction frame{};
+      REQUIRE(frame.receive());
+
+      THEN("It has the right values")
+      {
+        CHECK(frame.get_parameter() == Action::Controls);
+        CHECK(frame.read_key_value() == KeyValue::Infos);
+      }
+    }
+  }
+}
