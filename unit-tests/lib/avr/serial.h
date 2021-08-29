@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <vector>
 #include "macros.h"
 
 
@@ -55,12 +56,7 @@ struct SerialBase {
     position_ = 0;
   }
 
-  template<size_t S>
-  bool matches(const uint8_t (&data)[S]) {
-    if(S != position_)
-      return false;
-    return 0 == memcmp(data, buffer_, S);
-  }
+  const std::vector<uint8_t> get_content() const { return std::vector<uint8_t>(buffer_, buffer_ + position_); }
 
 private:
   static const size_t BUFFER_SIZE = 256;

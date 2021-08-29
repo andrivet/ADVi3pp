@@ -21,9 +21,13 @@
 #define ADV_UNIT_TESTS
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_vector.hpp>
 #include "../lib/dgus.h"
 
 using namespace ADVi3pp;
+using namespace Catch::Matchers;
+
+using bytes = std::vector<uint8_t>;
 
 
 SCENARIO("Write in RAM")
@@ -39,7 +43,8 @@ SCENARIO("Write in RAM")
 
       THEN("The Serial has written the expected content")
       {
-        REQUIRE(Serial2.matches({0x5A, 0xA5, 0x05, 0x82, 0x00, 0x02, 0x00, 0xD2}));
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+          0x5A, 0xA5, 0x05, 0x82, 0x00, 0x02, 0x00, 0xD2}));
       }
     }
 
@@ -50,7 +55,52 @@ SCENARIO("Write in RAM")
 
       THEN("The Serial has the expected content")
       {
-        REQUIRE(Serial2.matches({0x5A, 0xA5, 0x07, 0x82, 0x00, 0x02, 0xD0, 0xD1, 0xD2, 0xD3}));
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+          0x5A, 0xA5, 0x07, 0x82, 0x00, 0x02, 0xD0, 0xD1, 0xD2, 0xD3}));
+      }
+    }
+  }
+}
+
+SCENARIO("Write text in RAM")
+{
+  GIVEN("WriteRamRequest frame")
+  {
+    dgus.reset();
+    WriteRamRequest frame{Variable::Message};
+
+    WHEN("When a text is written")
+    {
+      frame.write_text(ADVString<4>("Test"));
+
+      THEN("The Serial has written the expected content")
+      {
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+          0x5A, 0xA5, 07, 0x82, 0x00, 0x10, 0x54, 0x65, 0x73, 0x74}));
+      }
+    }
+    WHEN("When a long text is written")
+    {
+      frame.write_text(ADVString<44>("12345678901234567890123456789012345678901234"));
+
+      THEN("The Serial has written the expected content")
+      {
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+          0x5a, 0xa5, 0x2F, 0x82, 0x00, 0x10, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
+          0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32,
+          0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36,
+          0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34
+        }));
+      }
+    }
+    WHEN("When a centered text is written")
+    {
+      frame.write_centered_text(ADVString<8>("Test"));
+
+      THEN("The Serial has written the expected content")
+      {
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+          0x5A, 0xA5, 11, 0x82, 0x00, 0x10, ' ', ' ', 'T', 'e', 's', 't', ' ', ' '}));
       }
     }
   }
@@ -69,7 +119,7 @@ SCENARIO("Read from RAM")
 
       THEN("The frame has the expected content")
       {
-        REQUIRE(Serial2.matches({0x5A, 0xA5, 0x04, 0x83, 0x03, 0x01, 0x07}));
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{0x5A, 0xA5, 0x04, 0x83, 0x03, 0x01, 0x07}));
       }
     }
   }
@@ -107,7 +157,7 @@ SCENARIO("Write to a register")
 
       THEN("The Serial has the expected content")
       {
-        REQUIRE(Serial2.matches({0x5A, 0xA5, 0x03, 0x80, 0x03, 0x044}));
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{0x5A, 0xA5, 0x03, 0x80, 0x03, 0x044}));
       }
     }
   }
@@ -126,7 +176,7 @@ SCENARIO("Read a byte from a register")
 
       THEN("The Serial has the expected content")
       {
-        REQUIRE(Serial2.matches({0x5A, 0xA5, 0x03, 0x81, 0x00, 0x01}));
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{0x5A, 0xA5, 0x03, 0x81, 0x00, 0x01}));
       }
     }
   }
@@ -166,7 +216,7 @@ SCENARIO("Read a word from a register")
 
       THEN("The Serial has the expected content")
       {
-        REQUIRE(Serial2.matches({0x5A, 0xA5, 0x03, 0x81, 0x03, 0x02}));
+        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{0x5A, 0xA5, 0x03, 0x81, 0x03, 0x02}));
       }
     }
   }
@@ -288,7 +338,7 @@ SCENARIO("Read an incoming frame")
 {
   GIVEN("A simulated response")
   {
-    dgus.reset({0x5A, 0xA5, 0x06, 0x83, 0x04, 0x00, 0x01, 0x00, 0x05});
+    dgus.reset({0x5A, 0xA5, 0x06, 0x83, 0x04, 0x00, 0x01, 0x00, 0x02});
 
     WHEN("Reading the frame")
     {
@@ -298,7 +348,7 @@ SCENARIO("Read an incoming frame")
       THEN("It has the right values")
       {
         CHECK(frame.get_parameter() == Action::Controls);
-        CHECK(frame.read_key_value() == KeyValue::Infos);
+        CHECK(frame.read_key_value() == KeyValue::Controls);
       }
     }
   }
