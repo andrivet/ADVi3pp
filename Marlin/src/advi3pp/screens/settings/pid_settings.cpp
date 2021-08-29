@@ -164,8 +164,8 @@ void PidSettings::set_current_hotend_pid() const
     const Pid& pid = hotend_pid_[index_];
     ExtUI::setPIDValues(pid.Kp_, pid.Ki_, pid.Kd_, ExtUI::E0);
 
-    Log::log() << F("Set Hotend PID #") << index_ << F(" for temperature ") << pid.temperature_
-               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+    Log::log() << F("Set Hotend PID #") << index_ << F("for temperature") << pid.temperature_
+               << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
 }
 
 void PidSettings::set_current_bed_pid() const
@@ -173,8 +173,8 @@ void PidSettings::set_current_bed_pid() const
     const Pid& pid = bed_pid_[index_];
     ExtUI::setBedPIDValues(pid.Kp_, pid.Ki_, pid.Kd_);
 
-    Log::log() << F("Set Bed PID #") << index_ << F(" for temperature ") << pid.temperature_
-               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+    Log::log() << F("Set Bed PID #") << index_ << F("for temperature") << pid.temperature_
+               << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
 }
 
 //! Record the current PID values
@@ -218,7 +218,7 @@ void PidSettings::get_current_hotend_pid()
     pid.Kd_ = ExtUI::getPIDValues_Kd(ExtUI::E0);
 
     Log::log() << F("Get Hotend PID #") << index_
-               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+               << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
 }
 
 //! Record the current PID values
@@ -230,8 +230,8 @@ void PidSettings::get_current_bed_pid()
     pid.Ki_ = ExtUI::getBedPIDValues_Ki();
     pid.Kd_ = ExtUI::getBedPIDValues_Kd();
 
-    Log::log() << F("Get Hotend PID #") << index_
-               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+    Log::log() << F("Get Hotend PID") << index_
+               << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
 }
 
 //! Record new PID values for a given temperature
@@ -246,7 +246,7 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
         if(temperature == pid[i].temperature_)
         {
             Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
-                       << F(" PID with temperature 0x") << temperature << F(" found, update settings") << Log::endl();
+                       << F("PID with temperature") << temperature << F("found, update settings") << Log::endl();
             index_ = i;
             get_current_pid();
             return;
@@ -254,7 +254,7 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
     }
 
     Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
-               << F(" PID with temperature 0x") << temperature << F(" NOT found, update settings #0") << Log::endl();
+               << F("PID with temperature") << temperature << F("NOT found, update settings #0") << Log::endl();
     // Temperature not found, so move PIDs and forget the last one, set index to 0 and update values
     for(size_t i = NB_PIDs - 1; i > 0; --i)
         pid[i] = pid[i - 1];
@@ -285,7 +285,7 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
     }
 
     Log::log() << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
-               << F(" PID with smallest difference (") << best_difference << F(") is at index #") << index_ << Log::endl();
+               << F("PID with smallest difference (") << best_difference << F(") is at index #") << index_ << Log::endl();
     set_current_pid();
 }
 
@@ -293,8 +293,8 @@ void PidSettings::set_best_pid(TemperatureKind kind, uint16_t temperature)
 void PidSettings::send_data() const
 {
     const Pid& pid = get_pid()[index_];
-    Log::log() << F("Send ") << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID #") << index_
-               << F(", P = ") << pid.Kp_ << F(", I = ") << pid.Ki_ << F(", D = ") << pid.Kd_ << Log::endl();
+    Log::log() << F("Send") << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend")) << F(" PID #") << index_
+               << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
 
     WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 5>
     {

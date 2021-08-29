@@ -20,7 +20,6 @@
 
 #include "../parameters.h"
 #include "logging.h"
-#include "../../core/serial.h"
 
 namespace ADVi3pp {
 
@@ -28,78 +27,112 @@ namespace ADVi3pp {
 
 Log Log::logging_;
 
+void space() {
+    SERIAL_CHAR(' ');
+}
+
 Log& Log::log()
 {
-    logging_ << F("// LOG: ");
+    logging_ << F("// LOG:");
     return logging_;
 }
 
 Log& Log::error()
 {
-    logging_ << F("// ERROR: ");
+    logging_ << F("// ERROR:");
     return logging_;
 }
 
 Log& Log::operator<<(const char* data)
 {
-    SERIAL_ECHO(data);
+    if(enabled_) {
+        SERIAL_ECHO(data);
+        space();
+    }
     return *this;
 }
 
 Log& Log::operator<<(const FlashChar* data)
 {
-    serialprintPGM(from_flash(data));
+    if(enabled_) {
+        serialprintPGM(from_flash(data));
+        space();
+    }
     return *this;
 }
 
 Log& Log::operator<<(uint8_t data)
 {
-    SERIAL_ECHO_F(data, HEX);
+    if(enabled_) {
+        dump(&data, 1);
+        space();
+    }
     return *this;
 }
 
 Log& Log::operator<<(uint16_t data)
 {
-    SERIAL_ECHO_F(data, HEX);
+    if(enabled_) {
+        dump(reinterpret_cast<const uint8_t *>(&data), 2, false);
+        space();
+    }
     return *this;
 }
 
 Log& Log::operator<<(uint32_t data)
 {
-    SERIAL_ECHO_F(data, HEX);
+    if(enabled_) {
+        dump(reinterpret_cast<const uint8_t *>(&data), 4, false);
+        space();
+    }
     return *this;
 }
 
 Log& Log::operator<<(double data)
 {
-    SERIAL_ECHO(data);
+    if(enabled_) {
+        SERIAL_ECHO(data);
+        space();
+    }
     return *this;
 }
 
 Log& Log::operator<<(EndOfLine)
 {
-    SERIAL_EOL();
+    if(enabled_)
+        SERIAL_EOL();
+    return *this;
+}
+
+Log& Log::write(const uint8_t* data, size_t size)
+{
+    if(enabled_) {
+        dump(data, size);
+        space();
+    }
     return *this;
 }
 
 //! Dump the bytes in hexadecimal and print them (serial)
-void Log::dump(const uint8_t* bytes, size_t size)
+void Log::dump(const uint8_t* bytes, size_t size, bool separator)
 {
     static const char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    if(!enabled_)
+        return;
 
     for(size_t index = 0; index < size; ++index)
     {
         SERIAL_CHAR(digits[bytes[index] / 16]);
         SERIAL_CHAR(digits[bytes[index] % 16]);
-        SERIAL_CHAR(' ');
+        if(separator && index < size - 1)
+            space();
     }
-
-    SERIAL_EOL();
 }
 
 void assert_(const char *msg, const char *file, uint16_t line)
 {
-    Log::error() << F("ASSERTION FAILED: ") << msg << " in file " << file << ", line " << line << Log::endl();
+    Log::error() << F("ASSERTION FAILED:") << msg << "in file" << file << "line" << line << Log::endl();
     asm("break \n");
 }
 

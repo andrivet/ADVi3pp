@@ -35,14 +35,14 @@ const int MARGIN = 10;
 void twist(xyze_pos_t &pos)
 {
     auto z = xtwist.compute_z(pos.x);
-    Log::log() << F("X-Twist(") << pos.x << F(") = ") << z << Log::endl();
+    Log::log() << F("X-Twist") << pos.x << F("->") << z << Log::endl();
     pos.z += z;
 }
 
 void untwist(xyze_pos_t &pos)
 {
     auto z = xtwist.compute_z(pos.x);
-    Log::log() << F("X-UnTwist(") << pos.x << F(") = ") << z << Log::endl();
+    Log::log() << F("X-UnTwist") << pos.x << F("->") << z << Log::endl();
     pos.z -= z;
 }
 

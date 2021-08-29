@@ -39,8 +39,8 @@ void Pages::log()
 
     l << F("Pages stack:");
     back_pages_.log(l);
-    l << F(", Current page: ") << current_page_;
-    l << F(", Forward page: ") << forward_page_ << Log::endl();
+    l << F("Current page:") << current_page_;
+    l << F("Forward page:") << forward_page_ << Log::endl();
 }
 #endif
 
@@ -51,7 +51,7 @@ void Pages::show(Page page)
     auto current = get_current_page();
     if(!test_one_bit(current, Page::Temporary) && current != Page::Main)
     {
-        Log::log() << F("Save back page ") << current << Log::endl();
+        Log::log() << F("Save back page") << current << Log::endl();
         back_pages_.push(current);
     }
 
@@ -60,7 +60,7 @@ void Pages::show(Page page)
 
 void Pages::show_(Page page)
 {
-    Log::log() << F("Show page ") << page << Log::endl();
+    Log::log() << F("Show page") << page << Log::endl();
 
     WriteRegisterRequest{Register::PictureID}.write_page(get_cleared_bits(page, Page::Temporary));
 
@@ -81,7 +81,7 @@ Page Pages::get_current_page()
 void Pages::save_forward_page()
 {
     auto current = get_current_page();
-    Log::log() << F("Save forward page ") << current << Log::endl();
+    Log::log() << F("Save forward page") << current << Log::endl();
     forward_page_ = current;
     log();
 }
@@ -99,7 +99,7 @@ void Pages::show_back_page()
     auto back = back_pages_.pop();
     if(back == forward_page_)
         forward_page_ = Page::None;
-    Log::log() << F("Pop back page ") << back << Log::endl();
+    Log::log() << F("Pop back page") << back << Log::endl();
     show_(back);
 }
 
@@ -115,7 +115,7 @@ void Pages::show_forward_page()
     while(!back_pages_.is_empty())
     {
         Page back_page = back_pages_.pop();
-        Log::log() << F("Pop back page ") << back_page << Log::endl();
+        Log::log() << F("Pop back page") << back_page << Log::endl();
         if(back_page == forward_page_)
         {
             show_(forward_page_);
@@ -124,7 +124,7 @@ void Pages::show_forward_page()
         }
     }
 
-    Log::error() << F("Back pages do not contain page ") << forward_page_ << Log::endl();
+    Log::error() << F("Back pages do not contain page") << forward_page_ << Log::endl();
     forward_page_ = Page::None;
     reset();
     show_(Page::Main);

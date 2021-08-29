@@ -139,7 +139,8 @@ void Status::reset_progress()
 
 void Status::send_status(ADVString<message_length>& message)
 {
-    WriteRamRequest{Variable::Message}.write_centered_text(message);
+    WriteRamRequest{Variable::Message}.write_text(message);
+    WriteRamRequest{Variable::CenteredMessage}.write_centered_text(message);
 }
 
 }

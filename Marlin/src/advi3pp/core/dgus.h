@@ -26,6 +26,7 @@
 #include "../lib/ADVstd/array.h"
 #include "../lib/ADVstd/endian.h"
 #include "../lib/ADVstd/bitmasks.h"
+#include "logging.h"
 
 namespace ADVi3pp {
 
@@ -148,6 +149,8 @@ extern Dgus dgus; // Singleton
 template<typename Param, Command>
 struct OutFrame
 {
+    ~OutFrame();
+
 protected:
     explicit OutFrame(Param param): parameter_{param} {}
     bool write_header(uint8_t data_size);
@@ -224,6 +227,17 @@ private:
 protected:
   Param parameter_{};
 };
+
+// --------------------------------------------------------------------
+// OutFrame
+// --------------------------------------------------------------------
+
+template<typename Param, Command cmd>
+inline OutFrame<Param, cmd>::~OutFrame() {
+#ifdef ADVi3PP_LOG_FRAMES
+    Log::cont() << Log::endl();
+#endif
+}
 
 // --------------------------------------------------------------------
 // OutInFrame

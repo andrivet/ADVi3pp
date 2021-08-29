@@ -44,7 +44,7 @@ ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
 
     uint8_t version = response.read_byte();
 
-    Log::log() << F("LCD Firmware raw version = ") << version << Log::endl();
+    Log::log() << F("LCD Firmware raw version") << version << Log::endl();
 
 	lcd_version.reset();
     lcd_version << (version / 0x10) << '.' << (version % 0x10);

@@ -48,7 +48,7 @@ void Pause::show_message(PauseMessage message)
         case PAUSE_MESSAGE_HEAT:        cont(GET_TEXT(MSG_FILAMENT_CHANGE_HEAT)); break;
         case PAUSE_MESSAGE_HEATING:     show(GET_TEXT(MSG_FILAMENT_CHANGE_HEATING)); break;
 
-        default: Log::log() << F("Unknown PauseMessage: ") << static_cast<uint16_t>(message) << Log::endl(); break;
+        default: Log::log() << F("Unknown PauseMessage:") << static_cast<uint16_t>(message) << Log::endl(); break;
     }
 }
 

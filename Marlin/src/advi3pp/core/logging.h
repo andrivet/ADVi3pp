@@ -22,12 +22,19 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "../lib/ADVstd/array.h"
+#include "../../core/serial.h"
 #include "flash_char.h"
 
 
 namespace ADVi3pp {
 
 #if defined(ADVi3PP_LOG) && !defined(ADVi3PP_UNIT_TEST)
+
+
+// --------------------------------------------------------------------
+// Log
+// --------------------------------------------------------------------
 
 struct Log
 {
@@ -39,16 +46,73 @@ struct Log
     Log& operator<<(uint16_t data);
     Log& operator<<(uint32_t data);
     Log& operator<<(double data);
+    template<typename T, size_t S> Log& operator<<(adv::array<T, S> data);
+    Log& write(const uint8_t* data, size_t size);
     Log& operator<<(EndOfLine eol);
+    void enable();
+    void disable();
 
     static Log& log();
     static Log& error();
-    inline static EndOfLine endl() { return EndOfLine{}; }
-    static void dump(const uint8_t* bytes, size_t size);
+    static Log& cont();
+    static EndOfLine endl() { return EndOfLine{}; }
+    void dump(const uint8_t* bytes, size_t size, bool separator = true);
 
 private:
     static Log logging_;
+    bool enabled_ = true;
 };
+
+// --------------------------------------------------------------------
+// NoLogging
+// --------------------------------------------------------------------
+
+struct NoLogging
+{
+    NoLogging();
+    ~NoLogging();
+};
+
+
+// --------------------------------------------------------------------
+// Log
+// --------------------------------------------------------------------
+
+inline Log& Log::cont() {
+    return logging_;
+}
+
+template<typename T, size_t S>
+Log& Log::operator<<(adv::array<T, S> data) {
+    write(data.data(), S);
+    return *this;
+}
+
+inline void Log::enable() {
+  enabled_ = true;
+}
+
+inline void Log::disable() {
+    enabled_ = false;
+}
+
+// --------------------------------------------------------------------
+// NoLogging
+// --------------------------------------------------------------------
+
+inline NoLogging::NoLogging() {
+#ifndef ADVi3PP_LOG_ALL_FRAMES
+    Log::cont().disable();
+#endif
+}
+
+inline NoLogging::~NoLogging() {
+#ifndef ADVi3PP_LOG_ALL_FRAMES
+    Log::cont().enable();
+#endif
+}
+
+// --------------------------------------------------------------------
 
 void assert_(const char *msg, const char *file, uint16_t line);
 #define assert(E) (void)((E) || (ADVi3pp::assert_(#E, __FILE__, __LINE__), 0))
@@ -58,23 +122,31 @@ struct Log
 {
     struct EndOfLine {};
 
-    inline Log& operator<<(const char*) { return log(); }
-    inline Log& operator<<(const FlashChar*) { return log(); }
-    inline Log& operator<<(uint8_t) { return log(); }
-    inline Log& operator<<(uint16_t) { return log(); }
-    inline Log& operator<<(uint32_t) { return log(); }
-    inline Log& operator<<(double) { return log(); }
-    inline void operator<<(EndOfLine) {};
+    Log& operator<<(const char*) { return log(); }
+    Log& operator<<(const FlashChar*) { return log(); }
+    Log& operator<<(uint8_t) { return log(); }
+    Log& operator<<(uint16_t) { return log(); }
+    Log& operator<<(uint32_t) { return log(); }
+    Log& operator<<(double) { return log(); }
+    template<typename T, size_t S> Log& operator<<(adv::array<T, S> data) { return log(); }
+    Log& write(const uint8_t* data, size_t size) { return log(); }
+    void operator<<(EndOfLine) {};
 
-    inline static Log& log() { static Log log; return log; }
-    inline static Log& error() { return log(); }
-    inline static EndOfLine endl() { return EndOfLine{}; }
-    inline static void dump(const uint8_t*, size_t) {}
+    static Log& log() { static Log log; return log; }
+    static Log& error() { return log(); }
+    static Log cont() { return log(); }
+    static EndOfLine endl() { return EndOfLine{}; }
+    static void dump(const uint8_t*, size_t) {}
 
 #ifdef ADVi3PP_UNIT_TEST
-    inline Log& operator<<(unsigned long data) { return log(); }
+    Log& operator<<(unsigned long data) { return log(); }
 #endif
+};
 
+struct NoLogging
+{
+    NoLogging() {}
+    ~NoLogging() {}
 };
 
 #define assert(E) (void)(false)

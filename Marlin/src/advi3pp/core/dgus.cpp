@@ -58,7 +58,7 @@ void Dgus::setup()
     if(r2 == R2)
         return;
 
-    Log::log() << F("Reprogram R2 register to 0x") << R2 << F(", was 0x") << r2 << Log::endl();
+    Log::log() << F("Reprogram R2 register to") << R2 << F("was") << r2 << Log::endl();
     WriteRegisterRequest{Register::R2}.write_byte(R2);
 }
 
@@ -71,11 +71,11 @@ void Dgus::kill()
 #endif
 }
 
+#ifndef ADV_UNIT_TESTS
 void Dgus::forwarding_loop()
 {
     while(true)
     {
-#ifndef ADV_UNIT_TESTS
         ExtUI::watchdogReset();
 
         if(MYSERIAL0.available())
@@ -83,9 +83,9 @@ void Dgus::forwarding_loop()
 
         if(DgusSerial.available())
             MYSERIAL0.write(DgusSerial.read());
-#endif
     }
 }
+#endif
 
 #ifdef ADV_UNIT_TESTS
 void Dgus::reset() {
@@ -114,6 +114,9 @@ bool Dgus::write_header(Command cmd, uint8_t param_size, uint8_t data_size)
         static_cast<uint8_t>(cmd)
     };
 
+#ifdef ADVi3PP_LOG_FRAMES
+    Log::log() << F("<==S") << header;
+#endif
     if(header.size() != DgusSerial.write(header.data(), header.size()))
         return false;
 
@@ -195,7 +198,7 @@ bool Dgus::receive(Command cmd, bool blocking)
         state_ = State::Command;
         read_ = 1; // Command is 1 byte
 
-        Log::log() << F("Receive frame length: 0x") << length << F(", cmd: 0x") << command << Log::endl();
+        Log::log() << F("Receive frame length:") << length << F("cmd:") << command << Log::endl();
     }
 
     if(command_ != cmd)
@@ -247,16 +250,25 @@ void Dgus::push_back(uint8_t byte)
 
 bool Dgus::write_byte(uint8_t byte)
 {
+#ifdef ADVi3PP_LOG_FRAMES
+    Log::cont() << byte;
+#endif
     return DgusSerial.write(byte);
 }
 
 bool Dgus::write_bytes(const uint8_t *bytes, size_t length)
 {
+#ifdef ADVi3PP_LOG_FRAMES
+    Log::cont().write(bytes, length);
+#endif
     return DgusSerial.write(bytes, length);
 }
 
 bool Dgus::write_bytes(const char *bytes, size_t length)
 {
+#ifdef ADVi3PP_LOG_FRAMES
+    Log::cont().write(reinterpret_cast<const uint8_t*>(bytes), length);
+#endif
     return DgusSerial.write(bytes, length);
 }
 
@@ -303,28 +315,6 @@ bool Dgus::write_centered_text(const char* text, size_t text_length, size_t tota
     }
     return true;
 }
-
-// --------------------------------------------------------------------
-
-/*
-bool ReadRegister::send_and_receive()
-{
-    ReadRegisterRequest request{register_, nb_bytes_};
-    if(!request.write())
-        return false;
-    return receive(ReceiveMode::Blocking);
-}
-
-bool ReadRam::send_and_receive()
-{
-    ReadRamRequest request{variable_};
-    if(!request.write_byte(1))
-        return false;
-    return receive(ReceiveMode::Blocking);
-}
-*/
-// --------------------------------------------------------------------
-
 
 Command last_command_;
 
