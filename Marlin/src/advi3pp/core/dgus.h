@@ -486,7 +486,9 @@ template<typename Param, Command cmd, ReceiveMode mode>
 uint16_t InFrame<Param, cmd, mode>::read_word()
 {
     data_read_ += 1; // Yes, it is not a typo
-    return adv::word_from_bytes(dgus.read_byte(), dgus.read_byte());
+    auto byte0 = dgus.read_byte();
+    auto byte1 = dgus.read_byte();
+    return adv::word_from_bytes(byte0, byte1);
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
@@ -524,7 +526,9 @@ bool InFrame<Param, cmd, mode>::read_word_parameter()
 {
     if(!dgus.wait_for_data(2, mode == ReceiveMode::Known))
         return false;
-    parameter_ = static_cast<Param>(adv::word_from_bytes(dgus.read_byte(), dgus.read_byte()));
+	auto byte0 = dgus.read_byte();
+	auto byte1 = dgus.read_byte();
+    parameter_ = static_cast<Param>(adv::word_from_bytes(byte0, byte1));
     return true;
 }
 
