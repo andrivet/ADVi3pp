@@ -275,7 +275,7 @@ bool Dgus::write_text(const char* text, size_t text_length, size_t total_length)
     if(!Dgus::write_bytes(text, text_length))
         return false;
     // Fill the remaining of string with spaces
-    for(size_t i =text_length; i < total_length; ++i)
+    for(size_t i = text_length; i < total_length; ++i)
     {
         if(!write_byte(' '))
             return false;

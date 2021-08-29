@@ -206,8 +206,8 @@ void Core::receive_lcd_serial_data()
     auto key_code = frame.read_key_value();
 
 #ifdef ADVi3PP_LOG_FRAMES
-    Log::log() << F("=R=> ") << nb_words.byte << F(" words, Action = 0x") << static_cast<uint16_t>(action)
-    << F(", KeyValue = 0x") << value << Log::endl();
+    Log::log() << F("=R=> Action = 0x") << static_cast<uint16_t>(action)
+      << F(", KeyValue = 0x") << static_cast<uint16_t>(key_code) << Log::endl();
 #endif
 
     switch(action)
