@@ -104,15 +104,13 @@ void SdCard::up_command()
 //! Show the list of files on SD (current page)
 void SdCard::show_current_page()
 {
-    ADVString<sd_file_length> name;
-    ADVString<48> aligned_name;
+    ADVString<48> name;
 
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
         get_file_name(index, name);
-        aligned_name.set(name);
-        Variable var = static_cast<Variable>(static_cast<uint16_t>(Variable::LongText0) + 8 * index);
-        WriteRamRequest{var}.write_text(aligned_name);
+        auto var = static_cast<Variable>(static_cast<uint16_t>(Variable::LongText0) + 24 * index);
+        WriteRamRequest{var}.write_text(name);
     }
 
     WriteRamRequest{Variable::Value0}.write_word(page_index_ + 1);
@@ -121,7 +119,7 @@ void SdCard::show_current_page()
 //! Get a filename with a given index.
 //! @param index    Index of the filename
 //! @param name     Copy the filename into this Chars
-void SdCard::get_file_name(uint8_t index_in_page, ADVString<sd_file_length>& name)
+void SdCard::get_file_name(uint8_t index_in_page, ADVString<48>& name)
 {
     name.reset();
     if(last_file_index_ >= index_in_page)

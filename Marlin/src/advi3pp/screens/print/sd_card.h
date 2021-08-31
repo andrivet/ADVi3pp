@@ -25,8 +25,6 @@
 
 namespace ADVi3pp {
 
-const uint8_t sd_file_length = 26; //!< This is the maximum length handled by the SD layer (FILENAME_LENGTH)
-
 //! SD Card Page
 struct SdCard: Screen<SdCard>
 {
@@ -36,7 +34,7 @@ private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void show_current_page();
-    void get_file_name(uint8_t index_in_page, ADVString<sd_file_length>& name);
+    void get_file_name(uint8_t index_in_page, ADVString<48>& name);
     void up_command();
     void down_command();
     void select_file_command(uint16_t file_index);
