@@ -64,7 +64,7 @@ Log& Log::operator<<(const FlashChar* data)
 Log& Log::operator<<(uint8_t data)
 {
     if(enabled_) {
-        dump(&data, 1);
+        dump(&data);
         space();
     }
     return *this;
@@ -73,7 +73,9 @@ Log& Log::operator<<(uint8_t data)
 Log& Log::operator<<(uint16_t data)
 {
     if(enabled_) {
-        dump(reinterpret_cast<const uint8_t *>(&data), 2, false);
+        auto bytes = reinterpret_cast<const uint8_t *>(&data);
+        dump(bytes + 1);
+        dump(bytes + 0);
         space();
     }
     return *this;
@@ -82,7 +84,11 @@ Log& Log::operator<<(uint16_t data)
 Log& Log::operator<<(uint32_t data)
 {
     if(enabled_) {
-        dump(reinterpret_cast<const uint8_t *>(&data), 4, false);
+        auto bytes = reinterpret_cast<const uint8_t *>(&data);
+        dump(bytes + 3);
+        dump(bytes + 2);
+        dump(bytes + 1);
+        dump(bytes + 0);
         space();
     }
     return *this;

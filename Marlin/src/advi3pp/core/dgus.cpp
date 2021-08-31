@@ -253,7 +253,7 @@ bool Dgus::write_byte(uint8_t byte)
 #ifdef ADVi3PP_LOG_FRAMES
     Log::cont() << byte;
 #endif
-    return DgusSerial.write(byte);
+    return DgusSerial.write(byte) == 1;
 }
 
 bool Dgus::write_bytes(const uint8_t *bytes, size_t length)
@@ -261,7 +261,7 @@ bool Dgus::write_bytes(const uint8_t *bytes, size_t length)
 #ifdef ADVi3PP_LOG_FRAMES
     Log::cont().write(bytes, length);
 #endif
-    return DgusSerial.write(bytes, length);
+    return DgusSerial.write(bytes, length) == length;
 }
 
 bool Dgus::write_bytes(const char *bytes, size_t length)
@@ -269,14 +269,21 @@ bool Dgus::write_bytes(const char *bytes, size_t length)
 #ifdef ADVi3PP_LOG_FRAMES
     Log::cont().write(reinterpret_cast<const uint8_t*>(bytes), length);
 #endif
-    return DgusSerial.write(bytes, length);
+    return DgusSerial.write(bytes, length) == length;
+}
+
+bool Dgus::write_word(uint16_t word)
+{
+    if(!Dgus::write_byte(highByte(word)) || !Dgus::write_byte(lowByte(word)))
+        return false;
+    return true;
 }
 
 bool Dgus::write_words(const uint16_t *words, size_t length)
 {
     for(size_t i = 0; i < length; ++i)
     {
-        if(!Dgus::write_byte(highByte(words[i])) || !Dgus::write_byte(lowByte(words[i])))
+        if(!write_word(words[i]))
             return false;
     }
     return true;

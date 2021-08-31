@@ -23,14 +23,15 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "../lib/ADVstd/array.h"
+#ifndef ADV_UNIT_TESTS
 #include "../../core/serial.h"
+#endif
 #include "flash_char.h"
 
 
 namespace ADVi3pp {
 
 #if defined(ADVi3PP_LOG) && !defined(ADVi3PP_UNIT_TEST)
-
 
 // --------------------------------------------------------------------
 // Log
@@ -56,7 +57,7 @@ struct Log
     static Log& error();
     static Log& cont();
     static EndOfLine endl() { return EndOfLine{}; }
-    void dump(const uint8_t* bytes, size_t size, bool separator = true);
+    void dump(const uint8_t* bytes, size_t size = 1, bool separator = true);
 
 private:
     static Log logging_;
@@ -133,7 +134,7 @@ struct Log
     void operator<<(EndOfLine) {};
 
     static Log& log() { static Log log; return log; }
-    static Log& error() { return log(); }
+    static Log& error();
     static Log cont() { return log(); }
     static EndOfLine endl() { return EndOfLine{}; }
     static void dump(const uint8_t*, size_t) {}
@@ -149,7 +150,20 @@ struct NoLogging
     ~NoLogging() {}
 };
 
+struct log_exception: std::exception {
+};
+
+inline Log& Log::error() {
+#ifdef ADV_UNIT_TESTS
+    throw log_exception();
+#endif
+    return log();
+}
+
+
+#ifndef assert
 #define assert(E) (void)(false)
+#endif
 
 #endif
 

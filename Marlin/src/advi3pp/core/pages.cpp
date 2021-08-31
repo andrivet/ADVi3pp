@@ -37,10 +37,11 @@ void Pages::log()
 {
     auto l = Log::log();
 
-    l << F("Pages stack:");
+    l << F("Stack:");
     back_pages_.log(l);
-    l << F("Current page:") << current_page_;
-    l << F("Forward page:") << forward_page_ << Log::endl();
+    l << F("Current:") << current_page_ << F("-") << get_cleared_bits(current_page_, Page::Temporary);
+    l << F("Forward:") << forward_page_ << F("-") << get_cleared_bits(forward_page_, Page::Temporary);
+    l << Log::endl();
 }
 #endif
 
