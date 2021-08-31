@@ -19,6 +19,7 @@
  */
 
 #define ADV_UNIT_TESTS
+#define ADVi3PP_DEBUG
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_vector.hpp>
@@ -43,7 +44,7 @@ SCENARIO("Write in RAM")
 
       THEN("The Serial has written the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{
           0x5A, 0xA5, 0x05, 0x82, 0x00, 0x02, 0x00, 0xD2}));
       }
     }
@@ -55,7 +56,7 @@ SCENARIO("Write in RAM")
 
       THEN("The Serial has the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{
           0x5A, 0xA5, 0x07, 0x82, 0x00, 0x02, 0xD0, 0xD1, 0xD2, 0xD3}));
       }
     }
@@ -75,7 +76,7 @@ SCENARIO("Write text in RAM")
 
       THEN("The Serial has written the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{
           0x5A, 0xA5, 07, 0x82, 0x00, 0x10, 0x54, 0x65, 0x73, 0x74}));
       }
     }
@@ -85,7 +86,7 @@ SCENARIO("Write text in RAM")
 
       THEN("The Serial has written the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{
           0x5a, 0xa5, 0x2F, 0x82, 0x00, 0x10, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
           0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32,
           0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36,
@@ -99,9 +100,20 @@ SCENARIO("Write text in RAM")
 
       THEN("The Serial has written the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{
           0x5A, 0xA5, 11, 0x82, 0x00, 0x10, ' ', ' ', 'T', 'e', 's', 't', ' ', ' '}));
       }
+    }
+
+    WHEN("An empty test is written")
+    {
+        frame.write_text(ADVString<8>(""));
+
+        THEN("The Serial has written the expected content")
+        {
+            REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{
+                0x5A, 0xA5, 11, 0x82, 0x00, 0x10, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}));
+        }
     }
   }
 }
@@ -119,7 +131,7 @@ SCENARIO("Read from RAM")
 
       THEN("The frame has the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{0x5A, 0xA5, 0x04, 0x83, 0x03, 0x01, 0x07}));
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{0x5A, 0xA5, 0x04, 0x83, 0x03, 0x01, 0x07}));
       }
     }
   }
@@ -132,12 +144,9 @@ SCENARIO("Read from RAM")
     {
       REQUIRE(response.receive());
 
-      THEN("The response has the expected number of words")
+      THEN("The response has the expected content")
       {
         REQUIRE(response.get_nb_words() == 1);
-      }
-      AND_THEN("The response has the expected content")
-      {
         REQUIRE(response.read_word() == 0x0150);
       }
     }
@@ -157,7 +166,7 @@ SCENARIO("Write to a register")
 
       THEN("The Serial has the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{0x5A, 0xA5, 0x03, 0x80, 0x03, 0x044}));
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{0x5A, 0xA5, 0x03, 0x80, 0x03, 0x044}));
       }
     }
   }
@@ -176,7 +185,7 @@ SCENARIO("Read a byte from a register")
 
       THEN("The Serial has the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{0x5A, 0xA5, 0x03, 0x81, 0x00, 0x01}));
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{0x5A, 0xA5, 0x03, 0x81, 0x00, 0x01}));
       }
     }
   }
@@ -190,18 +199,14 @@ SCENARIO("Read a byte from a register")
     {
       REQUIRE(response.receive());
 
-      THEN("The frame has the expected length")
+      THEN("The response has the expected content")
       {
         REQUIRE(response.get_nb_bytes() == 1);
-      }
-      AND_THEN("The response has the expected content")
-      {
         REQUIRE(response.read_byte() == 0x22);
       }
     }
   }
 }
-
 
 SCENARIO("Read a word from a register")
 {
@@ -216,7 +221,7 @@ SCENARIO("Read a word from a register")
 
       THEN("The Serial has the expected content")
       {
-        REQUIRE_THAT(Serial2.get_content(), Equals(bytes{0x5A, 0xA5, 0x03, 0x81, 0x03, 0x02}));
+        REQUIRE_THAT(Serial2.get_written_bytes(), Equals(bytes{0x5A, 0xA5, 0x03, 0x81, 0x03, 0x02}));
       }
     }
   }
@@ -230,12 +235,9 @@ SCENARIO("Read a word from a register")
     {
       REQUIRE(response.receive());
 
-      THEN("The frame has the expected length")
+      THEN("The response has the expected content")
       {
         REQUIRE(response.get_nb_bytes() == 2);
-      }
-      AND_THEN("The response has the expected content")
-      {
         REQUIRE(response.read_word() == 0x15);
       }
     }
@@ -266,6 +268,25 @@ SCENARIO("Read a word from a register")
       }
     }
   }
+}
+
+SCENARIO("Send a receive a Register")
+{
+    GIVEN("A simulated response")
+    {
+        dgus.reset({0x5A, 0xA5, 0x04, 0x81, 0x12, 0x01, 0x55});
+
+        WHEN("A read frame is sent")
+        {
+            ReadRegister read{Register::R2};
+            REQUIRE(read.send_receive(1));
+
+            THEN("The response has the right content")
+            {
+                REQUIRE(read.read_byte() == 0x55);
+            }
+        }
+    }
 }
 
 SCENARIO("Read the right frame")

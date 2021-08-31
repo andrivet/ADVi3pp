@@ -24,25 +24,30 @@ SerialBase Serial2;
 SerialBase Serial;
 
 size_t SerialBase::write(uint8_t value) {
-  buffer_[position_++] = value;
+  assert(output_position_ < BUFFER_SIZE);
+  output_[output_position_++] = value;
   return 1;
 }
 
 size_t SerialBase::write(const uint8_t *buffer, size_t size) {
-  for(size_t i = 0; i < size; ++i)
-    buffer_[position_++] = buffer[i];
+  assert(output_position_ + size <= BUFFER_SIZE);
+  memcpy(output_ + output_position_, buffer, size);
+  output_position_ += size;
   return size;
 }
 
 size_t SerialBase::write(const char *buffer, size_t size) {
-  for(size_t i = 0; i < size; ++i)
-    buffer_[position_++] = buffer[i];
+  assert(output_position_ + size <= BUFFER_SIZE);
+  memcpy(output_ + output_position_, buffer, size);
+  output_position_ += size;
   return size;
 }
 
 size_t SerialBase::readBytes(uint8_t *buffer, size_t length) {
   length = length < available() ? length : available();
-  memcpy(buffer, buffer_ + position_, length);
+  assert(length > 0);
+  memcpy(buffer, input_ + input_position_, length);
+  input_position_ += length;
   return length;
 }
 
@@ -51,7 +56,8 @@ void SerialBase::println(const char *message) {
 }
 
 int SerialBase::read() {
-  if(position_ >= BUFFER_SIZE)
+  assert(input_position_ < BUFFER_SIZE);
+  if(input_position_ >= BUFFER_SIZE)
     return 0;
-  return buffer_[position_++];
+  return input_[input_position_++];
 }
