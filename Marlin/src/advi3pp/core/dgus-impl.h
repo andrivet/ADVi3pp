@@ -23,6 +23,7 @@ inline void OutFrame<Param, cmd>::check_overflow(size_t size) const {
     uint8_t total = data_written_ + size;
     if(total > data_size_) {
         Log::error() << F("Overflow") << data_size_ << F("expected") << total << F("written.") << Log::endl();
+        debug_break();
     }
     data_written_ += size;
 }
@@ -45,12 +46,12 @@ bool OutFrame<Param, cmd>::write_header(uint8_t data_size)
 
 template<typename Param, Command cmd>
 inline OutFrame<Param, cmd>::~OutFrame() {
-#ifdef ADVi3PP_LOG_FRAMES
-    Log::cont() << Log::endl();
-#endif
+    Log::frame() << Log::endl();
 #ifdef ADVi3PP_DEBUG
-    if(data_written_ != data_size_)
+    if(data_written_ != data_size_) {
         Log::error() << F("OutFrame") << data_size_ << F("expected") << data_written_ << F("written.") << Log::endl();
+        debug_break();
+    }
 #endif
 }
 
@@ -191,10 +192,10 @@ bool WriteRamRequest::write_centered_text(const ADVString<N>& data)
 template<typename Param, Command cmd, ReceiveMode mode>
 InFrame<Param, cmd, mode>::~InFrame()
 {
-#ifdef ADVi3PP_DEBUG
-    if(nb_data_expected_ != nb_data_read_)
+    if(nb_data_expected_ != nb_data_read_) {
         Log::error() << F("InFrame") << nb_data_expected_ << F("expected") << nb_data_read_ << F("read.") << Log::endl();
-#endif
+        debug_break();
+    }
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
