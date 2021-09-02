@@ -53,7 +53,7 @@ void Graphs::send_data()
         static_cast<uint16_t>(ExtUI::getActualTemp_celsius(ExtUI::E0))
     };
 
-    NoLogging no_logging{};
+    NoFrameLogging no_logging{};
     WriteCurveRequest{0b00000011}.write_words(data);
 }
 

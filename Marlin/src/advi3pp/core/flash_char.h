@@ -33,4 +33,15 @@ inline const FlashChar* to_flash(PGM_P str) { return reinterpret_cast<const Flas
 
 }
 
+#else
+
+namespace ADVi3pp {
+
+struct FlashChar { const char* str; };
+
+inline const char* from_flash(const FlashChar* str) { return reinterpret_cast<const char*>(str); }
+inline const FlashChar* to_flash(const char* str) { return reinterpret_cast<const FlashChar*>(str); }
+
+}
+
 #endif

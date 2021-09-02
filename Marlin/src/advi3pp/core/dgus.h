@@ -128,7 +128,7 @@ struct Dgus
 private:
     void kill();
     bool receive_header();
-    bool has_pushed_back();
+    bool has_pushed_back() const;
     uint8_t get_pushed_back();
 
     static const size_t MAX_PUSH_BACK = 5;
@@ -379,4 +379,4 @@ struct WriteCurveRequest: WriteOutFrame<uint8_t, Command::WriteCurve>
 
 }
 
-#include "dgus.impl"
+#include "dgus-impl.h"

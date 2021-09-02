@@ -32,7 +32,7 @@ namespace
     auto& DgusSerial = Serial2;
     const uint32_t  LCD_BAUDRATE = 115200; // Between the LCD panel and the mainboard
     const uint16_t  LCD_READ_DELAY = 50; // ms
-    const uint16_t  LCD_READ_KILL_COUNT = 100; // must be less that the watchdog time
+    const uint16_t  LCD_READ_KILL_COUNT = 16; // must be less that the watchdog time
     const byte      R2 = 0x0D; // SYS_CFG, disable buzzer, L22 init, auto key codes
 }
 
@@ -68,6 +68,8 @@ void Dgus::kill()
     SERIAL_ERROR_START();
     SERIAL_ECHOLNPGM("LCD panel does not respond. Check cable between mainboard and LCD Panel. Printer is stopped.");
     ExtUI::killRightNow();
+#else
+    throw log_exception();
 #endif
 }
 
@@ -114,9 +116,7 @@ bool Dgus::write_header(Command cmd, uint8_t param_size, uint8_t data_size)
         static_cast<uint8_t>(cmd)
     };
 
-#ifdef ADVi3PP_LOG_FRAMES
-    Log::log() << F("<==S") << header;
-#endif
+    Log::frame(LogState::Start) << F("<==S=") << header;
     if(header.size() != DgusSerial.write(header.data(), header.size()))
         return false;
 
@@ -131,8 +131,10 @@ bool Dgus::wait_for_data(uint8_t size, bool blocking)
         return true;
     size -= nb_pushed_back_;
 
-    if(!blocking && DgusSerial.available() < size)
+    if(!blocking && DgusSerial.available() < size) {
+		delay(LCD_READ_DELAY); // Important otherwise, the buffer has no time to be filled
         return false;
+	}
 
     unsigned count = 0;
     while(DgusSerial.available() < size)
@@ -151,16 +153,22 @@ bool Dgus::receive_header()
     for(size_t index = 0; ; ++index)
     {
         uint8_t header0 = DgusSerial.read();
-        if(header0 != HEADER_BYTE_0 && index >= MAX_GARBAGE_BYTES)
+        if(header0 != HEADER_BYTE_0 && index >= MAX_GARBAGE_BYTES) {
+            Log::error() << F("Not able to find the start of a frame") << Log::endl();
             return false;
+        }
         if(header0 == HEADER_BYTE_0)
             break;
+        Log::log() << F("Discard garbage") << header0 << Log::endl();
     }
 
     uint8_t header1 = DgusSerial.read();
-    if(header1 != HEADER_BYTE_1)
+    if(header1 != HEADER_BYTE_1) {
+        Log::error() << F("Not able to find the start of a frame") << header1 << Log::endl();
         return false;
+    }
 
+    Log::frame(LogState::Start) << F("=R==>") << HEADER_BYTE_0 << HEADER_BYTE_1;
     return true;
 }
 
@@ -183,13 +191,13 @@ bool Dgus::receive(Command cmd, bool blocking)
         auto length = static_cast<uint8_t>(DgusSerial.read());
         if(length < 3)
         {
-            Log::error() << F("Invalid frame length: 0x") << length << Log::endl();
+            Log::error() << F("Invalid frame length:") << length << Log::endl();
             return false;
         }
         auto command = static_cast<uint8_t>(DgusSerial.read());
         if(command < 0x80 || command > 0x84)
         {
-            Log::error() << F("Invalid frame command: 0x") << command << Log::endl();
+            Log::error() << F("Invalid frame command:") << command << Log::endl();
             return false;
         }
 
@@ -198,23 +206,25 @@ bool Dgus::receive(Command cmd, bool blocking)
         state_ = State::Command;
         read_ = 1; // Command is 1 byte
 
-        Log::log() << F("Receive frame length:") << length << F("cmd:") << command << Log::endl();
+        Log::frame() << length << command;
     }
 
     if(command_ != cmd)
         return false;
 
+    if(!wait_for_data(length_ - read_, blocking))
+        return false;
+
     return true;
 }
 
-bool Dgus::has_pushed_back()
+bool Dgus::has_pushed_back() const
 {
   return nb_pushed_back_ > 0;
 }
 
 uint8_t Dgus::get_pushed_back()
 {
-  read_ += 1;
   return pushed_back_[--nb_pushed_back_];
 }
 
@@ -222,8 +232,11 @@ uint8_t Dgus::read_byte()
 {
     uint8_t byte = has_pushed_back() ? get_pushed_back() : DgusSerial.read();
     read_ += 1;
-    if(read_ == length_)
+    Log::frame() << byte;
+    if(read_ == length_) {
         state_ = State::Start;
+        Log::frame() << Log::endl();
+    }
     return byte;
 }
 
@@ -246,29 +259,24 @@ void Dgus::push_back(uint8_t byte)
     pushed_back_[nb_pushed_back_++] = byte;
     assert(read_ > 0);
     read_ -= 1;
+    Log::frame() << F("//") << byte << F("//");
 }
 
 bool Dgus::write_byte(uint8_t byte)
 {
-#ifdef ADVi3PP_LOG_FRAMES
-    Log::cont() << byte;
-#endif
+    Log::frame() << byte;
     return DgusSerial.write(byte) == 1;
 }
 
 bool Dgus::write_bytes(const uint8_t *bytes, size_t length)
 {
-#ifdef ADVi3PP_LOG_FRAMES
-    Log::cont().write(bytes, length);
-#endif
+    Log::frame().write(bytes, length);
     return DgusSerial.write(bytes, length) == length;
 }
 
 bool Dgus::write_bytes(const char *bytes, size_t length)
 {
-#ifdef ADVi3PP_LOG_FRAMES
-    Log::cont().write(reinterpret_cast<const uint8_t*>(bytes), length);
-#endif
+    Log::frame().write(reinterpret_cast<const uint8_t*>(bytes), length);
     return DgusSerial.write(bytes, length) == length;
 }
 

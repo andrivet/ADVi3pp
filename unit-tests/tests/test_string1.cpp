@@ -18,7 +18,7 @@
  *
  */
 
-#define ADV_UNIT_TESTS
+#include "../parameters.h"
 #include <catch2/catch_test_macros.hpp>
 #include "../lib/string.h"
 

@@ -18,7 +18,7 @@
  *
  */
 
-#define ADV_UNIT_TESTS
+#include "../parameters.h"
 #include "dgus.h"
 #include "avr/serial.h"
 #include "../../Marlin/src/advi3pp/core/dgus.cpp"

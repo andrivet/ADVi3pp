@@ -25,27 +25,37 @@ namespace ADVi3pp {
 
 #ifdef ADVi3PP_LOG
 
-Log Log::logging_;
+Log Log::logging_{true};
+#ifdef ADVi3PP_LOG_FRAMES
+Log Log::frame_logging_{true};
+#else
+Log Log::frame_logging_{false};
+#endif
 
 void space() {
     SERIAL_CHAR(' ');
 }
 
-Log& Log::log()
-{
-    logging_ << F("// LOG:");
+Log& Log::log(LogState state) {
+    if(state == LogState::Start)
+        logging_ << F("// LOG:");
     return logging_;
 }
 
-Log& Log::error()
-{
+Log& Log::frame(LogState state) {
+    if(state == LogState::Start)
+        frame_logging_ << F("// FRAME:");
+    return frame_logging_;
+}
+
+Log& Log::error() {
     logging_ << F("// ERROR:");
     return logging_;
 }
 
 Log& Log::operator<<(const char* data)
 {
-    if(enabled_) {
+    if(enabled_ && !suspend_) {
         SERIAL_ECHO(data);
         space();
     }
@@ -54,7 +64,7 @@ Log& Log::operator<<(const char* data)
 
 Log& Log::operator<<(const FlashChar* data)
 {
-    if(enabled_) {
+    if(enabled_ && !suspend_) {
         serialprintPGM(from_flash(data));
         space();
     }
@@ -63,7 +73,7 @@ Log& Log::operator<<(const FlashChar* data)
 
 Log& Log::operator<<(uint8_t data)
 {
-    if(enabled_) {
+    if(enabled_ && !suspend_) {
         dump(&data);
         space();
     }
@@ -72,7 +82,7 @@ Log& Log::operator<<(uint8_t data)
 
 Log& Log::operator<<(uint16_t data)
 {
-    if(enabled_) {
+    if(enabled_ && !suspend_) {
         auto bytes = reinterpret_cast<const uint8_t *>(&data);
         dump(bytes + 1);
         dump(bytes + 0);
@@ -83,7 +93,7 @@ Log& Log::operator<<(uint16_t data)
 
 Log& Log::operator<<(uint32_t data)
 {
-    if(enabled_) {
+    if(enabled_ && !suspend_) {
         auto bytes = reinterpret_cast<const uint8_t *>(&data);
         dump(bytes + 3);
         dump(bytes + 2);
@@ -96,7 +106,7 @@ Log& Log::operator<<(uint32_t data)
 
 Log& Log::operator<<(double data)
 {
-    if(enabled_) {
+    if(enabled_ && !suspend_) {
         SERIAL_ECHO(data);
         space();
     }
@@ -105,14 +115,14 @@ Log& Log::operator<<(double data)
 
 Log& Log::operator<<(EndOfLine)
 {
-    if(enabled_)
+    if(enabled_ && !suspend_)
         SERIAL_EOL();
     return *this;
 }
 
 Log& Log::write(const uint8_t* data, size_t size)
 {
-    if(enabled_) {
+    if(enabled_ && !suspend_ && size > 0) {
         dump(data, size);
         space();
     }
@@ -124,7 +134,7 @@ void Log::dump(const uint8_t* bytes, size_t size, bool separator)
 {
     static const char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-    if(!enabled_)
+    if(!enabled_ || suspend_)
         return;
 
     for(size_t index = 0; index < size; ++index)
@@ -139,7 +149,13 @@ void Log::dump(const uint8_t* bytes, size_t size, bool separator)
 void assert_(const char *msg, const char *file, uint16_t line)
 {
     Log::error() << F("ASSERTION FAILED:") << msg << "in file" << file << "line" << line << Log::endl();
+    debug_break();
+}
+
+void debug_break() {
+#ifdef ADVi3PP_HARD_BREAK
     asm("break \n");
+#endif
 }
 
 #endif

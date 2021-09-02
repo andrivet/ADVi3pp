@@ -25,13 +25,34 @@
 #include "../lib/ADVstd/array.h"
 #ifndef ADV_UNIT_TESTS
 #include "../../core/serial.h"
+#else
+#include "serial-out.h"
 #endif
 #include "flash_char.h"
 
 
 namespace ADVi3pp {
 
-#if defined(ADVi3PP_LOG) && !defined(ADVi3PP_UNIT_TEST)
+enum class LogState { Start, Continue };
+
+#ifdef ADV_UNIT_TESTS
+struct log_exception: std::exception {};
+#endif
+
+#ifdef ADVi3PP_LOG
+
+// --------------------------------------------------------------------
+// NoLogging
+// --------------------------------------------------------------------
+
+struct NoFrameLogging
+{
+    NoFrameLogging();
+    ~NoFrameLogging();
+
+private:
+    bool suspend_ = false;
+};
 
 // --------------------------------------------------------------------
 // Log
@@ -39,6 +60,8 @@ namespace ADVi3pp {
 
 struct Log
 {
+    Log(bool enabled);
+
     struct EndOfLine {};
 
     Log& operator<<(const char* data);
@@ -50,37 +73,27 @@ struct Log
     template<typename T, size_t S> Log& operator<<(adv::array<T, S> data);
     Log& write(const uint8_t* data, size_t size);
     Log& operator<<(EndOfLine eol);
-    void enable();
-    void disable();
 
-    static Log& log();
+    static Log& log(LogState state = LogState::Start);
     static Log& error();
-    static Log& cont();
+    static Log& frame(LogState state = LogState::Continue);
     static EndOfLine endl() { return EndOfLine{}; }
     void dump(const uint8_t* bytes, size_t size = 1, bool separator = true);
 
 private:
     static Log logging_;
+    static Log frame_logging_;
     bool enabled_ = true;
+    bool suspend_ = false;
+
+    friend NoFrameLogging;
 };
-
-// --------------------------------------------------------------------
-// NoLogging
-// --------------------------------------------------------------------
-
-struct NoLogging
-{
-    NoLogging();
-    ~NoLogging();
-};
-
 
 // --------------------------------------------------------------------
 // Log
 // --------------------------------------------------------------------
 
-inline Log& Log::cont() {
-    return logging_;
+inline Log::Log(bool enabled): enabled_{enabled} {
 }
 
 template<typename T, size_t S>
@@ -89,34 +102,31 @@ Log& Log::operator<<(adv::array<T, S> data) {
     return *this;
 }
 
-inline void Log::enable() {
-  enabled_ = true;
-}
-
-inline void Log::disable() {
-    enabled_ = false;
-}
-
 // --------------------------------------------------------------------
-// NoLogging
+// NoFrameLogging
 // --------------------------------------------------------------------
 
-inline NoLogging::NoLogging() {
+inline NoFrameLogging::NoFrameLogging()
+: suspend_{Log::frame_logging_.suspend_} {
 #ifndef ADVi3PP_LOG_ALL_FRAMES
-    Log::cont().disable();
+    Log::frame_logging_.suspend_ = true;
 #endif
 }
 
-inline NoLogging::~NoLogging() {
+inline NoFrameLogging::~NoFrameLogging() {
 #ifndef ADVi3PP_LOG_ALL_FRAMES
-    Log::cont().enable();
+    Log::frame_logging_.suspend_ = suspend_;
 #endif
 }
 
 // --------------------------------------------------------------------
 
+#ifndef assert
 void assert_(const char *msg, const char *file, uint16_t line);
 #define assert(E) (void)((E) || (ADVi3pp::assert_(#E, __FILE__, __LINE__), 0))
+#endif
+
+void debug_break();
 
 #else
 struct Log
@@ -135,7 +145,7 @@ struct Log
 
     static Log& log() { static Log log; return log; }
     static Log& error();
-    static Log cont() { return log(); }
+    static Log& frame(LogState state = LogState::Continue) { return log(); }
     static EndOfLine endl() { return EndOfLine{}; }
     static void dump(const uint8_t*, size_t) {}
 
@@ -144,13 +154,10 @@ struct Log
 #endif
 };
 
-struct NoLogging
+struct NoFrameLogging
 {
-    NoLogging() {}
-    ~NoLogging() {}
-};
-
-struct log_exception: std::exception {
+    NoFrameLogging() {}
+    ~NoFrameLogging() {}
 };
 
 inline Log& Log::error() {
@@ -160,10 +167,11 @@ inline Log& Log::error() {
     return log();
 }
 
-
 #ifndef assert
 #define assert(E) (void)(false)
 #endif
+
+inline void debug_break() {}
 
 #endif
 

@@ -18,9 +18,7 @@
  *
  */
 
-#define ADV_UNIT_TESTS
-#define ADVi3PP_DEBUG
-
+#include "../parameters.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_vector.hpp>
 #include "../lib/dgus.h"

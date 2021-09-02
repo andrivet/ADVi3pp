@@ -38,10 +38,7 @@ void Buzzer::buzz_on_action()
 {
     dimming.reset();
     if(!settings.is_feature_enabled(Feature::BuzzOnAction))
-    {
-        Log::log() << F("Silent Buzz") << Log::endl();
         return;
-    }
 
     send_buzz_command_to_lcd(BUZZ_ON_ACTION_DURATION);
 }
@@ -60,10 +57,7 @@ void Buzzer::send_buzz_command_to_lcd(long duration)
 void Buzzer::buzz_on_press()
 {
     if(!settings.is_feature_enabled(Feature::BuzzOnPress))
-    {
-        Log::log() << F("Silent Buzz") << Log::endl();
         return;
-    }
     send_buzz_command_to_lcd(BUZZ_ON_PRESS_DURATION);
 }
 

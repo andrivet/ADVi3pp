@@ -83,7 +83,7 @@ void Stack<T, S>::log(Log& l) const
     if(is_empty())
         l << F("<empty>");
     for(size_t i = 0; i < top_; ++i)
-        l << F(" ") << elements_[i];
+        l << elements_[i];
 #endif
 }
 
