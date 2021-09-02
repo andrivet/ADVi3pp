@@ -30,7 +30,7 @@
 // WARNING: For HE180021 models only (2018). For the 2017 models (UK) or 2019 models (Belgium), use ADVi3PP_51
 // #define ADVi3PP_52C
 
-// build a  Wanhao Duplicator i3 Plus Mark II (mainboard version 5.4):
+// build a Wanhao Duplicator i3 Plus Mark II (mainboard version 5.4):
 // #define ADVi3PP_54
 
 // build a BLTouch release.
@@ -42,8 +42,11 @@
 #define ADVi3PP_LOG
 
 // To log the content of frames, uncomment the following line. Very chatty, but useful to debug tough bugs
-//#define ADVi3PP_LOG_FRAMES
-//#define ADVi3PP_LOG_ALL_FRAMES // Log all the frames, including those that are updating the status
+// #define ADVi3PP_LOG_FRAMES
+// #define ADVi3PP_LOG_ALL_FRAMES // Log all the frames, including those that are updating the status
+
+// Break with the asm instruction break
+// #define ADVi3PP_HARD_BREAK
 
 #endif
 
