@@ -68,7 +68,7 @@ void Preheat::send_presets()
 void Preheat::retrieve_presets()
 {
     ReadRam frame{Variable::Value0};
-    if(!frame.send_receive(2))
+    if(!frame.send_receive(3))
     {
         Log::error() << F("Error receiving presets") << Log::endl();
         return;
