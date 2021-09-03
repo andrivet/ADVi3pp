@@ -132,7 +132,6 @@ bool Dgus::wait_for_data(uint8_t size, bool blocking)
     size -= nb_pushed_back_;
 
     if(!blocking && DgusSerial.available() < size) {
-		delay(LCD_READ_DELAY); // Important otherwise, the buffer has no time to be filled
         return false;
 	}
 

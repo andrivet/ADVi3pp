@@ -97,13 +97,13 @@ void Controls::show_print()
     }
 
     wait.wait(F("Accessing the SD card..."));
-    task.set_background_task(BackgroundTask{this, &Controls::show_sd});
+    background_task.set(Callback {this, &Controls::show_sd});
 }
 
 //! Show the SD card page (if a SD card is inserted)
 void Controls::show_sd()
 {
-    task.clear_background_task();
+    background_task.clear();
 
     ExtUI::mountMedia();
     ExtUI::FileList{}.refresh();

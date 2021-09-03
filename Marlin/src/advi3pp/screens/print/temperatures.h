@@ -28,14 +28,14 @@ namespace ADVi3pp {
 //! Temperatures Graph
 struct Temperatures: Screen<Temperatures>
 {
-    void show(const WaitCallback& back);
+    void show(const Callback& back);
     void show();
 
 private:
     Page do_prepare_page();
     void do_back_command();
 
-    WaitCallback back_;
+    Callback back_;
 
     friend Parent;
 };

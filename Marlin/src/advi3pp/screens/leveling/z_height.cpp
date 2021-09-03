@@ -63,7 +63,7 @@ Page SensorZHeight::do_prepare_page()
 
     wait.wait(F("Homing..."));
     core.inject_commands(F("G28 F6000"));  // homing
-    task.set_background_task(BackgroundTask(this, &SensorZHeight::post_home_task), 200);
+    background_task.set(Callback{this, &SensorZHeight::post_home_task}, 200);
     return Page::None;
 }
 
@@ -79,7 +79,7 @@ void SensorZHeight::post_home_task()
     if(core.is_busy() || !ExtUI::isMachineHomed())
         return;
 
-    task.clear_background_task();
+    background_task.clear();
     reset();
 
     ExtUI::setFeedrate_mm_s(1200);

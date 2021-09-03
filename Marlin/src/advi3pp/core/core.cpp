@@ -69,8 +69,23 @@
 
 namespace ADVi3pp {
 
+static const unsigned int FROM_LCD_DELAY = 100; // ms
+static const unsigned int TO_LCD_DELAY = 250; // ms
+
 Core core;
 
+Task background_task;
+Task from_lcd_task;
+Task to_lcd_task;
+
+// ----------------------------------------------------------------------------
+
+Once::operator bool() {
+    if(!once_)
+        return false;
+    once_ = false;
+    return true;
+}
 
 // ----------------------------------------------------------------------------
 
@@ -84,9 +99,8 @@ void Core::startup()
 
 bool Core::init()
 {
-    if(init_)
+    if(!once_)
         return false;
-    init_ = true;
 
     dgus.setup();
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
@@ -101,6 +115,9 @@ bool Core::init()
 #if HAS_LEVELING
     ExtUI::setLevelingActive(true);
 #endif
+
+    from_lcd_task.set(Callback{this, &Core::from_lcd}, FROM_LCD_DELAY);
+    to_lcd_task.set(Callback{this, &Core::to_lcd}, TO_LCD_DELAY);
 
     if(eeprom_mismatch.does_mismatch())
         eeprom_mismatch.show();
@@ -121,17 +138,25 @@ void Core::idle()
 {
     init();
 
+    from_lcd_task.execute();
+    to_lcd_task.execute();
+    background_task.execute();
+}
+
+void Core::from_lcd() {
     receive_lcd_serial_data();
-    task.execute_background_task();
+}
+
+void Core::to_lcd() {
     update_progress();
-    send_lcd_serial_data();
+    send_lcd_data();
     graphs.update();
 }
 
 void Core::killed(const FlashChar* error)
 {
     status.set(error);
-    send_lcd_serial_data(true);
+    send_lcd_data();
     pages.show(Page::Killed);
 }
 
@@ -277,12 +302,8 @@ void Core::receive_lcd_serial_data()
 }
 
 //! Update the status of the printer on the LCD.
-void Core::send_lcd_serial_data(bool force_update)
+void Core::send_lcd_data()
 {
-    // Right time for an update or force update?
-    if(!force_update && !task.is_update_time())
-        return;
-
     // The progress bar is split into two parts because of a limitation of the DWIN panel
     // so compute the progress of each part.
     int16_t progress_bar_low  = ExtUI::getProgress_percent() >= 50 ? 10 : ExtUI::getProgress_percent() / 5;

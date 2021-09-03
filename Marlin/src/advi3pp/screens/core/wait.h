@@ -28,6 +28,8 @@
 
 namespace ADVi3pp {
 
+using WaitCallback = adv::Callback<bool(*)()>;
+
 //! Display wait page and messages
 struct Wait: Screen<Wait>
 {

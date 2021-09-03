@@ -55,14 +55,14 @@ IO io;
 //! @return The index of the page to display
 Page IO::do_prepare_page()
 {
-    task.set_background_task(BackgroundTask{this, &IO::send_data}, 250);
+    background_task.set(Callback{this, &IO::send_data}, 250);
     return Page::IO;
 }
 
 //! Execute the Back command
 void IO::do_back_command()
 {
-    task.clear_background_task();
+    background_task.clear();
     Parent::do_back_command();
 }
 

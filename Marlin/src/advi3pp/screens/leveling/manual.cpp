@@ -90,7 +90,7 @@ Page ManualLeveling::do_prepare_page()
 #if HAS_LEVELING
     ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
 #endif
-    task.set_background_task(BackgroundTask(this, &ManualLeveling::leveling_task), 200);
+    background_task.set(Callback{this, &ManualLeveling::leveling_task}, 200);
     return Page::None;
 }
 
@@ -101,7 +101,7 @@ void ManualLeveling::leveling_task()
         return;
 
     Log::log() << F("Leveling Homed, start process") << Log::endl();
-    task.clear_background_task();
+    background_task.clear();
     pages.show(Page::ManualLeveling);
 }
 

@@ -35,7 +35,7 @@ Page Temperatures::do_prepare_page()
 
 //! Show the temperature page and record and action to be executed when the back button is pressed
 //! @param back Action to be executed when the back button is pressed
-void Temperatures::show(const WaitCallback& back)
+void Temperatures::show(const Callback& back)
 {
     back_ = back;
     Parent::show();

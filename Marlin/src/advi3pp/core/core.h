@@ -21,11 +21,26 @@
 #pragma once
 
 #include "string.h"
+#include "task.h"
 
 class GCodeParser;
 
 
 namespace ADVi3pp {
+
+// ----------------------------------------------------------------------------
+// Once - Execute only one time
+// ----------------------------------------------------------------------------
+
+struct Once {
+    operator bool();
+private:
+    bool once_ = true;
+};
+
+// ----------------------------------------------------------------------------
+// Core
+// ----------------------------------------------------------------------------
 
 struct Core
 {
@@ -46,16 +61,16 @@ private:
     void send_gplv3_7b_notice();
     void send_sponsors();
     void update_progress();
-
+    void from_lcd();
+    void to_lcd();
     void receive_lcd_serial_data();
-    void send_lcd_serial_data(bool force_update = false);
+    void send_lcd_data();
 
 private:
-    bool init_ = false;
+    Once once_{};
 };
 
 extern Core core;
-
 
 //! Convert a version from its hexadecimal representation.
 //! @param hex_version  Hexadecimal representation of the version

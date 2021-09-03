@@ -103,7 +103,7 @@ void PidTuning::step2_command()
     uint16_t kind = frame.read_word(); // kind is not used here, it is already set
 
     state_ |= State::FromLCDMenu;
-    temperatures.show(WaitCallback{this, &PidTuning::cancel_pid});
+    temperatures.show(Callback{this, &PidTuning::cancel_pid});
 
     if(kind_ == TemperatureKind::Hotend)
     {
@@ -117,13 +117,12 @@ void PidTuning::step2_command()
 }
 
 //! Cancel PID process.
-bool PidTuning::cancel_pid()
+void PidTuning::cancel_pid()
 {
     status.set(F("Canceling PID tuning"));
     ExtUI::cancelWaitForHeatup();
     ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
     state_ = State::None;
-    return false;
 }
 
 void PidTuning::on_progress(int cycle, int nb)

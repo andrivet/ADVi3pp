@@ -25,28 +25,29 @@
 
 namespace ADVi3pp {
 
-using BackgroundTask = adv::Callback<void(*)()>;
-using WaitCallback = adv::Callback<bool(*)()>;
+using Callback = adv::Callback<void(*)()>;
 
-//! Background Task
+//! Task
 struct Task
 {
-    void set_background_task(const BackgroundTask& task, unsigned int delta = 500);
-    void clear_background_task();
-    void execute_background_task();
-    bool has_background_task() const;
-    bool is_update_time();
+    static const unsigned DEFAULT_DELAY = 100; // ms
+
+    Task() = default;
+    explicit Task(const Callback& callback, unsigned int delay = DEFAULT_DELAY);
+
+    void set(const Callback& callback, unsigned int delay = DEFAULT_DELAY);
+    void clear();
+    bool execute(bool force_excute = false);
 
 private:
-    void set_next_update_time(unsigned int delta = 500);
+    void set_next_execute_time();
 
 private:
-    unsigned int op_time_delta_ = 500;
-    millis_t next_op_time_ = 0;
-    millis_t next_update_time_ = 0;
-    BackgroundTask background_task_;
+    unsigned int delay_ = 100;
+    millis_t next_execute_time_ = 0;
+    Callback callback_;
 };
 
-extern Task task;
+extern Task background_task;
 
 }
