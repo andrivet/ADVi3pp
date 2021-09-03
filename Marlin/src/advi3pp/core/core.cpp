@@ -109,9 +109,6 @@ bool Core::init()
     dimming.reset(true);
     versions.send_versions();
 
-    SERIAL_ECHO_START();
-    Welcome();
-
 #if HAS_LEVELING
     ExtUI::setLevelingActive(true);
 #endif
@@ -125,13 +122,6 @@ bool Core::init()
         pages.show(Page::Boot);
 
     return true;
-}
-
-void Core::Welcome()
-{
-    auto welcome = F("ADVi3++ is ready");
-    SERIAL_ECHOLN(welcome);
-    status.set(welcome);
 }
 
 void Core::idle()
