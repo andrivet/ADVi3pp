@@ -82,11 +82,11 @@
   #endif
 #endif
 
-// @advi3++: PR candidate
+// @advi3++
 #if ENABLED(G29_RETRY_AND_RECOVER)
-  #define G29_RETURN(b) return b;
+  #define G29_RETURN(b) ExtUI::onAutomaticLevelingFinished(b); return b;
 #else
-  #define G29_RETURN(b) ExtUI::onAutomaticLevelingFinished(!b);
+  #define G29_RETURN(b) ExtUI::onAutomaticLevelingFinished(b); return
 #endif
 
 /**
