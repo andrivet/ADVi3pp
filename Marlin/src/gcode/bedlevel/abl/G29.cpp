@@ -84,9 +84,9 @@
 
 // @advi3++
 #if ENABLED(G29_RETRY_AND_RECOVER)
-  #define G29_RETURN(b) ExtUI::onAutomaticLevelingFinished(b); return b;
+  #define G29_RETURN(b) { ExtUI::onAutomaticLevelingFinished(b); return b; }
 #else
-  #define G29_RETURN(b) ExtUI::onAutomaticLevelingFinished(b); return
+  #define G29_RETURN(b) { ExtUI::onAutomaticLevelingFinished(b); return; }
 #endif
 
 /**
@@ -904,7 +904,7 @@ G29_TYPE GcodeSuite::G29() {
 
   report_current_position();
 
-  G29_RETURN(isnan(measured_z));
+  G29_RETURN(!isnan(measured_z)); // advi3++. Not sure, is it a bug?
 }
 
 #endif // HAS_ABL_NOT_UBL
