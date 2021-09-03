@@ -224,6 +224,11 @@ uint16_t InFrame<Param, cmd, mode>::read_word()
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
+int16_t InFrame<Param, cmd, mode>::read_signed_word() {
+    return static_cast<int16_t>(read_word());
+}
+
+template<typename Param, Command cmd, ReceiveMode mode>
 Param InFrame<Param, cmd, mode>::get_parameter() const
 {
     return parameter_;

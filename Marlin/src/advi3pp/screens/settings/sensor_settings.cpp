@@ -165,8 +165,8 @@ void SensorSettings::get_values()
         return;
     }
 
-    uint16_t x = frame.read_word();
-    uint16_t y = frame.read_word();
+    int16_t x = frame.read_signed_word();
+    int16_t y = frame.read_signed_word();
     uint16_t z = frame.read_word();
 
     ExtUI::setProbeOffset_mm(x / 100.0, ExtUI::X);

@@ -228,6 +228,7 @@ protected:
   uint8_t get_nb_data() const;
   uint8_t read_byte();
   uint16_t read_word();
+  int16_t read_signed_word();
 
   bool read_parameter();
   bool read_byte_parameter();
@@ -340,6 +341,7 @@ struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Known>
   explicit ReadRamResponse(Variable var): Parent{var} {}
   uint16_t get_nb_words() const { return get_nb_data(); }
   using Parent::read_word;
+  using Parent::read_signed_word;
 };
 
 
@@ -363,6 +365,7 @@ struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>
     using Parent = OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
     explicit ReadRam(Variable var): Parent{var} {}
     using Parent::read_word;
+    using Parent::read_signed_word;
 };
 
 
