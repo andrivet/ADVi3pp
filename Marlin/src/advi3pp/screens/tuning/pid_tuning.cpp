@@ -100,7 +100,7 @@ void PidTuning::step2_command()
     }
 
     temperature_ = frame.read_word();
-    uint16_t kind = frame.read_word(); // kind is not used here, it is already set
+    adv::ignore = frame.read_word(); // kind is not used here, it is already set
 
     state_ |= State::FromLCDMenu;
     temperatures.show(Callback{this, &PidTuning::cancel_pid});

@@ -323,7 +323,7 @@ void PidSettings::save_data()
     }
 
     uint16_t kind = response.read_word();
-    uint16_t temperature = response.read_word();
+    adv::ignore = response.read_word(); // temperature
     uint16_t p = response.read_word();
     uint16_t i = response.read_word();
     uint16_t d = response.read_word();

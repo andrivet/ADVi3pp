@@ -149,5 +149,14 @@ struct underlying_type: underlying_type_impl<T, is_enum<T>::value> {};
 
 template <class T> using underlying_type_t = typename underlying_type<T>::type;
 
+namespace detail {
+    struct ignore_t {
+        template <typename T>
+        constexpr void operator=(T&&) const noexcept {}
+    };
+}
+
+constexpr detail::ignore_t ignore;
+
 } // namespace adv
 
