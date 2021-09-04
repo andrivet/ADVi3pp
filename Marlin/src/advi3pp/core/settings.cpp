@@ -192,7 +192,7 @@ void Settings::on_set_temperature(TemperatureKind kind, uint16_t temperature)
     if(temperature == 0)
         return;
     last_used_temperature_[kind == TemperatureKind::Hotend] = temperature;
-    pid_settings.set_best_pid(kind, temperature);
+    pid_settings.choose_best_pid(kind, temperature);
 }
 
 

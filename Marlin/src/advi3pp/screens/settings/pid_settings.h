@@ -37,7 +37,7 @@ struct PidSettings: Screen<PidSettings>
     PidSettings();
 
     void add_pid(TemperatureKind kind, uint16_t temperature);
-    void set_best_pid(TemperatureKind kind, uint16_t temperature);
+    void choose_best_pid(TemperatureKind kind, uint16_t temperature);
 
 private:
     static const size_t NB_PIDs = 3;
@@ -57,22 +57,21 @@ private:
     void bed_command();
     void previous_command();
     void next_command();
-    void set_current_pid() const;
-    void set_current_bed_pid() const;
-    void set_current_hotend_pid() const;
-    void get_current_pid();
-    void get_current_bed_pid();
-    void get_current_hotend_pid();
-    void send_data() const;
-    void save_data();
-    adv::array<Pid, PidSettings::NB_PIDs>& get_pid();
-    const adv::array<Pid, PidSettings::NB_PIDs>& get_pid() const;
+    void set_marlin_pid() const;
+    void get_marlin_pid();
+    void to_lcd() const;
+    void from_lcd();
+
+    adv::array<Pid, PidSettings::NB_PIDs>& get_pids();
+    const adv::array<Pid, PidSettings::NB_PIDs>& get_pids() const;
+    Pid& get_pid();
+    const Pid& get_pid() const;
 
 private:
     adv::array<Pid, NB_PIDs> hotend_pid_{};
     adv::array<Pid, NB_PIDs> bed_pid_{};
     TemperatureKind kind_ = TemperatureKind::Hotend;
-    size_t index_ = 0;
+    uint8_t index_ = 0;
 
     friend Parent;
 };
