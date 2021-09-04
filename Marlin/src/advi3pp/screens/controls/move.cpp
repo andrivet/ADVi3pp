@@ -108,18 +108,12 @@ void Move::z_minus_command()
 //! Extrude some filament.
 void Move::e_plus_command()
 {
-    if(ExtUI::getActualTemp_celsius(ExtUI::E0) < 180)
-        return;
-
     move([]{ExtUI::setFeedrate_mm_s(120); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::E0) + 1, ExtUI::E0);}, 250);
 }
 
 //! Unextrude some filament.
 void Move::e_minus_command()
 {
-    if(ExtUI::getActualTemp_celsius(ExtUI::E0) < 180)
-        return;
-
     move([]{ExtUI::setFeedrate_mm_s(120); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::E0) - 1, ExtUI::E0);}, 250);
 }
 
