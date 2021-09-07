@@ -36,6 +36,7 @@ private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void step2_command();
+    void step3_command();
     void cancel_pid();
     void hotend_command();
     void bed_command();

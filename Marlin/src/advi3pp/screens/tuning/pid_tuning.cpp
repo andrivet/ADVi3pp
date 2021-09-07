@@ -100,20 +100,26 @@ void PidTuning::step2_command()
     }
 
     temperature_ = frame.read_word();
-    adv::ignore = frame.read_word(); // kind is not used here, it is already set
+    uint16_t  kind = frame.read_word();
+    assert(static_cast<TemperatureKind>(kind) == kind_);
 
     state_ |= State::FromLCDMenu;
+
+    if(kind_ == TemperatureKind::Hotend)
+        ExtUI::setTargetFan_percent(100, ExtUI::FAN0); // Turn on fan (only for hotend)
+
+    background_task.set(Callback{this, &PidTuning::step3_command});
+}
+
+void PidTuning::step3_command() {
+    background_task.clear();
+
     temperatures.show(Callback{this, &PidTuning::cancel_pid});
 
     if(kind_ == TemperatureKind::Hotend)
-    {
-        ExtUI::setTargetFan_percent(100, ExtUI::FAN0); // Turn on fan (only for hotend)
         ExtUI::startPIDTune(temperature_, ExtUI::E0);
-    }
     else
-    {
         ExtUI::startBedPIDTune(temperature_);
-    }
 }
 
 //! Cancel PID process.
