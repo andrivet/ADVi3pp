@@ -103,6 +103,7 @@ bool Core::init()
         return false;
 
     dgus.setup();
+    status.set(GET_TEXT_F(WELCOME_MSG)); // This welcome message is not displayed on power-on
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     send_sponsors();
     graphs.clear();
