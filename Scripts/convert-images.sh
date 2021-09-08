@@ -31,8 +31,6 @@ sketch="${masters}/ADVi3++5 LCD-Panel.sketch"
 function export_sketches() {
     echo "Export Sketch ${sketch} into ${sketch_export_dir}"
     "${sketchtool}" export artboards --output="${sketch_export_dir}" --overwriting=YES "${sketch}"
-    # Fix a bug with sketchtool
-    mv "${sketch_export_dir}/"*.png "${sketch_export_dir}/Screenshots/"
 }
 
 function clean_files() {
