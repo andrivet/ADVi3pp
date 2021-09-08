@@ -26,6 +26,13 @@
 
 namespace ADVi3pp {
 
+namespace {
+
+    const float FEEDRATE_XY = MMM_TO_MMS(HOMING_FEEDRATE_XY);
+    const float FEEDRATE_Z = MMM_TO_MMS(HOMING_FEEDRATE_Z);
+
+}
+
 ManualLeveling manual_leveling;
 
 //! Execute a Manual Leveling command
@@ -59,7 +66,7 @@ void ManualLeveling::do_back_command()
 #if HAS_LEVELING
     ExtUI::setLevelingActive(true); // Enable back compensation
 #endif
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z);
     Parent::do_back_command();
 }
@@ -70,7 +77,7 @@ void ManualLeveling::do_save_command()
     xtwist.reset();
     ExtUI::setLevelingActive(false); // Disable ABL mesh (already disabled but prefer to be explicit)
 #endif
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z);
     Parent::do_save_command();
 }
@@ -107,14 +114,14 @@ void ManualLeveling::leveling_task()
 
 void ManualLeveling::move(int x, int y)
 {
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(Z_HOMING_HEIGHT, ExtUI::Z);
 
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_XY);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_XY);
     ExtUI::setAxisPosition_mm(x, ExtUI::X);
     ExtUI::setAxisPosition_mm(y, ExtUI::Y);
 
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(0, ExtUI::Z);
 }
 

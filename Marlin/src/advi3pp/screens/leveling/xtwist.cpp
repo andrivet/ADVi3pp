@@ -25,6 +25,13 @@
 
 namespace ADVi3pp {
 
+namespace {
+
+    const float FEEDRATE_XY = MMM_TO_MMS(HOMING_FEEDRATE_XY);
+    const float FEEDRATE_Z = MMM_TO_MMS(HOMING_FEEDRATE_Z);
+
+}
+
 XTwist xtwist;
 
 #ifdef ADVi3PP_PROBE
@@ -163,7 +170,7 @@ void XTwist::do_back_command()
 
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(4, ExtUI::Z);
 
     Parent::do_back_command();
@@ -176,7 +183,7 @@ void XTwist::do_save_command()
 
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(4, ExtUI::Z);
 
     Parent::do_save_command();
@@ -244,16 +251,16 @@ float XTwist::get_x_mm(Point x) const
 
 void XTwist::move_x(Point x)
 {
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(4, ExtUI::Z);
 
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_XY);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_XY);
     ExtUI::setAxisPosition_mm(get_x_mm(x), ExtUI::X);
 
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_XY);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_XY);
     ExtUI::setAxisPosition_mm(Y_BED_SIZE / 2.0f, ExtUI::Y);
 
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(get_offset(x), ExtUI::Z);
 
     point_ = x;
@@ -302,7 +309,7 @@ double XTwist::get_multiplier_value() const
 //! @param offset Offset for the adjustment.
 void XTwist::adjust_height(double offset_value)
 {
-    ExtUI::setFeedrate_mm_s(HOMING_FEEDRATE_Z);
+    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset_value, ExtUI::Z);
     set_offset(point_, ExtUI::getAxisPosition_mm(ExtUI::Z));
 }

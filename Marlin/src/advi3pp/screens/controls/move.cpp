@@ -24,6 +24,18 @@
 
 namespace ADVi3pp {
 
+namespace {
+
+    const float MOVE_FEEDRATE_XY = MMM_TO_MMS(HOMING_FEEDRATE_XY);
+    const float MOVE_FEEDRATE_Z = MMM_TO_MMS(HOMING_FEEDRATE_Z);
+    const float MOVE_FEEDRATE_E = 1.0;
+    const millis_t MOVE_DELAY = 200;
+    const float MOVE_DISTANCE_XY = 2.5;
+    const float MOVE_DISTANCE_Z = 0.5;
+    const float MOVE_DISTANCE_E = 1;
+
+}
+
 Move move;
 
 
@@ -72,49 +84,73 @@ void Move::move(void (*commands)(), millis_t delay)
 //! Move the nozzle (+X)
 void Move::x_plus_command()
 {
-    move([]{ExtUI::setFeedrate_mm_s(1000); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::X) + 4, ExtUI::X);}, 150);
+    move([]{
+        ExtUI::setFeedrate_mm_s(MOVE_FEEDRATE_XY);
+        ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::X) + MOVE_DISTANCE_XY, ExtUI::X);
+    }, MOVE_DELAY);
 }
 
 //! Move the nozzle (-X)
 void Move::x_minus_command()
 {
-    move([]{ExtUI::setFeedrate_mm_s(1000); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::X) - 4, ExtUI::X);}, 150);
+    move([]{
+        ExtUI::setFeedrate_mm_s(MOVE_FEEDRATE_XY);
+        ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::X) - MOVE_DISTANCE_XY, ExtUI::X);
+    }, MOVE_DELAY);
 }
 
 //! Move the nozzle (+Y)
 void Move::y_plus_command()
 {
-    move([]{ExtUI::setFeedrate_mm_s(1000); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Y) + 4, ExtUI::Y);}, 150);
+    move([]{
+        ExtUI::setFeedrate_mm_s(MOVE_FEEDRATE_XY);
+        ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Y) + MOVE_DISTANCE_XY, ExtUI::Y);
+    }, MOVE_DELAY);
 }
 
 //! Move the nozzle (-Y)
 void Move::y_minus_command()
 {
-    move([]{ExtUI::setFeedrate_mm_s(1000); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Y) - 4, ExtUI::Y);}, 150);
+    move([]{
+        ExtUI::setFeedrate_mm_s(MOVE_FEEDRATE_XY);
+        ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Y) - MOVE_DISTANCE_XY, ExtUI::Y);
+    }, MOVE_DELAY);
 }
 
 //! Move the nozzle (+Z)
 void Move::z_plus_command()
 {
-    move([]{ExtUI::setFeedrate_mm_s(240); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + 0.5f, ExtUI::Z);}, 150);
+    move([]{
+        ExtUI::setFeedrate_mm_s(MOVE_FEEDRATE_Z);
+        ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + MOVE_DISTANCE_Z, ExtUI::Z);
+    }, MOVE_DELAY);
 }
 
 //! Move the nozzle (-Z)
 void Move::z_minus_command()
 {
-    move([]{ExtUI::setFeedrate_mm_s(240); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) - 0.5f, ExtUI::Z);}, 150);
+    move([]{
+        ExtUI::setFeedrate_mm_s(MOVE_FEEDRATE_Z);
+        ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) - MOVE_DISTANCE_Z, ExtUI::Z);
+    }, MOVE_DELAY);
 }
 
 //! Extrude some filament.
 void Move::e_plus_command()
 {
-    move([]{ExtUI::setFeedrate_mm_s(120); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::E0) + 1, ExtUI::E0);}, 250);
+    move([]{
+        ExtUI::setFeedrate_mm_s(MOVE_FEEDRATE_E);
+        ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::E0) + MOVE_DISTANCE_E, ExtUI::E0);
+    }, MOVE_DELAY);
 }
 
 //! Unextrude some filament.
 void Move::e_minus_command()
 {
-    move([]{ExtUI::setFeedrate_mm_s(120); ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::E0) - 1, ExtUI::E0);}, 250);
+    move([]{
+        ExtUI::setFeedrate_mm_s(MOVE_FEEDRATE_E);
+        ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::E0) - MOVE_DISTANCE_E, ExtUI::E0);
+    }, MOVE_DELAY);
 }
 
 //! Disable the motors.
