@@ -26,11 +26,11 @@ namespace ADVi3pp {
 
 namespace {
 
-    const float MOVE_FEEDRATE_XY = MMM_TO_MMS(HOMING_FEEDRATE_XY);
-    const float MOVE_FEEDRATE_Z = MMM_TO_MMS(HOMING_FEEDRATE_Z);
+    const float MOVE_FEEDRATE_XY = MMM_TO_MMS(1000);
+    const float MOVE_FEEDRATE_Z = MMM_TO_MMS(240);
     const float MOVE_FEEDRATE_E = 1.0;
-    const millis_t MOVE_DELAY = 200;
-    const float MOVE_DISTANCE_XY = 2.5;
+    const millis_t MOVE_DELAY = 150;
+    const float MOVE_DISTANCE_XY = 4;
     const float MOVE_DISTANCE_Z = 0.5;
     const float MOVE_DISTANCE_E = 1;
 
