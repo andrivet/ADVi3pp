@@ -1,10 +1,16 @@
 # ADVi3++ Changelog
 
-## 5.0.0-beta.2 (2021-06-03)
+## 5.0.0 (2021-09-10)
 
-## 5.0.0-beta.1 (2021-05-15)
-
-* Beta 1 based on Marlin 2.0.7
+* Major release based on Marlin 2.0.7
+* Restructuration of the different parts (more modular) and rewrite of some parts (such as the communication layer between the mainboard and the LCD panel)
+* Redesign of several panels
+* New tools such as:
+  - Setup panel
+  - BLTouch testing panels
+  - Leveling panel
+  - X Twist compensation
+  - Direct entry of values with an on-screen keyboard
 
 ## 4.0.6 (2020-02-23)
 
