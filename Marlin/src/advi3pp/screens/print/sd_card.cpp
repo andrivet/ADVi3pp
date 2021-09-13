@@ -153,7 +153,7 @@ void SdCard::select_file_command(uint16_t file_index)
         ExtUI::onMediaOpenError(filename);
         return;
     }
-    status.set_filename(files.longFilename());
+    status.set_filename(files.filename());
     ExtUI::printFile(filename);
 
     pages.show(Page::Print);
