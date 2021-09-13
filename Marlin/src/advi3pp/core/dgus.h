@@ -219,7 +219,7 @@ struct InFrame
   InFrame() = default;
   ~InFrame();
 
-  bool receive();
+  bool receive(bool blocking = true);
   Param get_parameter() const;
 
 protected:

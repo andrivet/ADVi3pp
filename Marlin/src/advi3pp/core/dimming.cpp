@@ -75,28 +75,34 @@ void Dimming::send()
 
 bool Dimming::receive()
 {
+    NoFrameLogging no_log{};
+
+    bool received = false;
+
     ReadRegisterResponse response{Register::TouchPanelFlag};
-    if(!response.receive())
-        return false;
+    if(response.receive(false)) {
+        received = true;
 
-    if(response.read_byte() == 0x5A)
-    {
-        // Reset TouchPanelFlag
-        WriteRegisterRequest{Register::TouchPanelFlag}.write_byte(0);
+        if(response.read_byte() == 0x5A) {
+            no_log.allow();
+            // Reset TouchPanelFlag
+            WriteRegisterRequest{Register::TouchPanelFlag}.write_byte(0);
 
-        Log::log() << F("Panel touched, reset dimming") << Log::endl();
-        reset();
-        return true;
+            Log::log() << F("Panel touched, reset dimming") << Log::endl();
+            reset();
+            return true;
+        }
     }
 
     if(!dimmed_ && ELAPSED(millis(), next_dimming_time_))
     {
+        no_log.allow();
         Log::log() << F("Delay elapsed, dim the panel") << Log::endl();
         dimmed_ = true;
         send_brightness();
     }
 
-    return true;
+    return received;
 }
 
 //! Reset the dimming

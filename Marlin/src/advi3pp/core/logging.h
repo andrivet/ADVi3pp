@@ -50,6 +50,8 @@ struct NoFrameLogging
     NoFrameLogging();
     ~NoFrameLogging();
 
+    void allow();
+
 private:
     bool suspend_ = false;
 };
@@ -114,6 +116,10 @@ inline NoFrameLogging::NoFrameLogging()
 }
 
 inline NoFrameLogging::~NoFrameLogging() {
+    allow();
+}
+
+inline void NoFrameLogging::allow() {
 #ifndef ADVi3PP_LOG_ALL_FRAMES
     Log::frame_logging_.suspend_ = suspend_;
 #endif

@@ -199,9 +199,9 @@ InFrame<Param, cmd, mode>::~InFrame()
 }
 
 template<typename Param, Command cmd, ReceiveMode mode>
-bool InFrame<Param, cmd, mode>::receive()
+bool InFrame<Param, cmd, mode>::receive(bool blocking)
 {
-    if(!dgus.receive(cmd, mode == ReceiveMode::Known) || !read_parameter())
+    if(!dgus.receive(cmd, blocking && mode == ReceiveMode::Known) || !read_parameter())
         return false;
     nb_data_expected_ = dgus.read_byte();
     return true;

@@ -62,7 +62,6 @@ private:
     void update_progress();
     void from_lcd();
     void to_lcd();
-    void receive_lcd_serial_data();
     void send_lcd_data();
 
 private:

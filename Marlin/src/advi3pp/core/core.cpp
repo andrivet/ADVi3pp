@@ -134,10 +134,6 @@ void Core::idle()
     background_task.execute();
 }
 
-void Core::from_lcd() {
-    receive_lcd_serial_data();
-}
-
 void Core::to_lcd() {
     update_progress();
     send_lcd_data();
@@ -196,24 +192,20 @@ struct Reentrant
 bool Reentrant::reentrant_ = false;
 
 //! Read a frame from the LCD and act accordingly.
-void Core::receive_lcd_serial_data()
+void Core::from_lcd()
 {
     Reentrant reentrant;
     if(reentrant.reentrant()) return;
 
-    // Format of the frame (examples):
-    // header | length | command | action | nb words | key code
-    // -------|--------|---------|--------|----------|---------
-    //      2 |      1 |       1 |      2 |        1 |        2   bytes
-    //  5A A5 |     06 |      83 |  04 60 |       01 |    01 50
-
-    /*dimming.send();
     if(dimming.receive())
-        return;*/
+        return;
 
     ReadAction frame{};
-    if(!frame.receive())
+    if(!frame.receive()) {
+		NoFrameLogging no_log{};
+        dimming.send();
         return;
+    }
 
     buzzer.buzz_on_press();
     dimming.reset();
