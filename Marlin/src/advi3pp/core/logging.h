@@ -164,6 +164,8 @@ struct NoFrameLogging
 {
     NoFrameLogging() {}
     ~NoFrameLogging() {}
+
+    void allow() {}
 };
 
 inline Log& Log::error() {
