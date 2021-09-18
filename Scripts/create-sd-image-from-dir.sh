@@ -4,17 +4,18 @@ Create a microSD disk image from a source directory.
 '
 
 if [[ "$OSTYPE" != "darwin"* ]]; then echo "Work only on macOS, sorry" ; exit 1; fi
-if [[ $# -ne 4 ]] ; then echo "Invalid number of arguments" ; exit 1; fi
+if [[ $# -ne 5 ]] ; then echo "Invalid number of arguments" ; exit 1; fi
 
 version=$1
-label=$2
-imgname=$3
-compress=$4
+folder=$2
+label=$3
+imgname=$4
+compress=$5
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-dgusroot="$( cd "${scripts}/../LCD-Panel/DGUS-root" && pwd )"
+dgusroot="$( cd "${scripts}/../LCD-Panel/${folder}" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 mkdir -p "${scripts}/../../../releases/v${version}"

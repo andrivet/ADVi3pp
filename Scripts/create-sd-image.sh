@@ -8,5 +8,5 @@ if [[ $# -ne 1 ]] ; then echo "Please provide a version number such as 1.0.0" ; 
 
 version=$1
 
-./create-sd-image-from-dir.sh "${version}" "ADVI3PP" "ADVi3pp-LCD" 1
+./create-sd-image-from-dir.sh "${version}" "DGUS-root" "ADVI3PP" "ADVi3pp-LCD" 1
 

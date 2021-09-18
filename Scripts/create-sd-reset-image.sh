@@ -8,4 +8,4 @@ if [[ $# -ne 1 ]] ; then echo "Please provide a version number such as 1.0.0" ; 
 
 version=$1
 
-./create-sd-image-from-dir.sh "${version}" "Calibration" "ADVCALIB" "ADVi3pp-CALIB-LCD" 0
+./create-sd-image-from-dir.sh "${version}" "Reset" "RESETLCD" "ADVi3pp-RESET-LCD" 0

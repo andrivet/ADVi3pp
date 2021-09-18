@@ -6,7 +6,7 @@ Create a new release.
 if [[ "$OSTYPE" != "darwin"* ]]; then echo "Work only on macOS, sorry" ; exit 1; fi
 
 function pause(){
-   read -s -k "?$*"$'\n'
+   read -r -s -k "?$*"$'\n'
 }
 
 if [[ $# == 0 ]]; then echo "Please provide a version number such as 1.0.0" ; exit 1; fi
@@ -35,13 +35,18 @@ echo "- User Manual if necessary"
 echo
 pause 'Press any key to continue or Ctrl-C to abort...'
 
-rm -rf "${release}/*"
+rm -rf "${release:?}/*"
 
 echo
 echo "***** Create SD image and SD raw zip file..."
 echo
-./create-sd-image.sh $1
+./create-sd-image.sh "$1"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
+
+echo
+echo "***** Generate other microSD images..."
+./create-sd-calibration-image.sh "$1"
+./create-sd-reset-image.sh "$1"
 
 echo
 echo "***** Compile Mainboard firmwares..."
@@ -62,10 +67,10 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 echo
 echo "***** Copy Arduino Core..."
 echo
-pushd "${advi3pp}" >/dev/null
-zip -r -x@${scripts}/excludes-core.txt "${release}/ArduinoCore-${version}.zip" ArduinoCore
+pushd "${advi3pp}" >/dev/null || exit
+zip -r -x@"${scripts}"/excludes-core.txt "${release}/ArduinoCore-${version}.zip" ArduinoCore
 ret=$?; if [[ $ret != 0 ]]; then popd && exit $ret; fi
-popd >/dev/null
+popd >/dev/null || exit
 
 echo
 echo "**** ADVi3++ ${version} is ready in ${release}"

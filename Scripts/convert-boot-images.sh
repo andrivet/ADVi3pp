@@ -11,5 +11,6 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 for i in {0..20}
 do
-  convert ${masters}/Boot.png -alpha set -background opaque -channel A -evaluate multiply $((i*1.0/20)) +channel -flatten "${masters}/Boot/$(printf "%03d" $((i+200)))_boot.png"
+  # shellcheck disable=SC2079
+  convert "${masters}"/Boot.png -alpha set -background opaque -channel A -evaluate multiply $((i*1.0/20)) +channel -flatten "${masters}/Boot/$(printf "%03d" $((i+200)))_boot.png"
 done
