@@ -30,7 +30,7 @@ echo "=============================="
 echo
 echo "BE SURE YOU HAVE CHANGED:"
 echo "- CHANGELOG.md"
-echo "- advbumpversion: advbumpversion --allow-dirty release --list"
+echo "- bump2version: bump2version --allow-dirty release --list"
 echo "- User Manual if necessary"
 echo
 pause 'Press any key to continue or Ctrl-C to abort...'
