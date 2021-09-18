@@ -15,12 +15,12 @@ The MINI DGUS Display can be flashed by using its microSD slot. The microSD card
 
 ## LCD-Panel Screens Sources
 
-The actual source for the LCD-Panel screens is the file `ADVi3++5 LCD-Panel.sketch` created with [Sketch](https://www.sketch.com) currently only available for macOS.
+The actual source for the LCD-Panel screens is the file `ADVi3++5 LCD-Panel.sketch` created with [Sketch](https://www.sketch.com) currently only available for macOS (but there are compatible software available for Windows).
 Images in PNG format are derived from this Sketch file and are then converted to the appropriate format for the LCD Panel.
 
 ## Copyright
 
-Copyright &copy; 2018-2020 Sebastien Andrivet
+Copyright &copy; 2018-2021 Sebastien Andrivet
 
 # License
 
