@@ -1,5 +1,13 @@
 # ADVi3++ Changelog
 
+## 5.0.1 (2021-09-18)
+
+* **#259** - X direction printing is limited to 195mm
+* **#258** - The filename is not displayed when it is short (8.3 filename)
+* **#257** - Holding the + E button reboots the printer
+* **#256** - The tools under Controls/Move are not smooth
+* **#255** - The LCD panel does not dim after a while
+
 ## 5.0.0 (2021-09-10)
 
 * Major release based on Marlin 2.0.7
