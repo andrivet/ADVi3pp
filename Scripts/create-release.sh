@@ -9,8 +9,7 @@ function pause(){
    read -r -s -k "?$*"$'\n'
 }
 
-if [[ $# == 0 ]]; then echo "Please provide a version number such as 1.0.0" ; exit 1; fi
-version=$1
+version="5.0.2-dev"
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
@@ -24,9 +23,9 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 advi3pp="$( cd "${scripts}/../" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-echo "=============================="
-echo "Create ADVi3++ $1"
-echo "=============================="
+echo "======================================"
+echo "Create ADVi3++ version ${version}"
+echo "======================================"
 echo
 echo "BE SURE YOU HAVE CHANGED:"
 echo "- CHANGELOG.md"
@@ -39,14 +38,13 @@ rm -rf "${release:?}/*"
 
 echo
 echo "***** Create SD image and SD raw zip file..."
-echo
-./create-sd-image.sh "$1"
+./create-sd-image.sh "${version}"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo
 echo "***** Generate other microSD images..."
-./create-sd-calibration-image.sh "$1"
-./create-sd-reset-image.sh "$1"
+./create-sd-calibration-image.sh "${version}"
+./create-sd-reset-image.sh "${version}"
 
 echo
 echo "***** Compile Mainboard firmwares..."
