@@ -94,7 +94,7 @@ bool Dimming::receive()
         }
     }
 
-    if(!dimmed_ && ELAPSED(millis(), next_dimming_time_))
+    if(!dimmed_ && settings.is_feature_enabled(Feature::Dimming) && ELAPSED(millis(), next_dimming_time_))
     {
         no_log.allow();
         Log::log() << F("Delay elapsed, dim the panel") << Log::endl();
