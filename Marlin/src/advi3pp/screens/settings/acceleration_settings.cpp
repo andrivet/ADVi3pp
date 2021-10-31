@@ -39,7 +39,7 @@ Page AccelerationSettings::do_prepare_page()
         static_cast<uint16_t>(ExtUI::getPrintingAcceleration_mm_s2()),
         static_cast<uint16_t>(ExtUI::getRetractAcceleration_mm_s2()),
         static_cast<uint16_t>(ExtUI::getTravelAcceleration_mm_s2()),
-        static_cast<uint16_t>(ExtUI::getJunctionDeviation_mm() * 100)
+        static_cast<uint16_t>(ExtUI::getJunctionDeviation_mm() * 1000)
     });
     return Page::AccelerationSettings;
 }
@@ -48,7 +48,7 @@ Page AccelerationSettings::do_prepare_page()
 void AccelerationSettings::do_save_command()
 {
     ReadRam response{Variable::Value0};
-    if(!response.send_receive(7))
+    if(!response.send_receive(8))
     {
         Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
         return;
@@ -70,7 +70,7 @@ void AccelerationSettings::do_save_command()
     ExtUI::setPrintingAcceleration_mm_s2(static_cast<float>(print));
     ExtUI::setRetractAcceleration_mm_s2(static_cast<float>(retract));
     ExtUI::setTravelAcceleration_mm_s2(static_cast<float>(travel));
-    ExtUI::setJunctionDeviation_mm(static_cast<float>(deviation / 100.0));
+    ExtUI::setJunctionDeviation_mm(static_cast<float>(deviation / 1000.0));
 
     Parent::do_save_command();
 }
