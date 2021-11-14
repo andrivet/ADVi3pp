@@ -50,7 +50,7 @@
  * vendor name, download location, GitHub account, etc.
  */
 #ifndef DETAILED_BUILD_VERSION
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 5.0.2-dev)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 5.0.2)"
 #endif
 
 /**
@@ -59,7 +59,7 @@
  * version was tagged.
  */
 #ifndef STRING_DISTRIBUTION_DATE
-  #define STRING_DISTRIBUTION_DATE "2021-09-21"
+  #define STRING_DISTRIBUTION_DATE "2021-11-14"
 #endif
 
 /**

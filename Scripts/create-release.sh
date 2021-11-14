@@ -9,7 +9,7 @@ function pause(){
    read -r -s -k "?$*"$'\n'
 }
 
-version="5.0.2-dev"
+version="5.0.2"
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
