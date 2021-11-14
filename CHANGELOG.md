@@ -1,5 +1,10 @@
 # ADVi3++ Changelog
 
+## 5.0.2 (2021-11-14)
+
+* **#260** - Fix LCD dimming
+* **#266** - Junction Deviation bug and display one more digit
+
 ## 5.0.1 (2021-09-18)
 
 * **#259** - X direction printing is limited to 195mm
