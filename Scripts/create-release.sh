@@ -49,17 +49,17 @@ echo "***** Generate other microSD images..."
 echo
 echo "***** Compile Mainboard firmwares..."
 echo
-platformio -f -c clion run -d "${advi3pp}" -e advi3pp-51 -e advi3pp-51-bltouch -e advi3pp-52c -e advi3pp-52c-bltouch -e advi3pp-54
+platformio -f -c clion run -d "${advi3pp}" -e advi3pp_51 -e advi3pp_51_bltouch -e advi3pp_52c -e advi3pp_52c_bltouch -e advi3pp_54
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo
 echo "***** Copy Mainboard firmwares..."
 echo
-cp "${advi3pp}/.pioenvs/advi3pp-51/firmware.hex" "${release}/ADVi3pp-Mainboard-51-${version}.hex" && \
-cp "${advi3pp}/.pioenvs/advi3pp-51-bltouch/firmware.hex" "${release}/ADVi3pp-Mainboard-51-BLTouch-${version}.hex"
-cp "${advi3pp}/.pioenvs/advi3pp-52c/firmware.hex" "${release}/ADVi3pp-Mainboard-52c-${version}.hex"
-cp "${advi3pp}/.pioenvs/advi3pp-52c-bltouch/firmware.hex" "${release}/ADVi3pp-Mainboard-52c-BLTouch-${version}.hex"
-cp "${advi3pp}/.pioenvs/advi3pp-54/firmware.hex" "${release}/ADVi3pp-Mainboard-54-${version}.hex"
+cp "${advi3pp}/.pioenvs/advi3pp_51/firmware.hex" "${release}/ADVi3pp-Mainboard-51-${version}.hex" && \
+cp "${advi3pp}/.pioenvs/advi3pp_51_bltouch/firmware.hex" "${release}/ADVi3pp-Mainboard-51-BLTouch-${version}.hex"
+cp "${advi3pp}/.pioenvs/advi3pp_52c/firmware.hex" "${release}/ADVi3pp-Mainboard-52c-${version}.hex"
+cp "${advi3pp}/.pioenvs/advi3pp_52c_bltouch/firmware.hex" "${release}/ADVi3pp-Mainboard-52c-BLTouch-${version}.hex"
+cp "${advi3pp}/.pioenvs/advi3pp_54/firmware.hex" "${release}/ADVi3pp-Mainboard-54-${version}.hex"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo
