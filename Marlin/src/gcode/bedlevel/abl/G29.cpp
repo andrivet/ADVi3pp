@@ -82,7 +82,13 @@
   #endif
 #endif
 
-#define G29_RETURN(b) return TERN_(G29_RETRY_AND_RECOVER, b)
+// @advi3++
+//#define G29_RETURN(b) return TERN_(G29_RETRY_AND_RECOVER, b)
+#if ENABLED(G29_RETRY_AND_RECOVER)
+  #define G29_RETURN(b) { ExtUI::onAutomaticLevelingFinished(b); return b; }
+#else
+  #define G29_RETURN(b) { ExtUI::onAutomaticLevelingFinished(b); return; }
+#endif
 
 // For manual probing values persist over multiple G29
 class G29_State {
@@ -636,7 +642,14 @@ G29_TYPE GcodeSuite::G29() {
           if (TERN0(IS_KINEMATIC, !probe.can_reach(abl.probePos))) continue;
 
           if (abl.verbose_level) SERIAL_ECHOLNPGM("Probing mesh point ", pt_index, "/", abl.abl_points, ".");
-          TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i"), GET_TEXT(MSG_PROBING_POINT), int(pt_index), int(abl.abl_points)));
+          // @advi3++: Display x, y
+          //TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i"), GET_TEXT(MSG_PROBING_POINT), int(pt_index), int(abl.abl_points)));
+          TERN_(HAS_STATUS_MESSAGE, ui.status_printf_P(0, PSTR(S_FMT " %i/%i (%i, %i mm)"),
+            GET_TEXT(MSG_PROBING_MESH),
+            int(pt_index),
+            int(abl.abl_points),
+            int(abl.probePos.x),
+            int(abl.probePos.y)));
 
           abl.measured_z = faux ? 0.001f * random(-100, 101) : probe.probe_at_point(abl.probePos, raise_after, abl.verbose_level);
 

@@ -607,6 +607,7 @@ void CardReader::getAbsFilenameInCWD(char *dst) {
 
 void openFailed(const char * const fname) {
   SERIAL_ECHOLNPGM(STR_SD_OPEN_FILE_FAIL, fname, ".");
+  ExtUI::onMediaOpenError(fname); // @advi3++
 }
 
 void announceOpen(const uint8_t doing, const char * const path) {
@@ -683,7 +684,9 @@ void CardReader::openFileRead(const char * const path, const uint8_t subcall_typ
     }
 
     selectFileByName(fname);
-    ui.set_status(longFilename[0] ? longFilename : fname);
+    // @advi3++: Replace name of the file by "File opened."
+    // ui.set_status(longFilename[0] ? longFilename : fname);
+    ui.set_status_P(PSTR("File opened"));
   }
   else
     openFailed(fname);

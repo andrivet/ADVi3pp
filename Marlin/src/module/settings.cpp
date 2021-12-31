@@ -41,7 +41,10 @@
 
 // Check the integrity of data offsets.
 // Can be disabled for production build.
-//#define DEBUG_EEPROM_READWRITE
+// @advi3++: Enable in DEBUG builds
+#ifdef DEBUG
+#define DEBUG_EEPROM_READWRITE
+#endif
 
 #include "settings.h"
 
@@ -49,6 +52,7 @@
 #include "planner.h"
 #include "stepper.h"
 #include "temperature.h"
+#include "../advi3pp/inc/advi3pp.h" // @advi3++
 
 #include "../lcd/marlinui.h"
 #include "../libs/vector_3.h"   // for matrix_3x3
@@ -543,7 +547,7 @@ typedef struct SettingsDataStruct {
 
 MarlinSettings settings;
 
-uint16_t MarlinSettings::datasize() { return sizeof(SettingsData); }
+uint16_t MarlinSettings::datasize() { return sizeof(SettingsData) + ExtUI::getSizeofSettings(); } // @advi3++
 
 /**
  * Post-process after Retrieve or Reset
@@ -1421,11 +1425,12 @@ void MarlinSettings::postprocess() {
     //
     #if ENABLED(EXTENSIBLE_UI)
     {
-      char extui_data[ExtUI::eeprom_data_size] = { 0 };
+      char extui_data[ExtUI::eeprom_data_size] = { }; // @advi3++ do not initialize to 0 since it is empty
       ExtUI::onStoreSettings(extui_data);
       _FIELD_TEST(extui_data);
       EEPROM_WRITE(extui_data);
     }
+    ExtUI::onStoreSettingsEx(persistentStore.write_data, eeprom_index, working_crc); // @advi3++
     #endif
 
     //
@@ -2360,11 +2365,12 @@ void MarlinSettings::postprocess() {
       //
       #if ENABLED(EXTENSIBLE_UI)
       { // This is a significant hardware change; don't reserve EEPROM space when not present
-        const char extui_data[ExtUI::eeprom_data_size] = { 0 };
+        const char extui_data[ExtUI::eeprom_data_size] = { }; // @advi3++ do not initialize to 0 since it is empty
         _FIELD_TEST(extui_data);
         EEPROM_READ(extui_data);
         if (!validating) ExtUI::onLoadSettings(extui_data);
       }
+      if(!ExtUI::onLoadSettingsEx(persistentStore.read_data, eeprom_index, working_crc, validating)) eeprom_error = true; // @advi3++
       #endif
 
       //
@@ -2543,6 +2549,7 @@ void MarlinSettings::postprocess() {
       const bool success = _load();
     #endif
     validating = false;
+    TERN_(EXTENSIBLE_UI, ExtUI::onConfigurationStoreValidated(success)); // @advi3++
     return success;
   }
 
@@ -2790,7 +2797,7 @@ void MarlinSettings::reset() {
     #endif
   #endif
 
-  TERN_(EXTENSIBLE_UI, ExtUI::onFactoryReset());
+  TERN_(EXTENSIBLE_UI, ExtUI::onFactoryReset()); // TODO: Check this
   TERN_(DWIN_CREALITY_LCD_ENHANCED, DWIN_SetDataDefaults());
   TERN_(DWIN_CREALITY_LCD_JYERSUI, CrealityDWIN.Reset_Settings());
 

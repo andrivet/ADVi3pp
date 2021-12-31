@@ -204,7 +204,9 @@ namespace ExtUI {
   #if ENABLED(PRINTCOUNTER)
     char* getFailedPrints_str(char buffer[21]);
     char* getTotalPrints_str(char buffer[21]);
+    uint16_t getTotalPrints(); // @advi3++
     char* getFinishedPrints_str(char buffer[21]);
+    uint16_t getFinishedPrints(); // @advi3++
     char* getTotalPrintTime_str(char buffer[21]);
     char* getLongestPrint_str(char buffer[21]);
     char* getFilamentUsed_str(char buffer[21]);
@@ -232,6 +234,7 @@ namespace ExtUI {
   void setFlow_percent(const int16_t, const extruder_t);
   bool awaitingUserConfirm();
   void setUserConfirmed();
+  void waitUserConfirmation(); // @advi3++
 
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse);
@@ -352,6 +355,7 @@ namespace ExtUI {
    *
    * Should be used by the EXTENSIBLE_UI to operate on files
    */
+  void mountMedia(); // @advi3++
   bool isMediaInserted();
   bool isPrintingFromMediaPaused();
   bool isPrintingFromMedia();
@@ -362,6 +366,7 @@ namespace ExtUI {
   void stopPrint();
   void pausePrint();
   void resumePrint();
+  bool extrudeFilament(float purge_length); // @advi3++
 
   class FileList {
     private:
@@ -393,6 +398,7 @@ namespace ExtUI {
   void onMediaInserted();
   void onMediaError();
   void onMediaRemoved();
+  void onMediaOpenError(const char* filename); // @advi3++
   void onPlayTone(const uint16_t frequency, const uint16_t duration);
   void onPrinterKilled(FSTR_P const error, FSTR_P const component);
   void onPrintTimerStarted();
@@ -414,12 +420,54 @@ namespace ExtUI {
   void onPostprocessSettings();
   void onConfigurationStoreWritten(bool success);
   void onConfigurationStoreRead(bool success);
+
+  // @advi3++
+  #if ENABLED(EEPROM_SETTINGS)
+    void saveSettings();
+    void loadSettings();
+    void resetSettings();
+    using eeprom_write = bool (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
+    using eeprom_read  = bool (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
+    void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
+    uint16_t getSizeofSettings();
+  #endif
+
+  // @advi3++
+  #if HAS_LEVELING
+    void onAutomaticLevelingFinished(bool success);
+  #endif
+
+  // @advi3++
+  #if ENABLED(BLTOUCH)
+    bool bltouchDeploy();
+    bool bltouchStow();
+  #endif
+
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume();
   #endif
   #if HAS_PID_HEATING
+    void onPidTuningProgress(int cycleIndex, int nbCycles); // @advi3++
+    void onPidTuningReportTemp(int heater); // @advi3++
     void onPidTuning(const result_t rst);
   #endif
+
+  // @advi3++
+  bool isPrintingPaused();
+  void setAllAxisUnhomed();
+  void setAllAxisPositionUnknown();
+  void finishAndDisableHeaters();
+  void cancelWaitForHeatup();
+  void kill(PGM_P const lcd_error=nullptr, PGM_P const lcd_component=nullptr, const bool steppers_off=false);
+  void killRightNow(const bool steppers_off=false);
+  #if HAS_LCD_CONTRAST
+    uint16_t get_lcd_contrast();
+    void set_lcd_contrast(uint16_t contrast);
+  #endif
+  uint8_t get_lcd_brightness();
+  void set_lcd_brightness(uint8_t brightness);
+  void watchdogReset();
 };
 
 /**

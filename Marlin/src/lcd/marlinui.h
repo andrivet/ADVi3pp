@@ -26,6 +26,11 @@
 
 #include "../inc/MarlinConfig.h"
 
+// @advi3++
+#ifdef ADVi3PP_UI
+#include "../advi3pp/inc/advi3pp_marlin_ui.h"
+#else
+
 #if HAS_BUZZER
   #include "../libs/buzzer.h"
 #endif
@@ -747,3 +752,5 @@ extern MarlinUI ui;
 #define LCD_MESSAGE(M)         ui.set_status(GET_TEXT_F(M))
 #define LCD_ALERTMESSAGE_F(S)  ui.set_alert_status(F(S))
 #define LCD_ALERTMESSAGE(M)    ui.set_alert_status(GET_TEXT_F(M))
+
+#endif // @advi3++

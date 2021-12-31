@@ -675,6 +675,10 @@ volatile bool Temperature::raw_temps_ready = false;
         }
 
         if (!heating && current_temp < target && ELAPSED(ms, t1 + 5000UL)) {
+          // @advi3++
+          #if ENABLED(EXTENSIBLE_UI)
+            ExtUI::onPidTuningProgress(cycles + 1, ncycles);
+          #endif
           heating = true;
           t2 = ms;
           t_low = t2 - t1;
@@ -726,6 +730,10 @@ volatile bool Temperature::raw_temps_ready = false;
         #if HAS_TEMP_SENSOR
           print_heater_states(ischamber ? active_extruder : (isbed ? active_extruder : heater_id));
           SERIAL_EOL();
+          // @advi3++
+          #if ENABLED(EXTENSIBLE_UI)
+            ExtUI::onPidTuningReportTemp(isbed ? active_extruder : heater_id);
+          #endif
         #endif
         next_temp_ms = ms + 2000UL;
 
@@ -3647,7 +3655,7 @@ void Temperature::isr() {
         #if HAS_MULTI_HOTEND
           F("E%c " S_FMT), '1' + e
         #else
-          F("E1 " S_FMT)
+          F("Extruder " S_FMT) // @advi3++: Extruder instead of just "E"
         #endif
         , heating ? GET_TEXT(MSG_HEATING) : GET_TEXT(MSG_COOLING)
       );
