@@ -686,7 +686,7 @@ void CardReader::openFileRead(const char * const path, const uint8_t subcall_typ
     selectFileByName(fname);
     // @advi3++: Replace name of the file by "File opened."
     // ui.set_status(longFilename[0] ? longFilename : fname);
-    ui.set_status_P(PSTR("File opened"));
+    ui.set_status(F("File opened"));
   }
   else
     openFailed(fname);

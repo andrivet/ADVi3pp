@@ -34,6 +34,7 @@
 #include "../../module/planner.h"
 #include "../../feature/host_actions.h"
 
+#if 0
 using namespace ADVi3pp;
 
 preheat_t MarlinUI::material_preset[PREHEAT_COUNT];  // Initialized by settings.load()
@@ -45,7 +46,7 @@ namespace
     bool external_control = false;
     uint8_t progress = 0;
     uint8_t alert_level = 0;
-    int16_t contrast = LCD_CONTRAST_INIT;
+    int16_t brightnes = DEFAULT_LCD_BRIGHTNESS;
 }
 
 
@@ -295,3 +296,4 @@ void MarlinUI::buzz(const long duration, const uint16_t freq)
 {
     buzzer.buzz_on_action();
 }
+#endif

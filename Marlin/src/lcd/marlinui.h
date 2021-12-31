@@ -29,6 +29,7 @@
 // @advi3++
 #ifdef ADVi3PP_UI
 #include "../advi3pp/inc/advi3pp_marlin_ui.h"
+#include "extui/ui_api.h"
 #else
 
 #if HAS_BUZZER

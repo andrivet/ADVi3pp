@@ -1729,7 +1729,7 @@ void prepare_line_to_destination() {
      * See: https://github.com/andrivet/ADVi3pp/commit/5da26d65fd23c923a3d7c16d39c7518396392a60
      */
     if (axis == X_AXIS)
-      disable_e_steppers();
+      stepper.disable_e_steppers();
 
     #if EITHER(MORGAN_SCARA, MP_SCARA)
       // Only Z homing (with probe) is permitted

@@ -56,19 +56,19 @@ public:
     static void synchronize(PGM_P const msg=nullptr);
     static void kill_screen(PGM_P lcd_error, PGM_P lcd_component);
 
-    static void finish_status(const bool persist);
-    static void set_alert_status_P(PGM_P message);
-    static void reset_alert_level();
     static bool has_status();
-    static void set_status(const char* message, bool persist=false);
-    static void set_status_P(PGM_P message, int8_t level=0);
-    static void status_printf_P(uint8_t level, PGM_P fmt, ...);
-    static void reset_status(bool no_welcome=false);
+    static void reset_status(const bool no_welcome=false);
+    static void set_alert_status(FSTR_P const fstr);
+    static void reset_alert_level();
+    static void set_status(const char * const cstr, const bool persist=false);
+    static void set_status(FSTR_P const fstr, const int8_t level=0);
+    static void status_printf(const uint8_t level, FSTR_P const fmt, ...);
+    static void finish_status(const bool persist);
     static void return_to_status();
     static void kill_screen(FSTR_P const lcd_error, FSTR_P const lcd_component);
 
-    static void set_contrast(int16_t value);
-    static int16_t get_contrast();
+    static void set_brightness(int16_t value);
+    static int16_t get_brightness();
 
     static void update_buttons();
     static bool button_pressed();
@@ -90,6 +90,8 @@ public:
     static uint8_t get_progress_percent();
     static void buzz(const long duration, const uint16_t freq);
 
+    static void pause_show_message(const PauseMessage message, const PauseMode mode=PAUSE_MODE_SAME, const uint8_t extruder=active_extruder);
+
 #if LCD_HAS_WAIT_FOR_MOVE
     static bool wait_for_move;
 #else
@@ -105,8 +107,7 @@ public:
 
 extern MarlinUI ui;
 
-#define LCD_MESSAGEPGM_P(x)      ui.set_status_P(x)
-#define LCD_ALERTMESSAGEPGM_P(x) ui.set_alert_status_P(x)
-
-#define LCD_MESSAGEPGM(x)        LCD_MESSAGEPGM_P(GET_TEXT(x))
-#define LCD_ALERTMESSAGEPGM(x)   LCD_ALERTMESSAGEPGM_P(GET_TEXT(x))
+#define LCD_MESSAGE_F(S)       ui.set_status(F(S))
+#define LCD_MESSAGE(M)         ui.set_status(GET_TEXT_F(M))
+#define LCD_ALERTMESSAGE_F(S)  ui.set_alert_status(F(S))
+#define LCD_ALERTMESSAGE(M)    ui.set_alert_status(GET_TEXT_F(M))

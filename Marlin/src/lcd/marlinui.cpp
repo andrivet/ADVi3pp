@@ -22,6 +22,9 @@
 
 #include "../inc/MarlinConfig.h"
 
+// @advi3++
+#ifndef ADVi3PP_UI
+
 #include "../MarlinCore.h" // for printingIsPaused
 
 #ifdef LED_BACKLIGHT_TIMEOUT
@@ -1819,3 +1822,5 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
   #endif // EEPROM_AUTO_INIT
 
 #endif // EEPROM_SETTINGS
+
+#endif // @advi3++

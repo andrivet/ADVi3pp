@@ -2736,7 +2736,6 @@
 // Mini DGUS Touch Display (without DWIN OS)
 #define EXTENSIBLE_UI
 #define ADVi3PP_UI
-#define HAS_LCD_MENU 1
 #define HAS_BUZZER 1 // DGUS panel has a buzzer
 #define HAS_LCD_BRIGHTNESS 1
 #define MIN_LCD_BRIGHTNESS 0x01
