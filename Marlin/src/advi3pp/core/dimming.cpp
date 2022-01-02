@@ -53,7 +53,7 @@ void Dimming::set_next_dimming_time()
 //! @return The adjusted brightness
 uint8_t Dimming::get_adjusted_brightness()
 {
-    int16_t brightness = ExtUI::get_lcd_brightness();
+    int16_t brightness = ui.get_brightness();
     if(dimmed_)
         brightness = brightness * dimming_ratio / 100;
     if(brightness < MIN_LCD_BRIGHTNESS)
@@ -129,7 +129,7 @@ void Dimming::send_brightness()
 //! @param brightness New brightness
 void Dimming::change_brightness(uint8_t brightness)
 {
-    ExtUI::set_lcd_brightness(brightness);
+    ui.set_brightness(brightness);
 }
 
 }

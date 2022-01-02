@@ -695,4 +695,21 @@ void resume_print(const_float_t slow_load_length/*=0*/, const_float_t fast_load_
   TERN_(DWIN_CREALITY_LCD_ENHANCED, HMI_ReturnScreen());
 }
 
+// @advi3++: Used by Extruder Tuning
+bool extrude_filament(const float &purge_length)
+{
+  if(purge_length <= 0)
+    return false;
+
+  KEEPALIVE_STATE(IN_PROCESS);
+
+  if (!ensure_safe_temperature(PAUSE_MODE_SAME))
+    return false;
+
+  ui.pause_show_message(PAUSE_MESSAGE_LOAD);
+  unscaled_e_move(purge_length, 50.0 / 60);
+
+  return true;
+}
+
 #endif // ADVANCED_PAUSE_FEATURE

@@ -122,6 +122,9 @@ bool unload_filament(
   #endif
 );
 
+// @advi3++
+bool extrude_filament(const float &purge_length);
+
 #else // !ADVANCED_PAUSE_FEATURE
 
   constexpr uint8_t did_pause_print = 0;

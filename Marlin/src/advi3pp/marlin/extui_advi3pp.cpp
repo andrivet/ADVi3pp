@@ -20,6 +20,9 @@
 
 #include "../../inc/MarlinConfigPre.h"
 #include "../../lcd/extui/ui_api.h"
+#include "../../module/planner.h"
+#include "../../module/temperature.h"
+#include "../../module/settings.h"
 #include "../core/core.h"
 #include "../core/buzzer.h"
 #include "../core/status.h"
@@ -39,9 +42,9 @@ void onIdle()
     ADVi3pp::core.idle();
 }
 
-void onPrinterKilled(PGM_P const error, PGM_P const component)
+void onPrinterKilled(FSTR_P const error, FSTR_P const component)
 {
-    ADVi3pp::core.killed(ADVi3pp::to_flash(error));
+    ADVi3pp::core.killed(error);
 }
 
 // There is no way to detect media changes, so this part is not implemented
@@ -189,8 +192,92 @@ void onPidTuningReportTemp(int /*heater*/)
 void onSteppersDisabled() {}
 void onSteppersEnabled()  {}
 
+// @advi3++ PR candidates
+void setAllAxisUnhomed()
+{
+  ::set_all_unhomed();
 }
 
-void MarlinUI::buzz(const long duration, const uint16_t freq) {
-  ADVi3pp::buzzer.buzz_on_action();
+void setAllAxisPositionUnknown()
+{
+  ::set_all_unhomed();
+}
+
+void finishAndDisableHeaters()
+{
+  planner.finish_and_disable();
+}
+
+void cancelWaitForHeatup()
+{
+  ::wait_for_heatup = false;
+  setUserConfirmed();
+}
+
+void kill(FSTR_P const lcd_error, FSTR_P const lcd_component, const bool steppers_off)
+{
+  ::kill(lcd_error, lcd_component, steppers_off);
+}
+
+void killRightNow(const bool steppers_off)
+{
+  ::minkill(steppers_off);
+}
+
+#if PREHEAT_COUNT
+uint8_t getNbMaterialPresets()
+{
+  static_assert(COUNT(ui.material_preset) == PREHEAT_COUNT, "Update PREHEAT_COUNT");
+  return PREHEAT_COUNT;
+}
+
+int16_t getMaterialPresetHotendTemp_celsius(unsigned int index)
+{
+  return ui.material_preset[index].hotend_temp;
+}
+
+int16_t getMaterialPresetBedTemp_celsius(unsigned int index)
+{
+  return ui.material_preset[index].bed_temp;
+}
+
+uint8_t getMaterialPresetFanSpeed_percent(unsigned int index)
+{
+  return thermalManager.fanSpeedPercent(ui.material_preset[index].fan_speed);
+}
+
+void setMaterialPreset(unsigned int index, int16_t hotend_celcius, int16_t bed_celcius, uint8_t fan_percent)
+{
+  ui.material_preset[index].hotend_temp = hotend_celcius;
+  ui.material_preset[index].bed_temp    = bed_celcius;
+  ui.material_preset[index].fan_speed   = map(constrain(fan_percent, 0, 100), 0, 100, 0, 255);
+}
+
+#endif
+
+void saveSettings()
+{
+  settings.save();
+}
+
+void loadSettings()
+{
+  settings.load();
+}
+
+void resetSettings()
+{
+  settings.reset();
+}
+
+void watchdogReset()
+{
+  watchdog_refresh();
+}
+
+bool extrudeFilament(float purge_length)
+{
+  return extrude_filament(purge_length);
+}
+
 }

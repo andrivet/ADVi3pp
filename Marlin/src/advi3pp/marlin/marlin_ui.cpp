@@ -34,7 +34,6 @@
 #include "../../module/planner.h"
 #include "../../feature/host_actions.h"
 
-#if 0
 using namespace ADVi3pp;
 
 preheat_t MarlinUI::material_preset[PREHEAT_COUNT];  // Initialized by settings.load()
@@ -49,8 +48,7 @@ namespace
     int16_t brightnes = DEFAULT_LCD_BRIGHTNESS;
 }
 
-
-void lcd_pause_show_message(const PauseMessage message, const PauseMode mode, const uint8_t /*extruder*/)
+void MarlinUI::pause_show_message(const PauseMessage message, const PauseMode mode, const uint8_t /*extruder*/)
 {
     Log::log() << F("lcd_pause_show_message(")
         << static_cast<uint16_t>(message)
@@ -96,32 +94,32 @@ void MarlinUI::set_status(const char* const message, const bool persist)
     finish_status(persist);
 }
 
-void MarlinUI::status_printf_P(const uint8_t level, PGM_P const fmt, ...)
+void MarlinUI::status_printf(const uint8_t level, FSTR_P const fmt, ...)
 {
     if (level < alert_level) return;
     alert_level = level;
 
     va_list args;
     va_start(args, fmt);
-    status.set(to_flash(fmt), args);
+    status.set(fmt, args);
     va_end(args);
 
     finish_status(level > 0);
 }
 
-void MarlinUI::set_status_P(PGM_P const message, int8_t level)
+void MarlinUI::set_status(FSTR_P const fstr, int8_t level)
 {
     if (level < 0) level = alert_level = 0;
     if (level < alert_level) return;
     alert_level = level;
 
-    status.set(to_flash(message));
+    status.set(fstr);
     finish_status(level > 0);
 }
 
-void MarlinUI::set_alert_status_P(PGM_P const message)
+void MarlinUI::set_alert_status(FSTR_P const fstr)
 {
-    set_status_P(message, 1);
+    set_status(fstr, 1);
     return_to_status();
 }
 
@@ -139,7 +137,7 @@ void MarlinUI::reset_status(const bool no_welcome)
     else
         return;
 
-    set_status_P(msg, -1);
+    set_status(msg, -1);
 }
 
 void MarlinUI::abort_print()
@@ -151,13 +149,13 @@ void MarlinUI::abort_print()
     card.flag.abort_sd_printing = true;
 #endif
 #ifdef ACTION_ON_CANCEL
-    host_action_cancel();
+    hostui.cancel();
 #endif
 #if ENABLED(HOST_PROMPT_SUPPORT)
     host_prompt_open(PROMPT_INFO, PSTR("UI Aborted"), DISMISS_STR);
 #endif
     print_job_timer.stop();
-    set_status_P(GET_TEXT(MSG_PRINT_ABORTED));
+    set_status(GET_TEXT(MSG_PRINT_ABORTED));
 #if HAS_LCD_MENU
     return_to_status();
 #endif
@@ -172,7 +170,7 @@ void MarlinUI::pause_print() {
     host_prompt_open(PROMPT_PAUSE_RESUME, PSTR("UI Pause"), PSTR("Resume"));
 #endif
 
-    set_status_P(GET_TEXT(MSG_PRINT_PAUSED));
+    set_status(GET_TEXT(MSG_PRINT_PAUSED));
 
 #if ENABLED(PARK_HEAD_ON_PAUSE)
     queue.inject_P(PSTR("M25 P\nM24"));
@@ -189,7 +187,7 @@ void MarlinUI::resume_print()
     TERN_(PARK_HEAD_ON_PAUSE, wait_for_heatup = wait_for_user = false);
     if (IS_SD_PAUSED()) queue.inject_P(M24_STR);
 #ifdef ACTION_ON_RESUME
-    host_action_resume();
+    hostui.resume();
 #endif
     print_job_timer.start(); // Also called by M24
 }
@@ -209,14 +207,14 @@ void MarlinUI::synchronize(PGM_P msg)
     pages.show_back_page();
 }
 
-void MarlinUI::set_contrast(const int16_t value)
+void MarlinUI::set_brightness(const int16_t value)
 {
-    contrast = value;
+    brightnes = value;
 }
 
-int16_t MarlinUI::get_contrast()
+int16_t MarlinUI::get_brightness()
 {
-    return contrast;
+    return brightnes;
 }
 
 void MarlinUI::update_buttons()
@@ -296,4 +294,4 @@ void MarlinUI::buzz(const long duration, const uint16_t freq)
 {
     buzzer.buzz_on_action();
 }
-#endif
+

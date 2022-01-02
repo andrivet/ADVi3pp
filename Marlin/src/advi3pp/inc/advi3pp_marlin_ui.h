@@ -29,12 +29,6 @@
 #include "../../module/motion.h" // for active_extruder
 #endif
 
-#if ENABLED(ADVANCED_PAUSE_FEATURE)
-void lcd_pause_show_message(const PauseMessage message,
-                            const PauseMode mode=PAUSE_MODE_SAME,
-                            const uint8_t extruder=active_extruder);
-#endif
-
 typedef struct {
     uint16_t hotend_temp;
     uint16_t bed_temp;

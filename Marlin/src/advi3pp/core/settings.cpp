@@ -170,9 +170,11 @@ bool Settings::is_feature_enabled(Feature features) const
 
 void Settings::send_lcd_values(Variable features)
 {
+    uint16_t brightness = ui.get_brightness();
+
     WriteRamRequest{features}.write_words(adv::array<uint16_t, 2>{
         static_cast<uint16_t>(features_),
-        ExtUI::get_lcd_brightness()
+        brightness
     });
 }
 

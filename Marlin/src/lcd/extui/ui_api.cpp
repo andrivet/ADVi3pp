@@ -106,6 +106,7 @@
   #include "../../feature/pause.h"
 #endif
 
+
 namespace ExtUI {
   static struct {
     uint8_t printer_killed : 1;
@@ -924,7 +925,9 @@ namespace ExtUI {
   #if ENABLED(PRINTCOUNTER)
     char* getFailedPrints_str(char buffer[21])   { strcpy(buffer,i16tostr3left(print_job_timer.getStats().totalPrints - print_job_timer.getStats().finishedPrints)); return buffer; }
     char* getTotalPrints_str(char buffer[21])    { strcpy(buffer,i16tostr3left(print_job_timer.getStats().totalPrints));    return buffer; }
+    uint16_t getTotalPrints()                    { return print_job_timer.getStats().totalPrints; } // @advi3++
     char* getFinishedPrints_str(char buffer[21]) { strcpy(buffer,i16tostr3left(print_job_timer.getStats().finishedPrints)); return buffer; }
+    uint16_t getFinishedPrints()                 { return print_job_timer.getStats().finishedPrints; } // @advi3++
     char* getTotalPrintTime_str(char buffer[21]) { return duration_t(print_job_timer.getStats().printTime).toString(buffer); }
     char* getLongestPrint_str(char buffer[21])   { return duration_t(print_job_timer.getStats().longestPrint).toString(buffer); }
     char* getFilamentUsed_str(char buffer[21])   {
@@ -1041,6 +1044,9 @@ namespace ExtUI {
   }
   void setUserConfirmed() { TERN_(HAS_RESUME_CONTINUE, wait_for_user = false); }
 
+  // @advi3++
+  void waitUserConfirmation() { wait_for_user = true; }
+
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse response) { pause_menu_response = response; }
     PauseMessage pauseModeStatus = PAUSE_MESSAGE_STATUS;
@@ -1066,6 +1072,7 @@ namespace ExtUI {
   }
 
   bool isMediaInserted() { return TERN0(SDSUPPORT, IS_SD_INSERTED()); }
+  void mountMedia() { card.mount(); } // @advi3++
 
   void pausePrint()  { ui.pause_print(); }
   void resumePrint() { ui.resume_print(); }
