@@ -9,34 +9,14 @@ Project("{E66E83B9-2572-4076-B26E-6BE79FF3018A}") = "ArduinoCore", "ArduinoCore\
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		5.1 Debug|AVR = 5.1 Debug|AVR
-		5.1 Release|AVR = 5.1 Release|AVR
-		5.1BL Debug|AVR = 5.1BL Debug|AVR
-		5.1BL Release|AVR = 5.1BL Release|AVR
 		Simulator Debug|AVR = Simulator Debug|AVR
 		Simulator Release|AVR = Simulator Release|AVR
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1 Debug|AVR.ActiveCfg = Debug|AVR
-		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1 Debug|AVR.Build.0 = Debug|AVR
-		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1 Release|AVR.ActiveCfg = Release|AVR
-		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1 Release|AVR.Build.0 = Release|AVR
-		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1BL Debug|AVR.ActiveCfg = Debug|AVR
-		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1BL Debug|AVR.Build.0 = Debug|AVR
-		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1BL Release|AVR.ActiveCfg = Release|AVR
-		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.5.1BL Release|AVR.Build.0 = Release|AVR
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Simulator Debug|AVR.ActiveCfg = Debug|AVR
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Simulator Debug|AVR.Build.0 = Debug|AVR
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Simulator Release|AVR.ActiveCfg = Release|AVR
 		{DCE6C7E3-EE26-4D79-826B-08594B9AD897}.Simulator Release|AVR.Build.0 = Release|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.5.1 Debug|AVR.ActiveCfg = Debug|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.5.1 Debug|AVR.Build.0 = Debug|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.5.1 Release|AVR.ActiveCfg = Release|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.5.1 Release|AVR.Build.0 = Release|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.5.1BL Debug|AVR.ActiveCfg = Debug|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.5.1BL Debug|AVR.Build.0 = Debug|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.5.1BL Release|AVR.ActiveCfg = Release|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.5.1BL Release|AVR.Build.0 = Release|AVR
 		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Debug|AVR.ActiveCfg = Release|AVR
 		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Debug|AVR.Build.0 = Release|AVR
 		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Release|AVR.ActiveCfg = Release|AVR
