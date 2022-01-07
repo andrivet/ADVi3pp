@@ -70,7 +70,7 @@ Log& Log::operator<<(const char* data)
 Log& Log::operator<<(const FlashChar* data)
 {
     if(enabled_ && !suspend_) {
-        serialprintPGM(from_flash(data));
+        serial_print_P(from_flash(data));
         space();
     }
     return *this;

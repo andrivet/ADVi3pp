@@ -294,4 +294,3 @@ void MarlinUI::buzz(const long duration, const uint16_t freq)
 {
     buzzer.buzz_on_action();
 }
-
