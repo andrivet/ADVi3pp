@@ -100,7 +100,7 @@ void PidTuning::step2_command()
     }
 
     temperature_ = frame.read_word();
-    uint16_t  kind = frame.read_word();
+    [[maybe_unused]] uint16_t  kind = frame.read_word();
     assert(static_cast<TemperatureKind>(kind) == kind_);
 
     state_ |= State::FromLCDMenu;
