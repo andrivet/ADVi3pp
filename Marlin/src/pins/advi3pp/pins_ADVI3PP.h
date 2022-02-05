@@ -96,6 +96,8 @@
 
 #define FAN_PIN                 5  // PE3 / PWM5
 
+#define FIL_RUNOUT_PIN          36 // PC1 / A9
+
 //
 // Misc. Functions
 //
