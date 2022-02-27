@@ -34,6 +34,7 @@ echo "- User Manual if necessary"
 echo
 pause 'Press any key to continue or Ctrl-C to abort...'
 
+sudo -v
 rm -rf "${release:?}/*"
 
 echo
