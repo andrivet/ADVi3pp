@@ -86,6 +86,7 @@ enum class Page: uint16_t
     LevelingNoSensor        = 128,              // 0x0080
     ManualMesh              = 130,              // 0x0082
     XTwist                  = 132,              // 0x0084
+    Runout                  = 134,              // 0x0086
 
     Boot                    = 200 | Temporary   // 0x00C8
 };
@@ -187,6 +188,7 @@ enum class Action: uint16_t
     Temperatures            = 0x0422,
     Setup                   = 0x0423,
     XTwist                  = 0x0424,
+    Runout                  = 0x0425,
 
     // 6 - Moves
     MoveXMinus              = 0x0600,
@@ -322,6 +324,12 @@ enum class KeyValue: uint16_t
     VibrationsYX            = 0x0001,
     VibrationsZ             = 0x0001,
 
+    RunoutEnable            = 0x0001,
+    RunoutHigh2Low          = 0x0002,
+    RunoutLow2High          = 0x0003,
+    RunoutLED               = 0x0004,
+    RunoutDistance          = 0x0005,
+
     Save                    = 0xFFFE,
     Back                    = 0xFFFF
 };
@@ -333,8 +341,7 @@ enum class Feature: uint16_t
     None                = 0b0000000000000000,
     Dimming             = 0b0000000000000001,
     BuzzOnAction        = 0b0000000000000010,
-    BuzzOnPress         = 0b0000000000000100,
-    RunoutSensor        = 0b0000000000001000
+    BuzzOnPress         = 0b0000000000000100
 };
 ENABLE_BITMASK_OPERATOR(Feature);
 

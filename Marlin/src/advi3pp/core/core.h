@@ -44,6 +44,8 @@ private:
 
 struct Core
 {
+    enum class PinState: uint8_t { Off = 0, On = 1, Output = 2};
+
     void startup();
     void idle();
     void killed(const FlashChar* error);
@@ -54,6 +56,8 @@ struct Core
     void inject_commands(const FlashChar* commands);
 
     template<size_t L> ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version);
+
+    static PinState get_pin_state(uint8_t pin);
 
 private:
     bool init();

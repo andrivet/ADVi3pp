@@ -62,6 +62,7 @@
 #include "../screens/settings/feedrate_settings.h"
 #include "../screens/settings/acceleration_settings.h"
 #include "../screens/settings/linear_advance_settings.h"
+#include "../screens/settings/runout_settings.h"
 #include "../screens/info/versions.h"
 #include "../screens/info/statistics.h"
 #include "../screens/info/copyrights.h"
@@ -255,6 +256,7 @@ void Core::from_lcd()
         case Action::Temperatures:          temperatures.handle(key_code); break;
         case Action::Setup:                 setup.handle(key_code); break;
         case Action::XTwist:                xtwist.handle(key_code); break;
+        case Action::Runout:                runout_settings.handle(key_code); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;
@@ -343,6 +345,26 @@ void Core::inject_commands(const FlashChar* commands)
     ExtUI::injectCommands_P(from_flash(commands));
 }
 
+//! Get current digital pin state (adapted from Arduino source code).
+//! @param pin  Pin number to check.
+//! @return     The current state: On (input), Off (input), Output
+Core::PinState Core::get_pin_state(uint8_t pin)
+{
+    uint8_t mask = digitalPinToBitMask(pin);
+    uint8_t port = digitalPinToPort(pin);
+    if(port == NOT_A_PIN)
+        return PinState::Off;
+
+    volatile uint8_t* reg = portModeRegister(port);
+    if(*reg & mask)
+        return PinState::Output;
+
+    uint8_t timer = digitalPinToTimer(pin);
+    if(timer != NOT_ON_TIMER)
+        return PinState::Output;
+
+    return (*portInputRegister(port) & mask) ? PinState::On : PinState::Off;
+}
 
 
 }

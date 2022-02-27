@@ -376,6 +376,12 @@
     <Compile Include="src\advi3pp\screens\settings\print_settings.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\settings\runout_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\runout_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\screens\settings\sensor_settings.h">
       <SubType>compile</SubType>
     </Compile>
@@ -478,6 +484,12 @@
     <Compile Include="src\feature\pause.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\feature\runout.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\feature\runout.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\bedlevel\abl\G29.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -502,6 +514,12 @@
     <Compile Include="src\gcode\control\M280.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\gcode\control\M42.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\feature\runout\M412.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\gcode.h">
       <SubType>compile</SubType>
     </Compile>
@@ -518,6 +536,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\queue.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\units\M149.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\HAL\AVR\endstop_interrupts.h">
@@ -1298,6 +1319,7 @@
     <Folder Include="src\gcode\feature" />
     <Folder Include="src\gcode\feature\digipot" />
     <Folder Include="src\gcode\feature\pause" />
+    <Folder Include="src\gcode\feature\runout" />
     <Folder Include="src\gcode\geometry" />
     <Folder Include="src\gcode\host" />
     <Folder Include="src\gcode\lcd" />

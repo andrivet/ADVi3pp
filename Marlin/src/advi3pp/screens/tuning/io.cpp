@@ -20,6 +20,7 @@
 
 #include "../../parameters.h"
 #include "io.h"
+#include "../../core/core.h"
 #include "../../core/task.h"
 #include "../../core/dgus.h"
 
@@ -66,26 +67,6 @@ void IO::do_back_command()
     Parent::do_back_command();
 }
 
-//! Get current digital pin state (adapted from Arduino source code).
-//! @param pin  Pin number to check.
-//! @return     The current state: On (input), Off (input), Output
-IO::State IO::get_pin_state(uint8_t pin)
-{
-    uint8_t mask = digitalPinToBitMask(pin);
-    uint8_t port = digitalPinToPort(pin);
-    if(port == NOT_A_PIN)
-        return State::Off;
-
-    volatile uint8_t* reg = portModeRegister(port);
-    if(*reg & mask)
-        return State::Output;
-
-    uint8_t timer = digitalPinToTimer(pin);
-    if(timer != NOT_ON_TIMER)
-        return State::Output;
-
-    return (*portInputRegister(port) & mask) ? State::On : State::Off;
-}
 
 //! Send the current data to the LCD panel.
 void IO::send_data()
@@ -95,7 +76,7 @@ void IO::send_data()
     for(size_t i = 0; i < adv::count_of(diagnosis_digital_pins); ++i)
     {
         auto var = static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + i);
-        WriteRamRequest{var}.write_word(static_cast<uint16_t>(get_pin_state(diagnosis_digital_pins[i])));
+        WriteRamRequest{var}.write_word(static_cast<uint16_t>(Core::get_pin_state(diagnosis_digital_pins[i])));
     }
 
     for(size_t i = 0; i < adv::count_of(diagnosis_analog_pins); ++i)

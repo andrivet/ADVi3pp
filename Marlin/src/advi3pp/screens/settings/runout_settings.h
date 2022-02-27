@@ -24,17 +24,22 @@
 
 namespace ADVi3pp {
 
-//! Diagnosis Page
-struct IO: Screen<IO>
+//! Runout Setting Page
+struct RunoutSettings: Screen<RunoutSettings>
 {
 private:
+    bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_back_command();
+    void do_save_command();
+    void enable_command();
+    void high2low_command();
+    void low2high_command();
     void send_data();
 
     friend Parent;
 };
 
-extern IO io;
+extern RunoutSettings runout_settings;
 
 }
