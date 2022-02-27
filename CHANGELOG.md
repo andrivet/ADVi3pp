@@ -1,5 +1,9 @@
 # ADVi3++ Changelog
 
+## 5.0.3 (2022-02-27)
+
+* **#273** - Loading feedrate is way too fast
+
 ## 5.0.2 (2021-11-14)
 
 * **#260** - Fix LCD dimming

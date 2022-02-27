@@ -9,7 +9,7 @@ function pause(){
    read -r -s -k "?$*"$'\n'
 }
 
-version="5.0.2"
+version="5.0.3"
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
@@ -35,6 +35,7 @@ echo
 pause 'Press any key to continue or Ctrl-C to abort...'
 
 sudo -v
+
 rm -rf "${release:?}/*"
 
 echo
