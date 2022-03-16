@@ -70,6 +70,7 @@
     #define ADVi3PP_51
     #define BLTOUCH
     #define ADVi3PP_LOG
+    #define HAS_FILAMENT_SENSOR
 #endif
 
 #if defined(BLTOUCH) || defined(ADVi3PP_54)
