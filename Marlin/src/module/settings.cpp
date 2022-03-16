@@ -236,6 +236,7 @@ typedef struct SettingsDataStruct {
   // FILAMENT_RUNOUT_SENSOR
   //
   bool runout_sensor_enabled;                           // M412 S
+  bool runout_sensor_inverted;                          // @advi3++
   float runout_distance_mm;                             // M412 D
 
   //
@@ -771,11 +772,14 @@ void MarlinSettings::postprocess() {
     {
       #if HAS_FILAMENT_SENSOR
         const bool &runout_sensor_enabled = runout.enabled;
+        const bool &runout_sensor_inverted = runout.inverted; // @advi3++
       #else
         constexpr int8_t runout_sensor_enabled = -1;
+        const bool &runout_sensor_inverted = false; // @advi3++
       #endif
       _FIELD_TEST(runout_sensor_enabled);
       EEPROM_WRITE(runout_sensor_enabled);
+      EEPROM_WRITE(runout_sensor_inverted); // @advi3++
 
       #if HAS_FILAMENT_RUNOUT_DISTANCE
         const float &runout_distance_mm = runout.runout_distance();
@@ -1674,11 +1678,13 @@ void MarlinSettings::postprocess() {
       // Filament Runout Sensor
       //
       {
-        int8_t runout_sensor_enabled;
+        int8_t runout_sensor_enabled, runout_sensor_inverted; // @advi3++
         _FIELD_TEST(runout_sensor_enabled);
         EEPROM_READ(runout_sensor_enabled);
+        EEPROM_READ(runout_sensor_inverted);
         #if HAS_FILAMENT_SENSOR
           runout.enabled = runout_sensor_enabled < 0 ? FIL_RUNOUT_ENABLED_DEFAULT : runout_sensor_enabled;
+          runout.inverted = runout_sensor_inverted;
         #endif
 
         TERN_(HAS_FILAMENT_SENSOR, if (runout.enabled) runout.reset());
@@ -2750,6 +2756,7 @@ void MarlinSettings::reset() {
 
   #if HAS_FILAMENT_SENSOR
     runout.enabled = FIL_RUNOUT_ENABLED_DEFAULT;
+    runout.inverted = false; // @advi3++
     runout.reset();
     TERN_(HAS_FILAMENT_RUNOUT_DISTANCE, runout.set_runout_distance(FILAMENT_RUNOUT_DISTANCE_MM));
   #endif
