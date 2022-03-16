@@ -662,6 +662,9 @@ namespace ExtUI {
       float getFilamentRunoutDistance_mm()                 { return runout.runout_distance(); }
       void setFilamentRunoutDistance_mm(const_float_t value) { runout.set_runout_distance(constrain(value, 0, 999)); }
     #endif
+    // @advi3++
+    void setFilamentRunoutInverted(bool inverted)   { runout.inverted = inverted; }
+    bool getFilamentRunoutInverted()                { return runout.inverted; }
   #endif
 
   #if ENABLED(CASE_LIGHT_ENABLE)

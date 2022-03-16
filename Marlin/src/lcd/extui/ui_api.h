@@ -306,6 +306,8 @@ namespace ExtUI {
       float getFilamentRunoutDistance_mm();
       void setFilamentRunoutDistance_mm(const_float_t);
     #endif
+    void setFilamentRunoutInverted(bool inverted); // @advi3++
+    bool getFilamentRunoutInverted(); // @advi3++
   #endif
 
   #if ENABLED(CASE_LIGHT_ENABLE)
