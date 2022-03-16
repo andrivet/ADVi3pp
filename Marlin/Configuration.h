@@ -1822,7 +1822,7 @@
 
 // Homing speeds (mm/min)
 // @advi3++
-#define HOMING_FEEDRATE_MM_M { (100*60), (20*60), (4*60) }
+#define HOMING_FEEDRATE_MM_M { (100*60), (100*60), (20*60) }
 
 // Validate that endstops are triggered on homing moves
 // @advi3++: Do not validate when using the Simulator
