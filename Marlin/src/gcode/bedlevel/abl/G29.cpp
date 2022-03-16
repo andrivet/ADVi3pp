@@ -902,7 +902,8 @@ G29_TYPE GcodeSuite::G29() {
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_IDLE));
 
-  G29_RETURN(isnan(abl.measured_z));
+  // @advi3++ very strange bug (no !), I don't understand the logic of Marlin
+  G29_RETURN(!isnan(abl.measured_z));
 
 }
 
