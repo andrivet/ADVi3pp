@@ -51,12 +51,14 @@ bool RunoutSettings::do_dispatch(KeyValue key_value)
 //! @return The index of the page to display
 Page RunoutSettings::do_prepare_page()
 {
+    inverted_ = ExtUI::getFilamentRunoutInverted();
+
     WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 4>
     {
           static_cast<uint16_t>(ExtUI::getFilamentRunoutEnabled()),
           static_cast<uint16_t>(ExtUI::getFilamentRunoutState()),
           static_cast<uint16_t>(ExtUI::getFilamentRunoutDistance_mm() * 10),
-          0 // static_cast<uint16_t>(ExtUI::getFilamentRunoutInverted())
+          static_cast<uint16_t>(ExtUI::getFilamentRunoutInverted())
     });
 
     background_task.set(Callback{this, &RunoutSettings::send_data}, 250);
@@ -79,13 +81,13 @@ void RunoutSettings::do_save_command() {
     }
 
     uint16_t enabled = response.read_word();
-    uint16_t state = response.read_word();
+    [[maybe_unused]] uint16_t state = response.read_word();
     float distance = response.read_word() / 10.0f;
     uint16_t trigger = response.read_word();
 
     ExtUI::setFilamentRunoutEnabled(enabled == 1);
     ExtUI::setFilamentRunoutDistance_mm(distance);
-   // ExtUI::setFilamentRunoutInverted(trigger == 1;)
+    ExtUI::setFilamentRunoutInverted(trigger == 1);
 
     Parent::do_save_command();
 }
@@ -106,19 +108,22 @@ void RunoutSettings::enable_command()
 //! Handle the Trigger (High/Low) command
 void RunoutSettings::high2low_command()
 {
+    inverted_ = false;
     WriteRamRequest{Variable::Value3}.write_word(1);
 }
 
 //! Handle the Trigger (Low/High) command
 void RunoutSettings::low2high_command()
 {
+    inverted_ = true;
     WriteRamRequest{Variable::Value3}.write_word(0);
 }
 
 //! Send the current data to the LCD panel.
 void RunoutSettings::send_data()
 {
-    WriteRamRequest{Variable::Value1}.write_word(static_cast<uint16_t>(Core::get_pin_state(FIL_RUNOUT_PIN)));
+    uint16_t value = Core::get_pin_state(FIL_RUNOUT_PIN) == Core::PinState::On ? !inverted_ : inverted_;
+    WriteRamRequest{Variable::Value1}.write_word(value);
 }
 
 }

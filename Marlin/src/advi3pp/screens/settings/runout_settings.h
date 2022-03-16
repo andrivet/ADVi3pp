@@ -38,6 +38,9 @@ private:
     void send_data();
 
     friend Parent;
+
+private:
+    bool inverted_ = false;
 };
 
 extern RunoutSettings runout_settings;
