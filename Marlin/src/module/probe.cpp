@@ -746,6 +746,11 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
   #endif
 
+    // @advi3++
+#ifdef ADVi3PP_HARDWARE_SIMULATOR
+  return 2.0;
+#endif
+
   return measured_z;
 }
 
@@ -799,6 +804,11 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
     if (verbose_level > 2)
       SERIAL_ECHOLNPGM("Bed X: ", LOGICAL_X_POSITION(rx), " Y: ", LOGICAL_Y_POSITION(ry), " Z: ", measured_z);
   }
+  
+  // @advi3++
+  #ifdef ADVi3PP_HARDWARE_SIMULATOR
+  measured_z = 2.1;
+  #endif
 
   if (isnan(measured_z)) {
     stow();
