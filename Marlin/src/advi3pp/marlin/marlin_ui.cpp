@@ -155,7 +155,7 @@ void MarlinUI::abort_print()
     host_prompt_open(PROMPT_INFO, PSTR("UI Aborted"), DISMISS_STR);
 #endif
     print_job_timer.stop();
-    set_status(GET_TEXT(MSG_PRINT_ABORTED));
+    set_status(GET_TEXT_F(MSG_PRINT_ABORTED));
 #if HAS_LCD_MENU
     return_to_status();
 #endif
@@ -170,7 +170,7 @@ void MarlinUI::pause_print() {
     host_prompt_open(PROMPT_PAUSE_RESUME, PSTR("UI Pause"), PSTR("Resume"));
 #endif
 
-    set_status(GET_TEXT(MSG_PRINT_PAUSED));
+    set_status(GET_TEXT_F(MSG_PRINT_PAUSED));
 
 #if ENABLED(PARK_HEAD_ON_PAUSE)
     queue.inject_P(PSTR("M25 P\nM24"));
