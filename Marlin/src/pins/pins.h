@@ -287,7 +287,7 @@
 #elif MB(ADVI3PP_I3_PLUS_51)
   #include "advi3pp/pins_ADVI3PP.h"              // ATmega2560                             env:advi3pp_51 env:advi3pp_51_bltouch env:advi3pp_51_bltouch_debug
 #elif MB(ADVI3PP_I3_PLUS_52C)
-  #include "advi3pp/pins_ADVI3PP.h"              // ATmega2560                             env:advi3pp_52c env:advi3pp_51c_bltouch
+  #include "advi3pp/pins_ADVI3PP.h"              // ATmega2560                             env:advi3pp_52c env:advi3pp_52c_bltouch
 #elif MB(ADVI3PP_I3_PLUS_54)
   #include "advi3pp/pins_ADVI3PP.h"              // ATmega2560                             env:advi3pp_54
 
