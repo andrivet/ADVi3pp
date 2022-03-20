@@ -56,9 +56,9 @@ Page RunoutSettings::do_prepare_page()
     WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 4>
     {
           static_cast<uint16_t>(ExtUI::getFilamentRunoutEnabled()),
-          static_cast<uint16_t>(ExtUI::getFilamentRunoutState()),
+          static_cast<uint16_t>(get_filament_state()),
           static_cast<uint16_t>(ExtUI::getFilamentRunoutDistance_mm() * 10),
-          static_cast<uint16_t>(ExtUI::getFilamentRunoutInverted())
+          static_cast<uint16_t>(ExtUI::getFilamentRunoutInverted() ? 0 : 1)
     });
 
     background_task.set(Callback{this, &RunoutSettings::send_data}, 250);
@@ -87,7 +87,7 @@ void RunoutSettings::do_save_command() {
 
     ExtUI::setFilamentRunoutEnabled(enabled == 1);
     ExtUI::setFilamentRunoutDistance_mm(distance);
-    ExtUI::setFilamentRunoutInverted(trigger == 1);
+    ExtUI::setFilamentRunoutInverted(trigger == 0);
 
     Parent::do_save_command();
 }
@@ -119,11 +119,18 @@ void RunoutSettings::low2high_command()
     WriteRamRequest{Variable::Value3}.write_word(0);
 }
 
+uint16_t RunoutSettings::get_filament_state() {
+	auto pin_state = Core::get_pin_state(FIL_RUNOUT_PIN);
+    return inverted_ ?
+            (pin_state == Core::PinState::On ? 0: 1) :
+            (pin_state == Core::PinState::On ? 1 : 0);
+}
+
+
 //! Send the current data to the LCD panel.
 void RunoutSettings::send_data()
 {
-    uint16_t value = Core::get_pin_state(FIL_RUNOUT_PIN) == Core::PinState::On ? !inverted_ : inverted_;
-    WriteRamRequest{Variable::Value1}.write_word(value);
+    WriteRamRequest{Variable::Value1}.write_word(get_filament_state());
 }
 
 }

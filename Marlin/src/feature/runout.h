@@ -175,7 +175,9 @@ class FilamentSensorBase {
 
   public:
     static inline void setup() {
-      #define _INIT_RUNOUT_PIN(P,S,U,D) do{ if (ENABLED(U)) SET_INPUT_PULLUP(P); else if (ENABLED(D)) SET_INPUT_PULLDOWN(P); else SET_INPUT(P); }while(0)
+	  // @advi3++
+	   #define _INIT_RUNOUT_PIN(P,S,U,D) do{ if(runout.inverted) SET_INPUT_PULLDOWN(P); else SET_INPUT_PULLUP(P); }while(0)
+      // #define _INIT_RUNOUT_PIN(P,S,U,D) do{ if (ENABLED(U)) SET_INPUT_PULLUP(P); else if (ENABLED(D)) SET_INPUT_PULLDOWN(P); else SET_INPUT(P); }while(0)
       #define  INIT_RUNOUT_PIN(N) _INIT_RUNOUT_PIN(FIL_RUNOUT##N##_PIN, FIL_RUNOUT##N##_STATE, FIL_RUNOUT##N##_PULLUP, FIL_RUNOUT##N##_PULLDOWN)
       #if NUM_RUNOUT_SENSORS >= 1
         INIT_RUNOUT_PIN(1);
@@ -215,33 +217,32 @@ class FilamentSensorBase {
     // Return a bitmask of runout flag states (1 bits always indicates runout)
     static inline uint8_t poll_runout_states() {
       // @advi3++
-      uint8_t states = poll_runout_pins() ^ uint8_t(0
+      return poll_runout_pins() ^ uint8_t(0
         #if NUM_RUNOUT_SENSORS >= 1
-          | (FIL_RUNOUT1_STATE ? 0 : _BV(1 - 1))
+          | (runout.inverted ? 0 : _BV(1 - 1))
         #endif
         #if NUM_RUNOUT_SENSORS >= 2
-          | (FIL_RUNOUT2_STATE ? 0 : _BV(2 - 1))
+          | (runout.inverted ? 0 : _BV(2 - 1))
         #endif
         #if NUM_RUNOUT_SENSORS >= 3
-          | (FIL_RUNOUT3_STATE ? 0 : _BV(3 - 1))
+          | (runout.inverted ? 0 : _BV(3 - 1))
         #endif
         #if NUM_RUNOUT_SENSORS >= 4
-          | (FIL_RUNOUT4_STATE ? 0 : _BV(4 - 1))
+          | (runout.inverted ? 0 : _BV(4 - 1))
         #endif
         #if NUM_RUNOUT_SENSORS >= 5
-          | (FIL_RUNOUT5_STATE ? 0 : _BV(5 - 1))
+          | (runout.inverted ? 0 : _BV(5 - 1))
         #endif
         #if NUM_RUNOUT_SENSORS >= 6
-          | (FIL_RUNOUT6_STATE ? 0 : _BV(6 - 1))
+          | (runout.inverted ? 0 : _BV(6 - 1))
         #endif
         #if NUM_RUNOUT_SENSORS >= 7
-          | (FIL_RUNOUT7_STATE ? 0 : _BV(7 - 1))
+          | (runout.inverted ? 0 : _BV(7 - 1))
         #endif
         #if NUM_RUNOUT_SENSORS >= 8
-          | (FIL_RUNOUT8_STATE ? 0 : _BV(8 - 1))
+          | (runout.inverted ? 0 : _BV(8 - 1))
         #endif
       );
-      return runout.inverted ? states ^ 0xFF : states; // @advi3++
     }
 };
 

@@ -35,6 +35,7 @@ private:
     void enable_command();
     void high2low_command();
     void low2high_command();
+	uint16_t get_filament_state();
     void send_data();
 
     friend Parent;
