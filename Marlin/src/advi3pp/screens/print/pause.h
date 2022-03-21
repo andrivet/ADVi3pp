@@ -31,8 +31,8 @@ struct Pause: Screen<Pause>
     void show_message(PauseMessage message);
 
 private:
-    void show(PGM_P message);
-    void cont(PGM_P message);
+    void show(FSTR_P message);
+    void cont(FSTR_P message);
     void on_options();
     void on_status();
 

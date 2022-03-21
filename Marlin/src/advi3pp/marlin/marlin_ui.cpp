@@ -60,11 +60,11 @@ void MarlinUI::pause_show_message(const PauseMessage message, const PauseMode mo
     pause.show_message(message);
 }
 
-void MarlinUI::return_to_status()
+void MarlinUI::return_to_status(bool show_main)
 {
     Log::log() << F("return_to_status") << Log::endl();
     pages.reset();
-    if(print_job_timer.isRunning())
+    if(!show_main && print_job_timer.isRunning())
         pages.show(Page::Print);
     else
         pages.show(Page::Main);
@@ -125,15 +125,15 @@ void MarlinUI::set_alert_status(FSTR_P const fstr)
 
 void MarlinUI::reset_status(const bool no_welcome)
 {
-    PGM_P msg;
+    FSTR_P msg;
     if(printingIsPaused())
-        msg = GET_TEXT(MSG_PRINT_PAUSED);
+        msg = GET_TEXT_F(MSG_PRINT_PAUSED);
     else if (IS_SD_PRINTING())
-        msg = GET_TEXT(MSG_PRINTING);
+        msg = GET_TEXT_F(MSG_PRINTING);
     else if (print_job_timer.isRunning())
-        msg = GET_TEXT(MSG_PRINTING);
+        msg = GET_TEXT_F(MSG_PRINTING);
     else if (!no_welcome)
-        msg = GET_TEXT(WELCOME_MSG);
+        msg = GET_TEXT_F(WELCOME_MSG);
     else
         return;
 
@@ -146,38 +146,27 @@ void MarlinUI::abort_print()
 
 #if ENABLED(SDSUPPORT)
     wait_for_heatup = wait_for_user = false;
-    card.flag.abort_sd_printing = true;
+    card.abortFilePrintSoon();
 #endif
 #ifdef ACTION_ON_CANCEL
     hostui.cancel();
 #endif
-#if ENABLED(HOST_PROMPT_SUPPORT)
-    host_prompt_open(PROMPT_INFO, PSTR("UI Aborted"), DISMISS_STR);
-#endif
-    print_job_timer.stop();
+    IF_DISABLED(SDSUPPORT, print_job_timer.stop());
+    TERN_(HOST_PROMPT_SUPPORT, hostui.prompt_open(PROMPT_INFO, F("UI Aborted"), FPSTR(DISMISS_STR)));
     set_status(GET_TEXT_F(MSG_PRINT_ABORTED));
-#if HAS_LCD_MENU
-    return_to_status();
-#endif
+    return_to_status(true);
 }
 
 void MarlinUI::pause_print() {
-#if HAS_LCD_MENU
-    synchronize(GET_TEXT(MSG_PAUSE_PRINT));
-#endif
+    synchronize(GET_TEXT_F(MSG_PAUSE_PRINT));
 
-#if ENABLED(HOST_PROMPT_SUPPORT)
-    host_prompt_open(PROMPT_PAUSE_RESUME, PSTR("UI Pause"), PSTR("Resume"));
-#endif
+    TERN_(HOST_PROMPT_SUPPORT, hostui.prompt_open(PROMPT_PAUSE_RESUME, F("UI Pause"), F("Resume")));
 
     set_status(GET_TEXT_F(MSG_PRINT_PAUSED));
 
 #if ENABLED(PARK_HEAD_ON_PAUSE)
-    queue.inject_P(PSTR("M25 P\nM24"));
-#elif ENABLED(SDSUPPORT)
-    queue.inject_P(PSTR("M25"));
-#elif defined(ACTION_ON_PAUSE)
-      host_action_pause();
+    pause_show_message(PAUSE_MESSAGE_PARKING, PAUSE_MODE_PAUSE_PRINT); // Show message immediately to let user know about pause in progress
+    queue.inject(F("M25 P\nM24"));
 #endif
 }
 
@@ -185,21 +174,21 @@ void MarlinUI::resume_print()
 {
     reset_status();
     TERN_(PARK_HEAD_ON_PAUSE, wait_for_heatup = wait_for_user = false);
-    if (IS_SD_PAUSED()) queue.inject_P(M24_STR);
+    TERN_(SDSUPPORT, if (IS_SD_PAUSED()) queue.inject_P(M24_STR));
 #ifdef ACTION_ON_RESUME
     hostui.resume();
 #endif
     print_job_timer.start(); // Also called by M24
 }
 
-void MarlinUI::synchronize(PGM_P msg)
+void MarlinUI::synchronize(FSTR_P msg)
 {
     static bool no_reentry = false;
     if(no_reentry) return;
 
     if(msg == nullptr)
-        msg = GET_TEXT(MSG_MOVING);
-    wait.wait(to_flash(msg));
+        msg = GET_TEXT_F(MSG_MOVING);
+    wait.wait(msg);
 
     planner.synchronize(); // idle() is called until moves complete
     no_reentry = false;
@@ -225,7 +214,6 @@ void MarlinUI::update_buttons()
 bool MarlinUI::button_pressed()
 {
     Log::log() << F("button_pressed") << Log::endl();
-    // TODO
     return false;
 }
 

@@ -47,19 +47,18 @@ public:
     static void abort_print();
     static void pause_print();
     static void resume_print();
-    static void synchronize(PGM_P const msg=nullptr);
-    static void kill_screen(PGM_P lcd_error, PGM_P lcd_component);
+    static void synchronize(FSTR_P msg=nullptr);
+    static void kill_screen(FSTR_P lcd_error, FSTR_P lcd_component);
 
     static bool has_status();
-    static void reset_status(const bool no_welcome=false);
-    static void set_alert_status(FSTR_P const fstr);
+    static void reset_status(bool no_welcome=false);
+    static void set_alert_status(FSTR_P fstr);
     static void reset_alert_level();
-    static void set_status(const char * const cstr, const bool persist=false);
-    static void set_status(FSTR_P const fstr, const int8_t level=0);
-    static void status_printf(const uint8_t level, FSTR_P const fmt, ...);
-    static void finish_status(const bool persist);
-    static void return_to_status();
-    static void kill_screen(FSTR_P const lcd_error, FSTR_P const lcd_component);
+    static void set_status(const char *str, bool persist = true);
+    static void set_status(FSTR_P fstr, int8_t level=0);
+    static void status_printf(uint8_t level, FSTR_P fmt, ...);
+    static void finish_status(bool persist);
+    static void return_to_status(bool show_main = false);
 
     static void set_brightness(int16_t value);
     static int16_t get_brightness();
@@ -76,15 +75,15 @@ public:
     static void chirp();
 
     static preheat_t material_preset[PREHEAT_COUNT];
-    static PGM_P get_preheat_label(const uint8_t m);
+    static FSTR_P get_preheat_label(uint8_t m);
 
     typedef uint8_t progress_t;
-    static void set_progress(const progress_t p);
+    static void set_progress(progress_t p);
     static void set_progress_done();
     static uint8_t get_progress_percent();
-    static void buzz(const long duration, const uint16_t freq);
+    static void buzz(long duration, uint16_t freq);
 
-    static void pause_show_message(const PauseMessage message, const PauseMode mode=PAUSE_MODE_SAME, const uint8_t extruder=active_extruder);
+    static void pause_show_message(PauseMessage message, PauseMode mode=PAUSE_MODE_SAME, uint8_t extruder=active_extruder);
 
 #if LCD_HAS_WAIT_FOR_MOVE
     static bool wait_for_move;

@@ -76,13 +76,13 @@ void onFilamentRunout(const extruder_t extruder)
 
 void onUserConfirmRequired(const char * const msg)
 {
-    ADVi3pp::status.set(msg); // TODO: Check this
+    ADVi3pp::status.set(msg);
     ADVi3pp::core.wait_user_confirm();
 }
 
 void onStatusChanged(const char * const msg)
 {
-    ADVi3pp::status.set(msg); // TODO: Check this
+    ADVi3pp::status.set(msg);
 }
 
 void onHomingStart() {}
