@@ -18,6 +18,8 @@
  *
  */
 
+#include "../lcd/extui/ui_api.h"
+
 namespace ADVi3pp {
 
 const uint16_t advi3_pp_version = 0x510;

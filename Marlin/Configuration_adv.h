@@ -1280,6 +1280,17 @@
   #define FEEDRATE_CHANGE_BEEP_FREQUENCY 440
 #endif
 
+// @advi3++ Use Marlin's implementation instead of mine
+#define X_AXIS_TWIST_COMPENSATION
+/**
+ * Enable to init the Probe Z-Offset when starting the Wizard.
+ * Use a height slightly above the estimated nozzle-to-probe Z offset.
+ * For example, with an offset of -5, consider a starting height of -4.
+ */
+#define XATC_START_Z 0.0
+#define XATC_MAX_POINTS 3             // Number of points to probe in the wizard
+#define XATC_Y_POSITION Y_CENTER      // (mm) Y position to probe
+
 #if HAS_LCD_MENU
 
   // Add Probe Z Offset calibration to the Z Probe Offsets menu

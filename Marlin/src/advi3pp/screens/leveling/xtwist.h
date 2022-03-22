@@ -35,21 +35,12 @@ struct XTwist: Screen<XTwist>
     void minus();
     void plus();
 
-    float get_offset(Point x) { return offset(x) / 100.0f; };
-    float compute_z(float x) const;
-    void reset();
-
 private:
     enum class Multiplier: uint8_t { M1, M2, M3 };
 
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void post_home_task();
-    void do_write(EepromWrite& eeprom) const;
-    bool do_validate(EepromRead& eeprom);
-    void do_read(EepromRead& eeprom);
-    void do_reset();
-    uint16_t do_size_of() const;
     void do_save_command();
     void do_back_command();
     void multiplier1_command();
@@ -62,18 +53,12 @@ private:
     double get_multiplier_value() const;
     void adjust_height(double offset);
     void send_data() const;
-    long& offset(Point x) { return offsets_[static_cast<unsigned>(x)]; }
-    long offset(Point x) const { return offsets_[static_cast<unsigned>(x)]; }
-    void set_offset(Point x, float z) { offset(x) = lround(z * 100.0); };
     float get_x_mm(Point x) const;
-    void compute_factors();
 
 private:
-    Point point_ = Point::M;
     Multiplier multiplier_ = Multiplier::M1;
-    adv::array<long, GRID_MAX_POINTS_X> offsets_{};
-    adv::array<long, GRID_MAX_POINTS_X> old_offsets_{};
-    float a_ = 0.0, b_ = 0.0, c_ = 0.0;
+    Point point_ = Point::L;
+    adv::array<float, ExtUI::xTwistPoints> z_offsets_;
     friend Parent;
 };
 

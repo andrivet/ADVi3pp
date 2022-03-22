@@ -41,64 +41,6 @@ XTwist xtwist;
 const double SENSOR_Z_HEIGHT_MULTIPLIERS[] = {0.02, 0.10, 1.0};
 const int MARGIN = 10;
 
-void twist(xyze_pos_t &pos)
-{
-    auto z = xtwist.compute_z(pos.x);
-    Log::log() << F("X-Twist") << pos.x << F("->") << z << Log::endl();
-    pos.z += z;
-}
-
-void untwist(xyze_pos_t &pos)
-{
-    auto z = xtwist.compute_z(pos.x);
-    Log::log() << F("X-UnTwist") << pos.x << F("->") << z << Log::endl();
-    pos.z -= z;
-}
-
-float twist_offset_x0() { return xtwist.get_offset(XTwist::Point::L); }
-float twist_offset_x2() { return xtwist.get_offset(XTwist::Point::R); }
-
-//! Store current data in permanent memory (EEPROM)
-//! @param eeprom EEPROM writer
-void XTwist::do_write(EepromWrite& eeprom) const
-{
-    eeprom.write(offset(Point::L));
-    eeprom.write(offset(Point::R));
-}
-
-//! Validate data from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-bool XTwist::do_validate(EepromRead &eeprom)
-{
-    float dummy{};
-    eeprom.read(dummy);
-    eeprom.read(dummy);
-    return true;
-}
-
-//! Restore data from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-void XTwist::do_read(EepromRead& eeprom)
-{
-    eeprom.read(offset(Point::L));
-    eeprom.read(offset(Point::R));
-    offset(Point::M) = 0;
-    compute_factors();
-}
-
-//! Reset settings
-void XTwist::do_reset()
-{
-    offsets_.fill(0);
-    a_ = b_ = c_ = 0.0;
-}
-
-//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
-//! @return Number of bytes
-uint16_t XTwist::do_size_of() const
-{
-    return 2 * sizeof(long);
-}
 
 //! Handle Sensor Z Height command
 //! @param key_value    The sub-action to handle
@@ -137,8 +79,7 @@ Page XTwist::do_prepare_page()
 
     pages.save_forward_page();
 
-    old_offsets_ = offsets_;
-    a_ = b_ = c_ = 0.0;
+    z_offsets_.fill(0);
 
     wait.wait(F("Homing..."));
     core.inject_commands(F("G28 F6000"));  // homing
@@ -167,9 +108,6 @@ void XTwist::post_home_task()
 //! Execute the Back command
 void XTwist::do_back_command()
 {
-    offsets_ = old_offsets_;
-    compute_factors();
-
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
     ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
@@ -181,7 +119,8 @@ void XTwist::do_back_command()
 //! Handles the Save (Continue) command
 void XTwist::do_save_command()
 {
-    compute_factors();
+    ExtUI::setXTwistStartSpacing(MARGIN, (X_BED_SIZE - MARGIN) / 2.0f);
+    for(size_t i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, z_offsets_[i]);
 
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
@@ -189,40 +128,6 @@ void XTwist::do_save_command()
     ExtUI::setAxisPosition_mm(4, ExtUI::Z);
 
     Parent::do_save_command();
-}
-
-void XTwist::reset()
-{
-    do_reset();
-}
-
-void XTwist::compute_factors()
-{
-    const auto offset = get_offset(Point::M);
-    ExtUI::setZOffset_mm(ExtUI::getZOffset_mm() + offset);
-
-    set_offset(Point::L, get_offset(Point::L) - offset);
-    set_offset(Point::R, get_offset(Point::R) - offset);
-    set_offset(Point::M, 0);
-
-    double x0 = get_x_mm(Point::L);
-    double z0 = get_offset(Point::L);
-    double x1 = get_x_mm(Point::M);
-    double x2 = get_x_mm(Point::R);
-    double z2 = get_offset(Point::R);
-
-    // Quadratic equation - Newton's divided differences interpolation polynomial
-    a_ = z0;
-    b_ = -z0 / (x1 - x0);
-    float b2 = z2 / (x2 - x1);
-    c_ = (b2 - b_) / (x2 - x0);
-}
-
-float XTwist::compute_z(float x) const
-{
-    double x0 = get_x_mm(Point::L);
-    double x1 = get_x_mm(Point::M);
-    return a_ + (x - x0) * b_ + (x - x0) * (x - x1) * c_;
 }
 
 //! Change the multiplier.
@@ -263,7 +168,7 @@ void XTwist::move_x(Point x)
     ExtUI::setAxisPosition_mm(Y_BED_SIZE / 2.0f, ExtUI::Y);
 
     ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(get_offset(x), ExtUI::Z);
+    ExtUI::setAxisPosition_mm(z_offsets_[static_cast<size_t>(x)], ExtUI::Z);
 
     point_ = x;
 }
@@ -313,7 +218,7 @@ void XTwist::adjust_height(double offset_value)
 {
     ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset_value, ExtUI::Z);
-    set_offset(point_, ExtUI::getAxisPosition_mm(ExtUI::Z));
+    z_offsets_[static_cast<size_t>(point_)] = ExtUI::getAxisPosition_mm(ExtUI::Z);
 }
 
 //! Send the current data (i.e. multiplier) to the LCD panel.

@@ -52,7 +52,6 @@
 #include "planner.h"
 #include "stepper.h"
 #include "temperature.h"
-#include "../advi3pp/inc/advi3pp.h" // @advi3++
 
 #include "../lcd/marlinui.h"
 #include "../libs/vector_3.h"   // for matrix_3x3
