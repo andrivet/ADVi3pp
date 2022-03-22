@@ -1218,6 +1218,37 @@ void setMaterialPreset(unsigned int index, int16_t hotend_celcius, int16_t bed_c
 
 #endif
 
+// @advi3++
+#if ENABLED(X_AXIS_TWIST_COMPENSATION)
+
+float getXTwistSpacing()
+{
+  return xatc.spacing;
+}
+
+float getXTwistStart()
+{
+  return xatc.start;
+}
+
+const float* getXTwistZValues()
+{
+  return xatc.z_values;
+}
+
+void setXTwistStartSpacing(float start, float spacing)
+{
+  xatc.start = start;
+  xatc.spacing = spacing;
+}
+
+void setXTwistZOffset(int index, float offset)
+{
+  xatc.z_values[index] = offset;
+}
+
+#endif
+
 void saveSettings()
 {
   settings.save();

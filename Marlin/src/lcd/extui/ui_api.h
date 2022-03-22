@@ -66,6 +66,7 @@ namespace ExtUI {
   constexpr uint8_t extruderCount = EXTRUDERS;
   constexpr uint8_t hotendCount   = HOTENDS;
   constexpr uint8_t fanCount      = FAN_COUNT;
+  constexpr int     xTwistPoints  = XATC_MAX_POINTS; // @advi3++
 
   #if HAS_MESH
     typedef float bed_mesh_t[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];
@@ -343,6 +344,15 @@ namespace ExtUI {
     int16_t getMaterialPresetBedTemp_celsius(unsigned int index);
     uint8_t getMaterialPresetFanSpeed_percent(unsigned int index);
     void setMaterialPreset(unsigned int index, int16_t hotend_celcius, int16_t bed_celcius, uint8_t fan_percent);
+  #endif
+
+  // @advi3++
+  #if ENABLED(X_AXIS_TWIST_COMPENSATION)
+  float getXTwistSpacing();
+  float getXTwistStart();
+  const float* getXTwistZValues();
+  void setXTwistStartSpacing(float start, float spacing);
+  void setXTwistZOffset(int index, float offset);
   #endif
 
   /**
