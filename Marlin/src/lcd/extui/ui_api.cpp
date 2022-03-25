@@ -112,6 +112,11 @@
   #include "../../feature/bltouch.h"
 #endif
 
+// @advi3++
+#if ENABLED(X_AXIS_TWIST_COMPENSATION)
+  #include "../../feature/bedlevel/abl/x_twist.h"
+#endif
+
 namespace ExtUI {
   static struct {
     uint8_t printer_killed : 1;
