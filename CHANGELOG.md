@@ -1,5 +1,17 @@
 # ADVi3++ Changelog
 
+## 5.1.0 (2022-03-25)
+
+* Align ADVi3++ with upstream latest release of Marlin (2.0.9.3)
+* **#79** - Support for filament runout sensors
+* **#263** - Use G-Code M256 (set brightness) instead of M250 (set contrast)
+* **#268** - Fix Z height not saved and 0.1mm less than expected
+* **#271** - Fix pin #6 displayed as an output in the I/O screen
+
+## 5.0.3 (2022-02-27)
+
+* **#273** - Loading feedrate is way too fast
+
 ## 5.0.2 (2021-11-14)
 
 * **#260** - Fix LCD dimming
