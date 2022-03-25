@@ -1,7 +1,7 @@
 /**
  * ADVi3++ Firmware For Wanhao Duplicator i3 Plus (based on Marlin 2)
  *
- * Copyright (C) 2017-2021 Sebastien Andrivet [https://github.com/andrivet/]
+ * Copyright (C) 2017-2022 Sebastien Andrivet [https://github.com/andrivet/]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -157,7 +157,7 @@ void Core::wait_user_confirm()
 void Core::send_gplv3_7b_notice()
 {
     SERIAL_ECHO_START();
-    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2021 Sebastien Andrivet");
+    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2022 Sebastien Andrivet");
 }
 
 void Core::send_sponsors()
