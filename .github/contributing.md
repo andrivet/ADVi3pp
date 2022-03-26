@@ -27,6 +27,8 @@ This is not the right place. Here is the right place for support requests or que
 
 * [ADVi3++ Community - Get Help](https://community.advi3pp.com/c/get-help)
 
+Note: Only sponsors of the project [on Patreon](https://www.patreon.com/bePatron?u=6504486) are able to ask questions.
+
 ## How Can I Contribute?
 
 ### Reporting Bugs
