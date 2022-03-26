@@ -1,5 +1,5 @@
 name: ✨ Request a feature
-description: Request a new Marlin Firmware feature
+description: Request a new ADVi3++ Firmware feature
 title: "(feature summary)"
 labels: 'T: enhancement'
 body:
@@ -55,6 +55,8 @@ body:
     attributes:
       label: Additional context
       description: Please provide enough information (such as links to web sites, blogs, technical description) so that anyone can understand what you are talking about.
+    validations:
+      required: true
 
   - type: dropdown
     attributes:

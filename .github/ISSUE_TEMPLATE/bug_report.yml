@@ -11,7 +11,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Thank you for reporting a bug in ADVi3++ Firmware!**
+        **Thank you for reporting a bug in ADVi3++ Firmware.**
 
         ## Before Reporting a Bug
 
@@ -55,12 +55,16 @@ body:
       description: >-
         What did you expect to happen?
       placeholder: I expected it to move left.
+    validations:
+      required: true
 
   - type: textarea
     attributes:
       label: Actual behavior
       description: What actually happened instead?
       placeholder: It moved right instead of left.
+    validations:
+      required: true
 
   - type: textarea
     attributes:
@@ -71,6 +75,8 @@ body:
         1. [First Step] ...
         2. [Second Step] ...
         3. [and so on] ...
+    validations:
+      required: true
 
   - type: markdown
     attributes:
@@ -88,6 +94,8 @@ body:
     attributes:
       label: Printer model
       description: Wanhao Duplicator i3 Plus or any clone (5.1), Aldi Balco 3D Printer UK (5.2C), Wanhao Duplicator i3 Plus Mark II (5.4). The exact version is written on the mainboard.
+    validations:
+      required: true
 
   - type: input
     attributes:
