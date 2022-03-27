@@ -87,7 +87,7 @@
 #if ENABLED(G29_RETRY_AND_RECOVER)
   #define G29_RETURN(b) { ExtUI::onAutomaticLevelingFinished(b); return b; }
 #else
-  #define G29_RETURN(b) { ExtUI::onAutomaticLevelingFinished(b); return; }
+  #define G29_RETURN(b) { ExtUI::onAutomaticLevelingFinished(!b); return; }
 #endif
 
 // For manual probing values persist over multiple G29
@@ -902,8 +902,7 @@ G29_TYPE GcodeSuite::G29() {
 
   TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_IDLE));
 
-  // @advi3++ very strange bug (no !), I don't understand the logic of Marlin
-  G29_RETURN(!isnan(abl.measured_z));
+  G29_RETURN(isnan(abl.measured_z));
 
 }
 
