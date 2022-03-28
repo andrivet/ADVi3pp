@@ -142,7 +142,7 @@ void onConfigurationStoreValidated(bool success)
     ADVi3pp::settings.on_settings_validated(success);
 }
 
-void onMeshLevelingStart() {}
+void onLevelingStart() {}
 
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval)
 {

@@ -114,7 +114,7 @@
 
 // @advi3++
 #if ENABLED(X_AXIS_TWIST_COMPENSATION)
-  #include "../../feature/bedlevel/abl/x_twist.h"
+  #include "../../feature/x_twist.h"
 #endif
 
 namespace ExtUI {
@@ -1238,7 +1238,7 @@ float getXTwistStart()
 
 const float* getXTwistZValues()
 {
-  return xatc.z_values;
+  return xatc.z_offset;
 }
 
 void setXTwistStartSpacing(float start, float spacing)
@@ -1249,7 +1249,7 @@ void setXTwistStartSpacing(float start, float spacing)
 
 void setXTwistZOffset(int index, float offset)
 {
-  xatc.z_values[index] = offset;
+  xatc.z_offset[index] = offset;
 }
 
 #endif
