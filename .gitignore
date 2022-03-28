@@ -182,5 +182,5 @@ LCD-Panel/DGUS-root/25_Controls
 LCD-Panel/DGUS-root/DWIN_SET/*.bmp
 LCD-Panel/Sketch-Export/
 Thumbs.db
-build/
-Simulator/
+Marlin/5.1BL Debug/
+Marlin/5.1BL Release/
