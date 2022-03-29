@@ -1,5 +1,9 @@
 # ADVi3++ Changelog
 
+## 5.1.1 (2022-03-29)
+
+* **#283** - Automatic bed leveling is reporting 0 for all points
+
 ## 5.1.0 (2022-03-25)
 
 * Align ADVi3++ with upstream latest release of Marlin (2.0.9.3)
