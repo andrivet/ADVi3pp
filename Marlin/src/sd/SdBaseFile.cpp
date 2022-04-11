@@ -1126,6 +1126,9 @@ int8_t SdBaseFile::readDir(dir_t *dir, char *longFilename) {
                 uint16_t idx = (n + i) * 2; // This is fixed as FAT LFN always contain UTF-16LE encoding
                 longFilename[idx] = utf16_ch & 0xFF;
                 longFilename[idx + 1] = (utf16_ch >> 8) & 0xFF;
+              #elif ENABLED(LONG_FILENAME_ASCII_STRICT) // @advi3++
+                // Replace all non-ASCII characters to '_'
+                longFilename[n + i] = (utf16_ch > 0x7F) ? '_' : (utf16_ch & 0x7F);
               #else
                 // Replace all multibyte characters to '_'
                 longFilename[n + i] = (utf16_ch > 0xFF) ? '_' : (utf16_ch & 0xFF);

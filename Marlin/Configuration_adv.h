@@ -1539,6 +1539,11 @@
   // LCD's font must contain the characters. Check your selected LCD language.
   //#define UTF_FILENAME_SUPPORT
 
+  // @advi3++: Some panels do not support extended ASCII.
+  // Enforce strict ASCII character set (< 0x80) and replace higher characters with
+  // an underscore.
+  #define LONG_FILENAME_ASCII_STRICT
+
   // This allows hosts to request long names for files and folders with M33
   // @advi3++
   #define LONG_FILENAME_HOST_SUPPORT
