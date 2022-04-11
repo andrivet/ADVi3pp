@@ -257,6 +257,7 @@ enum class KeyValue: uint16_t
     SDLine5                 = 0x0005,
     SDUp                    = 0x0006,
     SDDown                  = 0x0007,
+    SDParent                = 0x0008,
 
     LevelingPoint1          = 0x0001,
     LevelingPoint2          = 0x0002,

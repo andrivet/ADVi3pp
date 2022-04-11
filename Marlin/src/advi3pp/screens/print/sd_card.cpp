@@ -38,14 +38,16 @@ bool SdCard::do_dispatch(KeyValue key_value)
 
     switch(key_value)
     {
-        case KeyValue::SDUp:	up_command(); break;
-        case KeyValue::SDDown:	down_command(); break;
+        case KeyValue::SDUp: up_command(); break;
+        case KeyValue::SDDown: down_command(); break;
+        case KeyValue::SDParent: parent_command(); break;
         case KeyValue::SDLine1:
         case KeyValue::SDLine2:
         case KeyValue::SDLine3:
         case KeyValue::SDLine4:
-        case KeyValue::SDLine5:	select_file_command(static_cast<uint16_t>(key_value) - 1); break;
-        default:                return false;
+        case KeyValue::SDLine5:
+            select_command(static_cast<uint16_t>(key_value) - 1); break;
+        default: return false;
     }
 
     return true;
@@ -66,8 +68,7 @@ void SdCard::show_first_page()
         return;
 
     page_index_ = 0;
-    ExtUI::FileList files{};
-    nb_files_ = files.count();
+    nb_files_ = files_.count();
     last_file_index_ = nb_files_ > 0 ? nb_files_ - 1 : 0;
 
     show_current_page();
@@ -101,40 +102,60 @@ void SdCard::up_command()
     }
 }
 
+//! Handle Page Up command.
+void SdCard::parent_command()
+{
+    if(!ExtUI::isMediaInserted() || files_.isAtRootDir())
+        return;
+
+    files_.upDir();
+    files_.refresh();
+    show_first_page();
+}
+
 //! Show the list of files on SD (current page)
 void SdCard::show_current_page()
 {
     ADVString<48> name;
+    FileType file_type = FileType::None;
 
     for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
     {
-        get_file_name(index, name);
+        get_file_name(index, name, file_type);
+
         auto var = static_cast<Variable>(static_cast<uint16_t>(Variable::LongText0) + 24 * index);
         WriteRamRequest{var}.write_text(name);
+
+        var = static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + index);
+        WriteRamRequest{var}.write_word(static_cast<uint16_t>(file_type));
     }
 
-    WriteRamRequest{Variable::Value0}.write_word(page_index_ + 1);
+    WriteRamRequest{Variable::Value5}.write_words(adv::array<uint16_t, 2>{
+        page_index_ + 1,
+        (files_.count() + nb_visible_sd_files - 1) / nb_visible_sd_files
+    });
 }
 
 //! Get a filename with a given index.
 //! @param index    Index of the filename
 //! @param name     Copy the filename into this Chars
-void SdCard::get_file_name(uint8_t index_in_page, ADVString<48>& name)
+void SdCard::get_file_name(uint8_t index_in_page, ADVString<48>& name, FileType &type)
 {
     name.reset();
+    type = FileType::None;
+
     if(last_file_index_ >= index_in_page)
     {
         ExtUI::FileList files{};
         files.seek(last_file_index_ - index_in_page);
-        if(files.isDir()) name = "[";
-            name += files.filename();
-        if(files.isDir()) name += "]";
+        name += files.filename();
+        type = files.isDir() ? FileType::Folder : FileType::File;
     }
 }
 
 //! Select a filename as sent by the LCD screen.
 //! @param file_index    The index of the filename to select
-void SdCard::select_file_command(uint16_t file_index)
+void SdCard::select_command(uint16_t file_index)
 {
     if(!ExtUI::isMediaInserted())
         return;
@@ -142,21 +163,31 @@ void SdCard::select_file_command(uint16_t file_index)
     if(file_index > last_file_index_)
         return;
 
-    ExtUI::FileList files{};
-    files.seek(last_file_index_ - file_index);
-    if(files.isDir())
-        return;
+    files_.seek(last_file_index_ - file_index);
 
-    const char* filename = files.shortFilename();
+    const char* filename = files_.shortFilename();
     if(filename == nullptr) // If the SD card is not readable
     {
         ExtUI::onMediaOpenError(filename);
         return;
     }
-    status.set_filename(files.filename());
-    ExtUI::printFile(filename);
 
+    if(files_.isDir())
+        select_directory();
+    else
+        select_file();
+}
+
+void SdCard::select_file() {
+    status.set_filename(files_.filename());
+    ExtUI::printFile(files_.shortFilename());
     pages.show(Page::Print);
+}
+
+void SdCard::select_directory() {
+    files_.changeDir(files_.shortFilename());
+    files_.refresh();
+    show_first_page();
 }
 
 }

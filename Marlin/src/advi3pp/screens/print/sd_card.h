@@ -28,16 +28,21 @@ namespace ADVi3pp {
 //! SD Card Page
 struct SdCard: Screen<SdCard>
 {
+    enum class FileType { None, File, Folder };
+
     void show_first_page();
 
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
     void show_current_page();
-    void get_file_name(uint8_t index_in_page, ADVString<48>& name);
+    void get_file_name(uint8_t index_in_page, ADVString<48>& name, FileType &type);
     void up_command();
     void down_command();
-    void select_file_command(uint16_t file_index);
+    void parent_command();
+    void select_command(uint16_t file_index);
+    void select_file();
+    void select_directory();
 
 private:
     static constexpr uint16_t nb_visible_sd_files = 5; //!< Number of files per page on the SD screen
@@ -45,6 +50,7 @@ private:
     uint16_t nb_files_ = 0;
     uint16_t last_file_index_ = 0;
     uint16_t page_index_ = 0;
+    ExtUI::FileList files_{};
 
     friend Parent;
 };
