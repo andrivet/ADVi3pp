@@ -207,6 +207,11 @@ bool CardReader::is_dir_or_gcode(const dir_t &p) {
     //|| !DIR_IS_FILE_OR_SUBDIR(&p)                       // Not a File or Directory
   ) return false;
 
+  // @advi3++: most of the time, files starting with a dot are hidden but not always
+  // Those files are often created by macOS
+  if(p.name[0] == 0 || longFilename[0] == '.')
+      return false;
+
   flag.filenameIsDir = DIR_IS_SUBDIR(&p);               // We know it's a File or Folder
 
   return (
