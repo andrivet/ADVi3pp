@@ -740,6 +740,9 @@ bool SdBaseFile::openCachedEntry(uint8_t dirIndex, uint8_t oflag) {
   firstCluster_ = (uint32_t)p->firstClusterHigh << 16;
   firstCluster_ |= p->firstClusterLow;
 
+  write_date_ = p->lastWriteDate; // @advi3++
+  write_time_ = p->lastWriteTime; // @advi3++
+
   // make sure it is a normal file or subdirectory
   if (DIR_IS_FILE(p)) {
     fileSize_ = p->fileSize;

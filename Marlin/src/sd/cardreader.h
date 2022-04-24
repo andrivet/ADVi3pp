@@ -36,7 +36,14 @@ extern const char M23_STR[], M24_STR[];
   #endif
 #endif
 
-#if ENABLED(SDCARD_RATHERRECENTFIRST) && DISABLED(SDCARD_SORT_ALPHA)
+// @advi3++
+#if ENABLED(SDCARD_SORT_DATE)
+  #if FOLDER_SORTING
+    #define HAS_FOLDER_SORTING 1
+  #endif
+#endif
+
+#if ENABLED(SDCARD_RATHERRECENTFIRST) && DISABLED(SDCARD_SORT_ALPHA) && DISABLED(SDCARD_SORT_DATE) // @advi3++
   #define SD_ORDER(N,C) ((C) - 1 - (N))
 #else
   #define SD_ORDER(N,C) N
@@ -200,6 +207,9 @@ public:
       FORCE_INLINE static void setSortFolders(int i)    { sort_folders = i; presort(); }
       //FORCE_INLINE static void setSortReverse(bool b) { sort_reverse = b; }
     #endif
+  #elif ENABLED(SDCARD_SORT_DATE) // @advi3++
+    static void presort();
+    static void getfilename_sorted(const uint16_t nr);
   #else
     FORCE_INLINE static void getfilename_sorted(const uint16_t nr) { selectFileByIndex(nr); }
   #endif
@@ -312,6 +322,16 @@ private:
 
   #endif // SDCARD_SORT_ALPHA
 
+  //
+  // Chronological file and folder sorting @advi3++
+  //
+  #if ENABLED(SDCARD_SORT_DATE) // @advi3++
+    static uint16_t sort_count;   // Count of sorted items in the current directory
+    static uint8_t sort_order[SDSORT_LIMIT];
+    static uint16_t write_date;
+    static uint16_t write_time;
+#endif // SDCARD_SORT_DATE
+
   static DiskIODriver *driver;
   static SdVolume volume;
   static SdFile file;
@@ -343,6 +363,10 @@ private:
   );
 
   #if ENABLED(SDCARD_SORT_ALPHA)
+    static void flush_presort();
+  #endif
+
+  #if ENABLED(SDCARD_SORT_DATE) // @advi3++
     static void flush_presort();
   #endif
 };

@@ -869,6 +869,20 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 /**
  * SD File Sorting
  */
+// @advi3++
+#if ALL(SDCARD_SORT_ALPHA, SDCARD_SORT_DATE)
+  #error "SDCARD_SORT_ALPHA and SDCARD_SORT_DATE can't be both enabled."
+#endif
+
+// @advi3++
+#if ENABLED(SDCARD_SORT_DATE)
+#if SDSORT_LIMIT > 256
+    #error "SDSORT_LIMIT must be 256 or smaller."
+  #elif SDSORT_LIMIT < 10
+    #error "SDSORT_LIMIT should be greater than 9 to be useful."
+  #endif
+#endif
+
 #if ENABLED(SDCARD_SORT_ALPHA)
   #if SDSORT_LIMIT > 256
     #error "SDSORT_LIMIT must be 256 or smaller."
