@@ -36,6 +36,25 @@ pause 'Press any key to continue or Ctrl-C to abort...'
 
 sudo -v
 
+echo
+echo "***** Check that required commands do exist"
+if ! [ -x "$(command -v git)" ]; then
+  echo 'Error: git is not installed.' >&2
+  exit 1
+fi
+
+if ! [ -x "$(command -v convert)" ]; then
+  echo 'Error: imagemagick is not installed, use: brew install imagemagick' >&2
+  exit 1
+fi
+
+if ! [ -x "$(command -v mkfs.fat)" ]; then
+  echo 'Error: dosfstools is not installed, use: brew install dosfstools' >&2
+  exit 1
+fi
+
+echo
+echo "***** Remove previous files if any"
 rm -rf "${release:?}/*"
 
 echo
