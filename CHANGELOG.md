@@ -1,5 +1,12 @@
 # ADVi3++ Changelog
 
+## 5.2.0 (2022-05-01)
+
+* **#278** - Hide gcode files where the file name starts with a period
+* **#276** - Files with the letter "å" in the file name do not appear correctly
+* **#21** - Implement file management
+* Change slightly the font
+
 ## 5.1.1 (2022-03-29)
 
 * **#283** - Automatic bed leveling is reporting 0 for all points
@@ -7,10 +14,10 @@
 ## 5.1.0 (2022-03-25)
 
 * Align ADVi3++ with upstream latest release of Marlin (2.0.9.3)
-* **#79** - Support for filament runout sensors
 * **#263** - Use G-Code M256 (set brightness) instead of M250 (set contrast)
 * **#268** - Fix Z height not saved and 0.1mm less than expected
 * **#271** - Fix pin #6 displayed as an output in the I/O screen
+* **#79** - Support for filament runout sensors
 
 ## 5.0.3 (2022-02-27)
 
