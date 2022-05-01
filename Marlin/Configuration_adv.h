@@ -1547,7 +1547,7 @@
   // SD Card Sorting options @advi3++
   #if ENABLED(SDCARD_SORT_DATE)
     #define SDSORT_LIMIT       20     // Maximum number of sorted items (10-256).
-    #define FOLDER_SORTING     -1     // -1=above  0=none  1=below
+    #define FOLDER_SORTING      1     // -1=above  0=none  1=below
   #endif
 
   // Allow international symbols in long filenames. To display correctly, the
