@@ -320,10 +320,10 @@ enum class KeyValue: uint16_t
     BLTouchTestingStep3No   = 0x0006,
 
     VibrationsX             = 0x0001,
-    VibrationsY             = 0x0001,
-    VibrationsXY            = 0x0001,
-    VibrationsYX            = 0x0001,
-    VibrationsZ             = 0x0001,
+    VibrationsY             = 0x0002,
+    VibrationsXY            = 0x0003,
+    VibrationsYX            = 0x0004,
+    VibrationsZ             = 0x0005,
 
     RunoutEnable            = 0x0001,
     RunoutHigh2Low          = 0x0002,
