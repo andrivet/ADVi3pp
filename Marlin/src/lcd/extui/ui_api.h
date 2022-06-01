@@ -81,7 +81,7 @@ namespace ExtUI {
   bool canMove(const extruder_t);
   void injectCommands_P(PGM_P const);
   inline void injectCommands(FSTR_P const fstr) { injectCommands_P(FTOP(fstr)); }
-  void injectCommands(char * const);
+  void injectCommands(const char * const); // @advi3++ add const qualifier
   bool commandsInQueue();
 
   GcodeSuite::MarlinBusyState getHostKeepaliveState();

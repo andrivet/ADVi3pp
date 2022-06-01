@@ -344,6 +344,11 @@ void Core::inject_commands(const FlashChar* commands)
     ExtUI::injectCommands_P(from_flash(commands));
 }
 
+void Core::inject_commands(const char *commands)
+{
+    ExtUI::injectCommands(commands);
+}
+
 //! Get current digital pin state (adapted from Arduino source code).
 //! @param pin  Pin number to check.
 //! @return     The current state: On (input), Off (input), Output
