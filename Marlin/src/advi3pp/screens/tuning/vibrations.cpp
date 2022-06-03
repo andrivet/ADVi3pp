@@ -28,6 +28,13 @@ namespace ADVi3pp {
 
 Vibrations vibrations;
 
+const int XY_SLOW = 4000;
+const int XY_MEDIUM = 6000;
+const int XY_FAST = 8000;
+const int Z_SLOW = 1000;
+const int Z_MEDIUM = 1200;
+const int Z_FAST = 1400;
+
 //! Execute command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
@@ -56,7 +63,21 @@ Page Vibrations::do_prepare_page()
     if(!core.ensure_not_printing())
         return Page::None;
 
-    return Page::VibrationsTuning;
+    set_values();
+    if(ExtUI::isMachineHomed())
+        return Page::VibrationsTuning;
+
+    wait.wait(F("Please wait while the printer is homed..."));
+    core.inject_commands(F("G28"));
+    background_task.set(Callback{this, &Vibrations::homing}, 500);
+    return Page::None;
+}
+
+void Vibrations::homing() {
+    if(!ExtUI::isMachineHomed())
+        return;
+    background_task.clear();
+    pages.show(Page::VibrationsTuning);
 }
 
 //! Execute the Back command
@@ -68,7 +89,24 @@ void Vibrations::do_back_command()
 
 void Vibrations::move_finished() {
     if(core.is_busy()) return;
+
+    if(ExtUI::getAxisPosition_mm(ExtUI::Z) != 10) {
+        core.inject_commands(F("G1 Z10 F1200"));
+        background_task.set(Callback{this, &Vibrations::move_finished2}, 500);
+        return;
+    }
+
     background_task.clear();
+    status.reset();
+    pages.show_back_page();
+    pages.show_back_page();
+}
+
+void Vibrations::move_finished2() {
+    if(core.is_busy()) return;
+
+    background_task.clear();
+    status.reset();
     pages.show_back_page();
     pages.show_back_page();
 }
@@ -77,7 +115,7 @@ void Vibrations::move_x() {
     if(core.is_busy()) return;
 
     int min, max;
-    if(!get_min_max(min, max))
+    if(!get_values(min, max))
         return;
 
     if(min < X_MIN_BED) min = X_MIN_BED;
@@ -86,7 +124,7 @@ void Vibrations::move_x() {
     int new_position = (ExtUI::getAxisPosition_mm(ExtUI::X) == max) ? min : max;
 
     ADVString<20> cmd;
-    cmd.format(F("G1 X%i F6000"), new_position);
+    cmd.format(F("G1 X%i F%i"), new_position, get_xy_speed());
     core.inject_commands(cmd.get());
 }
 
@@ -94,7 +132,7 @@ void Vibrations::move_y() {
     if(core.is_busy()) return;
 
     int min, max;
-    if(!get_min_max(min, max))
+    if(!get_values(min, max))
         return;
 
     if(min < Y_MIN_BED) min = Y_MIN_BED;
@@ -103,24 +141,31 @@ void Vibrations::move_y() {
     int new_position = (ExtUI::getAxisPosition_mm(ExtUI::Y) == max) ? min : max;
 
     ADVString<20> cmd;
-    cmd.format(F("G1 Y%i F6000"), new_position);
+    cmd.format(F("G1 Y%i F%i"), new_position, get_xy_speed());
     core.inject_commands(cmd.get());
+}
+
+void Vibrations::move_start_z() {
+    ADVString<20> cmd;
+    cmd.format(F("G1 X%i F6000\nG1 Y%i F6000"), X_CENTER, Y_CENTER);
+    core.inject_commands(cmd.get());
+    background_task.set(Callback{this, &Vibrations::move_z}, 500);
 }
 
 void Vibrations::move_z() {
     if(core.is_busy()) return;
 
     int min, max;
-    if(!get_min_max(min, max))
+    if(!get_values(min, max))
         return;
 
-    if(min < Z_MIN_POS) min = Z_MIN_POS;
-    if(max > Z_MAX_POS) max = Z_MAX_POS;
+    if(min < 0) min = 0;
+    if(max > 150) max = 150; // Don't go to the limit, could be dangerous with some mods
 
     int new_position = (ExtUI::getAxisPosition_mm(ExtUI::Z) == max) ? min : max;
 
     ADVString<20> cmd;
-    cmd.format(F("G1 Z%i F1200"), new_position);
+    cmd.format(F("G1 Z%i F%i"), new_position, get_z_speed());
     core.inject_commands(cmd.get());
 }
 
@@ -142,7 +187,7 @@ void Vibrations::move_xy() {
     if(core.is_busy()) return;
 
     int min, max;
-    if(!get_min_max(min, max))
+    if(!get_values(min, max))
         return;
 
     int min_x = (min < X_MIN_BED) ? X_MIN_BED : min;
@@ -154,13 +199,13 @@ void Vibrations::move_xy() {
     int new_y_position = (ExtUI::getAxisPosition_mm(ExtUI::Y) == max_y) ? min_y : max_y;
 
     ADVString<20> cmd;
-    cmd.format(F("G1 X%i Y%i F6000"), new_x_position, new_y_position);
+    cmd.format(F("G1 X%i Y%i F%i"), new_x_position, new_y_position, get_xy_speed());
     core.inject_commands(cmd.get());
 }
 
-bool Vibrations::get_min_max(int &min, int &max) {
+bool Vibrations::get_values(int &min, int &max) {
     ReadRam frame{Variable::Value0};
-    if(!frame.send_receive(2))
+    if(!frame.send_receive(3))
     {
         Log::error() << F("Receiving Frame (Min Max)") << Log::endl();
         return false;
@@ -168,10 +213,33 @@ bool Vibrations::get_min_max(int &min, int &max) {
 
     min = frame.read_word();
     max = frame.read_word();
+    speed_ = static_cast<Speed>(frame.read_word());
     if(min < 0) min = 0;
     if(min >= max) return false;
 
     return true;
+}
+
+void Vibrations::set_values() {
+    WriteRamRequest{Variable::Value0}.write_words(X_MIN_BED, X_MAX_BED, 1);
+}
+
+int Vibrations::get_xy_speed() {
+    switch(speed_) {
+        case Speed::Slow: return XY_SLOW;
+        case Speed::Medium: return XY_MEDIUM;
+        case Speed::Fast: return XY_FAST;
+        default: return XY_MEDIUM;
+    }
+}
+
+int Vibrations::get_z_speed() {
+    switch(speed_) {
+        case Speed::Slow: return Z_SLOW;
+        case Speed::Medium: return Z_MEDIUM;
+        case Speed::Fast: return Z_FAST;
+        default: return Z_MEDIUM;
+    }
 }
 
 void Vibrations::x_command() {
@@ -191,7 +259,7 @@ void Vibrations::yx_command() {
 }
 
 void Vibrations::z_command() {
-    background_task.set(Callback{this, &Vibrations::move_z}, 500);
+    background_task.set(Callback{this, &Vibrations::move_start_z}, 500);
 }
 
 }
