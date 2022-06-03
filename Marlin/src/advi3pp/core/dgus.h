@@ -207,6 +207,7 @@ protected:
 
     template<size_t N> bool write_bytes(const adv::array<uint8_t , N>& data);
     template<size_t N> bool write_words(const adv::array<uint16_t , N>& data);
+    template<typename... T> bool write_words(T... data);
 };
 
 // --------------------------------------------------------------------

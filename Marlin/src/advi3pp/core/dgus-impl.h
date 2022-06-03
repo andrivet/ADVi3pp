@@ -169,6 +169,13 @@ bool WriteOutFrame<Param, cmd>::write_words(const adv::array<uint16_t , N>& data
     return Parent::write_header(N * 2) && Parent::write_words_data(data.data(), N);
 }
 
+template<typename Param, Command cmd>
+template<typename... T>
+bool WriteOutFrame<Param, cmd>::write_words(T... data) {
+    const adv::array<uint16_t , sizeof...(data)> a = {static_cast<uint16_t>(data)...};
+    return write_words(a);
+}
+
 // --------------------------------------------------------------------
 // WriteRamRequest
 // --------------------------------------------------------------------
