@@ -130,10 +130,10 @@ void SdCard::show_current_page()
         WriteRamRequest{var}.write_word(static_cast<uint16_t>(file_type));
     }
 
-    WriteRamRequest{Variable::Value5}.write_words(adv::array<uint16_t, 2>{
+    WriteRamRequest{Variable::Value5}.write_words(
         page_index_ + 1,
         (files_.count() + nb_visible_sd_files - 1) / nb_visible_sd_files
-    });
+    );
 }
 
 //! Get a filename with a given index.

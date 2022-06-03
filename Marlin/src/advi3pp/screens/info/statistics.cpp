@@ -37,12 +37,11 @@ Page Statistics::do_prepare_page()
 
 void Statistics::send_stats()
 {
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 3>
-    {
+    WriteRamRequest{Variable::Value0}.write_words(
         ExtUI::getTotalPrints(),
         ExtUI::getFinishedPrints(),
-        static_cast<uint16_t>(freeMemory())
-    });
+        freeMemory()
+    );
 
     // Minimize the RAM used so send each value separately.
     char buffer[21];

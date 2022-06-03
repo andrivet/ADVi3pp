@@ -299,24 +299,21 @@ void Core::send_lcd_data()
     uint16_t probe_state = 0;
 #endif
 
-    adv::array<uint16_t, 11> data
-    {
-        static_cast<uint16_t>(ExtUI::getTargetTemp_celsius(ExtUI::BED)),
-        static_cast<uint16_t>(ExtUI::getActualTemp_celsius(ExtUI::BED)),
-        static_cast<uint16_t>(ExtUI::getTargetTemp_celsius(ExtUI::E0)),
-        static_cast<uint16_t>(ExtUI::getActualTemp_celsius(ExtUI::E0)),
-        static_cast<uint16_t>(ExtUI::getActualFan_percent(ExtUI::FAN0)),
-        static_cast<uint16_t>(lround(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100.0)),
-        static_cast<uint16_t>(progress_bar_low),
-        static_cast<uint16_t>(progress_var_high),
-        0, // Reserved
-        static_cast<uint16_t>(probe_state),
-        static_cast<uint16_t>(ExtUI::getFeedrate_percent())
-    };
-
     NoFrameLogging no_logging{};
     // Send the current status in one frame
-    WriteRamRequest{Variable::TargetBed}.write_words(data);
+    WriteRamRequest{Variable::TargetBed}.write_words(
+        ExtUI::getTargetTemp_celsius(ExtUI::BED),
+        ExtUI::getActualTemp_celsius(ExtUI::BED),
+        ExtUI::getTargetTemp_celsius(ExtUI::E0),
+        ExtUI::getActualTemp_celsius(ExtUI::E0),
+        ExtUI::getActualFan_percent(ExtUI::FAN0),
+        lround(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100.0),
+        progress_bar_low,
+        progress_var_high,
+        0, // Reserved
+        probe_state,
+        ExtUI::getFeedrate_percent()
+    );
 
     status.send();
 }

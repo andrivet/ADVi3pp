@@ -294,14 +294,13 @@ void PidSettings::to_lcd() const
                << F(" PID") << index_
                << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
 
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 5>
-    {
-        static_cast<uint16_t>(kind_ == TemperatureKind::Hotend ? 0u : 1u),
+    WriteRamRequest{Variable::Value0}.write_words(
+        kind_ == TemperatureKind::Hotend ? 0u : 1u,
         pid.temperature_,
-        static_cast<uint16_t>(pid.Kp_ * 100),
-        static_cast<uint16_t>(pid.Ki_ * 100),
-        static_cast<uint16_t>(pid.Kd_ * 100)
-    });
+        pid.Kp_ * 100,
+        pid.Ki_ * 100,
+        pid.Kd_ * 100
+    );
 
     ADVString<8> indexes;
     indexes << index_ + 1 << F(" / ") << NB_PIDs;

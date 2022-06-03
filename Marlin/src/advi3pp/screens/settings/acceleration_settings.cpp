@@ -30,17 +30,16 @@ AccelerationSettings accelerations_settings;
 //! @return The index of the page to display
 Page AccelerationSettings::do_prepare_page()
 {
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 8>
-    {
-        static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X)),
-        static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y)),
-        static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Z)),
-        static_cast<uint16_t>(ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::E0)),
-        static_cast<uint16_t>(ExtUI::getPrintingAcceleration_mm_s2()),
-        static_cast<uint16_t>(ExtUI::getRetractAcceleration_mm_s2()),
-        static_cast<uint16_t>(ExtUI::getTravelAcceleration_mm_s2()),
-        static_cast<uint16_t>(ExtUI::getJunctionDeviation_mm() * 1000)
-    });
+    WriteRamRequest{Variable::Value0}.write_words(
+        ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X),
+        ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y),
+        ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Z),
+        ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::E0),
+        ExtUI::getPrintingAcceleration_mm_s2(),
+        ExtUI::getRetractAcceleration_mm_s2(),
+        ExtUI::getTravelAcceleration_mm_s2(),
+        ExtUI::getJunctionDeviation_mm() * 1000
+    );
     return Page::AccelerationSettings;
 }
 

@@ -156,24 +156,31 @@ bool WriteOutFrame<Param, cmd>::write_word(uint16_t value)
 }
 
 template<typename Param, Command cmd>
-template<size_t N>
-bool WriteOutFrame<Param, cmd>::write_bytes(const adv::array<uint8_t , N>& data)
+bool WriteOutFrame<Param, cmd>::write_bytes_data(const uint8_t *first, size_t size)
 {
-    return Parent::write_header(data.size()) && Parent::write_bytes_data(data.data(), data.size());
+    return Parent::write_header(size) && Parent::write_bytes_data(first, size);
 }
 
 template<typename Param, Command cmd>
-template<size_t N>
-bool WriteOutFrame<Param, cmd>::write_words(const adv::array<uint16_t , N>& data)
-{
-    return Parent::write_header(N * 2) && Parent::write_words_data(data.data(), N);
+bool WriteOutFrame<Param, cmd>::write_words_data(const uint16_t *first, size_t size) {
+    return Parent::write_header(size * 2) && Parent::write_words_data(first, size);
 }
 
 template<typename Param, Command cmd>
 template<typename... T>
-bool WriteOutFrame<Param, cmd>::write_words(T... data) {
-    const adv::array<uint16_t , sizeof...(data)> a = {static_cast<uint16_t>(data)...};
-    return write_words(a);
+bool WriteOutFrame<Param, cmd>::write_bytes(T... args)
+{
+    const auto size = sizeof...(args);
+    const adv::array<uint8_t, size> data = {static_cast<uint8_t>(args)...};
+    return write_bytes_data(data.data(), size);
+}
+
+template<typename Param, Command cmd>
+template<typename... T>
+bool WriteOutFrame<Param, cmd>::write_words(T... args) {
+    const auto size = sizeof...(args);
+    const adv::array<uint16_t, size> data = {static_cast<uint16_t>(args)...};
+    return write_words_data(data.data(), size);
 }
 
 // --------------------------------------------------------------------

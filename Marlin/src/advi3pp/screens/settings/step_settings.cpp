@@ -32,13 +32,12 @@ static const unsigned SCALE = 10;
 //! @return The index of the page to display
 Page StepSettings::do_prepare_page()
 {
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 4>
-    {
-        static_cast<uint16_t>(ExtUI::getAxisSteps_per_mm(ExtUI::X) * SCALE),
-        static_cast<uint16_t>(ExtUI::getAxisSteps_per_mm(ExtUI::Y) * SCALE),
-        static_cast<uint16_t>(ExtUI::getAxisSteps_per_mm(ExtUI::Z) * SCALE),
-        static_cast<uint16_t>(ExtUI::getAxisSteps_per_mm(ExtUI::E0) * SCALE)
-    });
+    WriteRamRequest{Variable::Value0}.write_words(
+        ExtUI::getAxisSteps_per_mm(ExtUI::X) * SCALE,
+        ExtUI::getAxisSteps_per_mm(ExtUI::Y) * SCALE,
+        ExtUI::getAxisSteps_per_mm(ExtUI::Z) * SCALE,
+        ExtUI::getAxisSteps_per_mm(ExtUI::E0) * SCALE
+    );
     return Page::StepsSettings;
 }
 

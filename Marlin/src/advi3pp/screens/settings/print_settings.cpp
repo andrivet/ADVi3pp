@@ -67,11 +67,7 @@ double PrintSettings::get_multiplier_value() const
 //! Send the current data to the LCD panel.
 void PrintSettings::send_data() const
 {
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 2>
-    {
-        static_cast<uint16_t>(multiplier_),
-        offset_
-    });
+    WriteRamRequest{Variable::Value0}.write_words(multiplier_, offset_);
 }
 
 //! Prepare the page before being displayed and return the right Page value

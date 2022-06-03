@@ -205,8 +205,9 @@ protected:
     bool write_byte(uint8_t value);
     bool write_word(uint16_t value);
 
-    template<size_t N> bool write_bytes(const adv::array<uint8_t , N>& data);
-    template<size_t N> bool write_words(const adv::array<uint16_t , N>& data);
+    bool write_bytes_data(const uint8_t *data, size_t size);
+    bool write_words_data(const uint16_t *data, size_t size);
+    template<typename... T> bool write_bytes(T... data);
     template<typename... T> bool write_words(T... data);
 };
 
@@ -317,6 +318,7 @@ struct WriteRamRequest: WriteOutFrame<Variable, Command::WriteRam>
   using Parent = WriteOutFrame<Variable, Command::WriteRam>;
   explicit WriteRamRequest(Variable var): Parent{var} {}
   using Parent::write_word;
+  using Parent::write_words_data;
   using Parent::write_words;
   template<size_t N> bool write_text(const ADVString<N>& data);
   template<size_t N> bool write_centered_text(const ADVString<N>& data);

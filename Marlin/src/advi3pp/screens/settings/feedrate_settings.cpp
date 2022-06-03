@@ -30,15 +30,14 @@ FeedrateSettings feedrates_settings;
 //! @return The index of the page to display
 Page FeedrateSettings::do_prepare_page()
 {
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 6>
-    {
-        static_cast<uint16_t>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::X)),
-        static_cast<uint16_t>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Y)),
-        static_cast<uint16_t>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Z)),
-        static_cast<uint16_t>(ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::E0)),
-        static_cast<uint16_t>(ExtUI::getMinFeedrate_mm_s()),
-        static_cast<uint16_t>(ExtUI::getMinTravelFeedrate_mm_s())
-    });
+    WriteRamRequest{Variable::Value0}.write_words(
+        ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::X),
+        ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Y),
+        ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Z),
+        ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::E0),
+        ExtUI::getMinFeedrate_mm_s(),
+        ExtUI::getMinTravelFeedrate_mm_s()
+    );
     return Page::FeedrateSettings;
 }
 

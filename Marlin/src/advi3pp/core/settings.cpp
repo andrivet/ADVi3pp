@@ -172,10 +172,7 @@ void Settings::send_lcd_values(Variable features)
 {
     uint16_t brightness = ui.get_brightness();
 
-    WriteRamRequest{features}.write_words(adv::array<uint16_t, 2>{
-        static_cast<uint16_t>(features_),
-        brightness
-    });
+    WriteRamRequest{features}.write_words(features_, brightness);
 }
 
 //! Get the last used temperature for the hotend or the bad

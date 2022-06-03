@@ -52,12 +52,11 @@ bool Preheat::do_dispatch(KeyValue key_value)
 void Preheat::send_presets()
 {
     Log::log() << F("Preheat page") << Log::endl();
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 3>
-    {
-        static_cast<uint16_t>(ExtUI::getMaterialPresetHotendTemp_celsius(index_)),
-        static_cast<uint16_t>(ExtUI::getMaterialPresetBedTemp_celsius(index_)),
-        static_cast<uint16_t>(ExtUI::getMaterialPresetFanSpeed_percent(index_))
-    });
+    WriteRamRequest{Variable::Value0}.write_words(
+        ExtUI::getMaterialPresetHotendTemp_celsius(index_),
+        ExtUI::getMaterialPresetBedTemp_celsius(index_),
+        ExtUI::getMaterialPresetFanSpeed_percent(index_)
+    );
 
     ADVString<8> preset;
     preset << index_ + 1 << F(" / ") << NB_PRESETS;

@@ -64,11 +64,7 @@ Page PidTuning::do_prepare_page()
 //! Send the current data to the LCD panel.
 void PidTuning::send_data()
 {
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 2>
-    {
-        temperature_,
-        kind_ != TemperatureKind::Hotend
-    });
+    WriteRamRequest{Variable::Value0}.write_words(temperature_, kind_ != TemperatureKind::Hotend);
 }
 
 //! Select the hotend PID

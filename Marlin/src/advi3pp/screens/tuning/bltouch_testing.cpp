@@ -161,14 +161,13 @@ void BLTouchTesting::step4()
     if(brown == 1 && red == 1 && orange == 1 && black == 1 && white == 1)
         status.set(F("No problem detected with BLTouch"));
 
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 5>
-    {
-        static_cast<uint16_t>(brown),
-        static_cast<uint16_t>(red),
-        static_cast<uint16_t>(orange),
-        static_cast<uint16_t>(black),
-        static_cast<uint16_t>(white)
-    });
+    WriteRamRequest{Variable::Value0}.write_words(
+        brown,
+        red,
+        orange,
+        black,
+        white
+    );
 
     pages.show(Page::BLTouchTesting4);
 }

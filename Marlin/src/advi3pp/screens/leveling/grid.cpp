@@ -40,7 +40,7 @@ Page LevelingGrid::do_prepare_page()
         for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
             data[y * GRID_MAX_POINTS_X + x] = static_cast<int16_t>(lround(z_values[x][y] * 100));
 
-    WriteRamRequest{Variable::Value0}.write_words(data);
+    WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
 
     return Page::SensorGrid;
 }

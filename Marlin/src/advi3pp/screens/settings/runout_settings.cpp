@@ -53,13 +53,12 @@ Page RunoutSettings::do_prepare_page()
 {
     inverted_ = ExtUI::getFilamentRunoutInverted();
 
-    WriteRamRequest{Variable::Value0}.write_words(adv::array<uint16_t, 4>
-    {
-          static_cast<uint16_t>(ExtUI::getFilamentRunoutEnabled()),
-          static_cast<uint16_t>(get_filament_state()),
-          static_cast<uint16_t>(ExtUI::getFilamentRunoutDistance_mm() * 10),
-          static_cast<uint16_t>(ExtUI::getFilamentRunoutInverted() ? 0 : 1)
-    });
+    WriteRamRequest{Variable::Value0}.write_words(
+          ExtUI::getFilamentRunoutEnabled(),
+          get_filament_state(),
+          ExtUI::getFilamentRunoutDistance_mm() * 10,
+          ExtUI::getFilamentRunoutInverted() ? 0 : 1
+    );
 
     background_task.set(Callback{this, &RunoutSettings::send_data}, 250);
 
