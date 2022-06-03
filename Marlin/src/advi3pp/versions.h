@@ -22,7 +22,7 @@
 
 namespace ADVi3pp {
 
-const uint16_t advi3_pp_version = 0x520;
+const uint16_t advi3_pp_version = 0x530;
 const uint16_t settings_version = 0x0005; // Version of ADVi3++ settings stored in EEPROM
 
 }
