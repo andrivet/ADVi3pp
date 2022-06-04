@@ -69,7 +69,7 @@ Page Vibrations::do_prepare_page()
 
     wait.wait(F("Please wait while the printer is homed..."));
     core.inject_commands(F("G28"));
-    background_task.set(Callback{this, &Vibrations::homing}, 500);
+    background_task.set(Callback{this, &Vibrations::homing});
     return Page::None;
 }
 
@@ -84,7 +84,7 @@ void Vibrations::homing() {
 void Vibrations::do_back_command()
 {
     wait.wait(F("Please wait for the move to finish..."));
-    background_task.set(Callback{this, &Vibrations::move_finished}, 500);
+    background_task.set(Callback{this, &Vibrations::move_finished});
 }
 
 void Vibrations::move_finished() {
@@ -92,7 +92,7 @@ void Vibrations::move_finished() {
 
     if(ExtUI::getAxisPosition_mm(ExtUI::Z) != 10) {
         core.inject_commands(F("G1 Z10 F1200"));
-        background_task.set(Callback{this, &Vibrations::move_finished2}, 500);
+        background_task.set(Callback{this, &Vibrations::move_finished2});
         return;
     }
 
@@ -149,7 +149,7 @@ void Vibrations::move_start_z() {
     ADVString<40> cmd;
     cmd.format(F("G1 X%i F6000\nG1 Y%i F6000"), X_CENTER, Y_CENTER);
     core.inject_commands(cmd.get());
-    background_task.set(Callback{this, &Vibrations::move_z}, 500);
+    background_task.set(Callback{this, &Vibrations::move_z});
 }
 
 void Vibrations::move_z() {
@@ -173,14 +173,14 @@ void Vibrations::move_start_xy() {
     ADVString<40> cmd;
     cmd.format(F("G1 X%i F6000\nG1 Y%i F6000"), X_MIN_BED, Y_MIN_BED);
     core.inject_commands(cmd.get());
-    background_task.set(Callback{this, &Vibrations::move_xy}, 500);
+    background_task.set(Callback{this, &Vibrations::move_xy});
 }
 
 void Vibrations::move_start_yx() {
     ADVString<40> cmd;
     cmd.format(F("G1 X%i F6000\nG1 Y%i F6000"), X_MIN_BED, Y_MAX_BED);
     core.inject_commands(cmd.get());
-    background_task.set(Callback{this, &Vibrations::move_xy}, 500);
+    background_task.set(Callback{this, &Vibrations::move_xy});
 }
 
 void Vibrations::move_xy() {
