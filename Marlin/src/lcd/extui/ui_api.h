@@ -57,7 +57,7 @@ namespace ExtUI {
 
   static constexpr size_t eeprom_data_size = 48;
 
-  enum axis_t     : uint8_t { X, Y, Z, I, J, K, X2, Y2, Z2, Z3, Z4 };
+  enum axis_t     : uint8_t { X, Y, Z, I, J, K, U, V, W, X2, Y2, Z2, Z3, Z4 };
   enum extruder_t : uint8_t { E0, E1, E2, E3, E4, E5, E6, E7 };
   enum heater_t   : uint8_t { H0, H1, H2, H3, H4, H5, BED, CHAMBER, COOLER };
   enum fan_t      : uint8_t { FAN0, FAN1, FAN2, FAN3, FAN4, FAN5, FAN6, FAN7 };
@@ -84,8 +84,10 @@ namespace ExtUI {
   void injectCommands(const char * const); // @advi3++ add const qualifier
   bool commandsInQueue();
 
-  GcodeSuite::MarlinBusyState getHostKeepaliveState();
-  bool getHostKeepaliveIsPaused();
+  #if ENABLED(HOST_KEEPALIVE_FEATURE)
+    GcodeSuite::MarlinBusyState getHostKeepaliveState();
+    bool getHostKeepaliveIsPaused();
+  #endif
 
   bool isHeaterIdle(const heater_t);
   bool isHeaterIdle(const extruder_t);
@@ -198,7 +200,7 @@ namespace ExtUI {
   #endif
 
   inline void simulateUserClick() {
-    #if ANY(HAS_LCD_MENU, EXTENSIBLE_UI, DWIN_CREALITY_LCD_JYERSUI)
+    #if ANY(HAS_MARLINUI_MENU, EXTENSIBLE_UI, DWIN_CREALITY_LCD_JYERSUI)
       ui.lcd_clicked = true;
     #endif
   }
@@ -322,6 +324,11 @@ namespace ExtUI {
     #endif
   #endif
 
+  #if ENABLED(POWER_LOSS_RECOVERY)
+    bool getPowerLossRecoveryEnabled();
+    void setPowerLossRecoveryEnabled(const bool);
+  #endif
+
   #if ENABLED(PIDTEMP)
     float getPIDValues_Kp(const extruder_t);
     float getPIDValues_Ki(const extruder_t);
@@ -426,47 +433,23 @@ namespace ExtUI {
   void onPrintTimerStarted();
   void onPrintTimerPaused();
   void onPrintTimerStopped();
-  void onPrintFinished();
+  void onPrintDone();
   void onFilamentRunout(const extruder_t extruder);
   void onUserConfirmRequired(const char * const msg);
   void onUserConfirmRequired(FSTR_P const fstr);
   void onStatusChanged(const char * const msg);
   void onStatusChanged(FSTR_P const fstr);
   void onHomingStart();
-  void onHomingComplete();
+  void onHomingDone();
   void onSteppersDisabled();
   void onSteppersEnabled();
   void onFactoryReset();
   void onStoreSettings(char *);
   void onLoadSettings(const char *);
   void onPostprocessSettings();
-  void onConfigurationStoreWritten(bool success);
-  void onConfigurationStoreRead(bool success);
-  void onConfigurationStoreValidated(bool success); // @advi3++
-
-  // @advi3++
-  #if ENABLED(EEPROM_SETTINGS)
-    void saveSettings();
-    void loadSettings();
-    void resetSettings();
-    using eeprom_write = bool (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
-    using eeprom_read  = bool (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
-    void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
-    uint16_t getSizeofSettings();
-  #endif
-
-  // @advi3++
-  #if HAS_LEVELING
-    void onAutomaticLevelingFinished(bool success);
-  #endif
-
-  // @advi3++
-  #if ENABLED(BLTOUCH)
-    bool bltouchDeploy();
-    bool bltouchStow();
-  #endif
-
+  void onSettingsStored(bool success);
+  void onSettingsLoaded(bool success);
+  void onSettingsValidated(bool success); // @advi3++
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume();
   #endif

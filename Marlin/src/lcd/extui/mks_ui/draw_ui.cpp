@@ -159,7 +159,7 @@ void gCfgItems_init() {
     gCfgItems.spi_flash_flag = FLASH_INF_VALID_FLAG;
     W25QXX.SPI_FLASH_SectorErase(VAR_INF_ADDR);
     W25QXX.SPI_FLASH_BufferWrite((uint8_t *)&gCfgItems, VAR_INF_ADDR, sizeof(gCfgItems));
-    // init gcode command
+    // Init G-code command
     W25QXX.SPI_FLASH_BufferWrite((uint8_t *)&custom_gcode_command[0], AUTO_LEVELING_COMMAND_ADDR, 100);
     W25QXX.SPI_FLASH_BufferWrite((uint8_t *)&custom_gcode_command[1], OTHERS_COMMAND_ADDR_1, 100);
     W25QXX.SPI_FLASH_BufferWrite((uint8_t *)&custom_gcode_command[2], OTHERS_COMMAND_ADDR_2, 100);
@@ -238,7 +238,7 @@ void update_spi_flash() {
   uint8_t command_buf[512];
 
   W25QXX.init(SPI_QUARTER_SPEED);
-  // read back the gcode command before erase spi flash
+  // read back the G-code command before erase spi flash
   W25QXX.SPI_FLASH_BufferRead((uint8_t *)&command_buf, GCODE_COMMAND_ADDR, sizeof(command_buf));
   W25QXX.SPI_FLASH_SectorErase(VAR_INF_ADDR);
   W25QXX.SPI_FLASH_BufferWrite((uint8_t *)&gCfgItems, VAR_INF_ADDR, sizeof(gCfgItems));
@@ -249,7 +249,7 @@ void update_gcode_command(int addr, uint8_t *s) {
   uint8_t command_buf[512];
 
   W25QXX.init(SPI_QUARTER_SPEED);
-  // read back the gcode command before erase spi flash
+  // read back the G-code command before erase spi flash
   W25QXX.SPI_FLASH_BufferRead((uint8_t *)&command_buf, GCODE_COMMAND_ADDR, sizeof(command_buf));
   W25QXX.SPI_FLASH_SectorErase(VAR_INF_ADDR);
   W25QXX.SPI_FLASH_BufferWrite((uint8_t *)&gCfgItems, VAR_INF_ADDR, sizeof(gCfgItems));
@@ -456,6 +456,10 @@ char *getDispText(int index) {
       }
       break;
     case MOVE_MOTOR_UI:       strcpy(public_buf_l, move_menu.title); break;
+
+    #if ENABLED(PROBE_OFFSET_WIZARD)
+      case Z_OFFSET_WIZARD_UI: break;
+    #endif
     case OPERATE_UI:
       switch (disp_state_stack._disp_state[disp_state_stack._disp_index]) {
         IF_DISABLED(TFT35, case OPERATE_UI: case PAUSE_UI:)
@@ -785,6 +789,10 @@ void GUI_RefreshPage() {
 
     case MOVE_MOTOR_UI: break;
 
+    #if ENABLED(PROBE_OFFSET_WIZARD)
+      case Z_OFFSET_WIZARD_UI: break;
+    #endif
+
     #if ENABLED(MKS_WIFI_MODULE)
       case WIFI_UI:
         if (temps_update_flag) {
@@ -885,6 +893,9 @@ void clear_cur_ui() {
     case PRINT_FILE_UI:               lv_clear_print_file(); break;
     case PRINTING_UI:                 lv_clear_printing(); break;
     case MOVE_MOTOR_UI:               lv_clear_move_motor(); break;
+    #if ENABLED(PROBE_OFFSET_WIZARD)
+      case Z_OFFSET_WIZARD_UI:        lv_clear_z_offset_wizard(); break;
+    #endif
     case OPERATE_UI:                  lv_clear_operation(); break;
     case PAUSE_UI:                    break;
     case EXTRUSION_UI:                lv_clear_extrusion(); break;
@@ -993,6 +1004,9 @@ void draw_return_ui() {
                                         break;
 
       case MOVE_MOTOR_UI:               lv_draw_move_motor(); break;
+      #if ENABLED(PROBE_OFFSET_WIZARD)
+        case Z_OFFSET_WIZARD_UI:        lv_draw_z_offset_wizard(); break;
+      #endif
       case OPERATE_UI:                  lv_draw_operation(); break;
       case PAUSE_UI:                    break;
       case EXTRUSION_UI:                lv_draw_extrusion(); break;
@@ -1331,7 +1345,6 @@ void lv_screen_menu_item_onoff_update(lv_obj_t *btn, const bool curValue) {
   lv_label_set_text((lv_obj_t*)btn->child_ll.head, curValue ? machine_menu.enable : machine_menu.disable);
 }
 
-
 #if ENABLED(SDSUPPORT)
 
   void sd_detection() {
@@ -1360,7 +1373,9 @@ void print_time_count() {
 }
 
 void LV_TASK_HANDLER() {
-  lv_task_handler();
+
+  if (TERN1(USE_SPI_DMA_TC, !get_lcd_dma_lock()))
+    lv_task_handler();
 
   #if BOTH(MKS_TEST, SDSUPPORT)
     if (mks_test_flag == 0x1E) mks_hardware_test();

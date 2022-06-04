@@ -32,14 +32,14 @@
 //#define BOGUS_TEMPERATURE_GRACE_PERIOD    2000
 
 #define BOARD_NO_NATIVE_USB
-
+#define RESET_STEPPERS_ON_MEDIA_INSERT
 #define DISABLE_JTAG
 
 #if EITHER(NO_EEPROM_SELECTED, FLASH_EEPROM_EMULATION)
   #define FLASH_EEPROM_EMULATION
-  #define EEPROM_PAGE_SIZE     (0x800U)           // 2KB
+  #define EEPROM_PAGE_SIZE     (0x800U)           // 2K
   #define EEPROM_START_ADDRESS (0x8000000UL + (STM32_FLASH_SIZE) * 1024UL - (EEPROM_PAGE_SIZE) * 2UL)
-  #define MARLIN_EEPROM_SIZE    EEPROM_PAGE_SIZE  // 2KB
+  #define MARLIN_EEPROM_SIZE    EEPROM_PAGE_SIZE  // 2K
 #endif
 
 //
@@ -163,13 +163,11 @@
     #define DOGLCD_CS                EXP1_04_PIN
     #define DOGLCD_SCK               EXP1_05_PIN
     #define DOGLCD_MOSI              EXP1_03_PIN
-    //#define LCD_SCREEN_ROT_90
-    //#define LCD_SCREEN_ROT_180
-    //#define LCD_SCREEN_ROT_270
 
     #if EITHER(FYSETC_MINI_12864, U8GLIB_ST7920)
       #define FORCE_SOFT_SPI
     #endif
+    //#define LCD_SCREEN_ROTATE              180  // 0, 90, 180, 270
   #endif
 
   #define LCD_PINS_RS                EXP1_04_PIN  // CS -- SOFT SPI for ENDER3 LCD

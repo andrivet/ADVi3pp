@@ -41,7 +41,7 @@
   #include "../../module/tool_change.h"
 #endif
 
-#if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+#if HAS_Z_STEPPER_ALIGN_STEPPER_XY
   #include "../../libs/least_squares_fit.h"
 #endif
 
@@ -52,9 +52,9 @@
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../../core/debug_out.h"
 
-#if NUM_Z_STEPPER_DRIVERS >= 3
+#if NUM_Z_STEPPERS >= 3
   #define TRIPLE_Z 1
-  #if NUM_Z_STEPPER_DRIVERS >= 4
+  #if NUM_Z_STEPPERS >= 4
     #define QUAD_Z 1
   #endif
 #endif
@@ -122,7 +122,7 @@ void GcodeSuite::G34() {
         break;
       }
 
-      const float z_auto_align_amplification = TERN(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS, Z_STEPPER_ALIGN_AMP, parser.floatval('A', Z_STEPPER_ALIGN_AMP));
+      const float z_auto_align_amplification = TERN(HAS_Z_STEPPER_ALIGN_STEPPER_XY, Z_STEPPER_ALIGN_AMP, parser.floatval('A', Z_STEPPER_ALIGN_AMP));
       if (!WITHIN(ABS(z_auto_align_amplification), 0.5f, 2.0f)) {
         SERIAL_ECHOLNPGM("?(A)mplification out of bounds (0.5-2.0).");
         break;
@@ -179,16 +179,16 @@ void GcodeSuite::G34() {
       // Now, the Z origin lies below the build plate. That allows to probe deeper, before run_z_probe throws an error.
       // This hack is un-done at the end of G34 - either by re-homing, or by using the probed heights of the last iteration.
 
-      #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-        float last_z_align_move[NUM_Z_STEPPER_DRIVERS] = ARRAY_N_1(NUM_Z_STEPPER_DRIVERS, 10000.0f);
+      #if !HAS_Z_STEPPER_ALIGN_STEPPER_XY
+        float last_z_align_move[NUM_Z_STEPPERS] = ARRAY_N_1(NUM_Z_STEPPERS, 10000.0f);
       #else
         float last_z_align_level_indicator = 10000.0f;
       #endif
-      float z_measured[NUM_Z_STEPPER_DRIVERS] = { 0 },
+      float z_measured[NUM_Z_STEPPERS] = { 0 },
             z_maxdiff = 0.0f,
             amplification = z_auto_align_amplification;
 
-      #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+      #if !HAS_Z_STEPPER_ALIGN_STEPPER_XY
         bool adjustment_reverse = false;
       #endif
 
@@ -217,9 +217,9 @@ void GcodeSuite::G34() {
         float z_measured_max = -100000.0f;
 
         // Probe all positions (one per Z-Stepper)
-        LOOP_L_N(i, NUM_Z_STEPPER_DRIVERS) {
+        LOOP_L_N(i, NUM_Z_STEPPERS) {
           // iteration odd/even --> downward / upward stepper sequence
-          const uint8_t iprobe = (iteration & 1) ? NUM_Z_STEPPER_DRIVERS - 1 - i : i;
+          const uint8_t iprobe = (iteration & 1) ? NUM_Z_STEPPERS - 1 - i : i;
 
           // Safe clearance even on an incline
           if ((iteration == 0 || i > 0) && z_probe > current_position.z) do_blocking_move_to_z(z_probe);
@@ -256,7 +256,7 @@ void GcodeSuite::G34() {
         z_maxdiff = z_measured_max - z_measured_min;
         z_probe = Z_BASIC_CLEARANCE + z_measured_max + z_maxdiff;
 
-        #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+        #if HAS_Z_STEPPER_ALIGN_STEPPER_XY
           // Replace the initial values in z_measured with calculated heights at
           // each stepper position. This allows the adjustment algorithm to be
           // shared between both possible probing mechanisms.
@@ -270,20 +270,20 @@ void GcodeSuite::G34() {
           // This allows the actual adjustment logic to be shared by both algorithms.
           linear_fit_data lfd;
           incremental_LSF_reset(&lfd);
-          LOOP_L_N(i, NUM_Z_STEPPER_DRIVERS) {
+          LOOP_L_N(i, NUM_Z_STEPPERS) {
             SERIAL_ECHOLNPGM("PROBEPT_", i, ": ", z_measured[i]);
             incremental_LSF(&lfd, z_stepper_align.xy[i], z_measured[i]);
           }
           finish_incremental_LSF(&lfd);
 
           z_measured_min = 100000.0f;
-          LOOP_L_N(i, NUM_Z_STEPPER_DRIVERS) {
+          LOOP_L_N(i, NUM_Z_STEPPERS) {
             z_measured[i] = -(lfd.A * z_stepper_align.stepper_xy[i].x + lfd.B * z_stepper_align.stepper_xy[i].y + lfd.D);
             z_measured_min = _MIN(z_measured_min, z_measured[i]);
           }
 
           SERIAL_ECHOLNPGM(
-            LIST_N(DOUBLE(NUM_Z_STEPPER_DRIVERS),
+            LIST_N(DOUBLE(NUM_Z_STEPPERS),
               "Calculated Z1=", z_measured[0],
                         " Z2=", z_measured[1],
                         " Z3=", z_measured[2],
@@ -307,7 +307,7 @@ void GcodeSuite::G34() {
 
         #if HAS_STATUS_MESSAGE
           char fstr1[10];
-          char msg[6 + (6 + 5) * NUM_Z_STEPPER_DRIVERS + 1]
+          char msg[6 + (6 + 5) * NUM_Z_STEPPERS + 1]
             #if TRIPLE_Z
               , fstr2[10], fstr3[10]
               #if QUAD_Z
@@ -338,19 +338,19 @@ void GcodeSuite::G34() {
           return false;
         };
 
-        #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+        #if HAS_Z_STEPPER_ALIGN_STEPPER_XY
           // Check if the applied corrections go in the correct direction.
           // Calculate the sum of the absolute deviations from the mean of the probe measurements.
           // Compare to the last iteration to ensure it's getting better.
 
           // Calculate mean value as a reference
           float z_measured_mean = 0.0f;
-          LOOP_L_N(zstepper, NUM_Z_STEPPER_DRIVERS) z_measured_mean += z_measured[zstepper];
-          z_measured_mean /= NUM_Z_STEPPER_DRIVERS;
+          LOOP_L_N(zstepper, NUM_Z_STEPPERS) z_measured_mean += z_measured[zstepper];
+          z_measured_mean /= NUM_Z_STEPPERS;
 
           // Calculate the sum of the absolute deviations from the mean value
           float z_align_level_indicator = 0.0f;
-          LOOP_L_N(zstepper, NUM_Z_STEPPER_DRIVERS)
+          LOOP_L_N(zstepper, NUM_Z_STEPPERS)
             z_align_level_indicator += ABS(z_measured[zstepper] - z_measured_mean);
 
           // If it's getting worse, stop and throw an error
@@ -365,12 +365,12 @@ void GcodeSuite::G34() {
 
         bool success_break = true;
         // Correct the individual stepper offsets
-        LOOP_L_N(zstepper, NUM_Z_STEPPER_DRIVERS) {
+        LOOP_L_N(zstepper, NUM_Z_STEPPERS) {
           // Calculate current stepper move
           float z_align_move = z_measured[zstepper] - z_measured_min;
           const float z_align_abs = ABS(z_align_move);
 
-          #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+          #if !HAS_Z_STEPPER_ALIGN_STEPPER_XY
             // Optimize one iteration's correction based on the first measurements
             if (z_align_abs) amplification = (iteration == 1) ? _MIN(last_z_align_move[zstepper] / z_align_abs, 2.0f) : z_auto_align_amplification;
 
@@ -394,7 +394,7 @@ void GcodeSuite::G34() {
           // Lock all steppers except one
           stepper.set_all_z_lock(true, zstepper);
 
-          #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+          #if !HAS_Z_STEPPER_ALIGN_STEPPER_XY
             // Decreasing accuracy was detected so move was inverted.
             // Will match reversed Z steppers on dual steppers. Triple will need more work to map.
             if (adjustment_reverse) {
@@ -467,7 +467,7 @@ void GcodeSuite::G34() {
  *
  *   S<index> : Index of the probe point to set
  *
- * With Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS:
+ * With Z_STEPPER_ALIGN_STEPPER_XY:
  *   W<index> : Index of the Z stepper position to set
  *              The W and S parameters may not be combined.
  *
@@ -486,41 +486,42 @@ void GcodeSuite::M422() {
     return;
   }
 
-  const bool is_probe_point = parser.seen('S');
+  const bool is_probe_point = parser.seen_test('S');
 
-  if (TERN0(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS, is_probe_point && parser.seen('W'))) {
+  if (TERN0(HAS_Z_STEPPER_ALIGN_STEPPER_XY, is_probe_point && parser.seen_test('W'))) {
     SERIAL_ECHOLNPGM("?(S) and (W) may not be combined.");
     return;
   }
 
-  xy_pos_t *pos_dest = (
-    TERN_(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS, !is_probe_point ? z_stepper_align.stepper_xy :)
+  xy_pos_t * const pos_dest = (
+    TERN_(HAS_Z_STEPPER_ALIGN_STEPPER_XY, !is_probe_point ? z_stepper_align.stepper_xy :)
     z_stepper_align.xy
   );
 
-  if (!is_probe_point && TERN1(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS, !parser.seen('W'))) {
-    SERIAL_ECHOLNPGM("?(S)" TERN_(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS, " or (W)") " is required.");
+  if (!is_probe_point && TERN1(HAS_Z_STEPPER_ALIGN_STEPPER_XY, !parser.seen_test('W'))) {
+    SERIAL_ECHOLNPGM("?(S)" TERN_(HAS_Z_STEPPER_ALIGN_STEPPER_XY, " or (W)") " is required.");
     return;
   }
 
   // Get the Probe Position Index or Z Stepper Index
-  int8_t position_index;
-  if (is_probe_point) {
-    position_index = parser.intval('S') - 1;
-    if (!WITHIN(position_index, 0, int8_t(NUM_Z_STEPPER_DRIVERS) - 1)) {
-      SERIAL_ECHOLNPGM("?(S) Probe-position index invalid.");
-      return;
-    }
-  }
+  int8_t position_index = 1;
+  FSTR_P err_string = F("?(S) Probe-position");
+  if (is_probe_point)
+    position_index = parser.intval('S');
   else {
-    #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-      position_index = parser.intval('W') - 1;
-      if (!WITHIN(position_index, 0, NUM_Z_STEPPER_DRIVERS - 1)) {
-        SERIAL_ECHOLNPGM("?(W) Z-stepper index invalid.");
-        return;
-      }
+    #if HAS_Z_STEPPER_ALIGN_STEPPER_XY
+      err_string = F("?(W) Z-stepper");
+      position_index = parser.intval('W');
     #endif
   }
+
+  if (!WITHIN(position_index, 1, NUM_Z_STEPPERS)) {
+    SERIAL_ECHOF(err_string);
+    SERIAL_ECHOLNPGM(" index invalid (1.." STRINGIFY(NUM_Z_STEPPERS) ").");
+    return;
+  }
+
+  --position_index;
 
   const xy_pos_t pos = {
     parser.floatval('X', pos_dest[position_index].x),
@@ -543,7 +544,7 @@ void GcodeSuite::M422() {
 
 void GcodeSuite::M422_report(const bool forReplay/*=true*/) {
   report_heading(forReplay, F(STR_Z_AUTO_ALIGN));
-  LOOP_L_N(i, NUM_Z_STEPPER_DRIVERS) {
+  LOOP_L_N(i, NUM_Z_STEPPERS) {
     report_echo_start(forReplay);
     SERIAL_ECHOLNPGM_P(
       PSTR("  M422 S"), i + 1,
@@ -551,8 +552,8 @@ void GcodeSuite::M422_report(const bool forReplay/*=true*/) {
       SP_Y_STR, z_stepper_align.xy[i].y
     );
   }
-  #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-    LOOP_L_N(i, NUM_Z_STEPPER_DRIVERS) {
+  #if HAS_Z_STEPPER_ALIGN_STEPPER_XY
+    LOOP_L_N(i, NUM_Z_STEPPERS) {
       report_echo_start(forReplay);
       SERIAL_ECHOLNPGM_P(
         PSTR("  M422 W"), i + 1,

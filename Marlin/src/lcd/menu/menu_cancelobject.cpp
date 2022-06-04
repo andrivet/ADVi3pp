@@ -26,7 +26,7 @@
 
 #include "../../inc/MarlinConfigPre.h"
 
-#if BOTH(HAS_LCD_MENU, CANCEL_OBJECTS)
+#if BOTH(HAS_MARLINUI_MENU, CANCEL_OBJECTS)
 
 #include "menu_item.h"
 #include "menu_addon.h"
@@ -48,7 +48,7 @@ static void lcd_cancel_object_confirm() {
       ui.goto_previous_screen();
     },
     nullptr,
-    GET_TEXT(MSG_CANCEL_OBJECT), item_num, PSTR("?")
+    GET_TEXT_F(MSG_CANCEL_OBJECT), item_num, F("?")
   );
 }
 
@@ -71,4 +71,4 @@ void menu_cancelobject() {
   END_MENU();
 }
 
-#endif // HAS_LCD_MENU && CANCEL_OBJECTS
+#endif // HAS_MARLINUI_MENU && CANCEL_OBJECTS

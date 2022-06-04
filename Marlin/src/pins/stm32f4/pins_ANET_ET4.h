@@ -24,7 +24,7 @@
 #include "env_validate.h"
 
 #if HAS_MULTI_HOTEND || E_STEPPERS > 1
-  #error "Anet ET4 only supports one hotend / E-stepper. Comment out this line to continue."
+  #error "Anet ET4 only supports 1 hotend / E stepper."
 #endif
 
 #ifndef BOARD_INFO_NAME
@@ -39,7 +39,7 @@
 #if NO_EEPROM_SELECTED
   //#define SRAM_EEPROM_EMULATION                 // Use BackSRAM-based EEPROM emulation
   #define FLASH_EEPROM_EMULATION                  // Use Flash-based EEPROM emulation
-  //#define IIC_BL24CXX_EEPROM                    // Use I2C EEPROM onboard IC (AT24C04C, Size 4KB, PageSize 16B)
+  //#define IIC_BL24CXX_EEPROM                    // Use I2C EEPROM onboard IC (AT24C04C, Size 4K, PageSize 16B)
 #endif
 
 #if ENABLED(FLASH_EEPROM_EMULATION)
@@ -50,7 +50,7 @@
   #define IIC_EEPROM_SDA                    PB11
   #define IIC_EEPROM_SCL                    PB10
   #define EEPROM_DEVICE_ADDRESS             0xA0
-  #define MARLIN_EEPROM_SIZE              0x1000  // 4KB
+  #define MARLIN_EEPROM_SIZE              0x1000  // 4K
 #endif
 
 //
@@ -203,19 +203,12 @@
 
 #if ENABLED(SDSUPPORT)
 
-  #define SDIO_D0_PIN                       PC8
-  #define SDIO_D1_PIN                       PC9
-  #define SDIO_D2_PIN                       PC10
-  #define SDIO_D3_PIN                       PC11
-  #define SDIO_CK_PIN                       PC12
-  #define SDIO_CMD_PIN                      PD2
-
   #if DISABLED(SDIO_SUPPORT)
     #define SOFTWARE_SPI
-    #define SDSS                     SDIO_D3_PIN
-    #define SD_SCK_PIN               SDIO_CK_PIN
-    #define SD_MISO_PIN              SDIO_D0_PIN
-    #define SD_MOSI_PIN             SDIO_CMD_PIN
+    #define SDSS                            PC11
+    #define SD_SCK_PIN                      PC12
+    #define SD_MISO_PIN                     PC8
+    #define SD_MOSI_PIN                     PD2
   #endif
 
   #ifndef SD_DETECT_PIN

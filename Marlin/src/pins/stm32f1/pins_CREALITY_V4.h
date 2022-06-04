@@ -22,13 +22,13 @@
 #pragma once
 
 /**
- * Creality 4.2.x (STM32F103RET6) board pin assignments
+ * Creality 4.2.x (STM32F103RE / STM32F103RC) board pin assignments
  */
 
 #include "env_validate.h"
 
 #if HAS_MULTI_HOTEND || E_STEPPERS > 1
-  #error "Creality V4 only supports one hotend / E-stepper. Comment out this line to continue."
+  #error "Creality v4 only supports 1 hotend / E stepper."
 #endif
 
 #ifndef BOARD_INFO_NAME
@@ -41,6 +41,13 @@
 #define BOARD_NO_NATIVE_USB
 
 //
+// Release PB4 (Y_ENABLE_PIN) from JTAG NRST role
+//
+#ifndef DISABLE_DEBUG
+  #define DISABLE_DEBUG
+#endif
+
+//
 // EEPROM
 //
 #if NO_EEPROM_SELECTED
@@ -51,9 +58,9 @@
 #if ENABLED(IIC_BL24CXX_EEPROM)
   #define IIC_EEPROM_SDA                    PA11
   #define IIC_EEPROM_SCL                    PA12
-  #define MARLIN_EEPROM_SIZE               0x800  // 2Kb (24C16)
+  #define MARLIN_EEPROM_SIZE               0x800  // 2K (24C16)
 #elif ENABLED(SDCARD_EEPROM_EMULATION)
-  #define MARLIN_EEPROM_SIZE               0x800  // 2Kb
+  #define MARLIN_EEPROM_SIZE               0x800  // 2K
 #endif
 
 //
@@ -72,7 +79,9 @@
 //
 #define X_STOP_PIN                          PA5
 #define Y_STOP_PIN                          PA6
-#define Z_STOP_PIN                          PA7
+#ifndef Z_STOP_PIN
+  #define Z_STOP_PIN                        PA7
+#endif
 
 #ifndef Z_MIN_PROBE_PIN
   #define Z_MIN_PROBE_PIN                   PB1   // BLTouch IN
@@ -121,11 +130,6 @@
 #define E0_ENABLE_PIN               X_ENABLE_PIN
 
 //
-// Release PB4 (Y_ENABLE_PIN) from JTAG NRST role
-//
-#define DISABLE_DEBUG
-
-//
 // Temperature Sensors
 //
 #define TEMP_0_PIN                          PC5   // TH1
@@ -143,17 +147,13 @@
 #ifndef FAN_PIN
   #define FAN_PIN                           PA0   // FAN
 #endif
-#if PIN_EXISTS(FAN)
-  #define FAN_SOFT_PWM
-#endif
+#define FAN_SOFT_PWM_REQUIRED
 
 //
 // SD Card
 //
 #define SD_DETECT_PIN                       PC7
 #define SDCARD_CONNECTION                ONBOARD
-#define ONBOARD_SPI_DEVICE                     1
-#define ONBOARD_SD_CS_PIN                   PA4   // SDSS
 #define SDIO_SUPPORT
 #define NO_SD_HOST_DRIVE                          // This board's SD is only seen by the printer
 
@@ -189,7 +189,7 @@
     #error "Define RET6_12864_LCD or VET6_12864_LCD to select pins for CR10_STOCKDISPLAY with the Creality V4 controller."
   #endif
 
-#elif EITHER(HAS_DWIN_E3V2, IS_DWIN_MARLINUI)
+#elif HAS_DWIN_E3V2 || IS_DWIN_MARLINUI
 
   // RET6 DWIN ENCODER LCD
   #define BTN_ENC                           PB14

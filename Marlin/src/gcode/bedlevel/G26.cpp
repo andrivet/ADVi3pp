@@ -71,8 +71,8 @@
  *                    pliers while holding the LCD Click wheel in a depressed state. If you do not have
  *                    an LCD, you must specify a value if you use P.
  *
- *   Q #  Multiplier  Retraction Multiplier. Normally not needed. Retraction defaults to 1.0mm and
- *                    un-retraction is at 1.2mm   These numbers will be scaled by the specified amount
+ *   Q #  Multiplier  Retraction Multiplier. (Normally not needed.) During G26 retraction will use the length
+ *                    specified by this parameter (1mm by default). Recover will be 1.2x the retract distance.
  *
  *   R #  Repeat      Prints the number of patterns given as a parameter, starting at the current location.
  *                    If a parameter isn't given, every point will be printed unless G26 is interrupted.
@@ -156,7 +156,7 @@ constexpr float g26_e_axis_feedrate = 0.025;
 static MeshFlags circle_flags;
 float g26_random_deviation = 0.0;
 
-#if HAS_LCD_MENU
+#if HAS_MARLINUI_MENU
 
   /**
    * If the LCD is clicked, cancel, wait for release, return true
@@ -164,7 +164,7 @@ float g26_random_deviation = 0.0;
   bool user_canceled() {
     if (!ui.button_pressed()) return false; // Return if the button isn't pressed
     ui.set_status(GET_TEXT_F(MSG_G26_CANCELED), 99);
-    TERN_(HAS_LCD_MENU, ui.quick_feedback());
+    TERN_(HAS_MARLINUI_MENU, ui.quick_feedback());
     ui.wait_for_release();
     return true;
   }
@@ -293,10 +293,10 @@ typedef struct {
 
     if (circle_flags.marked(p1.x, p1.y) && circle_flags.marked(p2.x, p2.y)) {
       xyz_pos_t s, e;
-      s.x = _GET_MESH_X(p1.x) + (INTERSECTION_CIRCLE_RADIUS - (CROSSHAIRS_SIZE)) * dx;
-      e.x = _GET_MESH_X(p2.x) - (INTERSECTION_CIRCLE_RADIUS - (CROSSHAIRS_SIZE)) * dx;
-      s.y = _GET_MESH_Y(p1.y) + (INTERSECTION_CIRCLE_RADIUS - (CROSSHAIRS_SIZE)) * dy;
-      e.y = _GET_MESH_Y(p2.y) - (INTERSECTION_CIRCLE_RADIUS - (CROSSHAIRS_SIZE)) * dy;
+      s.x = bedlevel.get_mesh_x(p1.x) + (INTERSECTION_CIRCLE_RADIUS - (CROSSHAIRS_SIZE)) * dx;
+      e.x = bedlevel.get_mesh_x(p2.x) - (INTERSECTION_CIRCLE_RADIUS - (CROSSHAIRS_SIZE)) * dx;
+      s.y = bedlevel.get_mesh_y(p1.y) + (INTERSECTION_CIRCLE_RADIUS - (CROSSHAIRS_SIZE)) * dy;
+      e.y = bedlevel.get_mesh_y(p2.y) - (INTERSECTION_CIRCLE_RADIUS - (CROSSHAIRS_SIZE)) * dy;
       s.z = e.z = layer_height;
 
       #if HAS_ENDSTOPS
@@ -325,7 +325,7 @@ typedef struct {
         #if HAS_WIRED_LCD
           ui.set_status(GET_TEXT_F(MSG_G26_HEATING_BED), 99);
           ui.quick_feedback();
-          TERN_(HAS_LCD_MENU, ui.capture());
+          TERN_(HAS_MARLINUI_MENU, ui.capture());
         #endif
         thermalManager.setTargetBed(bed_temp);
 
@@ -365,7 +365,7 @@ typedef struct {
   bool prime_nozzle() {
 
     const feedRate_t fr_slow_e = planner.settings.max_feedrate_mm_s[E_AXIS] / 15.0f;
-    #if HAS_LCD_MENU && !HAS_TOUCH_BUTTONS // ui.button_pressed issue with touchscreen
+    #if HAS_MARLINUI_MENU && !HAS_TOUCH_BUTTONS // ui.button_pressed issue with touchscreen
       #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
         float Total_Prime = 0.0;
       #endif
@@ -448,7 +448,7 @@ typedef struct {
       GRID_LOOP(i, j) {
         if (!circle_flags.marked(i, j)) {
           // We found a circle that needs to be printed
-          const xy_pos_t m = { _GET_MESH_X(i), _GET_MESH_Y(j) };
+          const xy_pos_t m = { bedlevel.get_mesh_x(i), bedlevel.get_mesh_y(j) };
 
           // Get the distance to this intersection
           float f = (pos - m).magnitude();
@@ -579,7 +579,7 @@ void GcodeSuite::G26() {
 
   if (parser.seen('P')) {
     if (!parser.has_value()) {
-      #if HAS_LCD_MENU
+      #if HAS_MARLINUI_MENU
         g26.prime_flag = -1;
       #else
         SERIAL_ECHOLNPGM("?Prime length must be specified when not using an LCD.");
@@ -638,7 +638,7 @@ void GcodeSuite::G26() {
 
   // Get repeat from 'R', otherwise do one full circuit
   int16_t g26_repeats;
-  #if HAS_LCD_MENU
+  #if HAS_MARLINUI_MENU
     g26_repeats = parser.intval('R', GRID_MAX_POINTS + 1);
   #else
     if (parser.seen('R'))
@@ -699,7 +699,7 @@ void GcodeSuite::G26() {
   move_to(destination, 0.0);
   move_to(destination, g26.ooze_amount);
 
-  TERN_(HAS_LCD_MENU, ui.capture());
+  TERN_(HAS_MARLINUI_MENU, ui.capture());
 
   #if DISABLED(ARC_SUPPORT)
 
@@ -729,7 +729,7 @@ void GcodeSuite::G26() {
 
     if (location.valid()) {
       TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(location.pos, ExtUI::G26_POINT_START));
-      const xy_pos_t circle = _GET_MESH_POS(location.pos);
+      const xy_pos_t circle = { bedlevel.get_mesh_x(location.pos.a), bedlevel.get_mesh_y(location.pos.b) };
 
       // If this mesh location is outside the printable radius, skip it.
       if (!position_is_reachable(circle)) continue;
@@ -738,8 +738,8 @@ void GcodeSuite::G26() {
       // which is always drawn counter-clockwise.
       const xy_int8_t st = location;
       const bool f = st.y == 0,
-                 r = st.x >= GRID_MAX_POINTS_X - 1,
-                 b = st.y >= GRID_MAX_POINTS_Y - 1;
+                 r = st.x >= (GRID_MAX_POINTS_X) - 1,
+                 b = st.y >= (GRID_MAX_POINTS_Y) - 1;
 
       #if ENABLED(ARC_SUPPORT)
 
@@ -795,7 +795,7 @@ void GcodeSuite::G26() {
           destination = current_position;
         }
 
-        if (TERN0(HAS_LCD_MENU, user_canceled())) goto LEAVE; // Check if the user wants to stop the Mesh Validation
+        if (TERN0(HAS_MARLINUI_MENU, user_canceled())) goto LEAVE; // Check if the user wants to stop the Mesh Validation
 
       #else // !ARC_SUPPORT
 
@@ -819,7 +819,7 @@ void GcodeSuite::G26() {
 
         for (int8_t ind = start_ind; ind <= end_ind; ind++) {
 
-          if (TERN0(HAS_LCD_MENU, user_canceled())) goto LEAVE; // Check if the user wants to stop the Mesh Validation
+          if (TERN0(HAS_MARLINUI_MENU, user_canceled())) goto LEAVE; // Check if the user wants to stop the Mesh Validation
 
           xyz_float_t p = { circle.x + _COS(ind    ), circle.y + _SIN(ind    ), g26.layer_height },
                       q = { circle.x + _COS(ind + 1), circle.y + _SIN(ind + 1), g26.layer_height };
@@ -846,7 +846,7 @@ void GcodeSuite::G26() {
       g26.connect_neighbor_with_line(location.pos,  0,  1);
       planner.synchronize();
       TERN_(EXTENSIBLE_UI, ExtUI::onMeshUpdate(location.pos, ExtUI::G26_POINT_FINISH));
-      if (TERN0(HAS_LCD_MENU, user_canceled())) goto LEAVE;
+      if (TERN0(HAS_MARLINUI_MENU, user_canceled())) goto LEAVE;
     }
 
     SERIAL_FLUSH(); // Prevent host M105 buffer overrun.
@@ -866,7 +866,7 @@ void GcodeSuite::G26() {
     planner.calculate_volumetric_multipliers();
   #endif
 
-  TERN_(HAS_LCD_MENU, ui.release()); // Give back control of the LCD
+  TERN_(HAS_MARLINUI_MENU, ui.release()); // Give back control of the LCD
 
   if (!g26.keep_heaters_on) {
     TERN_(HAS_HEATED_BED, thermalManager.setTargetBed(0));

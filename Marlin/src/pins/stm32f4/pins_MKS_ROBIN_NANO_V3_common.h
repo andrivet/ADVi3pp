@@ -36,7 +36,7 @@
 //#define FLASH_EEPROM_EMULATION                  // Use Flash-based EEPROM emulation
 #if EITHER(NO_EEPROM_SELECTED, I2C_EEPROM)
   #define I2C_EEPROM
-  #define MARLIN_EEPROM_SIZE              0x1000  // 4KB
+  #define MARLIN_EEPROM_SIZE              0x1000  // 4K
   #define I2C_SCL_PIN                       PB6
   #define I2C_SDA_PIN                       PB7
 #endif
@@ -119,6 +119,14 @@
 #define TEMP_1_PIN                          PA2   // TH2
 #define TEMP_BED_PIN                        PC0   // TB1
 
+#if HOTENDS == 1 && !REDUNDANT_TEMP_MATCH(SOURCE, E1)
+  #if TEMP_SENSOR_PROBE
+    #define TEMP_PROBE_PIN            TEMP_1_PIN
+  #elif TEMP_SENSOR_CHAMBER
+    #define TEMP_CHAMBER_PIN          TEMP_1_PIN
+  #endif
+#endif
+
 //
 // Heaters / Fans
 //
@@ -165,7 +173,9 @@
 //
 #if ENABLED(MKS_PWC)
   #if ENABLED(TFT_LVGL_UI)
-    #undef PSU_CONTROL
+    #if ENABLED(PSU_CONTROL)
+      #error "PSU_CONTROL is incompatible with MKS_PWC plus TFT_LVGL_UI."
+    #endif
     #undef MKS_PWC
     #define SUICIDE_PIN                     PB2
     #define SUICIDE_PIN_STATE               LOW
@@ -273,16 +283,16 @@
   #define TFT_MISO_PIN               EXP2_10_PIN
   #define TFT_MOSI_PIN               EXP2_05_PIN
   #define TFT_DC_PIN                 EXP1_03_PIN
-  #define TFT_RST_PIN                EXP1_07_PIN
   #define TFT_A0_PIN                  TFT_DC_PIN
 
   #define TFT_RESET_PIN              EXP1_07_PIN
-  #define TFT_BACKLIGHT_PIN          EXP1_08_PIN
+
+  #define LCD_BACKLIGHT_PIN          EXP1_08_PIN
+  #define TFT_BACKLIGHT_PIN    LCD_BACKLIGHT_PIN
 
   #define TOUCH_BUTTONS_HW_SPI
   #define TOUCH_BUTTONS_HW_SPI_DEVICE          1
 
-  #define LCD_BACKLIGHT_PIN          EXP1_08_PIN
   #ifndef TFT_WIDTH
     #define TFT_WIDTH                        480
   #endif
@@ -336,9 +346,9 @@
     //#undef SHOW_BOOTSCREEN
 
   #elif ENABLED(FYSETC_MINI_12864_2_1)
+    #define LCD_PINS_DC              EXP1_07_PIN
     #define DOGLCD_CS                EXP1_08_PIN
-    #define DOGLCD_A0                EXP1_07_PIN
-    #define LCD_PINS_DC                DOGLCD_A0
+    #define DOGLCD_A0                LCD_PINS_DC
     #define LCD_BACKLIGHT_PIN               -1
     #define LCD_RESET_PIN            EXP1_06_PIN
     #define NEOPIXEL_PIN             EXP1_05_PIN
@@ -347,7 +357,7 @@
     #if SD_CONNECTION_IS(ONBOARD)
       #define FORCE_SOFT_SPI
     #endif
-    //#define LCD_SCREEN_ROT_180
+    //#define LCD_SCREEN_ROTATE              180  // 0, 90, 180, 270
 
   #else                                           // !MKS_MINI_12864
 
@@ -366,9 +376,16 @@
 
 #endif // HAS_WIRED_LCD
 
+#if HAS_TFT_LVGL_UI
+  // Enable SPI DMA, this requires button pins, thus no buttons. Default is DISABLED.
+  //#define USE_SPI_DMA_TC
+#endif
+
 #if ANY(TFT_COLOR_UI, TFT_LVGL_UI, TFT_CLASSIC_UI, HAS_WIRED_LCD)
   #define BEEPER_PIN                 EXP1_10_PIN
-  #define BTN_EN1                    EXP2_08_PIN
-  #define BTN_EN2                    EXP2_06_PIN
-  #define BTN_ENC                    EXP1_09_PIN
+  #if DISABLED(USE_SPI_DMA_TC)
+    #define BTN_EN1                  EXP2_08_PIN
+    #define BTN_EN2                  EXP2_06_PIN
+    #define BTN_ENC                  EXP1_09_PIN
+  #endif
 #endif

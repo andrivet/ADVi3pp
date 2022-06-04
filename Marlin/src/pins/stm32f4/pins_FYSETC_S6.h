@@ -24,7 +24,7 @@
 #include "env_validate.h"
 
 #if HOTENDS > 3 || E_STEPPERS > 3
-  #error "FYSETC S6 supports up to 3 hotends / E-steppers."
+  #error "FYSETC S6 supports up to 3 hotends / E steppers."
 #endif
 
 #ifndef BOARD_INFO_NAME
@@ -50,7 +50,7 @@
   // 128 kB sector allocated for EEPROM emulation.
   #define FLASH_EEPROM_LEVELING
 #elif ENABLED(I2C_EEPROM)
-  #define MARLIN_EEPROM_SIZE              0x1000  // 4KB
+  #define MARLIN_EEPROM_SIZE              0x1000  // 4K
 #endif
 
 //
@@ -128,7 +128,7 @@
     #define Y_SERIAL_TX_PIN                 PE14
   #endif
   #ifndef Y_SERIAL_RX_PIN
-    #define Y_SERIAL_RX_PIN                 PC4
+    #define Y_SERIAL_RX_PIN                 PE13
   #endif
   #ifndef Z_SERIAL_TX_PIN
     #define Z_SERIAL_TX_PIN                 PD11
@@ -203,7 +203,7 @@
  *   PC11 | 8  7 | PD2      PC6  | 8  7 | PA4
  *   PC10   6  5 | PC12     PC7    6  5 | PA7
  *   PD0  | 4  3 | PD1      PB10 | 4  3 | RESET
- *   GND  | 2  1 | 5V       GND  | 2  1 | 5V
+ *    GND | 2  1 | 5V        GND | 2  1 | 5V
  *         ------                 ------
  *          EXP1                   EXP2
  */
