@@ -142,8 +142,6 @@ void MarlinUI::reset_status(const bool no_welcome)
 
 void MarlinUI::abort_print()
 {
-    Log::log() << F("abort_print") << Log::endl();
-
 #if ENABLED(SDSUPPORT)
     wait_for_heatup = wait_for_user = false;
     card.abortFilePrintSoon();
@@ -213,52 +211,43 @@ void MarlinUI::update_buttons()
 
 bool MarlinUI::button_pressed()
 {
-    Log::log() << F("button_pressed") << Log::endl();
     return false;
 }
 
 void MarlinUI::quick_feedback(const bool /*clear_buttons*/)
 {
-    Log::log() << F("quick_feedback") << Log::endl();
-
     refresh();
     buzzer.buzz_on_action();
 }
 
 void MarlinUI::refresh()
 {
-    Log::log() << F("refresh") << Log::endl();
     // Nothing to do
 }
 
 void MarlinUI::wait_for_release()
 {
-    Log::log() << F("wait_for_release") << Log::endl();
     safe_delay(50);
 }
 
 bool MarlinUI::use_click()
 {
-    Log::log() << F("use_click") << Log::endl();
     // TODO
     return false;
 }
 
 void MarlinUI::capture()
 {
-    Log::log() << F("capture") << Log::endl();
     external_control = true;
 }
 
 void MarlinUI::release()
 {
-    Log::log() << F("release") << Log::endl();
     external_control = false;
 }
 
 void MarlinUI::chirp()
 {
-    Log::log() << F("chirp") << Log::endl();
     buzzer.buzz_on_action();
 }
 
@@ -269,7 +258,6 @@ void MarlinUI::set_progress(const progress_t p)
 
 void MarlinUI::set_progress_done()
 {
-    Log::log() << F("set_progress_done") << Log::endl();
     progress = 100;
 }
 

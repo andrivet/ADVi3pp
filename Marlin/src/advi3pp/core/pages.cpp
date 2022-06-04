@@ -51,18 +51,13 @@ void Pages::show(Page page)
 {
     auto current = get_current_page();
     if(!test_one_bit(current, Page::Temporary) && current != Page::Main)
-    {
-        Log::log() << F("Save back page") << current << Log::endl();
         back_pages_.push(current);
-    }
 
    show_(page);
 }
 
 void Pages::show_(Page page)
 {
-    Log::log() << F("Show page") << page << Log::endl();
-
     WriteRegisterRequest{Register::PictureID}.write_page(get_cleared_bits(page, Page::Temporary));
 
     current_page_ = page;
@@ -82,7 +77,6 @@ Page Pages::get_current_page()
 void Pages::save_forward_page()
 {
     auto current = get_current_page();
-    Log::log() << F("Save forward page") << current << Log::endl();
     forward_page_ = current;
     log();
 }
@@ -92,7 +86,6 @@ void Pages::show_back_page()
 {
     if(back_pages_.is_empty())
     {
-        Log::log() << F("No back page, show Main") << Log::endl();
         show_(Page::Main);
         return;
     }
@@ -100,7 +93,6 @@ void Pages::show_back_page()
     auto back = back_pages_.pop();
     if(back == forward_page_)
         forward_page_ = Page::None;
-    Log::log() << F("Pop back page") << back << Log::endl();
     show_(back);
 }
 
@@ -116,7 +108,6 @@ void Pages::show_forward_page()
     while(!back_pages_.is_empty())
     {
         Page back_page = back_pages_.pop();
-        Log::log() << F("Pop back page") << back_page << Log::endl();
         if(back_page == forward_page_)
         {
             show_(forward_page_);

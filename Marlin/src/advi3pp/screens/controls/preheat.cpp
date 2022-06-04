@@ -51,7 +51,6 @@ bool Preheat::do_dispatch(KeyValue key_value)
 //! Send the presets t the LCD Panel
 void Preheat::send_presets()
 {
-    Log::log() << F("Preheat page") << Log::endl();
     WriteRamRequest{Variable::Value0}.write_words(
         ExtUI::getMaterialPresetHotendTemp_celsius(index_),
         ExtUI::getMaterialPresetBedTemp_celsius(index_),

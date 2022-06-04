@@ -242,16 +242,12 @@ void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
     {
         if(temperature == pid[i].temperature_)
         {
-            Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
-                       << F("PID with temperature") << temperature << F("found, update settings") << Log::endl();
             index_ = i;
             get_marlin_pid();
             return;
         }
     }
 
-    Log::log() << (kind == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
-               << F("PID with temperature") << temperature << F("NOT found, update settings #0") << Log::endl();
     // Temperature not found, so move PIDs and forget the last one, set index to 0 and update values
     for(size_t i = NB_PIDs - 1; i > 0; --i)
         pid[i] = pid[i - 1];
@@ -281,8 +277,6 @@ void PidSettings::choose_best_pid(TemperatureKind kind, uint16_t temperature)
         }
     }
 
-    Log::log() << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
-               << F("PID with smallest difference (") << best_difference << F(") is at index #") << index_ << Log::endl();
     set_marlin_pid();
 }
 
@@ -290,10 +284,6 @@ void PidSettings::choose_best_pid(TemperatureKind kind, uint16_t temperature)
 void PidSettings::to_lcd() const
 {
     const Pid& pid = get_pid();
-    Log::log() << F("Send") << (kind_ == TemperatureKind::Bed ? F("Bed") : F("Hotend"))
-               << F(" PID") << index_
-               << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
-
     WriteRamRequest{Variable::Value0}.write_words(
         kind_ == TemperatureKind::Hotend ? 0u : 1u,
         pid.temperature_,
@@ -312,10 +302,7 @@ void PidSettings::from_lcd()
 {
     ReadRam response{Variable::Value0};
     if(!response.send_receive(5))
-    {
-        Log::error() << F("Receiving Frame (PID Settings)") << Log::endl();
         return;
-    }
 
     uint16_t kind = response.read_word();
     uint16_t temperature = response.read_word();

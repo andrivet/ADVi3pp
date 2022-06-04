@@ -87,8 +87,6 @@ bool Dimming::receive()
             no_log.allow();
             // Reset TouchPanelFlag
             WriteRegisterRequest{Register::TouchPanelFlag}.write_byte(0);
-
-            Log::log() << F("Panel touched, reset dimming") << Log::endl();
             reset();
             return true;
         }
@@ -97,7 +95,6 @@ bool Dimming::receive()
     if(!dimmed_ && settings.is_feature_enabled(Feature::Dimming) && ELAPSED(millis(), next_dimming_time_))
     {
         no_log.allow();
-        Log::log() << F("Delay elapsed, dim the panel") << Log::endl();
         dimmed_ = true;
         send_brightness();
     }

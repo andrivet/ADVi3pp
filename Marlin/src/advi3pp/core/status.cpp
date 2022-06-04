@@ -83,9 +83,6 @@ void Status::send_progress()
     ADVString<progress_percent_length> progress_percent{};
     progress_percent << done << "%";
 
-    Log::log() << F("Progress: " ) << progress.get() << Log::endl();
-    Log::log() << F("Percent: " ) << progress_percent.get() << Log::endl();
-
     WriteRamRequest{Variable::ProgressText}.write_text(progress);
     WriteRamRequest{Variable::ProgressPercent}.write_text(progress_percent);
 }
@@ -131,8 +128,6 @@ void Status::send_times()
 //! Set the name for the progress message. Usually, it is the name of the file printed.
 void Status::set_filename(const char* name)
 {
-    Log::log() << F("Set Progress Filename: " ) << name << Log::endl();
-
     filename_ = name;
     percent_ = -1;
     send_progress();
@@ -141,8 +136,6 @@ void Status::set_filename(const char* name)
 //! Clear the progress message
 void Status::reset_progress()
 {
-    Log::log() << F("Reset Progress" ) << Log::endl();
-
     filename_.reset();
     percent_ = -1;
     send_progress();

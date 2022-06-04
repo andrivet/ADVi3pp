@@ -109,7 +109,6 @@ void ManualLeveling::leveling_task()
     if(!ExtUI::isMachineHomed())
         return;
 
-    Log::log() << F("Leveling Homed, start process") << Log::endl();
     background_task.clear();
     pages.show(Page::ManualLeveling);
 }
@@ -131,63 +130,54 @@ void ManualLeveling::move(int x, int y)
 //! Handle leveling point #1.
 void ManualLeveling::point1_command()
 {
-    Log::log() << F("Level point 1") << Log::endl();
     move(30, 30);
 }
 
 //! Handle leveling point #2.
 void ManualLeveling::point2_command()
 {
-    Log::log() << F("Level point 2") << Log::endl();
     move(30, 170);
 }
 
 //! Handle leveling point #3.
 void ManualLeveling::point3_command()
 {
-    Log::log() << F("Level point 3") << Log::endl();
     move(170, 170);
 }
 
 //! Handle leveling point #4.
 void ManualLeveling::point4_command()
 {
-    Log::log() << F("Level point 4") << Log::endl();
     move(170, 30);
 }
 
 //! Handle leveling point #5.
 void ManualLeveling::point5_command()
 {
-    Log::log() << F("Level point 5") << Log::endl();
     move(100, 100);
 }
 
 //! Handle leveling point #A.
 void ManualLeveling::pointA_command()
 {
-    Log::log() << F("Level point A") << Log::endl();
     move(100, 30);
 }
 
 //! Handle leveling point #B.
 void ManualLeveling::pointB_command()
 {
-    Log::log() << F("Level point B") << Log::endl();
     move(30, 100);
 }
 
 //! Handle leveling point #C.
 void ManualLeveling::pointC_command()
 {
-    Log::log() << F("Level point C") << Log::endl();
     move(100, 170);
 }
 
 //! Handle leveling point #D.
 void ManualLeveling::pointD_command()
 {
-    Log::log() << F("Level point D") << Log::endl();
     move(170, 100);
 }
 

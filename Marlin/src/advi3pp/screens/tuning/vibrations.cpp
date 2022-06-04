@@ -188,7 +188,6 @@ void Vibrations::move_xy() {
 
     int min, max;
     if(!get_values(min, max)) return;
-        return;
 
     int min_x = (min < X_MIN_BED) ? X_MIN_BED : min;
     int max_x = (max > X_MAX_BED) ? X_MAX_BED : max;
@@ -243,23 +242,23 @@ int Vibrations::get_z_speed() {
 }
 
 void Vibrations::x_command() {
-    background_task.set(Callback{this, &Vibrations::move_x}, 500);
+    background_task.set(Callback{this, &Vibrations::move_x});
 }
 
 void Vibrations::y_command() {
-    background_task.set(Callback{this, &Vibrations::move_y}, 500);
+    background_task.set(Callback{this, &Vibrations::move_y});
 }
 
 void Vibrations::xy_command() {
-    background_task.set(Callback{this, &Vibrations::move_start_xy}, 500);
+    background_task.set(Callback{this, &Vibrations::move_start_xy});
 }
 
 void Vibrations::yx_command() {
-    background_task.set(Callback{this, &Vibrations::move_start_yx}, 500);
+    background_task.set(Callback{this, &Vibrations::move_start_yx});
 }
 
 void Vibrations::z_command() {
-    background_task.set(Callback{this, &Vibrations::move_start_z}, 500);
+    background_task.set(Callback{this, &Vibrations::move_start_z});
 }
 
 }

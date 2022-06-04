@@ -163,7 +163,6 @@ void PidTuning::on_finished(ExtUI::result_t result)
 
     auto message = get_message(result);
     status.set(message);
-    Log::log() << message << Log::endl();
 	
     ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
     if(result != ExtUI::PID_DONE)

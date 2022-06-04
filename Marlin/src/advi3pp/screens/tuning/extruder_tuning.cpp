@@ -106,12 +106,6 @@ void ExtruderTuning::settings_command()
     uint16_t e = frame.read_word();
     auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + tuning_extruder_delta - e / 10.0);
 
-    Log::log()
-            << F("Adjust: old = ") << ExtUI::getAxisSteps_per_mm(ExtUI::E0)
-            << F(", expected = ") << extruded_
-            << F(", measured = ") << (extruded_ + tuning_extruder_delta - e)
-            << F(", new = ") << new_value << Log::endl();
-
     ExtUI::setAxisSteps_per_mm(new_value, ExtUI::E0);
     steps_settings.show();
 }
