@@ -9,7 +9,7 @@ function pause(){
    read -r -s -k "?$*"$'\n'
 }
 
-version="5.3.0-dev"
+version="5.3.0"
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
@@ -29,7 +29,7 @@ echo "======================================"
 echo
 echo "BE SURE YOU HAVE CHANGED:"
 echo "- CHANGELOG.md"
-echo "- advbumpversion --allow-dirty --no-commit --no-tag release"
+echo "- cd .. ; advbumpversion --allow-dirty --no-commit --no-tag release ; cd Scripts"
 echo "- User Manual if necessary"
 echo
 pause 'Press any key to continue or Ctrl-C to abort...'

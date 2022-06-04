@@ -1,5 +1,9 @@
 # ADVi3++ Changelog
 
+## 5.3.0 (2022-06-04)
+
+* **#214** -Troubleshooting vibrations and mechanical issues
+
 ## 5.2.0 (2022-05-01)
 
 * **#278** - Hide gcode files where the file name starts with a period
