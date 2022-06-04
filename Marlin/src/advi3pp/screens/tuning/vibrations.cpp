@@ -146,7 +146,7 @@ void Vibrations::move_y() {
 }
 
 void Vibrations::move_start_z() {
-    ADVString<20> cmd;
+    ADVString<40> cmd;
     cmd.format(F("G1 X%i F6000\nG1 Y%i F6000"), X_CENTER, Y_CENTER);
     core.inject_commands(cmd.get());
     background_task.set(Callback{this, &Vibrations::move_z}, 500);
@@ -170,14 +170,14 @@ void Vibrations::move_z() {
 }
 
 void Vibrations::move_start_xy() {
-    ADVString<20> cmd;
+    ADVString<40> cmd;
     cmd.format(F("G1 X%i F6000\nG1 Y%i F6000"), X_MIN_BED, Y_MIN_BED);
     core.inject_commands(cmd.get());
     background_task.set(Callback{this, &Vibrations::move_xy}, 500);
 }
 
 void Vibrations::move_start_yx() {
-    ADVString<20> cmd;
+    ADVString<40> cmd;
     cmd.format(F("G1 X%i F6000\nG1 Y%i F6000"), X_MIN_BED, Y_MAX_BED);
     core.inject_commands(cmd.get());
     background_task.set(Callback{this, &Vibrations::move_xy}, 500);
@@ -198,7 +198,7 @@ void Vibrations::move_xy() {
     int new_x_position = (ExtUI::getAxisPosition_mm(ExtUI::X) == max_x) ? min_x : max_x;
     int new_y_position = (ExtUI::getAxisPosition_mm(ExtUI::Y) == max_y) ? min_y : max_y;
 
-    ADVString<20> cmd;
+    ADVString<40> cmd;
     cmd.format(F("G1 X%i Y%i F%i"), new_x_position, new_y_position, get_xy_speed());
     core.inject_commands(cmd.get());
 }
