@@ -159,7 +159,7 @@ void Vibrations::move_z() {
     if(!get_values(min, max))
         return;
 
-    if(min < 0) min = 0;
+    if(min < 5) min = 5;
     if(max > 150) max = 150; // Don't go to the limit, could be dangerous with some mods
 
     int new_position = (ExtUI::getAxisPosition_mm(ExtUI::Z) == max) ? min : max;
@@ -187,7 +187,7 @@ void Vibrations::move_xy() {
     if(core.is_busy()) return;
 
     int min, max;
-    if(!get_values(min, max))
+    if(!get_values(min, max)) return;
         return;
 
     int min_x = (min < X_MIN_BED) ? X_MIN_BED : min;
