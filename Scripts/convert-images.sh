@@ -16,12 +16,14 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 root="$( cd "${scripts}/../LCD-Panel" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
+mkdir "${root}"/Sketch-Export
 
 dgus="$( cd "${root}/DGUS-root" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 sketch_export_dir="$( cd "${root}/Sketch-Export" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
+#mkdir "${sketch-export-dir}"
 
 masters="$( cd "${root}/Masters" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi

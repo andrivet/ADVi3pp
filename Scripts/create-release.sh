@@ -32,7 +32,7 @@ echo "- CHANGELOG.md"
 echo "- cd .. ; advbumpversion --allow-dirty --no-commit --no-tag release ; cd Scripts"
 echo "- User Manual if necessary"
 echo
-pause 'Press any key to continue or Ctrl-C to abort...'
+#pause 'Press any key to continue or Ctrl-C to abort...'
 
 sudo -v
 
@@ -48,7 +48,7 @@ if ! [ -x "$(command -v convert)" ]; then
   exit 1
 fi
 
-if ! [ -x "$(command -v mkfs.fat)" ]; then
+if ! [ -x "$(command -v /usr/local/sbin/mkfs.fat)" ]; then
   echo 'Error: dosfstools is not installed, use: brew install dosfstools' >&2
   exit 1
 fi

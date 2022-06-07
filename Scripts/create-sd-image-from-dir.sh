@@ -30,7 +30,7 @@ echo "Create microSD image..."
 dd if=/dev/zero bs=1m count=260 of="${img}"
 
 echo "Format as FAT32 8 sectors per cluster..."
-mkfs.fat -F 32 -n "${label}" -s 8 -v "${img}"
+/usr/local/sbin/mkfs.fat -F 32 -n "${label}" -s 8 -v "${img}"
 
 echo "Mount the SD image..."
 mount=$( sudo hdiutil attach -readwrite -imagekey diskimage-class=CRawDiskImage "${img}" | awk '{print $2}' )
