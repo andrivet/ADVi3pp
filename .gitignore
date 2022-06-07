@@ -175,14 +175,14 @@ __pycache__
 *_log.csv
 
 # ADVi3++
-.python-version
-ArduinoCore/
-LCD-Panel/Masters/Boot/
-LCD-Panel/DGUS-root/25_Controls
-LCD-Panel/DGUS-root/DWIN_SET/*.bmp
-LCD-Panel/Sketch-Export/
-Thumbs.db
-Marlin/Simulator Debug/
-Marlin/Simulator Release/
-Marlin/Simulator BL Debug/
-Marlin/Simulator BL Release/
+#.python-version
+#ArduinoCore/
+#LCD-Panel/Masters/Boot/
+#LCD-Panel/DGUS-root/25_Controls
+#LCD-Panel/DGUS-root/DWIN_SET/*.bmp
+#LCD-Panel/Sketch-Export/
+#Thumbs.db
+#Marlin/Simulator Debug/
+#Marlin/Simulator Release/
+#Marlin/Simulator BL Debug/
+#Marlin/Simulator BL Release/
