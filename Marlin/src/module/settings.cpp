@@ -1156,7 +1156,7 @@ void MarlinSettings::postprocess() {
     //
     {
       _FIELD_TEST(lcd_brightness);
-      const uint8_t lcd_brightness = TERN(HAS_LCD_BRIGHTNESS, ui.get_brightness(), 255);
+      const uint8_t lcd_brightness = TERN(HAS_LCD_BRIGHTNESS, ui.brightness, 255); // @advi3++
       EEPROM_WRITE(lcd_brightness);
     }
 
@@ -1776,10 +1776,10 @@ void MarlinSettings::postprocess() {
         int8_t runout_sensor_enabled, runout_sensor_inverted; // @advi3++
         _FIELD_TEST(runout_sensor_enabled);
         EEPROM_READ(runout_sensor_enabled);
-        EEPROM_READ(runout_sensor_inverted);
+        EEPROM_READ(runout_sensor_inverted); // @advi3++
         #if HAS_FILAMENT_SENSOR
           runout.enabled = runout_sensor_enabled < 0 ? FIL_RUNOUT_ENABLED_DEFAULT : runout_sensor_enabled;
-          runout.inverted = runout_sensor_inverted;
+          runout.inverted = runout_sensor_inverted; // @advi3++
         #endif
 
         TERN_(HAS_FILAMENT_SENSOR, if (runout.enabled) runout.reset());
@@ -2684,7 +2684,7 @@ void MarlinSettings::postprocess() {
       const bool success = _load();
     #endif
     validating = false;
-    TERN_(EXTENSIBLE_UI, ExtUI::onConfigurationStoreValidated(success)); // @advi3++
+    TERN_(EXTENSIBLE_UI, ExtUI::onSettingsValidated(success)); // @advi3++
     return success;
   }
 

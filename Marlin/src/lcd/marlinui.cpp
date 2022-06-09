@@ -22,9 +22,6 @@
 
 #include "../inc/MarlinConfig.h"
 
-// @advi3++
-#ifndef ADVi3PP_UI
-
 #include "../MarlinCore.h" // for printingIsPaused
 
 #if LED_POWEROFF_TIMEOUT > 0 || BOTH(HAS_WIRED_LCD, PRINTER_EVENT_LEDS)
@@ -201,6 +198,12 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
   void MarlinUI::refresh_screen_timeout() {
     screen_timeout_millis = sleep_timeout_minutes ? millis() + sleep_timeout_minutes * 60UL * 1000UL : 0;
     sleep_off();
+  }
+  // @advi3++
+  void MarlinUI::check_screen_timeout() {
+    millis_t ms = millis();
+    if (screen_timeout_millis && ELAPSED(ms, screen_timeout_millis))
+        sleep_on();
   }
 
 #endif
@@ -1890,4 +1893,3 @@ void MarlinUI::init() {
 
 #endif // EEPROM_SETTINGS
 
-#endif // @advi3++

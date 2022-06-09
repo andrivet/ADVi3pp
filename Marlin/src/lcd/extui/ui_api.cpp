@@ -1310,7 +1310,7 @@ void resetSettings()
 
 void watchdogReset()
 {
-  watchdog_refresh();
+  hal.watchdog_refresh();
 }
 
 bool extrudeFilament(float purge_length)

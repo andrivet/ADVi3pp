@@ -31,7 +31,7 @@
 #include "../inc/MarlinConfig.h"
 
 // @advi3++
-#ifdef ADVi3PP_UI
+#ifdef O //ADVi3PP_UI
 #include "../advi3pp/inc/advi3pp_marlin_ui.h"
 #include "extui/ui_api.h"
 #else
@@ -137,7 +137,7 @@ typedef bool (*statusResetFunc_t)();
   } preheat_t;
 #endif
 
-#if HAS_MARLINUI_MENU
+#if HAS_MARLINUI_MENU || ENABLED(ADVi3PP_UI)
 
   // Manual Movement class
   class ManualMove {
@@ -301,6 +301,7 @@ public:
     static uint8_t sleep_timeout_minutes;
     static millis_t screen_timeout_millis;
     static void refresh_screen_timeout();
+    static void check_screen_timeout(); // @advi3++
     static void sleep_on();
     static void sleep_off();
   #endif

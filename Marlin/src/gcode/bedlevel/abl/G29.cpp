@@ -430,8 +430,6 @@ G29_TYPE GcodeSuite::G29() {
 
     planner.synchronize();
 
-    TERN_(EXTENSIBLE_UI, ExtUI::onLevelingStart());
-
     #if ENABLED(AUTO_BED_LEVELING_3POINT)
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> 3-point Leveling");
       points[0].z = points[1].z = points[2].z = 0;  // Probe at 3 arbitrary points
@@ -633,7 +631,7 @@ G29_TYPE GcodeSuite::G29() {
         SERIAL_ECHOLNPGM("Grid probing done.");
         // Re-enable software endstops, if needed
         SET_SOFT_ENDSTOP_LOOSE(false);
-        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone());
+        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone()); // @advi3++
       }
 
     #elif ENABLED(AUTO_BED_LEVELING_3POINT)
@@ -663,8 +661,7 @@ G29_TYPE GcodeSuite::G29() {
           abl.reenable = false;
         }
 
-        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone());
-
+        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone()); // @advi3++
       }
 
     #endif // AUTO_BED_LEVELING_3POINT
@@ -961,8 +958,6 @@ G29_TYPE GcodeSuite::G29() {
     planner.synchronize();
     process_subcommands_now(F(Z_PROBE_END_SCRIPT));
   #endif
-
-  TERN_(HAS_MULTI_HOTEND, if (abl.tool_index != 0) tool_change(abl.tool_index));
 
   TERN_(HAS_MULTI_HOTEND, if (abl.tool_index != 0) tool_change(abl.tool_index));
 

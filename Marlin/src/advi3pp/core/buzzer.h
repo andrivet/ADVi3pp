@@ -20,13 +20,12 @@
 
 #pragma once
 
-
 namespace ADVi3pp {
 
 struct Buzzer
 {
-    void buzz_on_action();
-    void buzz_on_press();
+    void buzz_on_action(long duration = 0);
+    void buzz_on_press(long duration = 0);
 
 private:
     void send_buzz_command_to_lcd(long duration);

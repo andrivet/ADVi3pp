@@ -39,11 +39,6 @@ void onIdle()
     ADVi3pp::core.idle();
 }
 
-void onPrinterKilled(FSTR_P const error, FSTR_P const component)
-{
-    ADVi3pp::core.killed(error);
-}
-
 // There is no way to detect media changes, so this part is not implemented
 void onMediaInserted() { }
 void onMediaError() { }
@@ -58,6 +53,11 @@ void onPlayTone(const uint16_t frequency, const uint16_t duration)
     ADVi3pp::buzzer.buzz_on_action();
 }
 
+void onPrinterKilled(FSTR_P const error, FSTR_P const component)
+{
+    ADVi3pp::core.killed(error);
+}
+
 void onPrintTimerStarted()
 {
 }
@@ -68,6 +68,9 @@ void onPrintTimerPaused()
 
 void onPrintTimerStopped()
 {
+}
+
+void onPrintDone() {
 }
 
 void onFilamentRunout(const extruder_t extruder)
@@ -86,8 +89,10 @@ void onStatusChanged(const char * const msg)
 }
 
 void onHomingStart() {}
-void onHomingComplete() {}
-void onPrintFinished() {}
+void onHomingDone() {}
+
+void onSteppersDisabled() {}
+void onSteppersEnabled() {}
 
 void onFactoryReset()
 {
@@ -123,26 +128,27 @@ void onPostprocessSettings() {
     // Called after loading or resetting stored settings
 }
 
-void onConfigurationStoreWritten(bool success)
+void onSettingsStored(bool success)
 {
     // Called after the entire EEPROM has been written,
     // whether successful or not.
     ADVi3pp::settings.on_settings_written(success);
 }
 
-void onConfigurationStoreRead(bool success)
+void onSettingsLoaded(bool success)
 {
     // Called after the entire EEPROM has been read,
     // whether successful or not.
     ADVi3pp::settings.on_settings_loaded(success);
 }
 
-void onConfigurationStoreValidated(bool success)
+void onSettingsValidated(bool success)
 {
     ADVi3pp::settings.on_settings_validated(success);
 }
 
 void onLevelingStart() {}
+void onLevelingDone() {}
 
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval)
 {
@@ -186,7 +192,5 @@ void onPidTuningReportTemp(int /*heater*/)
     // Nothing to do
 }
 
-void onSteppersDisabled() {}
-void onSteppersEnabled()  {}
 
 }

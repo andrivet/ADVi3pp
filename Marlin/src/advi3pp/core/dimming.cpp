@@ -34,7 +34,6 @@ Dimming dimming;
 Dimming::Dimming()
 {
     set_next_checking_time();
-    set_next_dimming_time();
 }
 
 //! Set the next dimming check time
@@ -43,91 +42,70 @@ void Dimming::set_next_checking_time()
     next_check_time_ = millis() + 200;
 }
 
-//! Set the next dimming delay time
-void Dimming::set_next_dimming_time()
-{
-    next_dimming_time_ = millis() + 1000ul * dimming_delay;
-}
-
 //! Get adjusted brightness (depended of the active dimming or not)
 //! @return The adjusted brightness
 uint8_t Dimming::get_adjusted_brightness()
 {
-    int16_t brightness = ui.get_brightness();
+    int16_t brightness = ui.brightness;
     if(dimmed_)
         brightness = brightness * dimming_ratio / 100;
-    if(brightness < MIN_LCD_BRIGHTNESS)
-        brightness = MIN_LCD_BRIGHTNESS;
-    if(brightness > MAX_LCD_BRIGHTNESS)
-        brightness = MAX_LCD_BRIGHTNESS;
+    if(brightness < LCD_BRIGHTNESS_MIN)
+        brightness = LCD_BRIGHTNESS_MIN;
+    if(brightness > LCD_BRIGHTNESS_MAX)
+        brightness = LCD_BRIGHTNESS_MAX;
     return static_cast<uint8_t>(brightness);
 }
 
 
 void Dimming::send()
 {
-    if(!settings.is_feature_enabled(Feature::Dimming) || !ELAPSED(millis(), next_check_time_))
+    if(!settings.is_feature_enabled(Feature::Dimming) || !dimmed_ || !ELAPSED(millis(), next_check_time_))
         return;
     set_next_checking_time();
-
     ReadRegisterRequest{Register::TouchPanelFlag}.write(1);
 }
 
 bool Dimming::receive()
 {
-    NoFrameLogging no_log{};
+  NoFrameLogging no_log{};
+  bool received = false;
 
-    bool received = false;
+  ReadRegisterResponse response{Register::TouchPanelFlag};
+  if(response.receive(false)) {
+    received = true;
 
-    ReadRegisterResponse response{Register::TouchPanelFlag};
-    if(response.receive(false)) {
-        received = true;
-
-        if(response.read_byte() == 0x5A) {
-            no_log.allow();
-            // Reset TouchPanelFlag
-            WriteRegisterRequest{Register::TouchPanelFlag}.write_byte(0);
-            reset();
-            return true;
-        }
+    // 0x5A means the panel was touched, we have to write 0 to clear the flag
+    if(response.read_byte() == 0x5A) {
+      no_log.allow();
+      // Reset TouchPanelFlag
+      WriteRegisterRequest{Register::TouchPanelFlag}.write_byte(0);
+      ui.refresh_screen_timeout();
+      return true;
     }
+  }
 
-    if(!dimmed_ && settings.is_feature_enabled(Feature::Dimming) && ELAPSED(millis(), next_dimming_time_))
-    {
-        no_log.allow();
-        dimmed_ = true;
-        send_brightness();
-    }
+  if(!dimmed_ && settings.is_feature_enabled(Feature::Dimming))
+    ui.check_screen_timeout();
 
-    return received;
+  return received;
 }
 
-//! Reset the dimming
-//! @param force Change the brightness right now
-void Dimming::reset(bool force)
+//! Set the brightness of the LCD panel
+void Dimming::send_brightness_to_lcd()
 {
-    set_next_dimming_time();
-    if(!force && !dimmed_) // Already reset, nothing more to do (unless force is true)
-        return;
-
-    dimmed_ = false;
-    send_brightness();
+    WriteRegisterRequest{Register::Brightness}.write_byte(get_adjusted_brightness());
 }
 
-//! Adjust the brigthness of the LCD panel
-void Dimming::send_brightness()
-{
-    auto brightness = get_adjusted_brightness();
-
-    WriteRegisterRequest{Register::Brightness}.write_byte(brightness);
+void Dimming::sleep_on() {
+  if(dimmed_) return;
+  dimmed_ = true;
+  send_brightness_to_lcd();
 }
 
-//! Change the brightness of the LCD Panel.
-//! @param brightness New brightness
-void Dimming::change_brightness(uint8_t brightness)
-{
-    ui.set_brightness(brightness);
+void Dimming::sleep_off() {
+  if(!dimmed_) return;
+  dimmed_ = false;
+  send_brightness_to_lcd();
 }
 
 }
-

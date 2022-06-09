@@ -107,7 +107,6 @@ bool Core::init()
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     send_sponsors();
     graphs.clear();
-    dimming.reset(true);
     versions.send_versions();
 
 #if HAS_LEVELING
@@ -208,7 +207,7 @@ void Core::from_lcd()
     }
 
     buzzer.buzz_on_press();
-    dimming.reset();
+    ui.refresh_screen_timeout();
 
     Action action = frame.get_parameter();
     auto key_code = frame.read_key_value();

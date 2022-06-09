@@ -20,7 +20,6 @@
 
 #include "../../parameters.h"
 #include "lcd_settings.h"
-#include "../../core/dimming.h"
 #include "../../core/buzzer.h"
 
 namespace ADVi3pp {
@@ -71,7 +70,7 @@ void LcdSettings::dimming_command()
 //! Handle the change brightness command.
 void LcdSettings::change_brightness(uint16_t brightness)
 {
-    dimming.change_brightness(brightness);
+    ui.set_brightness(brightness);
     settings.send_lcd_values(Variable::Value0);
 }
 

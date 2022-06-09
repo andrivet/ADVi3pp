@@ -216,28 +216,28 @@ class FilamentSensorBase {
     static uint8_t poll_runout_states() {
       return poll_runout_pins() ^ uint8_t(0
         #if NUM_RUNOUT_SENSORS >= 1
-          | (runout.inverted ? 0 : _BV(1 - 1))
+          | (runout.inverted ? 0 : _BV(1 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 2
-          | (runout.inverted ? 0 : _BV(2 - 1))
+          | (runout.inverted ? 0 : _BV(2 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 3
-          | (runout.inverted ? 0 : _BV(3 - 1))
+          | (runout.inverted ? 0 : _BV(3 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 4
-          | (runout.inverted ? 0 : _BV(4 - 1))
+          | (runout.inverted ? 0 : _BV(4 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 5
-          | (runout.inverted ? 0 : _BV(5 - 1))
+          | (runout.inverted ? 0 : _BV(5 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 6
-          | (runout.inverted ? 0 : _BV(6 - 1))
+          | (runout.inverted ? 0 : _BV(6 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 7
-          | (runout.inverted ? 0 : _BV(7 - 1))
+          | (runout.inverted ? 0 : _BV(7 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 8
-          | (runout.inverted ? 0 : _BV(8 - 1))
+          | (runout.inverted ? 0 : _BV(8 - 1)) // @advi3++
         #endif
       );
     }

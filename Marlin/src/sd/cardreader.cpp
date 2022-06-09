@@ -30,6 +30,7 @@
 
 #include "../MarlinCore.h"
 #include "../lcd/marlinui.h"
+#include "../lcd/extui/ui_api.h" // @advi3++
 
 #if ENABLED(DWIN_CREALITY_LCD)
   #include "../lcd/e3v2/creality/dwin.h"
@@ -1073,7 +1074,7 @@ void CardReader::cdroot() {
   flag.workDirIsRoot = true;
   workDirDepth = 0;
   TERN_(SDCARD_SORT_ALPHA, presort());
-  TERN_(SDCARD_SORT_DATE, presort());
+  TERN_(SDCARD_SORT_DATE, presort()); // @advi3++
 }
 
 #if ENABLED(SDCARD_SORT_ALPHA)

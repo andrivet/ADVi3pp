@@ -450,6 +450,30 @@ namespace ExtUI {
   void onSettingsStored(bool success);
   void onSettingsLoaded(bool success);
   void onSettingsValidated(bool success); // @advi3++
+
+  // @advi3++
+  #if ENABLED(EEPROM_SETTINGS)
+    void saveSettings();
+    void loadSettings();
+    void resetSettings();
+    using eeprom_write = bool (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
+    using eeprom_read  = bool (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
+    void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
+    uint16_t getSizeofSettings();
+  #endif
+
+  // @advi3++
+  #if HAS_LEVELING
+    void onAutomaticLevelingFinished(bool success);
+  #endif
+
+  // @advi3++
+  #if ENABLED(BLTOUCH)
+    bool bltouchDeploy();
+    bool bltouchStow();
+  #endif
+
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume();
   #endif

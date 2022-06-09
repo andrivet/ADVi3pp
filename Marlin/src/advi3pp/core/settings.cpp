@@ -170,9 +170,7 @@ bool Settings::is_feature_enabled(Feature features) const
 
 void Settings::send_lcd_values(Variable features)
 {
-    uint16_t brightness = ui.get_brightness();
-
-    WriteRamRequest{features}.write_words(features_, brightness);
+    WriteRamRequest{features}.write_words(features_, ui.brightness);
 }
 
 //! Get the last used temperature for the hotend or the bad
