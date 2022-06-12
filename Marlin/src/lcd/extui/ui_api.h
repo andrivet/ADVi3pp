@@ -238,7 +238,6 @@ namespace ExtUI {
   void setFlow_percent(const int16_t, const extruder_t);
   bool awaitingUserConfirm();
   void setUserConfirmed();
-  void waitUserConfirmation(); // @advi3++
 
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse);

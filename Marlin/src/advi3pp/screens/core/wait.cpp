@@ -114,7 +114,6 @@ void Wait::wait_continue(const char* message)
 
 void Wait::wait_continue()
 {
-    ExtUI::waitUserConfirmation();
     back_ = nullptr;
     continue_ = WaitCallback{this, &Wait::on_continue};
     pages.show(Page::WaitContinue);

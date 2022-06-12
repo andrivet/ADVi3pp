@@ -146,11 +146,6 @@ void Core::killed(const FlashChar* error)
     pages.show(Page::Killed);
 }
 
-void Core::wait_user_confirm()
-{
-    wait.wait_continue();
-}
-
 //! Note to forks author:
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void Core::send_gplv3_7b_notice()
