@@ -63,6 +63,7 @@ struct Log
 
     Log& operator<<(const char* data);
     Log& operator<<(const FlashChar* data);
+    Log& operator<<(bool data);
     Log& operator<<(uint8_t data);
     Log& operator<<(uint16_t data);
     Log& operator<<(uint32_t data);
@@ -136,6 +137,7 @@ struct Log
 
     Log& operator<<(const char*) { return log(); }
     Log& operator<<(const FlashChar*) { return log(); }
+    Log& operator<<(bool data) { return log(); }
     Log& operator<<(uint8_t) { return log(); }
     Log& operator<<(uint16_t) { return log(); }
     Log& operator<<(uint32_t) { return log(); }

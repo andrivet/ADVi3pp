@@ -43,10 +43,7 @@ ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
     }
 
     uint8_t version = response.read_byte();
-
-    Log::log() << F("LCD Firmware raw version") << version << Log::endl();
-
-	lcd_version.reset();
+    lcd_version.reset();
     lcd_version << (version / 0x10) << '.' << (version % 0x10);
     return lcd_version;
 }
@@ -55,11 +52,11 @@ ADVString<L>& get_lcd_firmware_version(ADVString<L>& lcd_version)
 //! Send the different versions to the LCD screen.
 void Versions::send_versions() const
 {
-	// Minimize memory usage (SRAM)
-	
-	ADVString<16> text;
+    // Minimize memory usage (SRAM)
+
+    ADVString<16> text;
     core.convert_version(text, advi3_pp_version);
-	WriteRamRequest{Variable::ADVi3ppVersion}.write_text(text);
+    WriteRamRequest{Variable::ADVi3ppVersion}.write_text(text);
 
     text.reset();
     text << (YEAR__ - 2000)

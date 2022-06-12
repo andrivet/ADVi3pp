@@ -32,19 +32,6 @@ Log& operator<<(Log& log, Page page)
     return log;
 }
 
-#ifdef ADVi3PP_DEBUG
-void Pages::log()
-{
-    auto l = Log::log();
-
-    l << F("Stack:");
-    back_pages_.log(l);
-    l << F("Current:") << current_page_ << F("-") << get_cleared_bits(current_page_, Page::Temporary);
-    l << F("Forward:") << forward_page_ << F("-") << get_cleared_bits(forward_page_, Page::Temporary);
-    l << Log::endl();
-}
-#endif
-
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
 void Pages::show(Page page)
@@ -61,7 +48,6 @@ void Pages::show_(Page page)
     WriteRegisterRequest{Register::PictureID}.write_page(get_cleared_bits(page, Page::Temporary));
 
     current_page_ = page;
-    log();
 }
 
 //! Retrieve the current page on the LCD screen
@@ -78,7 +64,6 @@ void Pages::save_forward_page()
 {
     auto current = get_current_page();
     forward_page_ = current;
-    log();
 }
 
 //! Show the "Back" page on the LCD display.

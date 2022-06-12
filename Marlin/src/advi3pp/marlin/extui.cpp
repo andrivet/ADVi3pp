@@ -24,143 +24,169 @@
 #include "../core/buzzer.h"
 #include "../core/status.h"
 #include "../core/settings.h"
+#include "../screens/core/wait.h"
 #include "../screens/leveling/automatic.h"
 #include "../screens/tuning/pid_tuning.h"
 
 namespace ExtUI {
 
-void onStartup()
-{
-    ADVi3pp::core.startup();
+void onStartup() {
+  ADVi3pp::Log::log() << F("ExtUI::onStartup") << ADVi3pp::Log::endl();
+  ADVi3pp::core.startup();
 }
 
 void onIdle()
 {
-    ADVi3pp::core.idle();
+  ADVi3pp::core.idle();
 }
 
 // There is no way to detect media changes, so this part is not implemented
-void onMediaInserted() { }
-void onMediaError() { }
-void onMediaRemoved() { }
+void onMediaInserted() {
+  ADVi3pp::Log::log() << F("ExtUI::onMediaInserted") << ADVi3pp::Log::endl();
+}
+
+void onMediaError() {
+  ADVi3pp::Log::log() << F("ExtUI::onMediaError") << ADVi3pp::Log::endl();
+}
+
+void onMediaRemoved() {
+  ADVi3pp::Log::log() << F("ExtUI::onMediaRemoved") << ADVi3pp::Log::endl();
+}
 
 void onMediaOpenError(const char* filename) {
-    ADVi3pp::status.set(F("Error opening file"));
+  ADVi3pp::Log::log() << F("ExtUI::onMediaOpenError ") << filename << ADVi3pp::Log::endl();
+  ADVi3pp::status.set(F("Error opening file"));
 }
 
-void onPlayTone(const uint16_t frequency, const uint16_t duration)
-{
-    ADVi3pp::buzzer.buzz_on_action();
+void onPlayTone(const uint16_t frequency, const uint16_t duration) {
+  ADVi3pp::Log::log() << F("ExtUI::onPlayTone ") << frequency << " " << duration << ADVi3pp::Log::endl();
+  ADVi3pp::buzzer.buzz_on_action();
 }
 
-void onPrinterKilled(FSTR_P const error, FSTR_P const component)
-{
-    ADVi3pp::core.killed(error);
+void onPrinterKilled(FSTR_P const error, FSTR_P const component) {
+  ADVi3pp::Log::log() << F("ExtUI::onPrinterKilled ") << error << " " << component << ADVi3pp::Log::endl();
+  ADVi3pp::core.killed(error);
 }
 
-void onPrintTimerStarted()
-{
+void onPrintTimerStarted() {
+  ADVi3pp::Log::log() << F("ExtUI::onPrintTimerStarted") << ADVi3pp::Log::endl();
 }
 
-void onPrintTimerPaused()
-{
+void onPrintTimerPaused() {
+  ADVi3pp::Log::log() << F("ExtUI::onPrintTimerPaused") << ADVi3pp::Log::endl();
 }
 
-void onPrintTimerStopped()
-{
+void onPrintTimerStopped() {
+  ADVi3pp::Log::log() << F("ExtUI::onPrintTimerStopped") << ADVi3pp::Log::endl();
 }
 
 void onPrintDone() {
+  ADVi3pp::Log::log() << F("ExtUI::onPrintDone") << ADVi3pp::Log::endl();
 }
 
-void onFilamentRunout(const extruder_t extruder)
-{
+void onFilamentRunout(const extruder_t extruder) {
+  ADVi3pp::Log::log() << F("ExtUI::onFilamentRunout") << ADVi3pp::Log::endl();
 }
 
-void onUserConfirmRequired(const char * const msg)
-{
-    ADVi3pp::status.set(msg);
-    ADVi3pp::core.wait_user_confirm();
+void onUserConfirmRequired(const char * const msg) {
+  ADVi3pp::Log::log() << F("ExtUI::onUserConfirmRequired") << msg << "," << ExtUI::awaitingUserConfirm() << ADVi3pp::Log::endl();
+
+  ADVi3pp::status.set(msg);
+  //ADVi3pp::wait.wait_continue();;
 }
 
-void onStatusChanged(const char * const msg)
-{
-    ADVi3pp::status.set(msg);
+void onStatusChanged(const char * const msg) {
+  ADVi3pp::Log::log() << F("ExtUI::onStatusChanged") << msg << ADVi3pp::Log::endl();
+  ADVi3pp::status.set(msg);
 }
 
-void onHomingStart() {}
-void onHomingDone() {}
-
-void onSteppersDisabled() {}
-void onSteppersEnabled() {}
-
-void onFactoryReset()
-{
-    ADVi3pp::settings.on_factory_reset();
+void onHomingStart() {
+  ADVi3pp::Log::log() << F("ExtUI::onHomingStart") << ADVi3pp::Log::endl();
 }
 
-void onStoreSettings(char * /*buff*/)
-{
-    // Implement onStoreSettingsEx instead
+void onHomingDone() {
+  ADVi3pp::Log::log() << F("ExtUI::onHomingDone") << ADVi3pp::Log::endl();
 }
 
-void onStoreSettingsEx(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc)
-{
-    ADVi3pp::settings.on_store_settings(write, eeprom_index, working_crc);
+void onSteppersDisabled() {
+  ADVi3pp::Log::log() << F("ExtUI::onSteppersDisabled") << ADVi3pp::Log::endl();
 }
 
-void onLoadSettings(const char */*buff*/)
-{
-    // Implement onLoadSettingsEx instead
+void onSteppersEnabled() {
+  ADVi3pp::Log::log() << F("ExtUI::onSteppersEnabled") << ADVi3pp::Log::endl();
 }
 
-bool onLoadSettingsEx(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating)
-{
+void onFactoryReset() {
+  ADVi3pp::Log::log() << F("ExtUI::onFactoryReset") << ADVi3pp::Log::endl();
+  ADVi3pp::settings.on_factory_reset();
+}
+
+void onStoreSettings(char * /*buff*/) {
+  ADVi3pp::Log::log() << F("ExtUI::onStoreSettings") << ADVi3pp::Log::endl();
+  // Implement onStoreSettingsEx instead
+}
+
+void onStoreSettingsEx(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc) {
+  ADVi3pp::settings.on_store_settings(write, eeprom_index, working_crc);
+}
+
+void onLoadSettings(const char */*buff*/) {
+  ADVi3pp::Log::log() << F("ExtUI::onLoadSettings") << ADVi3pp::Log::endl();
+  // Implement onLoadSettingsEx instead
+}
+
+bool onLoadSettingsEx(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating) {
     return ADVi3pp::settings.on_load_settings(read, eeprom_index, working_crc, validating);
 }
 
-uint16_t getSizeofSettings()
-{
+uint16_t getSizeofSettings() {
     return ADVi3pp::settings.on_sizeof_settings();
 }
 
 void onPostprocessSettings() {
-    // Called after loading or resetting stored settings
+  // Called after loading or resetting stored settings
+  ADVi3pp::Log::log() << F("ExtUI::onPostprocessSettings") << ADVi3pp::Log::endl();
 }
 
-void onSettingsStored(bool success)
-{
-    // Called after the entire EEPROM has been written,
-    // whether successful or not.
-    ADVi3pp::settings.on_settings_written(success);
+void onSettingsStored(bool success) {
+  // Called after the entire EEPROM has been written,
+  // whether successful or not.
+  ADVi3pp::Log::log() << F("ExtUI::onSettingsStored") << ADVi3pp::Log::endl();
+  ADVi3pp::settings.on_settings_written(success);
 }
 
-void onSettingsLoaded(bool success)
-{
-    // Called after the entire EEPROM has been read,
-    // whether successful or not.
-    ADVi3pp::settings.on_settings_loaded(success);
+void onSettingsLoaded(bool success) {
+  // Called after the entire EEPROM has been read,
+  // whether successful or not.
+  ADVi3pp::Log::log() << F("ExtUI::onSettingsLoaded") << ADVi3pp::Log::endl();
+  ADVi3pp::settings.on_settings_loaded(success);
 }
 
-void onSettingsValidated(bool success)
-{
-    ADVi3pp::settings.on_settings_validated(success);
+void onSettingsValidated(bool success) {
+  ADVi3pp::settings.on_settings_validated(success);
 }
 
-void onLevelingStart() {}
-void onLevelingDone() {}
+void onLevelingStart() {
+  ADVi3pp::Log::log() << F("ExtUI::onLevelingStart") << ADVi3pp::Log::endl();
+}
 
-void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval)
-{
-    // Called when any mesh point is updated
+void onLevelingDone() {
+  ADVi3pp::Log::log() << F("ExtUI::onLevelingDone") << ADVi3pp::Log::endl();
+}
+
+void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
+  // Called when any mesh point is updated
+  ADVi3pp::Log::log() << F("ExtUI::onMediaOpenError") << ADVi3pp::Log::endl();
 }
 
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, probe_state_t state) {
-    // Called to indicate a special condition
+  // Called to indicate a special condition
+  ADVi3pp::Log::log() << F("ExtUI::onMeshUpdate") << ADVi3pp::Log::endl();
 }
 
-void onAutomaticLevelingFinished(bool success)
-{
+void onAutomaticLevelingFinished(bool success) {
+  ADVi3pp::Log::log() << F("ExtUI::onAutomaticLevelingFinished") << ADVi3pp::Log::endl();
+
 #if HAS_LEVELING
     ADVi3pp::automatic_leveling.leveling_finished(success);
 #endif
@@ -174,23 +200,23 @@ void onPowerLossResume()
 }
 #endif
 
-void onPidTuning(const result_t rst)
-{
-    if(rst == PID_STARTED)
-        ADVi3pp::pid_tuning.on_start();
-    else
-        ADVi3pp::pid_tuning.on_finished(rst);
+void onPidTuning(const result_t rst) {
+  ADVi3pp::Log::log() << F("ExtUI::onPidTuning") << ADVi3pp::Log::endl();
+
+  if(rst == PID_STARTED)
+      ADVi3pp::pid_tuning.on_start();
+  else
+      ADVi3pp::pid_tuning.on_finished(rst);
 }
 
-void onPidTuningProgress(int cycleIndex, int nbCycles)
-{
-    ADVi3pp::pid_tuning.on_progress(cycleIndex, nbCycles);
+void onPidTuningProgress(int cycleIndex, int nbCycles) {
+  ADVi3pp::Log::log() << F("ExtUI::onPidTuningProgress") << ADVi3pp::Log::endl();
+  ADVi3pp::pid_tuning.on_progress(cycleIndex, nbCycles);
 }
 
-void onPidTuningReportTemp(int /*heater*/)
-{
-    // Nothing to do
+void onPidTuningReportTemp(int /*heater*/) {
+  ADVi3pp::Log::log() << F("ExtUI::onPidTuningReportTemp") << ADVi3pp::Log::endl();
+  // Nothing to do
 }
-
 
 }

@@ -40,12 +40,6 @@ struct Pages
 private:
     void show_(Page page);
 
-#ifdef ADVi3PP_DEBUG
-    void log();
-#else
-    void log() {}
-#endif
-
 private:
     Stack<Page, 8> back_pages_{};
     Page forward_page_ = Page::None;
