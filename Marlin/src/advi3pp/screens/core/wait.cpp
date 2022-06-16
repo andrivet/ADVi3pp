@@ -57,6 +57,14 @@ void Wait::wait(const FlashChar* message)
 
 //! Show a simple wait page with a message
 //! @param message  The message to display
+void Wait::wait(const char* message)
+{
+  status.set(message);
+  wait_();
+}
+
+//! Show a simple wait page with a message
+//! @param message  The message to display
 //! @param back     Callback to be called when the back button is pressed
 void Wait::wait_back(const FlashChar* message, const WaitCallback& back)
 {
@@ -77,17 +85,6 @@ void Wait::wait_back(const FlashChar* message)
 
 //! Show a simple wait page with a message
 //! @param message  The message to display
-//! @param cont     Callback to be called when the continue button is pressed
-void Wait::wait_back_continue(const FlashChar* message, const WaitCallback& cont)
-{
-    status.set(message);
-    back_ = WaitCallback{this, &Wait::on_back};
-    continue_ = cont;
-    pages.show(Page::WaitBackContinue);
-}
-
-//! Show a simple wait page with a message
-//! @param message  The message to display
 //! @param back     Callback to be called when the back button is pressed
 //! @param cont     Callback to be called when the continue button is pressed
 void Wait::wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont)
@@ -98,25 +95,24 @@ void Wait::wait_back_continue(const FlashChar* message, const WaitCallback& back
     pages.show(Page::WaitBackContinue);
 }
 
-//! Show a simple wait page with a message
-//! @param message  The message to display
-void Wait::wait_continue(const FlashChar* message)
-{
-    status.set(message);
-    wait_continue();
-}
+void Wait::wait_user(const char* message) {
+  back_ = nullptr;
 
-void Wait::wait_continue(const char* message)
-{
-    status.set(message);
-    wait_continue();
-}
-
-void Wait::wait_continue()
-{
-    back_ = nullptr;
+  status.set(message);
+  if(ExtUI::awaitingUserConfirm()) {
     continue_ = WaitCallback{this, &Wait::on_continue};
     pages.show(Page::WaitContinue);
+  }
+  else {
+    continue_ = nullptr;
+    pages.show(Page::Waiting);
+  }
+}
+
+void Wait::set_status(const char* message) {
+  if(pages.is_current_page_temporary())
+    pages.show_back_page();
+  status.set(message);
 }
 
 //! Default action when the continue button is pressed (inform Marlin)

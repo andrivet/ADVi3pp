@@ -32,12 +32,16 @@ Log& operator<<(Log& log, Page page)
     return log;
 }
 
+bool Pages::is_temporary(Page page) {
+  return test_one_bit(page, Page::Temporary);
+}
+
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
 void Pages::show(Page page)
 {
     auto current = get_current_page();
-    if(!test_one_bit(current, Page::Temporary) && current != Page::Main)
+    if(!is_temporary(current) && current != Page::Main)
         back_pages_.push(current);
 
    show_(page);
@@ -51,12 +55,15 @@ void Pages::show_(Page page)
 }
 
 //! Retrieve the current page on the LCD screen
-Page Pages::get_current_page()
-{
+Page Pages::get_current_page() {
     // Boot page switches automatically (animation) to the Main page
 	if(current_page_ == Page::None || current_page_ == Page::Boot)
         current_page_ = Page::Main;
     return current_page_;
+}
+
+bool Pages::is_current_page_temporary() {
+  return is_temporary(get_current_page());
 }
 
 //! Set page to display after the completion of an operation.

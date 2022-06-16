@@ -1096,9 +1096,6 @@ namespace ExtUI {
   }
   void setUserConfirmed() { TERN_(HAS_RESUME_CONTINUE, wait_for_user = false); }
 
-  // @advi3++
-  void waitUserConfirmation() { wait_for_user = true; }
-
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse response) { pause_menu_response = response; }
     PauseMessage pauseModeStatus = PAUSE_MESSAGE_STATUS;

@@ -35,13 +35,12 @@ struct Wait: Screen<Wait>
 {
     void wait();
     void wait(const FlashChar* message);
+    void wait(const char* message);
     void wait_back(const FlashChar* message, const WaitCallback& back);
     void wait_back(const FlashChar* message);
     void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
-    void wait_back_continue(const FlashChar* message, const WaitCallback& cont);
-    void wait_continue(const FlashChar* message);
-    void wait_continue(const char* message);
-    void wait_continue();
+    void wait_user(const char* message);
+    void set_status(const char* message);
 
 private:
     Page do_prepare_page();
