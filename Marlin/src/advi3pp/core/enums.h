@@ -76,10 +76,10 @@ enum class Page: uint16_t
     LinearAdvanceTuning     = 108,              // 0x006C
     LinearAdvanceSettings   = 110,              // 0x006E
     IO                      = 112,              // 0x0070
-    BLTouchTesting1         = 114,              // 0x0072
-    BLTouchTesting2         = 116,              // 0x0074
-    BLTouchTesting3         = 118,              // 0x0076
-    BLTouchTesting4         = 120,              // 0x0078
+    BLTouchTesting1         = 114 | Temporary,  // 0x0072
+    BLTouchTesting2         = 116 | Temporary,  // 0x0074
+    BLTouchTesting3         = 118 | Temporary,  // 0x0076
+    BLTouchTesting4         = 120 | Temporary,  // 0x0078
     KeyboardDecimal         = 122,              // 0x007A
     KeyboardSignedInteger   = 124,              // 0x007C
     KeyboardSignedDecimal   = 126,              // 0x007E
