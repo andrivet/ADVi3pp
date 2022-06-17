@@ -6,8 +6,7 @@ Check before that the card is mounted and eject it after.
 
 if [[ "$OSTYPE" != "darwin"* ]]; then echo "Work only on macOS, sorry" ; exit 1; fi
 
-if [[ $# == 0 ]]; then echo "Please provide a version number such as 1.0.0" ; exit 1; fi
-version=$1
+. ./version.sh
 
 volumename="ADVI3PP"
 volume="/Volumes/${volumename}"

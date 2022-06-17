@@ -4,9 +4,9 @@ Upload a firmware.
 '
 
 if [[ "$OSTYPE" != "darwin"* ]]; then echo "Work only on macOS, sorry" ; exit 1; fi
-if [[ $# -ne 1 ]] ; then echo "Please provide a version number such as 1.0.0" ; exit 1; fi
 
-version=$1
+. ./version.sh
+
 imgname=ADVi3pp-Mainboard-51-BLTouch
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
