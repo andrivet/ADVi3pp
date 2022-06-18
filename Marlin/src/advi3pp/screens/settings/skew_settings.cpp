@@ -19,59 +19,93 @@
  */
 
 #include "../../parameters.h"
-#include "acceleration_settings.h"
+#include "skew_settings.h"
+#include "../../core/core.h"
 #include "../../core/dgus.h"
 
 namespace ADVi3pp {
 
-AccelerationSettings accelerations_settings;
+namespace {
+  const unsigned DEFAULT_AC = 1415;
+  const unsigned DEFAULT_BD = 1415;
+  const unsigned DEFAULT_AD = 1000;
+}
+
+SkewSettings skew_settings;
+
+//! Execute a command
+//! @param key_value    The sub-action to handle
+//! @return             True if the action was handled
+bool SkewSettings::do_dispatch(KeyValue key_value) {
+  if(Parent::do_dispatch(key_value))
+    return true;
+
+  switch(key_value)
+  {
+    case KeyValue::SkewStep2:  step2(); break;
+    case KeyValue::SkewStep3:  step3(); break;
+    default: return false;
+  }
+
+  return true;
+}
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page AccelerationSettings::do_prepare_page()
-{
-    WriteRamRequest{Variable::Value0}.write_words(
-        ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X),
-        ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y),
-        ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Z),
-        ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::E0),
-        ExtUI::getPrintingAcceleration_mm_s2(),
-        ExtUI::getRetractAcceleration_mm_s2(),
-        ExtUI::getTravelAcceleration_mm_s2(),
-        ExtUI::getJunctionDeviation_mm() * 1000
-    );
-    return Page::AccelerationSettings;
+Page SkewSettings::do_prepare_page() {
+  pages.save_forward_page();
+  step1();
+  return Page::Skew1Settings;
 }
 
-//! Save the Acceleration settings
-void AccelerationSettings::do_save_command()
-{
-    ReadRam response{Variable::Value0};
-    if(!response.send_receive(8))
-    {
-        Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
-        return;
-    }
+void SkewSettings::set_default_values() {
+  WriteRamRequest{Variable::Value0}.write_words(DEFAULT_AC, DEFAULT_BD, DEFAULT_AD);
+}
 
-    uint16_t x = response.read_word();
-    uint16_t y = response.read_word();
-    uint16_t z = response.read_word();
-    uint16_t e = response.read_word();
-    uint16_t print = response.read_word();
-    uint16_t retract = response.read_word();
-    uint16_t travel = response.read_word();
-    uint16_t deviation = response.read_word();
+void SkewSettings::step1() {
+  set_default_values();
+}
 
-    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<float>(x), ExtUI::X);
-    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<float>(y), ExtUI::Y);
-    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<float>(z), ExtUI::Z);
-    ExtUI::setAxisMaxAcceleration_mm_s2(static_cast<float>(e), ExtUI::E0);
-    ExtUI::setPrintingAcceleration_mm_s2(static_cast<float>(print));
-    ExtUI::setRetractAcceleration_mm_s2(static_cast<float>(retract));
-    ExtUI::setTravelAcceleration_mm_s2(static_cast<float>(travel));
-    ExtUI::setJunctionDeviation_mm(static_cast<float>(deviation / 1000.0));
+void SkewSettings::step2() {
+  xy_ = get_factor();
+  set_default_values();
+  pages.show(Page::Skew2Settings);
+}
 
-    Parent::do_save_command();
+void SkewSettings::step3() {
+  xz_ = get_factor();
+  set_default_values();
+  pages.show(Page::Skew3Settings);
+}
+
+float SkewSettings::get_factor() {
+  ReadRam response{Variable::Value0};
+  if(!response.send_receive(3)) {
+    Log::error() << F("Receiving Frame (Acceleration Settings)") << Log::endl();
+    return 0;
+  }
+
+  float ac = response.read_word() / 10.0;
+  float bd = response.read_word() / 10.0;
+  float ad = response.read_word() / 10.0;
+
+  return _SKEW_FACTOR(ac, bd, ad);
+}
+
+//! Save the settings
+void SkewSettings::do_save_command() {
+  float yz = get_factor();
+  if(abs(xy_) < 0.000001) xy_ = 0;
+  if(abs(xz_) < 0.000001) xz_ = 0;
+  if(abs(yz)  < 0.000001) yz = 0;
+
+  if(WITHIN(xy_, SKEW_FACTOR_MIN, SKEW_FACTOR_MAX) &&
+     WITHIN(xz_, SKEW_FACTOR_MIN, SKEW_FACTOR_MAX) &&
+     WITHIN(yz,  SKEW_FACTOR_MIN, SKEW_FACTOR_MAX)
+   )
+    ExtUI::setSkewFactors(xy_, xz_, yz);
+
+  Parent::do_save_command();
 }
 
 }

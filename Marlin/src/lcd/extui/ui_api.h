@@ -473,6 +473,15 @@ namespace ExtUI {
     bool bltouchStow();
   #endif
 
+  // @advi3++
+  #if ENABLED(SKEW_CORRECTION)
+    #if ENABLED(SKEW_CORRECTION_FOR_Z)
+        void setSkewFactors(float xy, float xz, float yz);
+    #else
+        void setSkewFactors(float xy);
+    #endif
+  #endif
+
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume();
   #endif

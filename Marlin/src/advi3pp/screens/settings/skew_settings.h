@@ -24,16 +24,27 @@
 
 namespace ADVi3pp {
 
-//! Acceleration Settings Page
-struct AccelerationSettings: Screen<AccelerationSettings>
-{
+//! Skew Settings Page
+struct SkewSettings: Screen<SkewSettings> {
 private:
-    Page do_prepare_page();
-    void do_save_command();
+  bool do_dispatch(KeyValue key_value);
+  Page do_prepare_page();
+  void do_save_command();
 
-    friend Parent;
+  void step1();
+  void step2();
+  void step3();
+
+  void set_default_values();
+  float get_factor();
+
+private:
+  float xy_;
+  float xz_;
+
+  friend Parent;
 };
 
-extern AccelerationSettings accelerations_settings;
+extern SkewSettings skew_settings;
 
 }

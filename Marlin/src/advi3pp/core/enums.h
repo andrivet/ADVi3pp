@@ -87,6 +87,9 @@ enum class Page: uint16_t
     ManualMesh              = 130,              // 0x0082
     XTwist                  = 132,              // 0x0084
     Runout                  = 134,              // 0x0086
+    Skew1Settings           = 136,
+    Skew2Settings           = 138,
+    Skew3Settings           = 140,
 
     Boot                    = 200 | Temporary   // 0x00C8
 };
@@ -189,6 +192,7 @@ enum class Action: uint16_t
     Setup                   = 0x0423,
     XTwist                  = 0x0424,
     Runout                  = 0x0425,
+    Skew                    = 0x0426,
 
     // 6 - Moves
     MoveXMinus              = 0x0600,
@@ -330,6 +334,9 @@ enum class KeyValue: uint16_t
     RunoutLow2High          = 0x0003,
     RunoutLED               = 0x0004,
     RunoutDistance          = 0x0005,
+
+    SkewStep2               = 0x0001,
+    SkewStep3               = 0x0002,
 
     Save                    = 0xFFFE,
     Back                    = 0xFFFF

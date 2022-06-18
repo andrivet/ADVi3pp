@@ -62,6 +62,7 @@
 #include "../screens/settings/acceleration_settings.h"
 #include "../screens/settings/linear_advance_settings.h"
 #include "../screens/settings/runout_settings.h"
+#include "../screens/settings/skew_settings.h"
 #include "../screens/info/versions.h"
 #include "../screens/info/statistics.h"
 #include "../screens/info/copyrights.h"
@@ -250,6 +251,7 @@ void Core::from_lcd()
         case Action::Setup:                 setup.handle(key_code); break;
         case Action::XTwist:                xtwist.handle(key_code); break;
         case Action::Runout:                runout_settings.handle(key_code); break;
+        case Action::Skew:                  skew_settings.handle(key_code); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;

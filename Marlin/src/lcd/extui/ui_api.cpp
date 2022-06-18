@@ -1325,6 +1325,24 @@ bool bltouchStow() {
 }
 #endif
 
+#if ENABLED(SKEW_CORRECTION)
+#if ENABLED(SKEW_CORRECTION_FOR_Z)
+void setSkewFactors(float xy, float xz, float yz) {
+  planner.skew_factor.xy = xy;
+  planner.skew_factor.xz = xz;
+  planner.skew_factor.yz = yz;
+  set_current_from_steppers_for_axis(ALL_AXES_ENUM);
+  sync_plan_position();
+}
+#else
+void setSkewFactors(float xy) {
+  planner.skew_factor.xy = xy;
+  set_current_from_steppers_for_axis(ALL_AXES_ENUM);
+  sync_plan_position();
+}
+#endif
+#endif
+
 } // namespace ExtUI
 
 // At the moment we hook into MarlinUI methods, but this could be cleaned up in the future
