@@ -34,6 +34,7 @@ if [[ ! -f "${image}" ]]; then echo "Disk image ${image} not found" ; exit 1; fi
 echo
 pause 'Plug-in the SD card or Ctrl-C to abort...'
 
+echo
 echo "**** Determine device name..."
 sleep 2
 
@@ -52,7 +53,7 @@ sleep 2
 
 echo
 echo "***** Burn disk image to USB..."
-unzip -p "${image}" | dd=/dev/r${device} bs=1M
+unzip -p "${image}" | sudo dd of=/dev/r${device} bs=1M status=progress
 
 sleep 2
 echo
