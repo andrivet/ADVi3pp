@@ -43,7 +43,7 @@ void Pid::do_write(EepromWrite& eeprom) const
 //! @param eeprom EEPROM reader
 bool Pid::do_validate(EepromRead &eeprom)
 {
-  Pid pid{};
+  PidValue pid{};
   for(size_t i = 0; i < NB_PIDs; ++i)
   {
     eeprom.read(pid);
