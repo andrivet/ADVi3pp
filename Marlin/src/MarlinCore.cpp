@@ -420,7 +420,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
     SERIAL_ERROR_START();
     SERIAL_ECHOPGM(STR_KILL_PRE);
     SERIAL_ECHOLNPGM(STR_KILL_INACTIVE_TIME, parser.command_ptr);
-    kill();
+    kill(F("Printer not able to process GCodes")); // @advi3++
   }
 
   const bool has_blocks = planner.has_blocks_queued();  // Any moves in the planner?

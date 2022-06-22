@@ -67,7 +67,7 @@ void onPlayTone(const uint16_t frequency, const uint16_t duration) {
 
 void onPrinterKilled(FSTR_P const error, FSTR_P const component) {
   Log::log() << F("ExtUI::onPrinterKilled ") << error << " " << component << Log::endl();
-  core.killed(error);
+  core.killed(error, component);
 }
 
 void onPrintTimerStarted() {

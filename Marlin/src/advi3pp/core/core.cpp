@@ -68,6 +68,7 @@
 #include "../screens/info/statistics.h"
 #include "../screens/info/copyrights.h"
 #include "../screens/info/sponsors.h"
+#include "../screens/info/killed.h"
 
 namespace ADVi3pp {
 
@@ -141,11 +142,12 @@ void Core::to_lcd() {
     graphs.update();
 }
 
-void Core::killed(const FlashChar* error)
+void Core::killed(const FlashChar* error, const FlashChar* component)
 {
-    status.set(error);
-    send_lcd_data();
-    pages.show(Page::Killed);
+  status.set(error);
+  send_lcd_data();
+  dimming.sleep_off();
+  killed_page.show(component);
 }
 
 //! Note to forks author:
