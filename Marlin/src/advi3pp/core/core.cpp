@@ -55,6 +55,7 @@
 #include "../screens/settings/factory_reset.h"
 #include "../screens/settings/sensor_settings.h"
 #include "../screens/settings/lcd_settings.h"
+#include "../screens/settings/beeper_settings.h"
 #include "../screens/settings/print_settings.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/step_settings.h"
@@ -117,7 +118,7 @@ bool Core::init()
     from_lcd_task.set(Callback{this, &Core::from_lcd}, FROM_LCD_DELAY);
     to_lcd_task.set(Callback{this, &Core::to_lcd}, TO_LCD_DELAY);
 
-    if(eeprom_mismatch.does_mismatch())
+    if(settings.does_eeprom_mismatch())
         eeprom_mismatch.show();
     else
         pages.show(Page::Boot);
@@ -207,6 +208,7 @@ void Core::from_lcd()
 
     Action action = frame.get_parameter();
     auto key_code = frame.read_key_value();
+    uint16_t raw_value = static_cast<int16_t>(key_code);
 
     Log::frame(LogState::Start) << F("=R==> Action =") << static_cast<uint16_t>(action)
       << F("KeyValue =") << static_cast<uint16_t>(key_code) << Log::endl();
@@ -252,6 +254,7 @@ void Core::from_lcd()
         case Action::XTwist:                xtwist.handle(key_code); break;
         case Action::Runout:                runout_settings.handle(key_code); break;
         case Action::Skew:                  skew_settings.handle(key_code); break;
+        case Action::BeeperSettings:        beeper_settings.handle(key_code); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;
@@ -273,9 +276,11 @@ void Core::from_lcd()
         case Action::HotendPlus:            print_settings.hotend_plus_command(); break;
         case Action::BedMinus:              print_settings.bed_minus_command(); break;
         case Action::BedPlus:               print_settings.bed_plus_command(); break;
-        case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_code)); break;
         case Action::XTwistMinus:           xtwist.minus(); break;
         case Action::XTwistPlus:            xtwist.plus(); break;
+        case Action::BeepDuration:          beeper_settings.duration_command(raw_value); break;
+        case Action::NormalBrightness:      lcd_settings.normal_brightness_command(raw_value); break;
+        case Action::DimmingBrightness:     lcd_settings.dimming_brightness_command(raw_value); break;
 
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }

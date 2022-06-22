@@ -71,15 +71,15 @@ enum class Page: uint16_t
     Copyrights              = 98,               // 0x0062
     KeyboardInteger         = 100,              // 0x0064
     SensorGrid              = 102,              // 0x0066
-    EEPROMMismatch          = 104 | Temporary,  // 0x0068
+    EEPROMMismatch          = 104 | Temporary,  // 0x8068
     ZHeightTuning           = 106,              // 0x006A
     LinearAdvanceTuning     = 108,              // 0x006C
     LinearAdvanceSettings   = 110,              // 0x006E
     IO                      = 112,              // 0x0070
-    BLTouchTesting1         = 114 | Temporary,  // 0x0072
-    BLTouchTesting2         = 116 | Temporary,  // 0x0074
-    BLTouchTesting3         = 118 | Temporary,  // 0x0076
-    BLTouchTesting4         = 120 | Temporary,  // 0x0078
+    BLTouchTesting1         = 114 | Temporary,  // 0x8072
+    BLTouchTesting2         = 116 | Temporary,  // 0x8074
+    BLTouchTesting3         = 118 | Temporary,  // 0x8076
+    BLTouchTesting4         = 120 | Temporary,  // 0x8078
     KeyboardDecimal         = 122,              // 0x007A
     KeyboardSignedInteger   = 124,              // 0x007C
     KeyboardSignedDecimal   = 126,              // 0x007E
@@ -90,6 +90,7 @@ enum class Page: uint16_t
     Skew1Settings           = 136,
     Skew2Settings           = 138,
     Skew3Settings           = 140,
+    BuzzerSettings          = 142,
 
     Boot                    = 200 | Temporary   // 0x00C8
 };
@@ -147,7 +148,11 @@ enum class Variable: uint16_t
     ADVi3ppVersion          = 0x0500,
     ADVi3ppBuild            = 0x0508,
     ADVi3ppDGUSVersion      = 0x0510,
-    ADVi3ppMarlinVersion    = 0x0518
+    ADVi3ppMarlinVersion    = 0x0518,
+
+    BeepDuration            = 0x0617,
+    NormalBrightness        = 0x0618,
+    DimmingBrightness       = 0x0619
 };
 
 //! List of actions sent by the LCD.
@@ -193,6 +198,7 @@ enum class Action: uint16_t
     XTwist                  = 0x0424,
     Runout                  = 0x0425,
     Skew                    = 0x0426,
+    BeeperSettings          = 0x0427,
 
     // 6 - Moves
     MoveXMinus              = 0x0600,
@@ -207,7 +213,7 @@ enum class Action: uint16_t
     BabyPlus                = 0x0609,
     ZHeightMinus            = 0x060A,
     ZHeightPlus             = 0x060B,
-    LCDBrightness           = 0x060C,
+    // UNUSED               = 0x060C,
     FeedrateMinus           = 0x060D,
     FeedratePlus            = 0x060E,
     FanMinus                = 0x060F,
@@ -218,8 +224,11 @@ enum class Action: uint16_t
     BedPlus                 = 0x0614,
     XTwistMinus             = 0x0615,
     XTwistPlus              = 0x0616,
+    BeepDuration            = 0x0617,
+    NormalBrightness        = 0x0618,
+    DimmingBrightness       = 0x0619,
 
-    Undefined               = 0xFFFF
+    Undefined                = 0xFFFF
 };
 
 //! Key values used by the LCD screens.
@@ -287,8 +296,9 @@ enum class KeyValue: uint16_t
     SensorSettingsNext      = 0x0002,
 
     LCDDimming              = 0x0001,
-    BuzzerOnAction          = 0x0002,
-    BuzzOnPress             = 0x0003,
+
+    BuzzOnAction            = 0x0001,
+    BuzzOnPress             = 0x0002,
 
     MismatchForward         = 0x0001,
 
@@ -341,17 +351,6 @@ enum class KeyValue: uint16_t
     Save                    = 0xFFFE,
     Back                    = 0xFFFF
 };
-
-//! Set of possible feature to enable or disable
-// If those values are changed, the controls' bitsets have also to be changed in the screens
-enum class Feature: uint16_t
-{
-    None                = 0b0000000000000000,
-    Dimming             = 0b0000000000000001,
-    BuzzOnAction        = 0b0000000000000010,
-    BuzzOnPress         = 0b0000000000000100
-};
-ENABLE_BITMASK_OPERATOR(Feature);
 
 
 }

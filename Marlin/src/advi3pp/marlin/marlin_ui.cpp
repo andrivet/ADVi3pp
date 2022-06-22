@@ -27,7 +27,7 @@ using namespace ADVi3pp;
 
 
 void MarlinUI::buzz(const long duration, const uint16_t freq) {
-    buzzer.buzz_on_action(duration);
+    buzzer.buzz_on_action();
 }
 
 void MarlinUI::sleep_on() {

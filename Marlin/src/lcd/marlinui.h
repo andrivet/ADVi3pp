@@ -302,6 +302,7 @@ public:
     static millis_t screen_timeout_millis;
     static void refresh_screen_timeout();
     static void check_screen_timeout(); // @advi3++
+    static void set_screen_timeout(uint8_t minutes) { sleep_timeout_minutes = minutes; } // @advi3++
     static void sleep_on();
     static void sleep_off();
   #endif

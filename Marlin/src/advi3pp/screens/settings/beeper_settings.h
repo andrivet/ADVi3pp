@@ -20,41 +20,33 @@
 
 #pragma once
 
-#include <stdint.h>
-#include "settings.h"
+#include "../core/screen.h"
+#include "../../core/buzzer.h"
 
 namespace ADVi3pp {
 
-
-struct Buzzer: Settings<Buzzer> {
-  void buzz(uint8_t duration);
-  void buzz_on_action();
-  void buzz_on_press();
-
-  bool is_buzz_on_action_enabled() const { return buzz_on_action_; }
-  bool is_buzz_on_press_enabled() const { return buzz_on_press_; }
-  uint8_t get_buzz_duration() const { return buzz_duration_; }
-  void set_settings(bool buzz_on_action, bool buzz_on_press, uint8_t buzz_duration);
+//! Beeper Setting Page
+struct BeeperSettings: Screen<BeeperSettings>
+{
+  void duration_command(uint16_t duration);
 
 private:
   friend Parent;
 
-  void do_write(EepromWrite& eeprom) const;
-  bool do_validate(EepromRead& eeprom);
-  void do_read(EepromRead& eeprom);
-  void do_reset();
-  uint16_t do_size_of() const;
+  bool do_dispatch(KeyValue key_value);
+  Page do_prepare_page();
+  void do_save_command();
+  void send_values() const;
+  bool get_values();
 
-private:
-    void send_buzz_command_to_lcd();
-    void send_buzz_command_to_lcd(uint8_t duration);
+  void on_action_command();
+  void on_press_command();
 
-private:
   bool buzz_on_action_ = true;
   bool buzz_on_press_ = false;
   uint8_t buzz_duration_ = 1; // x 10ms
 };
 
-extern Buzzer buzzer;
+extern BeeperSettings beeper_settings;
 
 }

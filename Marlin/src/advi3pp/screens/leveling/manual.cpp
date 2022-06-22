@@ -76,7 +76,6 @@ void ManualLeveling::do_back_command()
 void ManualLeveling::do_save_command()
 {
 #if HAS_LEVELING
-    xtwist.reset();
     ExtUI::setLevelingActive(false); // Disable ABL mesh (already disabled but prefer to be explicit)
 #endif
     ExtUI::setFeedrate_mm_s(FEEDRATE_Z);

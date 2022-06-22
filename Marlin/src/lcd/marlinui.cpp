@@ -199,6 +199,7 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
     screen_timeout_millis = sleep_timeout_minutes ? millis() + sleep_timeout_minutes * 60UL * 1000UL : 0;
     sleep_off();
   }
+
   // @advi3++
   void MarlinUI::check_screen_timeout() {
     millis_t ms = millis();

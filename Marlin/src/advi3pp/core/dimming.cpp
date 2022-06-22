@@ -42,24 +42,57 @@ void Dimming::set_next_checking_time()
     next_check_time_ = millis() + 200;
 }
 
-//! Get adjusted brightness (depended of the active dimming or not)
-//! @return The adjusted brightness
-uint8_t Dimming::get_adjusted_brightness()
-{
-    int16_t brightness = ui.brightness;
-    if(dimmed_)
-        brightness = brightness * dimming_ratio / 100;
-    if(brightness < LCD_BRIGHTNESS_MIN)
-        brightness = LCD_BRIGHTNESS_MIN;
-    if(brightness > LCD_BRIGHTNESS_MAX)
-        brightness = LCD_BRIGHTNESS_MAX;
-    return static_cast<uint8_t>(brightness);
+void Dimming::set_settings(bool dimming, uint8_t dimming_time, uint8_t normal_brightness, uint8_t dimming_brightness) {
+  enabled_ = dimming;
+  dimming_time_ = dimming_time;
+  ui.set_brightness(normal_brightness);
+  dimming_brightness_ = dimming_brightness;
+}
+
+//! Store current data in permanent memory (EEPROM)
+//! @param eeprom EEPROM writer
+void Dimming::do_write(EepromWrite& eeprom) const {
+  eeprom.write(enabled_);
+  eeprom.write(dimming_brightness_);
+  eeprom.write(dimming_time_);
+}
+
+//! Validate data from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
+bool Dimming::do_validate(EepromRead &eeprom) {
+  bool enabled;
+  uint8_t brightness, time;
+  eeprom.read(enabled);
+  eeprom.read(brightness);
+  eeprom.read(time);
+  return true;
+}
+
+//! Restore data from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
+void Dimming::do_read(EepromRead& eeprom) {
+  eeprom.read(enabled_);
+  eeprom.read(dimming_brightness_);
+  eeprom.read(dimming_time_);
+}
+
+//! Reset settings
+void Dimming::do_reset() {
+  enabled_ = true;
+  dimming_brightness_ = 5;
+  dimming_time_ = 2;
+}
+
+//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
+//! @return Number of bytes
+uint16_t Dimming::do_size_of() const {
+  return sizeof(enabled_) + sizeof(dimming_brightness_) + sizeof(dimming_time_);
 }
 
 
 void Dimming::send()
 {
-    if(!settings.is_feature_enabled(Feature::Dimming) || !dimmed_ || !ELAPSED(millis(), next_check_time_))
+    if(!is_enabled() || !dimmed_ || !ELAPSED(millis(), next_check_time_))
         return;
     set_next_checking_time();
     ReadRegisterRequest{Register::TouchPanelFlag}.write(1);
@@ -84,16 +117,22 @@ bool Dimming::receive()
     }
   }
 
-  if(!dimmed_ && settings.is_feature_enabled(Feature::Dimming))
+  if(!dimmed_ && is_enabled())
     ui.check_screen_timeout();
 
   return received;
 }
 
 //! Set the brightness of the LCD panel
+void Dimming::send_brightness_to_lcd(uint8_t brightness)
+{
+  WriteRegisterRequest{Register::Brightness}.write_byte(brightness);
+}
+
+//! Set the brightness of the LCD panel
 void Dimming::send_brightness_to_lcd()
 {
-    WriteRegisterRequest{Register::Brightness}.write_byte(get_adjusted_brightness());
+  send_brightness_to_lcd(dimmed_ ? dimming_brightness_ : get_normal_brightness());
 }
 
 void Dimming::sleep_on() {
