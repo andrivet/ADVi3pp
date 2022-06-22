@@ -25,30 +25,12 @@
 
 namespace ADVi3pp {
 
-//! PID Settings Page
-struct Pid
-{
-    float Kp_, Ki_, Kd_;
-    uint16_t temperature_;
-};
 
 struct PidSettings: Screen<PidSettings>
 {
-    PidSettings();
-
-    void add_pid(TemperatureKind kind, uint16_t temperature);
-    void choose_best_pid(TemperatureKind kind, uint16_t temperature);
-
 private:
-    static const size_t NB_PIDs = 3;
-
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void do_write(EepromWrite& eeprom) const;
-    bool do_validate(EepromRead& eeprom);
-    void do_read(EepromRead& eeprom);
-    void do_reset();
-    uint16_t do_size_of() const;
     void do_save_command();
     void do_back_command();
     void save_bed_pid() const;
@@ -57,19 +39,10 @@ private:
     void bed_command();
     void previous_command();
     void next_command();
-    void set_marlin_pid() const;
-    void get_marlin_pid();
     void to_lcd() const;
     void from_lcd();
 
-    adv::array<Pid, PidSettings::NB_PIDs>& get_pids();
-    const adv::array<Pid, PidSettings::NB_PIDs>& get_pids() const;
-    Pid& get_pid();
-    const Pid& get_pid() const;
-
 private:
-    adv::array<Pid, NB_PIDs> hotend_pid_{};
-    adv::array<Pid, NB_PIDs> bed_pid_{};
     TemperatureKind kind_ = TemperatureKind::Hotend;
     uint8_t index_ = 0;
 

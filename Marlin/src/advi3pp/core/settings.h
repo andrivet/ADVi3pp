@@ -21,6 +21,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "../lib/ADVstd/ADVcrtp.h"
 #include "../lib/ADVstd/array.h"
 #include "../../lcd/extui/ui_api.h"
 #include "enums.h"
@@ -28,16 +29,28 @@
 
 namespace ADVi3pp {
 
-
 enum class TemperatureKind: uint8_t { Bed, Hotend };
 constexpr const unsigned nb_temperatures = 2;
 
 const uint16_t default_bed_temperature = 50; //!< Default target temperature for the bed
 const uint16_t default_hotend_temperature = 200; //!< Default target temperature for the hotend
 
-struct Settings
+
+template<typename Self>
+struct Settings : adv::Crtp<Self, Settings> {
+  void write(EepromWrite& eeprom) const { this->self().do_write(eeprom); }
+  void read(EepromRead& eeprom) { this->self().do_read(eeprom); }
+  bool validate(EepromRead& eeprom) { return this->self().do_validate(eeprom); }
+  void reset() { this->self().do_reset(); }
+  uint16_t size_of() const { return this->self().do_size_of(); }
+};
+
+
+struct ExtendedSettings
 {
     void on_factory_reset();
+    bool does_eeprom_mismatch() const { return eeprom_mismatch_; }
+
     uint16_t on_sizeof_settings();
     void on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     bool on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
@@ -54,22 +67,14 @@ struct Settings
     void save();
     void restore();
 
-    Feature flip_features(Feature features);
-    void send_lcd_values(Variable features);
-    bool is_feature_enabled(Feature features) const;
-
     uint16_t get_last_used_temperature(TemperatureKind kind) const;
     void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 
 private:
-    const Feature DEFAULT_FEATURES =
-            Feature::Dimming |
-            Feature::BuzzOnAction;
-
-    Feature features_ = DEFAULT_FEATURES;
     adv::array<uint16_t, nb_temperatures> last_used_temperature_ {{default_bed_temperature, default_hotend_temperature}};
+    bool eeprom_mismatch_ = false;
 };
 
-extern Settings settings;
+extern ExtendedSettings settings;
 
 }

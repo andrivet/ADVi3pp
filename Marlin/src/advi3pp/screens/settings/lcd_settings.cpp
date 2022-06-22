@@ -20,74 +20,84 @@
 
 #include "../../parameters.h"
 #include "lcd_settings.h"
-#include "../../core/buzzer.h"
+#include "../../core/dgus.h"
+#include "../../core/dimming.h"
 
 namespace ADVi3pp {
 
 LcdSettings lcd_settings;
 
 
-//! Handle LCD Settings command
+//! Handle LCD ExtendedSettings command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool LcdSettings::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
+bool LcdSettings::do_dispatch(KeyValue key_value) {
+  if(Parent::do_dispatch(key_value))
+      return true;
 
-    switch(key_value)
-    {
-        case KeyValue::LCDDimming:          dimming_command(); break;
-        case KeyValue::BuzzerOnAction:      buzz_on_action_command(); break;
-        case KeyValue::BuzzOnPress:         buzz_on_press_command(); break;
-        default:                            return false;
-    }
+  switch(key_value)
+  {
+      case KeyValue::LCDDimming:          dimming_command(); break;
+      default:                            return false;
+  }
 
-    return true;
+  return true;
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page LcdSettings::do_prepare_page()
-{
-    settings.send_lcd_values(Variable::Value0);
-    return Page::LCD;
+Page LcdSettings::do_prepare_page() {
+  dimming_ = dimming.is_enabled();
+  normal_brightness_ = dimming.get_normal_brightness();
+  dimming_brightness_ = dimming.get_dimming_brightness();
+  send_values();
+  return Page::LCD;
 }
 
-void LcdSettings::do_back_command()
-{
-    settings.save();
-    Parent::do_back_command();
+void LcdSettings::do_back_command() {
+  dimming.send_brightness_to_lcd(); // Restore previous brightness
+  Parent::do_back_command();
+}
+
+void LcdSettings::do_save_command() {
+  auto dimming_time = get_dimming_time();
+  dimming.set_settings(dimming_, dimming_time, normal_brightness_, dimming_brightness_);
+  dimming.send_brightness_to_lcd();
+  Parent::do_save_command();
+}
+
+void LcdSettings::send_values() {
+  auto dimming_time = dimming.get_dimming_time();
+  WriteRamRequest{Variable::Value0}.write_words(dimming_, dimming_time);
+  WriteRamRequest{Variable::NormalBrightness}.write_words(normal_brightness_, dimming_brightness_);
+}
+
+uint8_t LcdSettings::get_dimming_time() const {
+  ReadRam frame{Variable::Value0};
+  if(!frame.send_receive(2))
+  {
+    Log::error() << F("Receiving Frame (Dimming time)") << Log::endl();
+    return 1;
+  }
+
+  return frame.read_word();
 }
 
 //! Handle the Dimming (On/Off) command
-void LcdSettings::dimming_command()
-{
-    settings.flip_features(Feature::Dimming);
-    settings.send_lcd_values(Variable::Value0);
+void LcdSettings::dimming_command() {
+  dimming_ = !dimming_;
+  WriteRamRequest{Variable::Value0}.write_words(dimming_);
 }
 
 //! Handle the change brightness command.
-void LcdSettings::change_brightness(uint16_t brightness)
-{
-    ui.set_brightness(brightness);
-    settings.send_lcd_values(Variable::Value0);
+void LcdSettings::normal_brightness_command(uint16_t brightness) {
+  dimming.send_brightness_to_lcd(brightness);
 }
 
-//! Handle the Buzz on Action command
-void LcdSettings::buzz_on_action_command()
-{
-    settings.flip_features(Feature::BuzzOnAction);
-    settings.send_lcd_values(Variable::Value0);
+//! Handle the change brightness command.
+void LcdSettings::dimming_brightness_command(uint16_t brightness) {
+  dimming.send_brightness_to_lcd(brightness);
 }
 
-//! Handle the Buzz on Press command
-void LcdSettings::buzz_on_press_command()
-{
-    Feature feature = settings.flip_features(Feature::BuzzOnPress);
-    if(feature == Feature::BuzzOnPress)
-        buzzer.buzz_on_press();
-    settings.send_lcd_values(Variable::Value0);
-}
 
 }

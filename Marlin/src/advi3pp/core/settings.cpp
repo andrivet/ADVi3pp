@@ -23,35 +23,34 @@
 #include "../versions.h"
 #include "../core/core.h"
 #include "../core/dgus.h"
+#include "../core/pages.h"
 #include "../core/dimming.h"
-#include "../screens/controls/preheat.h"
-#include "../screens/settings/pid_settings.h"
-#include "../screens/settings/eeprom_mismatch.h"
+#include "../core/pid.h"
+#include "../core/buzzer.h"
 #include "../screens/tuning/setup.h"
-#include "../screens/leveling/xtwist.h"
 
 
 namespace ADVi3pp {
 
-Settings settings;
+ExtendedSettings settings;
 
 
-void Settings::on_factory_reset()
+void ExtendedSettings::on_factory_reset()
 {
     settings.reset();
-    if(eeprom_mismatch.does_mismatch())
+    if(does_eeprom_mismatch())
         return;
 
     pages.reset();
     setup.show();
 }
 
-void Settings::on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+void ExtendedSettings::on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
     settings.write(write, eeprom_index, working_crc);
 }
 
-bool Settings::on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating)
+bool ExtendedSettings::on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating)
 {
     if(validating)
         return settings.validate(read, eeprom_index, working_crc);
@@ -59,40 +58,40 @@ bool Settings::on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint
     return true;
 }
 
-uint16_t Settings::on_sizeof_settings()
+uint16_t ExtendedSettings::on_sizeof_settings()
 {
     return settings.size_of();
 }
 
-void Settings::on_settings_written(bool success)
+void ExtendedSettings::on_settings_written(bool success)
 {
 }
 
-void Settings::on_settings_loaded(bool success)
-{
-    if(!success)
-        eeprom_mismatch.set_mismatch();
-}
-
-void Settings::on_settings_validated(bool success)
+void ExtendedSettings::on_settings_loaded(bool success)
 {
     if(!success)
-        eeprom_mismatch.set_mismatch();
+        eeprom_mismatch_ = true;
 }
 
-bool Settings::write(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
+void ExtendedSettings::on_settings_validated(bool success)
+{
+    if(!success)
+        eeprom_mismatch_ = true;
+}
+
+bool ExtendedSettings::write(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
 {
     EepromWrite eeprom{write, eeprom_index, working_crc};
 
     eeprom.write(settings_version);
-    pid_settings.write(eeprom);
-    xtwist.write(eeprom);
-    eeprom.write(features_);
+    pid.write(eeprom);
+    dimming.write(eeprom);
+    buzzer.write(eeprom);
 
     return true;
 }
 
-bool Settings::validate(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+bool ExtendedSettings::validate(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
     bool valid = true;
     EepromRead eeprom{read, eeprom_index, working_crc};
@@ -102,81 +101,62 @@ bool Settings::validate(eeprom_read read, int& eeprom_index, uint16_t& working_c
     if(version != settings_version)
         valid = false;
 
-    if(!pid_settings.validate(eeprom))
+    if(!pid.validate(eeprom) ||
+       !dimming.validate(eeprom) ||
+       !buzzer.validate(eeprom)
+    )
         valid = false;
-
-    if(!xtwist.validate(eeprom))
-        valid = false;
-
-    Feature features = Feature::None;
-    eeprom.read(features);
 
     return valid;
 }
 
-void Settings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
+void ExtendedSettings::read(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
 {
     EepromRead eeprom{read, eeprom_index, working_crc};
 
     uint16_t version = 0;
     eeprom.read(version);
-    pid_settings.read(eeprom);
-    xtwist.read(eeprom);
-    eeprom.read(features_);
+    pid.read(eeprom);
+    dimming.read(eeprom);
+    buzzer.read(eeprom);
 }
 
 //! Reset presets.
-void Settings::reset()
+void ExtendedSettings::reset()
 {
-    pid_settings.reset();
-    xtwist.reset();
-    features_ = DEFAULT_FEATURES;
+    pid.reset();
+    dimming.reset();
+    buzzer.reset();
 }
 
 //! Return the size of data specific to ADVi3++
-uint16_t Settings::size_of() const
+uint16_t ExtendedSettings::size_of() const
 {
     return
-            sizeof(settings_version) +
-            pid_settings.size_of() +
-            xtwist.size_of() +
-            sizeof(features_);
+      sizeof(settings_version) +
+      pid.size_of() +
+      dimming.size_of() +
+      buzzer.size_of();
 }
 
 //! Save the current settings permanently in EEPROM memory
-void Settings::save()
+void ExtendedSettings::save()
 {
-    eeprom_mismatch.reset_mismatch();
+    eeprom_mismatch_ = false;
     ExtUI::saveSettings();
 }
 
 //! Restore settings from EEPROM memory
-void Settings::restore()
+void ExtendedSettings::restore()
 {
     // Note: Previously, M420 (bed leveling compensation) was reset by M501. It is no more the case.
     ExtUI::loadSettings();
 }
 
-Feature Settings::flip_features(Feature features)
-{
-    flip_bits(features_, features);
-    return features_ & features;
-}
-
-bool Settings::is_feature_enabled(Feature features) const
-{
-    return test_all_bits(features_, features);
-}
-
-void Settings::send_lcd_values(Variable features)
-{
-    WriteRamRequest{features}.write_words(features_, ui.brightness);
-}
-
 //! Get the last used temperature for the hotend or the bad
 //! @param kind Kind of temperature: hotend or bed
 //! @return The last used themperature
-uint16_t Settings::get_last_used_temperature(TemperatureKind kind) const
+uint16_t ExtendedSettings::get_last_used_temperature(TemperatureKind kind) const
 {
     return last_used_temperature_[kind == TemperatureKind::Hotend];
 }
@@ -184,12 +164,12 @@ uint16_t Settings::get_last_used_temperature(TemperatureKind kind) const
 //! To be called when a new temperature is selected as a target
 //! @param kind Kind of temperature: hotend or bed
 //! @param temperature The new target temperature
-void Settings::on_set_temperature(TemperatureKind kind, uint16_t temperature)
+void ExtendedSettings::on_set_temperature(TemperatureKind kind, uint16_t temperature)
 {
     if(temperature == 0)
         return;
     last_used_temperature_[kind == TemperatureKind::Hotend] = temperature;
-    pid_settings.choose_best_pid(kind, temperature);
+    pid.choose_best_pid(kind, temperature);
 }
 
 

@@ -27,17 +27,28 @@ namespace ADVi3pp {
 //! LCD Setting Page
 struct LcdSettings: Screen<LcdSettings>
 {
-    void change_brightness(uint16_t brightness);
+    void normal_brightness_command(uint16_t brightness);
+    void dimming_brightness_command(uint16_t brightness);
+
+    bool receive();
+    void send();
+    void sleep_on();
+    void sleep_off();
 
 private:
+    friend Parent;
+
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
     void do_back_command();
+    void do_save_command();
     void dimming_command();
-    void buzz_on_action_command();
-    void buzz_on_press_command();
+    void send_values();
+    uint8_t get_dimming_time() const;
 
-    friend Parent;
+    bool dimming_ = false;
+    uint8_t normal_brightness_ = LCD_BRIGHTNESS_DEFAULT;
+    uint8_t dimming_brightness_ = 5;
 };
 
 extern LcdSettings lcd_settings;
