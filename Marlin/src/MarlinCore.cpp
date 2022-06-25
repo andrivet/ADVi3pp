@@ -420,7 +420,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
     SERIAL_ERROR_START();
     SERIAL_ECHOPGM(STR_KILL_PRE);
     SERIAL_ECHOLNPGM(STR_KILL_INACTIVE_TIME, parser.command_ptr);
-    kill(F("Printer not able to process GCodes")); // @advi3++
+    kill(F("Printer not able to process GCodes"));
   }
 
   const bool has_blocks = planner.has_blocks_queued();  // Any moves in the planner?
@@ -879,20 +879,26 @@ void idle(bool no_stepper_sleep/*=false*/) {
   return;
 }
 
+
+void kill(FSTR_P const lcd_error/*=nullptr*/, FSTR_P const lcd_component/*=nullptr*/, const bool steppers_off/*=false*/) { // @advi3++
+  kill(NAN, lcd_error, lcd_component, steppers_off);
+}
+
 /**
  * Kill all activity and lock the machine.
  * After this the machine will need to be reset.
  */
-void kill(FSTR_P const lcd_error/*=nullptr*/, FSTR_P const lcd_component/*=nullptr*/, const bool steppers_off/*=false*/) {
+void kill(float temp, FSTR_P const lcd_error/*=nullptr*/, FSTR_P const lcd_component/*=nullptr*/, const bool steppers_off/*=false*/) { // @advi3++
   thermalManager.disable_all_heaters();
 
   TERN_(HAS_CUTTER, cutter.kill()); // Full cutter shutdown including ISR control
 
   // Echo the LCD message to serial for extra context
   if (lcd_error) { SERIAL_ECHO_START(); SERIAL_ECHOLNF(lcd_error); }
+  if(!isnan(temp)) { SERIAL_ECHO_START(); SERIAL_ECHOLNPAIR_F("Temp:", temp); }
 
   #if HAS_DISPLAY
-    ui.kill_screen(lcd_error ?: GET_TEXT_F(MSG_KILLED), lcd_component ?: FPSTR(NUL_STR));
+    ui.kill_screen(temp, lcd_error ?: GET_TEXT_F(MSG_KILLED), lcd_component ?: FPSTR(NUL_STR));
   #else
     UNUSED(lcd_error); UNUSED(lcd_component);
   #endif

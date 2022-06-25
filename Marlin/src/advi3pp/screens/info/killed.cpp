@@ -33,10 +33,13 @@ Page Killed::do_prepare_page()
     return Page::Killed;
 }
 
-void Killed::show(const FlashChar* component) {
-  if(component == nullptr) return;
-  ADVString<48> c{component};
-  WriteRamRequest{Variable::LongText0}.write_text(c);
+void Killed::show(float temp, const FlashChar* component) {
+  if(component != nullptr) {
+    ADVString<48> message{component};
+    if(!isnan(temp))
+      message.append(' ').append(temp).append('C');
+    WriteRamRequest{Variable::LongText0}.write_text(message);
+  }
   Parent::show();
 };
 

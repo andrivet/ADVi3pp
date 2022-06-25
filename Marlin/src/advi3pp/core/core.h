@@ -48,7 +48,7 @@ struct Core
 
     void startup();
     void idle();
-    void killed(const FlashChar* error, const FlashChar* component);
+    void killed(float temp, const FlashChar* error, const FlashChar* component);
 
     bool ensure_not_printing();
     bool is_busy();

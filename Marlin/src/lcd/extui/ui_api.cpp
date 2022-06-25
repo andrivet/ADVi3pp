@@ -1218,9 +1218,9 @@ void cancelWaitForHeatup()
   setUserConfirmed();
 }
 
-void kill(FSTR_P const lcd_error, FSTR_P const lcd_component, const bool steppers_off)
+void kill(float temp, FSTR_P const lcd_error, FSTR_P const lcd_component, const bool steppers_off)
 {
-  ::kill(lcd_error, lcd_component, steppers_off);
+  ::kill(temp, lcd_error, lcd_component, steppers_off);
 }
 
 void killRightNow(const bool steppers_off)
@@ -1351,11 +1351,11 @@ void MarlinUI::init_lcd() { ExtUI::onStartup(); }
 
 void MarlinUI::update() { ExtUI::onIdle(); }
 
-void MarlinUI::kill_screen(FSTR_P const error, FSTR_P const component) {
+void MarlinUI::kill_screen(float temp, FSTR_P const error, FSTR_P const component) {
   using namespace ExtUI;
   if (!flags.printer_killed) {
     flags.printer_killed = true;
-    onPrinterKilled(error, component);
+    onPrinterKilled(temp, error, component);
   }
 }
 

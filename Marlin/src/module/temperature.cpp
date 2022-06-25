@@ -1233,7 +1233,7 @@ int16_t Temperature::getHeaterPower(const heater_id_t heater_id) {
 // Temperature Error Handlers
 //
 
-inline void loud_kill(FSTR_P const lcd_msg, const heater_id_t heater_id) {
+inline void loud_kill(FSTR_P const lcd_msg, const heater_id_t heater_id, float temp) {
   marlin_state = MF_KILLED;
   thermalManager.disable_all_heaters();
   #if HAS_BEEPER
@@ -1251,7 +1251,7 @@ inline void loud_kill(FSTR_P const lcd_msg, const heater_id_t heater_id) {
       planner.synchronize();
     }
   #endif
-  kill(lcd_msg, HEATER_FSTR(heater_id));
+  kill(temp, lcd_msg, HEATER_FSTR(heater_id));
 }
 
 void Temperature::_temp_error(const heater_id_t heater_id, FSTR_P const serial_msg, FSTR_P const lcd_msg) {
@@ -1307,7 +1307,8 @@ void Temperature::_temp_error(const heater_id_t heater_id, FSTR_P const serial_m
   #elif defined(BOGUS_TEMPERATURE_GRACE_PERIOD)
     UNUSED(killed);
   #else
-    if (!killed) { killed = 1; loud_kill(lcd_msg, heater_id); }
+    float temp = (heater_id >= 0) ? degHotend(heater_id) : (heater_id == H_BED) ? degBed() : NAN;
+    if (!killed) { killed = 1; loud_kill(lcd_msg, heater_id, temp); }
   #endif
 }
 
@@ -1657,7 +1658,7 @@ void Temperature::manage_heater() {
   REMEMBER(mh, no_reentry, true);
 
   #if ENABLED(EMERGENCY_PARSER)
-    if (emergency_parser.killed_by_M112) kill(FPSTR(M112_KILL_STR), nullptr, true);
+    if (emergency_parser.killed_by_M112) kill(NAN, FPSTR(M112_KILL_STR), nullptr, true);
 
     if (emergency_parser.quickstop_by_M410) {
       emergency_parser.quickstop_by_M410 = false; // quickstop_stepper may call idle so clear this now!

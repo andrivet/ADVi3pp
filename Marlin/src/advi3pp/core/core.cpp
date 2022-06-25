@@ -142,12 +142,12 @@ void Core::to_lcd() {
     graphs.update();
 }
 
-void Core::killed(const FlashChar* error, const FlashChar* component)
+void Core::killed(float temp, const FlashChar* error, const FlashChar* component)
 {
   status.set(error);
   send_lcd_data();
   dimming.sleep_off();
-  killed_page.show(component);
+  killed_page.show(temp, component);
 }
 
 //! Note to forks author:

@@ -512,7 +512,7 @@ public:
     #endif
 
     static void draw_kill_screen();
-    static void kill_screen(FSTR_P const lcd_error, FSTR_P const lcd_component);
+    static void kill_screen(float temp, FSTR_P const lcd_error, FSTR_P const lcd_component);
     #if DISABLED(LIGHTWEIGHT_UI)
       static void draw_status_message(const bool blink);
     #endif

@@ -27,7 +27,7 @@ namespace ADVi3pp {
 //! Killed Page
 struct Killed: Screen<Killed>
 {
-  void show(const FlashChar* component);
+  void show(float temp, const FlashChar* component);
 
 private:
     Page do_prepare_page();
