@@ -578,8 +578,8 @@ namespace Language_en {
   LSTR MSG_THERMAL_RUNAWAY_CHAMBER        = _UxGT("CHAMBER T. RUNAWAY");
   LSTR MSG_THERMAL_RUNAWAY_COOLER         = _UxGT("Cooler Runaway");
   LSTR MSG_COOLING_FAILED                 = _UxGT("Cooling Failed");
-  LSTR MSG_ERR_MAXTEMP                    = _UxGT("Err: MAXTEMP");
-  LSTR MSG_ERR_MINTEMP                    = _UxGT("Err: MINTEMP");
+  LSTR MSG_ERR_MAXTEMP                    = _UxGT("Temperature too high"); // @advi3++
+  LSTR MSG_ERR_MINTEMP                    = _UxGT("Temperature too low"); // @advi3++
   LSTR MSG_HALTED                         = _UxGT("PRINTER HALTED");
   LSTR MSG_PLEASE_WAIT                    = _UxGT("Please wait...");
   LSTR MSG_PLEASE_RESET                   = _UxGT("Please Reset");
