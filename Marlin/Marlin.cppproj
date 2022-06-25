@@ -604,6 +604,12 @@
     <Compile Include="src\advi3pp\core\pages.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\core\pid.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\pid.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\core\serial-out.h">
       <SubType>compile</SubType>
     </Compile>
@@ -649,6 +655,12 @@
     <Compile Include="src\advi3pp\screens\info\copyrights.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\info\killed.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\killed.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\screens\info\sponsors.h">
       <SubType>compile</SubType>
     </Compile>
@@ -691,6 +703,12 @@
     <Compile Include="src\advi3pp\screens\settings\acceleration_settings.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\settings\beeper_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\beeper_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\screens\settings\eeprom_mismatch.h">
       <SubType>compile</SubType>
     </Compile>
@@ -719,6 +737,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\settings\sensor_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\skew_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\skew_settings.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\settings\step_settings.h">
@@ -848,6 +872,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\calibrate\M48.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\calibrate\M852.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\config\M43.cpp">
