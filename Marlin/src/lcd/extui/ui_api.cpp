@@ -353,6 +353,28 @@ namespace ExtUI {
     line_to_current_position(feedrate ?: manual_feedrate_mm_s[axis]);
   }
 
+  void setMultipleAxisPosition_mm(size_t nb_axis, float *positions, const axis_t *axis, const feedRate_t feedrate) {
+
+    for(size_t i = 0; i < nb_axis; ++i) {
+      // Get motion limit from software endstops, if any
+      float min, max;
+      soft_endstop.get_manual_axis_limits((AxisEnum)axis[i], min, max);
+
+      // Delta limits XY based on the current offset from center
+      // This assumes the center is 0,0
+#if ENABLED(DELTA)
+      if (axis != Z) {
+            max = SQRT(sq(float(DELTA_PRINTABLE_RADIUS)) - sq(current_position[Y - axis])); // (Y - axis) == the other axis
+            min = -max;
+          }
+#endif
+
+      current_position[axis[i]] = constrain(positions[i], min, max);
+    }
+
+    line_to_current_position(feedrate);
+  }
+
   void setAxisPosition_mm(const_float_t position, const extruder_t extruder, const feedRate_t feedrate/*=0*/) {
     setActiveTool(extruder, true);
 

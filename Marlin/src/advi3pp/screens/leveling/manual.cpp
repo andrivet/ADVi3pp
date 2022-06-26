@@ -29,8 +29,7 @@ namespace ADVi3pp {
 namespace {
 
     constexpr xyz_feedrate_t homing_feedrate_mm_m = HOMING_FEEDRATE_MM_M;
-    constexpr float FEEDRATE_X = MMM_TO_MMS(homing_feedrate_mm_m.x);
-    constexpr float FEEDRATE_Y = MMM_TO_MMS(homing_feedrate_mm_m.y);
+    constexpr float FEEDRATE_XY = MMM_TO_MMS(homing_feedrate_mm_m.x);
     constexpr float FEEDRATE_Z = MMM_TO_MMS(homing_feedrate_mm_m.z);
 
 }
@@ -68,8 +67,7 @@ void ManualLeveling::do_back_command()
 #if HAS_LEVELING
     ExtUI::setLevelingActive(true); // Enable back compensation
 #endif
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z, FEEDRATE_Z);
     Parent::do_back_command();
 }
 
@@ -78,8 +76,7 @@ void ManualLeveling::do_save_command()
 #if HAS_LEVELING
     ExtUI::setLevelingActive(false); // Disable ABL mesh (already disabled but prefer to be explicit)
 #endif
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z, FEEDRATE_Z);
     Parent::do_save_command();
 }
 
@@ -98,7 +95,7 @@ Page ManualLeveling::do_prepare_page()
                               WaitCallback{this, &ManualLeveling::start});
     else
       start();
-    
+
     return Page::None;
 }
 
@@ -128,18 +125,15 @@ void ManualLeveling::leveling_task()
     pages.show(Page::ManualLeveling);
 }
 
-void ManualLeveling::move(int x, int y)
+void ManualLeveling::move(float x, float y)
 {
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(Z_HOMING_HEIGHT, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(Z_HOMING_HEIGHT, ExtUI::Z, FEEDRATE_Z);
 
-    ExtUI::setFeedrate_mm_s(FEEDRATE_X);
-    ExtUI::setAxisPosition_mm(x, ExtUI::X);
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Y);
-    ExtUI::setAxisPosition_mm(y, ExtUI::Y);
+    float positions[2] = {x, y};
+    ExtUI::axis_t axis[2] = { ExtUI::X, ExtUI::Y };
+    ExtUI::setMultipleAxisPosition_mm(2, positions, axis, FEEDRATE_XY);
 
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(0, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(0, ExtUI::Z, FEEDRATE_Z);
 }
 
 //! Handle leveling point #1.

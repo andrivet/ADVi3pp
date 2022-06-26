@@ -89,10 +89,9 @@ void SensorZHeight::post_home_task()
     background_task.clear();
     reset();
 
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
     ExtUI::setAxisPosition_mm(100, ExtUI::X);
     ExtUI::setAxisPosition_mm(100, ExtUI::Y);
-    ExtUI::setAxisPosition_mm(0, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(0, ExtUI::Z, FEEDRATE_Z);
     ExtUI::setSoftEndstopState(false);
 
     send_data();
@@ -117,8 +116,7 @@ void SensorZHeight::do_save_command()
     ExtUI::setZOffset_mm(ExtUI::getAxisPosition_mm(ExtUI::Z));
     // enable enstops, raise head, homing
     ExtUI::setSoftEndstopState(true);
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(4, ExtUI::Z, FEEDRATE_Z);
     core.inject_commands(F("G28 Z F1200\nG28 X Y F6000")); // G28 is important to take into account the Z height
     Parent::do_save_command();
 }
@@ -172,8 +170,7 @@ double SensorZHeight::get_multiplier_value() const
 //! @param offset Offset for the adjustment.
 void SensorZHeight::adjust_height(double offset)
 {
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset, ExtUI::Z, FEEDRATE_Z);
     send_data();
 }
 

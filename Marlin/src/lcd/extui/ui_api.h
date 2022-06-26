@@ -221,6 +221,7 @@ namespace ExtUI {
   void setTargetFan_percent(const_float_t, const fan_t);
   void coolDown();
   void setAxisPosition_mm(const_float_t, const axis_t, const feedRate_t=0);
+  void setMultipleAxisPosition_mm(size_t nb_axis, float *, const axis_t *, const feedRate_t); // @advi3++
   void setAxisPosition_mm(const_float_t, const extruder_t, const feedRate_t=0);
   void setAxisSteps_per_mm(const_float_t, const axis_t);
   void setAxisSteps_per_mm(const_float_t, const extruder_t);
