@@ -91,15 +91,31 @@ Page ManualLeveling::do_prepare_page()
     if(!core.ensure_not_printing())
         return Page::None;
     pages.save_forward_page();
-    wait.wait(F("Homing..."));
-    ExtUI::setAllAxisUnhomed();
-    ExtUI::setAllAxisPositionUnknown();
-    core.inject_commands(F("G28 F6000")); // Homing
-#if HAS_LEVELING
-    ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
-#endif
-    background_task.set(Callback{this, &ManualLeveling::leveling_task}, 200);
+
+    if(ExtUI::getActualTemp_celsius(ExtUI::E0) > 50)
+      wait.wait_back_continue(F("Warning: Hotend is hot"),
+                              WaitCallback{this, &ManualLeveling::abort},
+                              WaitCallback{this, &ManualLeveling::start});
+    else
+      start();
+    
     return Page::None;
+}
+
+bool ManualLeveling::abort() {
+  return true;
+}
+
+bool ManualLeveling::start() {
+  wait.wait(F("Homing..."));
+  ExtUI::setAllAxisUnhomed();
+  ExtUI::setAllAxisPositionUnknown();
+  core.inject_commands(F("G28 F6000")); // Homing
+#if HAS_LEVELING
+  ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
+#endif
+  background_task.set(Callback{this, &ManualLeveling::leveling_task}, 200);
+  return false;
 }
 
 //! Leveling Background task.

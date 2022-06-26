@@ -32,6 +32,10 @@ private:
     Page do_prepare_page();
     void do_back_command();
     void do_save_command();
+
+    bool start();
+    bool abort();
+
     void point1_command();
     void point2_command();
     void point3_command();
