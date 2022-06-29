@@ -61,7 +61,13 @@ Page ExtruderTuning::do_prepare_page()
         return Page::None;
     pages.save_forward_page();
     send_data();
+    core.inject_commands("G1 Z4 F1200");
     return Page::ExtruderTuningTemp;
+}
+
+void ExtruderTuning::do_back_command() {
+  core.inject_commands("G1 Z-4 F1200");
+  Parent::do_back_command();
 }
 
 //! Start extruder tuning.

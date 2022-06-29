@@ -31,6 +31,7 @@ struct LoadUnload: Screen<LoadUnload>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void do_back_command();
     void prepare();
     void load_command();
     void unload_command();

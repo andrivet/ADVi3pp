@@ -60,7 +60,13 @@ Page LoadUnload::do_prepare_page()
     if(!core.ensure_not_printing())
         return Page::None;
     send_data();
+    core.inject_commands("G1 Z4 F1200");
     return Page::LoadUnload;
+}
+
+void LoadUnload::do_back_command() {
+  core.inject_commands("G1 Z-4 F1200");
+  Parent::do_back_command();
 }
 
 //! Prepare Load or Unload step #1: set the target temperature, setup the next step and display a wait message
@@ -81,14 +87,14 @@ void LoadUnload::prepare()
 void LoadUnload::load_command()
 {
     prepare();
-    core.inject_commands(F("M701\nM104 S0"));
+    core.inject_commands(F("M701 Z0\nM104 S0"));
 }
 
 //! Start Unload action.
 void LoadUnload::unload_command()
 {
     prepare();
-    core.inject_commands(F("M702\nM104 S0"));
+    core.inject_commands(F("M702 Z0\nM104 S0"));
 }
 
 
