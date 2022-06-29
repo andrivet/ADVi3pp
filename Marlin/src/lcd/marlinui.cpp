@@ -496,13 +496,10 @@ void MarlinUI::init() {
         ui.manual_move.menu_scale = REPRAPWORLD_KEYPAD_MOVE_STEP;
         ui.encoderPosition = dir;
         switch (axis) {
-          case X_AXIS: { void lcd_move_x(); lcd_move_x(); } break;
-          #if HAS_Y_AXIS
-            case Y_AXIS: { void lcd_move_y(); lcd_move_y(); } break;
-          #endif
-          #if HAS_Z_AXIS
-            case Z_AXIS: { void lcd_move_z(); lcd_move_z(); } break;
-          #endif
+          case X_AXIS:
+          TERN_(HAS_Y_AXIS, case Y_AXIS:)
+          TERN_(HAS_Z_AXIS, case Z_AXIS:)
+            lcd_move_axis(axis);
           default: break;
         }
       }
@@ -773,6 +770,7 @@ void MarlinUI::init() {
 
     millis_t ManualMove::start_time = 0;
     float ManualMove::menu_scale = 1;
+    screenFunc_t ManualMove::screen_ptr;
     #if IS_KINEMATIC
       float ManualMove::offset = 0;
       xyze_pos_t ManualMove::all_axes_destination = { 0 };
@@ -782,6 +780,9 @@ void MarlinUI::init() {
       int8_t ManualMove::e_index = 0;
     #endif
     AxisEnum ManualMove::axis = NO_AXIS_ENUM;
+    #if ENABLED(MANUAL_E_MOVES_RELATIVE)
+      float ManualMove::e_origin = 0;
+    #endif
 
     /**
      * If a manual move has been posted and its time has arrived, and if the planner
@@ -798,9 +799,6 @@ void MarlinUI::init() {
      * For kinematic machines:
      *   - Set manual_move.offset to modify one axis and post the move.
      *     This is used to achieve more rapid stepping on kinematic machines.
-     *
-     * Currently used by the _lcd_move_xyz function in menu_motion.cpp
-     * and the ubl_map_move_to_xy function in menu_ubl.cpp.
      */
     void ManualMove::task() {
 
@@ -871,7 +869,7 @@ void MarlinUI::init() {
 
       void MarlinUI::external_encoder() {
         if (external_control && encoderDiff) {
-          bedlevel.encoder_diff += encoderDiff;  // Encoder for UBL G29 mesh editing
+          bedlevel.encoder_diff += encoderDiff; // Encoder for UBL G29 mesh editing
           encoderDiff = 0;                  // Hide encoder events from the screen handler
           refresh(LCDVIEW_REDRAW_NOW);      // ...but keep the refresh.
         }
@@ -1763,7 +1761,7 @@ void MarlinUI::init() {
       if (old_status < 2) {
         #if ENABLED(EXTENSIBLE_UI)
           ExtUI::onMediaRemoved();
-        #elif PIN_EXISTS(SD_DETECT)
+        #elif HAS_SD_DETECT
           LCD_MESSAGE(MSG_MEDIA_REMOVED);
           #if HAS_MARLINUI_MENU
             if (!defer_return_to_status) return_to_status();
