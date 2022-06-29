@@ -69,7 +69,7 @@ Page SensorZHeight::do_prepare_page()
     ExtUI::setZOffset_mm(0); // Before homing otherwise, Marlin is lost
 
     wait.wait(F("Homing..."));
-    core.inject_commands(F("G28 F6000"));  // homing
+    core.inject_commands(F("G28 O F6000"));  // homing
     background_task.set(Callback{this, &SensorZHeight::post_home_task}, 200);
     return Page::None;
 }

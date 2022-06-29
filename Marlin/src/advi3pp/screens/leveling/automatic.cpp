@@ -75,9 +75,9 @@ void AutomaticLeveling::start()
 
     // homing, raise head, leveling, go back to corner, activate compensation
 #ifdef ADVi3PP_PROBE
-    core.inject_commands(F("G28 F6000\nG1 Z4 F1200\nG29 E\nG28 X Y F6000\nM420 S1"));
+    core.inject_commands(F("G28 O F6000\nG1 Z4 F1200\nG29 E\nG28 X Y F6000\nM420 S1"));
 #else
-    core.inject_commands(F("G28 F6000\nG1 Z4 F1200\nG29 S1\nG28 X Y F6000\nM420 S1"));
+    core.inject_commands(F("G28 O F6000\nG1 Z4 F1200\nG29 S1\nG28 X Y F6000\nM420 S1"));
 #endif
 }
 
