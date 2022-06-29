@@ -137,7 +137,7 @@ typedef bool (*statusResetFunc_t)();
   } preheat_t;
 #endif
 
-#if HAS_MARLINUI_MENU || ENABLED(ADVi3PP_UI)
+#if HAS_MARLINUI_MENU
 
   // Manual Movement class
   class ManualMove {
