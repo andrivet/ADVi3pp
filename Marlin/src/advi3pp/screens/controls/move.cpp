@@ -148,7 +148,7 @@ void Move::y_home_command()
 //! Go to home on the Z axis.
 void Move::z_home_command()
 {
-    core.inject_commands(F("G28 Z F6000"));
+    core.inject_commands(F("G28 Z F1200"));
 }
 
 //! Go to home on all axis.
