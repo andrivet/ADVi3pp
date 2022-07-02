@@ -38,6 +38,9 @@ private:
     void send_data();
 
     friend Parent;
+
+private:
+  float previous_z_ = 0;
 };
 
 extern LoadUnload load_unload;

@@ -60,12 +60,14 @@ Page LoadUnload::do_prepare_page()
     if(!core.ensure_not_printing())
         return Page::None;
     send_data();
-    core.inject_commands("G1 Z4 F1200");
+    previous_z_ = ExtUI::getAxisPosition_mm(ExtUI::Z);
+    if(previous_z_ < 10)
+        ExtUI::setAxisPosition_mm(10.0, ExtUI::Z, 20);
     return Page::LoadUnload;
 }
 
 void LoadUnload::do_back_command() {
-  core.inject_commands("G1 Z-4 F1200");
+  ExtUI::setAxisPosition_mm(previous_z_, ExtUI::Z, 20);
   Parent::do_back_command();
 }
 

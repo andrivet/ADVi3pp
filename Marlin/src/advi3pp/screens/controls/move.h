@@ -44,7 +44,8 @@ struct Move: Screen<Move>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
-    void move(const FlashChar* commands, millis_t delay);
+    void move(ExtUI::axis_t axis, float offset, feedRate_t feedrate, millis_t delay);
+    void move(ExtUI::extruder_t extruder, float offset, feedRate_t feedrate, millis_t delay);
 
 private:
     millis_t last_move_time_ = 0;

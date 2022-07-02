@@ -25,11 +25,13 @@
 namespace ADVi3pp {
 
 namespace {
-
-    const millis_t MOVE_XY_DELAY = 150;
-    const millis_t MOVE_Z_DELAY = 50;
-    const millis_t MOVE_E_DELAY = 500;
-
+  const millis_t MOVE_XY_DELAY = 150;
+  const millis_t MOVE_Z_DELAY = 50;
+  const millis_t MOVE_E_DELAY = 500;
+  const feedRate_t FEEDRATE_X = 16;
+  const feedRate_t FEEDRATE_Y = 16;
+  const feedRate_t FEEDRATE_Z = 4;
+  const feedRate_t FEEDRATE_E = 2;
 }
 
 Move move;
@@ -68,61 +70,67 @@ Page Move::do_prepare_page()
 
 //! Move the nozzle. Check that the command is not send too early when multiple move commands are send in a short time
 //! (i.e. when the user keep the button presses)
-//! @params commands Actual commands to move the nozzle.
-void Move::move(const FlashChar* commands, millis_t delay)
-{
-    if(!ELAPSED(millis(), last_move_time_ + delay))
-        return;
-    core.inject_commands(commands);
-    last_move_time_ = millis();
+void Move::move(ExtUI::axis_t axis, float offset, feedRate_t feedrate, millis_t delay) {
+  if(!ELAPSED(millis(), last_move_time_ + delay))
+    return;
+  ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(axis) + offset, axis, feedrate);
 }
+
+//! Move the nozzle. Check that the command is not send too early when multiple move commands are send in a short time
+//! (i.e. when the user keep the button presses)
+void Move::move(ExtUI::extruder_t extruder, float offset, feedRate_t feedrate, millis_t delay) {
+  if(!ELAPSED(millis(), last_move_time_ + delay))
+    return;
+  ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(extruder) + offset, extruder, feedrate);
+}
+
 
 //! Move the nozzle (+X)
 void Move::x_plus_command()
 {
-    move(F("G91\nG1 X5 F1000\nG90"), MOVE_XY_DELAY);
+  move(ExtUI::X, 5, FEEDRATE_X, MOVE_XY_DELAY);
 }
 
 //! Move the nozzle (-X)
 void Move::x_minus_command()
 {
-    move(F("G91\nG1 X-5 F1000\nG90"), MOVE_XY_DELAY);
+  move(ExtUI::X, -5, FEEDRATE_X, MOVE_XY_DELAY);
 }
 
 //! Move the nozzle (+Y)
 void Move::y_plus_command()
 {
-    move(F("G91\nG1 Y5 F1000\nG90"), MOVE_XY_DELAY);
+  move(ExtUI::Y, 5, FEEDRATE_Y, MOVE_XY_DELAY);
 }
 
 //! Move the nozzle (-Y)
 void Move::y_minus_command()
 {
-    move(F("G91\nG1 Y-5 F1000\nG90"), MOVE_XY_DELAY);
+  move(ExtUI::X, -5, FEEDRATE_Y, MOVE_XY_DELAY);
 }
 
 //! Move the nozzle (+Z)
 void Move::z_plus_command()
 {
-    move(F("G91\nG1 Z0.5 F240\nG90"), MOVE_Z_DELAY);
+  move(ExtUI::Z, 0.5, FEEDRATE_Z, MOVE_Z_DELAY);
 }
 
 //! Move the nozzle (-Z)
 void Move::z_minus_command()
 {
-    move(F("G91\nG1 Z-0.5 F240\nG90"), MOVE_Z_DELAY);
+  move(ExtUI::Z, -0.5, FEEDRATE_Z, MOVE_Z_DELAY);
 }
 
 //! Extrude some filament.
 void Move::e_plus_command()
 {
-    move(F("G91\nG1 E1 F120\nG90"), MOVE_E_DELAY);
+  move(ExtUI::E0, 1, FEEDRATE_E, MOVE_E_DELAY);
 }
 
 //! Unextrude some filament.
 void Move::e_minus_command()
 {
-    move(F("G91\nG1 E-1 F120\nG90"), MOVE_E_DELAY);
+  move(ExtUI::E0, -1, FEEDRATE_E, MOVE_E_DELAY);
 }
 
 //! Disable the motors.
