@@ -89,14 +89,14 @@ void LoadUnload::prepare()
 void LoadUnload::load_command()
 {
     prepare();
-    core.inject_commands(F("M701 Z0\nM104 S0"));
+    core.inject_commands(F("M701 Z0\nM104 S0")); // Load filament, set hotend temp
 }
 
 //! Start Unload action.
 void LoadUnload::unload_command()
 {
     prepare();
-    core.inject_commands(F("M702 Z0\nM104 S0"));
+    core.inject_commands(F("M702 Z0\nM104 S0")); // Unload filament, set hotend temp
 }
 
 
