@@ -25,32 +25,53 @@
 namespace ADVi3pp {
 
 //! Move Page
-struct Move: Screen<Move>
-{
-    void x_plus_command();
-    void x_minus_command();
-    void x_home_command();
-    void y_plus_command();
-    void y_minus_command();
-    void y_home_command();
-    void z_plus_command();
-    void z_minus_command();
-    void z_home_command();
-    void e_plus_command();
-    void e_minus_command();
-    void all_home_command();
-    void disable_motors_command();
+struct Move: Screen<Move> {
+  friend Parent;
+
+  void x_plus_command();
+  void x_minus_command();
+  void x_home_command();
+  void y_plus_command();
+  void y_minus_command();
+  void y_home_command();
+  void z_plus_command();
+  void z_minus_command();
+  void z_home_command();
+  void e_plus_command();
+  void e_minus_command();
+  void all_home_command();
+  void disable_motors_command();
 
 private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void move(ExtUI::axis_t axis, float offset, feedRate_t feedrate, millis_t delay);
-    void move(ExtUI::extruder_t extruder, float offset, feedRate_t feedrate, millis_t delay);
+  enum class Direction: uint8_t {
+    None,
+    X_PLUS,
+    Y_PLUS,
+    Z_PLUS,
+    E_PLUS,
+    MINUS = 0x80,
+    X_MINUS = MINUS + X_PLUS,
+    Y_MINUS = MINUS + Y_PLUS,
+    Z_MINUS = MINUS + Z_PLUS,
+    E_MINUS = MINUS + E_PLUS
+  };
+
+  bool do_dispatch(KeyValue key_value);
+  Page do_prepare_page();
+  void move(Move::Direction movement);
+  void reset_move();
+  float getPosition() const;
+  void setPosition() const;
+  float get_min() const;
+  float get_max() const;
+  float get_offset() const;
+  feedRate_t get_feedrate() const;
+  void task();
 
 private:
-    millis_t last_move_time_ = 0;
-
-    friend Parent;
+  Direction direction_ = Direction::None;
+  millis_t last_click_time_ = 0, target_move_time_ = 0;
+  float target_position_ = 0;
 };
 
 extern Move move;
