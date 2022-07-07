@@ -72,7 +72,7 @@
 
 namespace ADVi3pp {
 
-static const unsigned int FROM_LCD_DELAY = 100; // ms
+static const unsigned int FROM_LCD_DELAY = 0; // ms
 static const unsigned int TO_LCD_DELAY = 250; // ms
 
 Core core;
@@ -140,6 +140,7 @@ void Core::to_lcd() {
     update_progress();
     send_lcd_data();
     graphs.update();
+    send_lcd_touch_request();
 }
 
 void Core::killed(float temp, const FlashChar* error, const FlashChar* component)
@@ -154,14 +155,14 @@ void Core::killed(float temp, const FlashChar* error, const FlashChar* component
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void Core::send_gplv3_7b_notice()
 {
-    SERIAL_ECHO_START();
-    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2022 Sebastien Andrivet");
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2022 Sebastien Andrivet");
 }
 
 void Core::send_sponsors()
 {
-    SERIAL_ECHO_START();
-    SERIAL_ECHOLNPGM("Premium Sponsors: Alexander Cherenegar, Mauro Gil");
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM("Premium Sponsors: Alexander Cherenegar, Mauro Gil");
 }
 
 //! Update the progress bar if the printer is printing for the SD card
@@ -199,11 +200,8 @@ void Core::from_lcd()
         return;
 
     ReadAction frame{};
-    if(!frame.receive()) {
-		NoFrameLogging no_log{};
-        dimming.send();
+    if(!frame.receive())
         return;
-    }
 
     buzzer.buzz_on_press();
     ui.refresh_screen_timeout();
@@ -286,6 +284,11 @@ void Core::from_lcd()
 
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
+}
+
+void Core::send_lcd_touch_request() {
+  NoFrameLogging no_log{};
+  dimming.send();
 }
 
 //! Update the status of the printer on the LCD.

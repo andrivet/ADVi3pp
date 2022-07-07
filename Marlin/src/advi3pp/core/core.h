@@ -67,6 +67,7 @@ private:
     void from_lcd();
     void to_lcd();
     void send_lcd_data();
+    void send_lcd_touch_request();
 
 private:
     Once once_{};
