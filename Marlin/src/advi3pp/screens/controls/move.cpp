@@ -30,8 +30,8 @@ namespace {
   const float      OFFSET_Y = 5;
   const float      OFFSET_Z = 0.5;
   const float      OFFSET_E = 1;
-  const feedRate_t FEEDRATE_X = 16;
-  const feedRate_t FEEDRATE_Y = 16;
+  const feedRate_t FEEDRATE_X = 14;
+  const feedRate_t FEEDRATE_Y = 14;
   const feedRate_t FEEDRATE_Z = 4;
   const feedRate_t FEEDRATE_E = 2;
 }
@@ -94,7 +94,7 @@ float Move::getPosition() const {
 }
 
 void Move::setPosition() const {
-  Log::log() << "setPosition" << target_position_ << Log::endl();
+  Log::log() << "setPosition" << target_position_ << ", " << millis() << Log::endl();
   auto feedrate = get_feedrate();
   switch(direction_ & ~Direction::MINUS) {
     case Direction::X_PLUS: ExtUI::setAxisPosition_mm(target_position_, ExtUI::X, feedrate); break;
@@ -139,16 +139,11 @@ Page Move::do_prepare_page()
     return Page::Move;
 }
 
-millis_t move_delay(float offset, feedRate_t feedrate) {
-  millis_t delay = 1000 * abs(offset) / feedrate;
-  Log::log() << "Time: " << millis() << Log::endl();
-  Log::log() << "Delay: " << delay << Log::endl();
-  return delay;
+constexpr millis_t move_delay(float offset, feedRate_t feedrate) {
+  return 1000 * abs(offset) / feedrate;
 }
 
 void Move::move(Move::Direction movement) {
-  Log::log() << "move " << millis() << Log::endl();
-
   // First move?
   if(direction_ != movement) {
     direction_ = movement;
@@ -170,7 +165,6 @@ void Move::move(Move::Direction movement) {
 }
 
 void Move::reset_move() {
-  Log::log() << "reset_move" << Log::endl();
   direction_ = Direction::None;
 }
 
@@ -186,10 +180,8 @@ void Move::task() {
   }
 
   // Not soon end of move?
-  if(!ELAPSED(millis(), target_move_time_ - 5))
+  if(!ELAPSED(millis(), target_move_time_ - 20))
     return;
-
-  Log::log() << "in task, " << millis() << target_move_time_ << ELAPSED(millis(), target_move_time_) << Log::endl();
 
   float min = get_min();
   float max = get_max();
