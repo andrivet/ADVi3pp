@@ -28,6 +28,7 @@
 #include "task.h"
 #include "dgus.h"
 #include "buzzer.h"
+#include "reentrant.h"
 #include "../screens/core/no_sensor.h"
 #include "../screens/controls/controls.h"
 #include "../screens/core/wait.h"
@@ -129,6 +130,10 @@ bool Core::init()
 
 void Core::idle()
 {
+    static Reentrant reentrant;
+    ReentrantScope scope{reentrant};
+    if(scope.reentrant()) return;
+
     init();
 
     from_lcd_task.execute();
@@ -171,31 +176,9 @@ void Core::update_progress()
     // TODO Not sure it is necessary
 }
 
-struct Reentrant
-{
-    static bool reentrant_;
-    Reentrant() = default;
-    ~Reentrant() { reentrant_ = false; }
-    bool reentrant()
-    {
-        if(reentrant_)
-        {
-            Log::log() << F("Reentrancy detected") << Log::endl();
-            return true;
-        }
-        reentrant_ = true;
-        return false;
-    }
-};
-
-bool Reentrant::reentrant_ = false;
-
 //! Read a frame from the LCD and act accordingly.
 void Core::from_lcd()
 {
-    Reentrant reentrant;
-    if(reentrant.reentrant()) return;
-
     if(dimming.receive())
         return;
 
