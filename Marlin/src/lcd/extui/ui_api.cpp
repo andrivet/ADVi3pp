@@ -1355,6 +1355,10 @@ bool bltouchStow() {
 }
 #endif
 
+void stopMove() {
+  quickstop_stepper();;
+}
+
 #if ENABLED(SKEW_CORRECTION)
 #if ENABLED(SKEW_CORRECTION_FOR_Z)
 void setSkewFactors(float xy, float xz, float yz) {

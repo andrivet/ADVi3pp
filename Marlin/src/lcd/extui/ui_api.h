@@ -501,6 +501,7 @@ namespace ExtUI {
   void kill(PGM_P const lcd_error=nullptr, PGM_P const lcd_component=nullptr, const bool steppers_off=false);
   void killRightNow(const bool steppers_off=false);
   void watchdogReset();
+  void stopMove();
 };
 
 /**
