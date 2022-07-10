@@ -28,6 +28,19 @@ namespace ADVi3pp {
 struct Move: Screen<Move> {
   friend Parent;
 
+  enum class Direction: uint8_t {
+    None,
+    X_PLUS,
+    Y_PLUS,
+    Z_PLUS,
+    E_PLUS,
+    MINUS   = 0x80,
+    X_MINUS = MINUS + X_PLUS,
+    Y_MINUS = MINUS + Y_PLUS,
+    Z_MINUS = MINUS + Z_PLUS,
+    E_MINUS = MINUS + E_PLUS
+  };
+
   void x_plus_command();
   void x_minus_command();
   void x_home_command();
@@ -43,35 +56,19 @@ struct Move: Screen<Move> {
   void disable_motors_command();
 
 private:
-  enum class Direction: uint8_t {
-    None,
-    X_PLUS,
-    Y_PLUS,
-    Z_PLUS,
-    E_PLUS,
-    MINUS = 0x80,
-    X_MINUS = MINUS + X_PLUS,
-    Y_MINUS = MINUS + Y_PLUS,
-    Z_MINUS = MINUS + Z_PLUS,
-    E_MINUS = MINUS + E_PLUS
-  };
-
   bool do_dispatch(KeyValue key_value);
   Page do_prepare_page();
-  void move(Move::Direction movement);
-  void reset_move();
-  float getPosition() const;
-  void setPosition() const;
-  float get_min() const;
-  float get_max() const;
-  float get_offset() const;
+  float get_target() const;
   feedRate_t get_feedrate() const;
+  float get_position() const;
+  void set_position() const;
+  void move(Direction direction);
+  void stop_move();
   void task();
 
 private:
   Direction direction_ = Direction::None;
-  millis_t last_click_time_ = 0, target_move_time_ = 0;
-  float target_position_ = 0;
+  millis_t last_click_time_ = 0;
 };
 
 extern Move move;

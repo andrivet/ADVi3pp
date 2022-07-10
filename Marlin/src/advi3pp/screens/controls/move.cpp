@@ -25,14 +25,10 @@
 namespace ADVi3pp {
 
 namespace {
-  const millis_t   CLICK_DELAY = 200;
-  const float      OFFSET_X = 5;
-  const float      OFFSET_Y = 5;
-  const float      OFFSET_Z = 0.5;
-  const float      OFFSET_E = 1;
-  const feedRate_t FEEDRATE_X = 14;
-  const feedRate_t FEEDRATE_Y = 14;
-  const feedRate_t FEEDRATE_Z = 4;
+  const millis_t   CLICK_DELAY = 250;
+  const feedRate_t FEEDRATE_X = 20;
+  const feedRate_t FEEDRATE_Y = 20;
+  const feedRate_t FEEDRATE_Z = 10;
   const feedRate_t FEEDRATE_E = 2;
 }
 
@@ -42,67 +38,57 @@ ENABLE_BITMASK_OPERATOR(Move::Direction);
 
 // Do not use a struct table because it will take RAM space. So use fonctions instead.
 
-float Move::get_min() const {
-  switch(direction_ & ~Direction::MINUS) {
-    case Direction::X_PLUS: return X_MIN_BED;
-    case Direction::Y_PLUS: return Y_MIN_BED;
-    case Direction::Z_PLUS: return Z_MIN_POS;
-    case Direction::E_PLUS: return -EXTRUDE_MAXLENGTH;
-    default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); return 0;
-  }
-}
-
-float Move::get_max() const {
-  switch(direction_ & ~Direction::MINUS) {
-    case Direction::X_PLUS: return X_MAX_BED;
-    case Direction::Y_PLUS: return Y_MAX_BED;
+float Move::get_target() const {
+  switch(direction_) {
+    case Direction::X_PLUS: return X_MAX_POS;
+    case Direction::Y_PLUS: return Y_MAX_POS;
     case Direction::Z_PLUS: return Z_MAX_POS;
     case Direction::E_PLUS: return EXTRUDE_MAXLENGTH;
-    default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); return 0;
-  }
-}
-
-float Move::get_offset() const {
-  bool minus = test_one_bit(direction_, Direction::MINUS);
-  switch(direction_ & ~Direction::MINUS) {
-    case Direction::X_PLUS: return minus ? -OFFSET_X : OFFSET_X;
-    case Direction::Y_PLUS: return minus ? -OFFSET_Y : OFFSET_Y;
-    case Direction::Z_PLUS: return minus ? -OFFSET_Z : OFFSET_Z;
-    case Direction::E_PLUS: return minus ? -OFFSET_E : OFFSET_E;
+    case Direction::X_MINUS: return X_MIN_POS;
+    case Direction::Y_MINUS: return Y_MIN_POS;
+    case Direction::Z_MINUS: return Z_MIN_POS;
+    case Direction::E_MINUS: return -EXTRUDE_MAXLENGTH;
     default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); return 0;
   }
 }
 
 feedRate_t Move::get_feedrate() const {
-  switch(direction_ & ~Direction::MINUS) {
+  switch(get_cleared_bits(direction_, Direction::MINUS)) {
     case Direction::X_PLUS: return FEEDRATE_X;
     case Direction::Y_PLUS: return FEEDRATE_Y;
     case Direction::Z_PLUS: return FEEDRATE_Z;
     case Direction::E_PLUS: return FEEDRATE_E;
-    default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); return 0;
+    default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); break;
   }
+  return FEEDRATE_X;
 }
 
-float Move::getPosition() const {
-  switch(direction_ & ~Direction::MINUS) {
+float Move::get_position() const {
+  switch(get_cleared_bits(direction_, Direction::MINUS)) {
     case Direction::X_PLUS: return ExtUI::getAxisPosition_mm(ExtUI::X);
     case Direction::Y_PLUS: return ExtUI::getAxisPosition_mm(ExtUI::Y);
     case Direction::Z_PLUS: return ExtUI::getAxisPosition_mm(ExtUI::Z);
     case Direction::E_PLUS: return ExtUI::getAxisPosition_mm(ExtUI::E0);
-    default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); return 0;
-  }
-}
-
-void Move::setPosition() const {
-  Log::log() << "setPosition" << target_position_ << ", " << millis() << Log::endl();
-  auto feedrate = get_feedrate();
-  switch(direction_ & ~Direction::MINUS) {
-    case Direction::X_PLUS: ExtUI::setAxisPosition_mm(target_position_, ExtUI::X, feedrate); break;
-    case Direction::Y_PLUS: ExtUI::setAxisPosition_mm(target_position_, ExtUI::Y, feedrate); break;
-    case Direction::Z_PLUS: ExtUI::setAxisPosition_mm(target_position_, ExtUI::Z, feedrate); break;
-    case Direction::E_PLUS: ExtUI::setAxisPosition_mm(target_position_, ExtUI::E0, feedrate); break;
     default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); break;
   }
+  return 0;
+}
+
+void Move::set_position() const {
+  Log::log() << "enter set_position" << Log::endl();
+  float new_position = get_target();
+  auto current_position = get_position();
+  if(current_position == new_position)
+    return;
+  auto feedrate = get_feedrate();
+  switch(get_cleared_bits(direction_,Direction::MINUS)) {
+    case Direction::X_PLUS: ExtUI::setAxisPosition_mm(new_position, ExtUI::X, feedrate); break;
+    case Direction::Y_PLUS: ExtUI::setAxisPosition_mm(new_position, ExtUI::Y, feedrate); break;
+    case Direction::Z_PLUS: ExtUI::setAxisPosition_mm(new_position, ExtUI::Z, feedrate); break;
+    case Direction::E_PLUS: ExtUI::setAxisPosition_mm(new_position, ExtUI::E0, feedrate); break;
+    default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); break;
+  }
+  Log::log() << "leave set_position" << Log::endl();
 }
 
 
@@ -135,65 +121,36 @@ Page Move::do_prepare_page()
         return Page::None;
     ExtUI::finishAndDisableHeaters(); // To circumvent homing problems
     direction_ = Direction::None;
-    background_task.set(Callback{this, &Move::task}, 50);
     return Page::Move;
 }
 
-constexpr millis_t move_delay(float offset, feedRate_t feedrate) {
-  return 1000 * abs(offset) / feedrate;
-}
+void Move::move(Direction direction) {
+  Log::log() << "move" << static_cast<uint8_t>(direction) << static_cast<uint8_t>(direction_) << Log::endl();
 
-void Move::move(Move::Direction movement) {
   // First move?
-  if(direction_ != movement) {
-    direction_ = movement;
-
-    float min = get_min();
-    float max = get_max();
-    float offset = get_offset();
-    feedRate_t feedrate = get_feedrate();
-
-    target_position_ = getPosition() + offset;
-    target_position_ = (target_position_ < min) ? min : (target_position_ > max) ? max : target_position_;
-
-    setPosition();
-
-    target_move_time_ = millis() + move_delay(offset, feedrate);
+  if(direction_ != direction) {
+    direction_ = direction;
+    Log::log() << "background_task.set in move" << Log::endl();
+    background_task.set(Callback{this, &Move::task}, 100);
+    set_position();
   }
 
   last_click_time_ = millis();
 }
 
-void Move::reset_move() {
+void Move::stop_move() {
+  Log::log() << "stop_move" << Log::endl();
   direction_ = Direction::None;
+  ExtUI::stopMove(); // Warning: will call idle() and thus is reentrant
 }
 
 void Move::task() {
-  // No move to do?
-  if(direction_ == Direction::None)
-    return;
-
   // No click for too long time?
   if(ELAPSED(millis(), last_click_time_ + CLICK_DELAY)) {
-    reset_move();
-    return;
+    Log::log() << "background_task.clear #2" << Log::endl();
+    background_task.clear();
+    stop_move();
   }
-
-  // Not soon end of move?
-  if(!ELAPSED(millis(), target_move_time_ - 20))
-    return;
-
-  float min = get_min();
-  float max = get_max();
-  float offset = get_offset();
-  feedRate_t feedrate = get_feedrate();
-
-  target_position_ += offset;
-  target_position_ = (target_position_ < min) ? min : (target_position_ > max) ? max : target_position_;
-
-  setPosition();
-
-  target_move_time_ += move_delay(offset, feedrate);
 }
 
 //! Move the nozzle (+X)
@@ -238,7 +195,7 @@ void Move::e_minus_command() {
 
 //! Disable the motors.
 void Move::disable_motors_command() {
-  reset_move();
+  stop_move();
   core.inject_commands(F("M84")); // Disable steppers
   ExtUI::setAllAxisUnhomed();
   ExtUI::setAllAxisPositionUnknown();
@@ -246,25 +203,25 @@ void Move::disable_motors_command() {
 
 //! Go to home on the X axis.
 void Move::x_home_command() {
-  reset_move();
+  stop_move();
   core.inject_commands(F("G28 X F6000"));
 }
 
 //! Go to home on the Y axis.
 void Move::y_home_command() {
-  reset_move();
+  stop_move();
   core.inject_commands(F("G28 Y F6000"));
 }
 
 //! Go to home on the Z axis.
 void Move::z_home_command() {
-  reset_move();
+  stop_move();
   core.inject_commands(F("G28 Z F1200"));
 }
 
 //! Go to home on all axis.
 void Move::all_home_command() {
-  reset_move();
+  stop_move();
   core.inject_commands(F("G28 F6000"));
 }
 
