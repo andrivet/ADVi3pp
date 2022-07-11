@@ -60,9 +60,7 @@ Page LoadUnload::do_prepare_page()
     if(!core.ensure_not_printing())
         return Page::None;
     send_data();
-    previous_z_ = ExtUI::getAxisPosition_mm(ExtUI::Z);
-    if(previous_z_ < 10)
-        ExtUI::setAxisPosition_mm(10.0, ExtUI::Z, 20);
+    previous_z_ = Core::ensure_z_enough_room();;
     return Page::LoadUnload;
 }
 

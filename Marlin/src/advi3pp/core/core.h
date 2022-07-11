@@ -58,6 +58,7 @@ struct Core
     template<size_t L> ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version);
 
     static PinState get_pin_state(uint8_t pin);
+    static float ensure_z_enough_room();
 
 private:
     bool init();

@@ -73,8 +73,9 @@
 
 namespace ADVi3pp {
 
-static const unsigned int FROM_LCD_DELAY = 0; // ms
-static const unsigned int TO_LCD_DELAY = 250; // ms
+static constexpr unsigned int FROM_LCD_DELAY = 0; // ms
+static constexpr unsigned int TO_LCD_DELAY = 250; // ms
+static constexpr float Z_ROOM = 20; // mm
 
 Core core;
 
@@ -359,5 +360,11 @@ Core::PinState Core::get_pin_state(uint8_t pin)
     return (*portInputRegister(port) & mask) ? PinState::On : PinState::Off;
 }
 
+float Core::ensure_z_enough_room() {
+  auto previous_z = ExtUI::getAxisPosition_mm(ExtUI::Z);
+  if(previous_z < 10)
+    ExtUI::setAxisPosition_mm(Z_ROOM, ExtUI::Z, 20);
+  return previous_z;
+}
 
 }

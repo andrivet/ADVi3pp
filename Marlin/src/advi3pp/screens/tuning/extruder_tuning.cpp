@@ -66,9 +66,7 @@ Page ExtruderTuning::do_prepare_page()
         return Page::None;
     pages.save_forward_page();
     send_data();
-    previous_z_ = ExtUI::getAxisPosition_mm(ExtUI::Z);
-    if(previous_z_ < 10)
-      ExtUI::setAxisPosition_mm(10.0, ExtUI::Z, 20);
+    previous_z_ = Core::ensure_z_enough_room();
     return Page::ExtruderTuningTemp;
 }
 
