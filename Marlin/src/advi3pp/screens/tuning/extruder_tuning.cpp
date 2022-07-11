@@ -27,6 +27,11 @@
 
 namespace ADVi3pp {
 
+namespace {
+  constexpr uint16_t FILAMENT_TO_EXTRUDE = 100; //!< Filament to extrude (10 cm)
+  constexpr uint16_t REMAINING_FILAMENT = 20; //!< Amount of filament supposes tp remain after extruding (2 cm)
+}
+
 ExtruderTuning extruder_tuning;
 
 //! Handle Extruder Tuning command
@@ -105,18 +110,31 @@ bool ExtruderTuning::cancel_heating() {
 }
 
 void ExtruderTuning::extrude() {
-  auto before = ExtUI::getAxisPosition_mm(ExtUI::E0);
-  ExtUI::extrudeFilament(tuning_extruder_filament);
-  extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0) - before;
+  extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0);
+  wait.wait_back(F("Extrude filament..."), WaitCallback{this, &ExtruderTuning::cancel_extrude});
+  background_task.set(Callback{this, &ExtruderTuning::extruding}, 100);
+  ExtUI::setAxisPosition_mm(extruded_ + FILAMENT_TO_EXTRUDE, ExtUI::E0);
+}
+
+void ExtruderTuning::extruding() {
+  if(ExtUI::isMoving())
+    return;
+  background_task.clear();
 
   ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
 
+  extruded_ -= ExtUI::getAxisPosition_mm(ExtUI::E0);
   // Always set to default 20mm
   WriteRamRequest{Variable::Value0}.write_word(200);
 
   pages.show(Page::ExtruderTuningMeasure);
 }
 
+bool ExtruderTuning::cancel_extrude() {
+  background_task.clear();
+  ExtUI::stopMove();
+  return true;
+}
 
 //! Compute the extruder (E axis) new value and show the steps settings.
 void ExtruderTuning::settings_command()
@@ -129,7 +147,7 @@ void ExtruderTuning::settings_command()
     }
 
     uint16_t e = frame.read_word();
-    auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + tuning_extruder_delta - e / 10.0);
+    auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + REMAINING_FILAMENT - e / 10.0);
 
     ExtUI::setAxisSteps_per_mm(new_value, ExtUI::E0);
     steps_settings.show();
