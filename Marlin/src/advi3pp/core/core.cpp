@@ -79,6 +79,7 @@ static const unsigned int TO_LCD_DELAY = 250; // ms
 Core core;
 
 Task background_task;
+Task reentrant_task; // Called event in case of reentrancy
 Task from_lcd_task;
 Task to_lcd_task;
 
@@ -132,13 +133,18 @@ void Core::idle()
 {
     static Reentrant reentrant;
     ReentrantScope scope{reentrant};
-    if(scope.reentrant()) return;
 
-    init();
+    if(!scope.reentrant()) {
+      init();
+      from_lcd_task.execute();
+    }
 
-    from_lcd_task.execute();
     to_lcd_task.execute();
-    background_task.execute();
+
+    if(!scope.reentrant())
+      background_task.execute();
+
+    reentrant_task.execute();
 }
 
 void Core::to_lcd() {

@@ -26,17 +26,18 @@ namespace ADVi3pp {
 
 Task task;
 
-Task::Task(const Callback& callback, unsigned int delay)
-: delay_{delay}, callback_{callback} {
+Task::Task(const Callback& callback, unsigned int delay, Activation activation)
+: delay_{delay}, activation_{activation}, callback_{callback} {
     set_next_execute_time();
 }
 
 //! Set the next task and its delay
 //! @param task     The next background task
 //! @param delta    Duration to be added to the current time to execute the background task
-void Task::set(const Callback& callback, unsigned int delay)
+void Task::set(const Callback& callback, unsigned int delay, Activation activation)
 {
     delay_ = delay;
+    activation_ = activation;
     callback_ = callback;
     set_next_execute_time();
 }
@@ -56,8 +57,14 @@ bool Task::execute(bool force_execute)
     if(!force_execute && !ELAPSED(millis(), next_execute_time_))
         return false;
 
-    callback_();
-    set_next_execute_time();
+    // Clear before calling to avoid reentrancy issues
+    Callback callback{callback_};
+    if(activation_ == Activation::ONE_TIME)
+      callback_ = nullptr;
+    else
+      set_next_execute_time();
+
+    callback();
     return true;
 }
 

@@ -131,11 +131,11 @@ void Move::move(Direction direction) {
   if(direction_ != direction) {
     direction_ = direction;
     Log::log() << "background_task.set in move" << Log::endl();
-    background_task.set(Callback{this, &Move::task}, 100);
+    background_task.set(Callback{this, &Move::task}, CLICK_DELAY, Task::Activation::ONE_TIME);
     set_position();
   }
-
-  last_click_time_ = millis();
+  else
+    background_task.set(Callback{this, &Move::task}, CLICK_DELAY, Task::Activation::ONE_TIME);
 }
 
 void Move::stop_move() {
@@ -145,12 +145,8 @@ void Move::stop_move() {
 }
 
 void Move::task() {
-  // No click for too long time?
-  if(ELAPSED(millis(), last_click_time_ + CLICK_DELAY)) {
-    Log::log() << "background_task.clear #2" << Log::endl();
-    background_task.clear();
-    stop_move();
-  }
+  Log::log() << "task" << Log::endl();
+  stop_move();
 }
 
 //! Move the nozzle (+X)

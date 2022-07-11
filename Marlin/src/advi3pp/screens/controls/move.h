@@ -68,7 +68,6 @@ private:
 
 private:
   Direction direction_ = Direction::None;
-  millis_t last_click_time_ = 0;
 };
 
 extern Move move;
