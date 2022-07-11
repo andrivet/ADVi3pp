@@ -1527,7 +1527,7 @@
                                   // Be sure to have this much clearance over your Z_MAX_POS to prevent grinding.
 
 // @advi3++
-#define Z_AFTER_HOMING  10      // (mm) Height to move to after homing Z
+#define Z_AFTER_HOMING  4      // (mm) Height to move to after homing Z
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
