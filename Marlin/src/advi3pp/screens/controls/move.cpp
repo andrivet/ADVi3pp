@@ -75,7 +75,6 @@ float Move::get_position() const {
 }
 
 void Move::set_position() const {
-  Log::log() << "enter set_position" << Log::endl();
   float new_position = get_target();
   auto current_position = get_position();
   if(current_position == new_position)
@@ -88,7 +87,6 @@ void Move::set_position() const {
     case Direction::E_PLUS: ExtUI::setAxisPosition_mm(new_position, ExtUI::E0, feedrate); break;
     default: Log::log() << "Invalid Direction: " << static_cast<uint8_t>(direction_) << Log::endl(); break;
   }
-  Log::log() << "leave set_position" << Log::endl();
 }
 
 
@@ -125,12 +123,9 @@ Page Move::do_prepare_page()
 }
 
 void Move::move(Direction direction) {
-  Log::log() << "move" << static_cast<uint8_t>(direction) << static_cast<uint8_t>(direction_) << Log::endl();
-
   // First move?
   if(direction_ != direction) {
     direction_ = direction;
-    Log::log() << "background_task.set in move" << Log::endl();
     background_task.set(Callback{this, &Move::task}, CLICK_DELAY, Task::Activation::ONE_TIME);
     set_position();
   }
@@ -139,13 +134,11 @@ void Move::move(Direction direction) {
 }
 
 void Move::stop_move() {
-  Log::log() << "stop_move" << Log::endl();
   direction_ = Direction::None;
   ExtUI::stopMove(); // Warning: will call idle() and thus is reentrant
 }
 
 void Move::task() {
-  Log::log() << "task" << Log::endl();
   stop_move();
 }
 
