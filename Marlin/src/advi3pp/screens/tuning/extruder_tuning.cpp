@@ -97,7 +97,7 @@ void ExtruderTuning::start_command() {
 }
 
 void ExtruderTuning::heating() {
-  if(ExtUI::getActualTemp_celsius(ExtUI::E0) < ExtUI::getTargetTemp_celsius(ExtUI::E0))
+  if(ExtUI::getActualTemp_celsius(ExtUI::E0) < ExtUI::getTargetTemp_celsius(ExtUI::E0) - 2)
     return;
   background_task.clear();
   extrude();
@@ -120,7 +120,6 @@ void ExtruderTuning::extruding() {
   if(ExtUI::isMoving())
     return;
   background_task.clear();
-
   ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
 
   extruded_ -= ExtUI::getAxisPosition_mm(ExtUI::E0);
@@ -132,6 +131,7 @@ void ExtruderTuning::extruding() {
 
 bool ExtruderTuning::cancel_extrude() {
   background_task.clear();
+  ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
   ExtUI::stopMove();
   return true;
 }
