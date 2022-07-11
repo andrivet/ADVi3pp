@@ -27,11 +27,9 @@
 namespace ADVi3pp {
 
 namespace {
-
     constexpr xyz_feedrate_t homing_feedrate_mm_m = HOMING_FEEDRATE_MM_M;
     constexpr float FEEDRATE_XY = MMM_TO_MMS(homing_feedrate_mm_m.x);
     constexpr float FEEDRATE_Z = MMM_TO_MMS(homing_feedrate_mm_m.z);
-
 }
 
 ManualLeveling manual_leveling;
