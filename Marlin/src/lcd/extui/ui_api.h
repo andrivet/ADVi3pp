@@ -493,7 +493,6 @@ namespace ExtUI {
   #endif
 
   // @advi3++
-  bool isPrintingPaused();
   void setAllAxisUnhomed();
   void setAllAxisPositionUnknown();
   void finishAndDisableHeaters();
@@ -502,6 +501,7 @@ namespace ExtUI {
   void killRightNow(const bool steppers_off=false);
   void watchdogReset();
   void stopMove();
+  void setAbsoluteZAxisPosition_mm(const_float_t position);
 };
 
 /**

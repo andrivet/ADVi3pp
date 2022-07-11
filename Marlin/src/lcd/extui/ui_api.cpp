@@ -1359,6 +1359,11 @@ void stopMove() {
   quickstop_stepper();;
 }
 
+void setAbsoluteZAxisPosition_mm(const_float_t position) {
+  current_position.z = position;
+  sync_plan_position();
+}
+
 #if ENABLED(SKEW_CORRECTION)
 #if ENABLED(SKEW_CORRECTION_FOR_Z)
 void setSkewFactors(float xy, float xz, float yz) {
