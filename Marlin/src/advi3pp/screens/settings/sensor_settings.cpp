@@ -133,19 +133,15 @@ void SensorSettings::next_command()
 
 void SensorSettings::send_values() const
 {
-    int16_t z_offset = LROUND(ExtUI::getZOffset_mm() * 100.0f);
-
     if(index_ == 0)
         WriteRamRequest{Variable::Value0}.write_words(
             ExtUI::getProbeOffset_mm(ExtUI::X) * 100.0f,
-            ExtUI::getProbeOffset_mm(ExtUI::Y) * 100.0f,
-            z_offset
+            ExtUI::getProbeOffset_mm(ExtUI::Y) * 100.0f
         );
     else
         WriteRamRequest{Variable::Value0}.write_words(
             SENSOR_POSITION[index_ - 1].x,
-            SENSOR_POSITION[index_ - 1].y,
-            z_offset
+            SENSOR_POSITION[index_ - 1].y
         );
 }
 
@@ -159,7 +155,7 @@ void SensorSettings::send_name() const
 void SensorSettings::get_values()
 {
     ReadRam frame{Variable::Value0};
-    if(!frame.send_receive(3))
+    if(!frame.send_receive(2))
     {
         Log::error() << F("Receiving Frame (Sensor Settings)") << Log::endl();
         return;
@@ -167,11 +163,9 @@ void SensorSettings::get_values()
 
     int16_t x = frame.read_signed_word();
     int16_t y = frame.read_signed_word();
-    int16_t z = frame.read_signed_word();
 
     ExtUI::setProbeOffset_mm(x / 100.0f, ExtUI::X);
     ExtUI::setProbeOffset_mm(y / 100.0f, ExtUI::Y);
-    ExtUI::setZOffset_mm(z / 100.0f);
 }
 
 #else
