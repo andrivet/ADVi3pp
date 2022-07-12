@@ -9,6 +9,8 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 masters="$( cd "${root}/Masters" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
+mkdir -p "${masters}/Boot/"
+
 for i in {0..20}
 do
   # shellcheck disable=SC2079
