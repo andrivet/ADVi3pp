@@ -29,6 +29,7 @@ namespace {
     constexpr xyz_feedrate_t homing_feedrate_mm_m = HOMING_FEEDRATE_MM_M;
     constexpr float FEEDRATE_XY = MMM_TO_MMS(homing_feedrate_mm_m.x);
     constexpr float FEEDRATE_Z = MMM_TO_MMS(homing_feedrate_mm_m.z);
+    constexpr unsigned MINIMAL_CLICK_DELAY = 200; // ms
 }
 
 SensorZHeight sensor_z_height;
@@ -65,6 +66,7 @@ Page SensorZHeight::do_prepare_page()
     pages.save_forward_page();
 
     old_offset_ = ExtUI::getZOffset_mm();
+    last_click_time_ = 0;
     ExtUI::setZOffset_mm(0); // Before homing otherwise, Marlin is lost
     ExtUI::setAbsoluteZAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + old_offset_);
 
@@ -169,6 +171,9 @@ double SensorZHeight::get_multiplier_value() const
 //! @param offset Offset for the adjustment.
 void SensorZHeight::adjust_height(double offset)
 {
+    if(!ELAPSED(millis(), last_click_time_))
+      return;
+    last_click_time_ = millis();
     ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset, ExtUI::Z, FEEDRATE_Z);
     send_data();
 }
