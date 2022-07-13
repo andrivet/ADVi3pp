@@ -110,8 +110,7 @@ bool Dimming::receive()
     // 0x5A means the panel was touched, we have to write 0 to clear the flag
     if(response.read_byte() == 0x5A) {
       no_log.allow();
-      // Reset TouchPanelFlag
-      WriteRegisterRequest{Register::TouchPanelFlag}.write_byte(0);
+      reset_touch();
       ui.refresh_screen_timeout();
       return true;
     }
@@ -121,6 +120,10 @@ bool Dimming::receive()
     ui.check_screen_timeout();
 
   return received;
+}
+
+void Dimming::reset_touch() {
+  WriteRegisterRequest{Register::TouchPanelFlag}.write_byte(0);
 }
 
 //! Set the brightness of the LCD panel
@@ -138,6 +141,7 @@ void Dimming::send_brightness_to_lcd()
 void Dimming::sleep_on() {
   if(dimmed_) return;
   dimmed_ = true;
+  reset_touch();
   send_brightness_to_lcd();
 }
 

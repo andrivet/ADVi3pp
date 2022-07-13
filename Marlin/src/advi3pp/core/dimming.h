@@ -53,6 +53,7 @@ private:
 
 private:
   void set_next_checking_time();
+  void reset_touch();
 
 private:
   bool dimmed_ = false;
