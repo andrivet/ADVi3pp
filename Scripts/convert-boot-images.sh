@@ -9,7 +9,7 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 masters="$( cd "${root}/Masters" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-mkdir "${masters}"/Boot
+mkdir -p "${masters}/Boot/"
 
 for i in {0..20}
 do
