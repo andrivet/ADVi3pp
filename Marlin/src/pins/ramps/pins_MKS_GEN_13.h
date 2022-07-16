@@ -31,7 +31,7 @@
  */
 
 #if HOTENDS > 2 || E_STEPPERS > 2
-  #error "MKS GEN 1.3/1.4 supports up to 2 hotends / E-steppers. Comment out this line to continue."
+  #error "MKS GEN 1.3/1.4 supports up to 2 hotends / E steppers."
 #endif
 
 #define BOARD_INFO_NAME "MKS GEN >= v1.3"
@@ -89,7 +89,7 @@
    *   BLUE_LED | 8  7 |  RED_LED     ENCBTN | 8  7 | SDCS
    *       KILL   6  5 |  BEEPER               6  5 | MOSI
    *         A0 | 4  3 |  LCD_CS        SDCD | 4  3 |
-   *        GND | 2  1 | 5V              GND | 2  1 | NC
+   *        GND | 2  1 | 5V              GND | 2  1 | --
    *             ------                       ------
    *              EXP1                         EXP2
    */

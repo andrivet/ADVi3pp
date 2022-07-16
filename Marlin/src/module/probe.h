@@ -45,6 +45,14 @@
   #define PROBE_TRIGGERED() (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING)
 #endif
 
+#ifdef Z_AFTER_HOMING
+   #define Z_POST_CLEARANCE Z_AFTER_HOMING
+#elif defined(Z_HOMING_HEIGHT)
+   #define Z_POST_CLEARANCE Z_HOMING_HEIGHT
+#else
+   #define Z_POST_CLEARANCE 10
+#endif
+
 #if ENABLED(PREHEAT_BEFORE_LEVELING)
   #ifndef LEVELING_NOZZLE_TEMP
     #define LEVELING_NOZZLE_TEMP 0
@@ -58,7 +66,13 @@ class Probe {
 public:
 
   #if ENABLED(SENSORLESS_PROBING)
-    typedef struct { bool x:1, y:1, z:1; } sense_bool_t;
+    typedef struct {
+      #if HAS_DELTA_SENSORLESS_PROBING
+        bool x:1, y:1, z:1;
+      #else
+        bool z;
+      #endif
+    } sense_bool_t;
     static sense_bool_t test_sensitivity;
   #endif
 
@@ -69,6 +83,8 @@ public:
     #if EITHER(PREHEAT_BEFORE_PROBING, PREHEAT_BEFORE_LEVELING)
       static void preheat_for_probing(const celsius_t hotend_temp, const celsius_t bed_temp);
     #endif
+
+    static void probe_error_stop();
 
     static bool set_deployed(const bool deploy);
 
@@ -130,7 +146,7 @@ public:
 
   #else
 
-    static constexpr xyz_pos_t offset = xyz_pos_t(LINEAR_AXIS_ARRAY(0, 0, 0, 0, 0, 0)); // See #16767
+    static constexpr xyz_pos_t offset = xyz_pos_t(NUM_AXIS_ARRAY(0, 0, 0, 0, 0, 0)); // See #16767
 
     static bool set_deployed(const bool) { return false; }
 
@@ -180,6 +196,15 @@ public:
       }
     #endif
 
+    /**
+     * The nozzle is only able to move within the physical bounds of the machine.
+     * If the PROBE has an OFFSET Marlin may need to apply additional limits so
+     * the probe can be prevented from going to unreachable points.
+     *
+     * e.g., If the PROBE is to the LEFT of the NOZZLE, it will be limited in how
+     * close it can get the RIGHT edge of the bed (unless the nozzle is able move
+     * far enough past the right edge).
+     */
     static constexpr float _min_x(const xy_pos_t &probe_offset_xy=offset_xy) {
       return TERN(IS_KINEMATIC,
         (X_CENTER) - probe_radius(probe_offset_xy),
@@ -212,14 +237,14 @@ public:
 
     // constexpr helpers used in build-time static_asserts, relying on default probe offsets.
     class build_time {
-      static constexpr xyz_pos_t default_probe_xyz_offset =
+      static constexpr xyz_pos_t default_probe_xyz_offset = xyz_pos_t(
         #if HAS_BED_PROBE
           NOZZLE_TO_PROBE_OFFSET
         #else
           { 0 }
         #endif
-      ;
-      static constexpr xy_pos_t default_probe_xy_offset = { default_probe_xyz_offset.x,  default_probe_xyz_offset.y };
+      );
+      static constexpr xy_pos_t default_probe_xy_offset = xy_pos_t({ default_probe_xyz_offset.x,  default_probe_xyz_offset.y });
 
     public:
       static constexpr bool can_reach(float x, float y) {
@@ -280,7 +305,8 @@ public:
   #if USE_SENSORLESS
     static void enable_stallguard_diag1();
     static void disable_stallguard_diag1();
-    static void set_homing_current(const bool onoff);
+    static void set_offset_sensorless_adj(const_float_t sz);
+    static void refresh_largest_sensorless_adj();
   #endif
 
 private:

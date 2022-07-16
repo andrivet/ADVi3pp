@@ -76,6 +76,12 @@ Log& Log::operator<<(const FlashChar* data)
     return *this;
 }
 
+Log& Log::operator<<(bool data) {
+  if(enabled_ && !suspend_)
+    *this << (data ? F("true") : F("false"));
+  return *this;
+}
+
 Log& Log::operator<<(uint8_t data)
 {
     if(enabled_ && !suspend_) {

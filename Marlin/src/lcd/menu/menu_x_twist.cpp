@@ -27,6 +27,7 @@
 #include "menu_addon.h"
 #include "../../module/planner.h"
 #include "../../feature/bedlevel/bedlevel.h"
+#include "../../feature/x_twist.h"
 #include "../../module/motion.h"
 #include "../../gcode/queue.h"
 #include "../../module/probe.h"
@@ -50,7 +51,7 @@ void xatc_wizard_done() {
     ui.goto_screen(menu_advanced_settings);
   }
   if (ui.should_draw())
-    MenuItem_static::draw(LCD_HEIGHT >= 4, GET_TEXT(MSG_XATC_DONE));
+    MenuItem_static::draw(LCD_HEIGHT >= 4, GET_TEXT_F(MSG_XATC_DONE));
   ui.refresh(LCDVIEW_CALL_REDRAW_NEXT);
 }
 
@@ -61,14 +62,14 @@ void xatc_wizard_goto_next_point();
 //
 void xatc_wizard_update_z_offset() {
   MenuItem_confirm::select_screen(
-      GET_TEXT(MSG_YES), GET_TEXT(MSG_NO)
+      GET_TEXT_F(MSG_YES), GET_TEXT_F(MSG_NO)
     , []{
         probe.offset.z = z_offset;
         ui.goto_screen(xatc_wizard_done);
       }
     , xatc_wizard_done
-    , GET_TEXT(MSG_XATC_UPDATE_Z_OFFSET)
-    , ftostr42_52(z_offset), PSTR("?")
+    , GET_TEXT_F(MSG_XATC_UPDATE_Z_OFFSET)
+    , ftostr42_52(z_offset), F("?")
   );
 }
 
@@ -77,7 +78,7 @@ void xatc_wizard_update_z_offset() {
 //
 void xatc_wizard_set_offset_and_go_to_next_point() {
   // Set Z-offset at probed point
-  xatc.z_values[manual_probe_index++] = probe.offset.z + current_position.z - measured_z;
+  xatc.z_offset[manual_probe_index++] = probe.offset.z + current_position.z - measured_z;
   // Go to next point
   ui.goto_screen(xatc_wizard_goto_next_point);
 }
@@ -92,27 +93,14 @@ void xatc_wizard_menu() {
   if (LCD_HEIGHT >= 4)
     STATIC_ITEM(MSG_MOVE_NOZZLE_TO_BED, SS_CENTER|SS_INVERT);
 
-  STATIC_ITEM_P(PSTR("Z="), SS_CENTER, ftostr42_52(current_position.z));
+  STATIC_ITEM_F(F("Z="), SS_CENTER, ftostr42_52(current_position.z));
   STATIC_ITEM(MSG_ZPROBE_ZOFFSET, SS_LEFT, ftostr42_52(calculated_z_offset));
 
   SUBMENU(MSG_MOVE_1MM,  []{ _goto_manual_move_z( 1);    });
   SUBMENU(MSG_MOVE_01MM, []{ _goto_manual_move_z( 0.1f); });
 
-  if ((FINE_MANUAL_MOVE) > 0.0f && (FINE_MANUAL_MOVE) < 0.1f) {
-    char tmp[20], numstr[10];
-    // Determine digits needed right of decimal
-    const uint8_t digs = !UNEAR_ZERO((FINE_MANUAL_MOVE) * 1000 - int((FINE_MANUAL_MOVE) * 1000)) ? 4 :
-                         !UNEAR_ZERO((FINE_MANUAL_MOVE) *  100 - int((FINE_MANUAL_MOVE) *  100)) ? 3 : 2;
-    sprintf_P(tmp, GET_TEXT(MSG_MOVE_N_MM), dtostrf(FINE_MANUAL_MOVE, 1, digs, numstr));
-    #if DISABLED(HAS_GRAPHICAL_TFT)
-      SUBMENU_P(NUL_STR, []{ _goto_manual_move_z(float(FINE_MANUAL_MOVE)); });
-      MENU_ITEM_ADDON_START(0 + ENABLED(HAS_MARLINUI_HD44780));
-      lcd_put_u8str(tmp);
-      MENU_ITEM_ADDON_END();
-    #else
-      SUBMENU_P(tmp, []{ _goto_manual_move_z(float(FINE_MANUAL_MOVE)); });
-    #endif
-  }
+  if ((FINE_MANUAL_MOVE) > 0.0f && (FINE_MANUAL_MOVE) < 0.1f)
+    SUBMENU_f(F(STRINGIFY(FINE_MANUAL_MOVE)), MSG_MOVE_N_MM, []{ _goto_manual_move_z(float(FINE_MANUAL_MOVE)); });
 
   ACTION_ITEM(MSG_BUTTON_DONE, xatc_wizard_set_offset_and_go_to_next_point);
 
@@ -126,7 +114,7 @@ void xatc_wizard_moving() {
   if (ui.should_draw()) {
     char msg[10];
     sprintf_P(msg, PSTR("%i / %u"), manual_probe_index + 1, XATC_MAX_POINTS);
-    MenuEditItemBase::draw_edit_screen(GET_TEXT(MSG_LEVEL_BED_NEXT_POINT), msg);
+    MenuEditItemBase::draw_edit_screen(GET_TEXT_F(MSG_LEVEL_BED_NEXT_POINT), msg);
   }
   ui.refresh(LCDVIEW_CALL_NO_REDRAW);
   if (!ui.wait_for_move) ui.goto_screen(xatc_wizard_menu);
@@ -148,7 +136,9 @@ void xatc_wizard_goto_next_point() {
       // Deploy certain probes before starting probing
       TERN_(BLTOUCH, do_z_clearance(Z_CLEARANCE_DEPLOY_PROBE));
 
+      xatc.set_enabled(false);
       measured_z = probe.probe_at_point(x, XATC_Y_POSITION, PROBE_PT_STOW);
+      xatc.set_enabled(true);
       current_position += probe.offset_xy;
       current_position.z = (XATC_START_Z) - probe.offset.z + measured_z;
       line_to_current_position(MMM_TO_MMS(XY_PROBE_FEEDRATE));
@@ -160,12 +150,12 @@ void xatc_wizard_goto_next_point() {
   else {
     // Compute the z-offset by averaging the values found with this wizard
     z_offset = 0;
-    LOOP_L_N(i, XATC_MAX_POINTS) z_offset += xatc.z_values[i];
+    LOOP_L_N(i, XATC_MAX_POINTS) z_offset += xatc.z_offset[i];
     z_offset /= XATC_MAX_POINTS;
 
     // Subtract the average from the values found with this wizard.
     // This way they are indipendent from the z-offset
-    LOOP_L_N(i, XATC_MAX_POINTS) xatc.z_values[i] -= z_offset;
+    LOOP_L_N(i, XATC_MAX_POINTS) xatc.z_offset[i] -= z_offset;
 
     ui.goto_screen(xatc_wizard_update_z_offset);
   }
@@ -177,7 +167,7 @@ void xatc_wizard_goto_next_point() {
 //
 void xatc_wizard_homing_done() {
   if (ui.should_draw()) {
-    MenuItem_static::draw(1, GET_TEXT(MSG_LEVEL_BED_WAITING));
+    MenuItem_static::draw(1, GET_TEXT_F(MSG_LEVEL_BED_WAITING));
 
     // Color UI needs a control to detect a touch
     #if BOTH(TOUCH_SCREEN, HAS_GRAPHICAL_TFT)
@@ -186,8 +176,7 @@ void xatc_wizard_homing_done() {
   }
 
   if (ui.use_click()) {
-    xatc.spacing = (probe.max_x() - probe.min_x()) / (XATC_MAX_POINTS - 1);
-    xatc.start = probe.min_x();
+    xatc.reset();
 
     SET_SOFT_ENDSTOP_LOOSE(true); // Disable soft endstops for free Z movement
 

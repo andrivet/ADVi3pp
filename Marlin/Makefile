@@ -109,7 +109,7 @@ LIQUID_TWI2        ?= 0
 # This defines if Wire is needed
 WIRE               ?= 0
 
-# This defines if Tone is needed (i.e SPEAKER is defined in Configuration.h)
+# This defines if Tone is needed (i.e., SPEAKER is defined in Configuration.h)
 # Disabling this (and SPEAKER) saves approximately 350 bytes of memory.
 TONE               ?= 1
 
@@ -132,7 +132,7 @@ CC_MIN:=$(shell $(CC) -dM -E - < /dev/null | grep __GNUC_MINOR__ | cut -f3 -d\ )
 CC_PATCHLEVEL:=$(shell $(CC) -dM -E - < /dev/null | grep __GNUC_PATCHLEVEL__ | cut -f3 -d\ )
 CC_VER:=$(shell echo $$(( $(CC_MAJ) * 10000 + $(CC_MIN) * 100 + $(CC_PATCHLEVEL) )))
 ifeq ($(shell test $(CC_VER) -lt 40901 && echo 1),1)
-  @echo This version of GCC is likely broken. Enabling relocation workaround.
+  $(warning This GCC version $(CC_VER) is likely broken. Enabling relocation workaround.)
   RELOC_WORKAROUND = 1
 endif
 
@@ -512,7 +512,7 @@ else ifeq ($(HARDWARE_MOTHERBOARD),1324)
 else ifeq ($(HARDWARE_MOTHERBOARD),1325)
 # Intamsys 4.0 (Funmat HT)
 else ifeq ($(HARDWARE_MOTHERBOARD),1326)
-# Malyan M180 Mainboard Version 2 (no display function, direct gcode only)
+# Malyan M180 Mainboard Version 2 (no display function, direct G-code only)
 else ifeq ($(HARDWARE_MOTHERBOARD),1327)
 # Geeetech GT2560 Rev B for A20(M/T/D)
 else ifeq ($(HARDWARE_MOTHERBOARD),1328)

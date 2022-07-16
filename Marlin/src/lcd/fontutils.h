@@ -38,10 +38,10 @@
 #include "../core/macros.h"
 
 // read a byte from ROM or RAM
-typedef uint8_t (*read_byte_cb_t)(uint8_t * str);
+typedef uint8_t (*read_byte_cb_t)(const uint8_t * str);
 
-uint8_t read_byte_ram(uint8_t * str);
-uint8_t read_byte_rom(uint8_t * str);
+uint8_t read_byte_ram(const uint8_t *str);
+uint8_t read_byte_rom(const uint8_t *str);
 
 // there's overflow of the wchar_t due to the 2-byte size in Arduino
 // sizeof(wchar_t)=2; sizeof(size_t)=2; sizeof(uint32_t)=4;
@@ -58,11 +58,16 @@ typedef int (* pf_bsearch_cb_comp_t)(void *userdata, size_t idx, void * data_pin
 int pf_bsearch_r(void *userdata, size_t num_data, pf_bsearch_cb_comp_t cb_comp, void *data_pinpoint, size_t *ret_idx);
 
 /* Get the character, decoding multibyte UTF8 characters and returning a pointer to the start of the next UTF8 character */
-uint8_t* get_utf8_value_cb(uint8_t *pstart, read_byte_cb_t cb_read_byte, wchar_t *pval);
+const uint8_t* get_utf8_value_cb(const uint8_t *pstart, read_byte_cb_t cb_read_byte, wchar_t *pval);
+
+inline const char* get_utf8_value_cb(const char *pstart, read_byte_cb_t cb_read_byte, wchar_t *pval) {
+  return (const char *)get_utf8_value_cb((const uint8_t *)pstart, cb_read_byte, pval);
+}
 
 /* Returns length of string in CHARACTERS, NOT BYTES */
 uint8_t utf8_strlen(const char *pstart);
 uint8_t utf8_strlen_P(PGM_P pstart);
+inline uint8_t utf8_strlen(FSTR_P fstart) { return utf8_strlen_P(FTOP(fstart)); }
 
 /* Returns start byte position of desired char number */
 uint8_t utf8_byte_pos_by_char_num(const char *pstart, const uint8_t charnum);

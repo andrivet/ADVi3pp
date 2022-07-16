@@ -26,10 +26,10 @@
 namespace ADVi3pp {
 
 namespace {
-
     constexpr xyz_feedrate_t homing_feedrate_mm_m = HOMING_FEEDRATE_MM_M;
+    constexpr float FEEDRATE_XY = MMM_TO_MMS(homing_feedrate_mm_m.x);
     constexpr float FEEDRATE_Z = MMM_TO_MMS(homing_feedrate_mm_m.z);
-
+    constexpr unsigned MINIMAL_CLICK_DELAY = 200; // ms
 }
 
 SensorZHeight sensor_z_height;
@@ -66,10 +66,12 @@ Page SensorZHeight::do_prepare_page()
     pages.save_forward_page();
 
     old_offset_ = ExtUI::getZOffset_mm();
+    last_click_time_ = 0;
     ExtUI::setZOffset_mm(0); // Before homing otherwise, Marlin is lost
+    ExtUI::setAbsoluteZAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + old_offset_);
 
     wait.wait(F("Homing..."));
-    core.inject_commands(F("G28 F6000"));  // homing
+    core.inject_commands(F("G28 Z O"));  // homing (if not already homed)
     background_task.set(Callback{this, &SensorZHeight::post_home_task}, 200);
     return Page::None;
 }
@@ -89,24 +91,23 @@ void SensorZHeight::post_home_task()
     background_task.clear();
     reset();
 
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(100, ExtUI::X);
-    ExtUI::setAxisPosition_mm(100, ExtUI::Y);
-    ExtUI::setAxisPosition_mm(0, ExtUI::Z);
+    float positions[2] = {X_CENTER, Y_CENTER};
+    ExtUI::axis_t axis[2] = { ExtUI::X, ExtUI::Y };
+    ExtUI::setMultipleAxisPosition_mm(2, positions, axis, FEEDRATE_XY);
+    ExtUI::setAxisPosition_mm(0, ExtUI::Z, FEEDRATE_Z);
     ExtUI::setSoftEndstopState(false);
 
     send_data();
-
     pages.show(Page::ZHeightTuning);
 }
 
 //! Execute the Back command
 void SensorZHeight::do_back_command()
 {
-    // enable enstops, z-home, XY-homing, compensation
     ExtUI::setSoftEndstopState(true);
     ExtUI::setZOffset_mm(old_offset_);
-    core.inject_commands(F("G28 Z F1200\nG28 X Y F6000")); // G28 is important to take into account the Z height
+    ExtUI::setAbsoluteZAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) - old_offset_);
+    ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z, FEEDRATE_Z);
     Parent::do_back_command();
 }
 
@@ -114,12 +115,10 @@ void SensorZHeight::do_back_command()
 void SensorZHeight::do_save_command()
 {
     // Current Z position becomes Z offset
-    ExtUI::setZOffset_mm(ExtUI::getAxisPosition_mm(ExtUI::Z));
-    // enable enstops, raise head, homing
     ExtUI::setSoftEndstopState(true);
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
-    core.inject_commands(F("G28 Z F1200\nG28 X Y F6000")); // G28 is important to take into account the Z height
+    ExtUI::setZOffset_mm(ExtUI::getAxisPosition_mm(ExtUI::Z));
+    ExtUI::setAbsoluteZAxisPosition_mm(0);
+    ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z, FEEDRATE_Z);
     Parent::do_save_command();
 }
 
@@ -172,8 +171,10 @@ double SensorZHeight::get_multiplier_value() const
 //! @param offset Offset for the adjustment.
 void SensorZHeight::adjust_height(double offset)
 {
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset, ExtUI::Z);
+    if(!ELAPSED(millis(), last_click_time_))
+      return;
+    last_click_time_ = millis();
+    ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset, ExtUI::Z, FEEDRATE_Z);
     send_data();
 }
 

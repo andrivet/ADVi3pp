@@ -30,15 +30,20 @@ struct ExtruderTuning: Screen<ExtruderTuning>
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
+    void do_back_command();
+    void do_save_command();
     void start_command();
     void settings_command();
     void send_data();
+    void heating();
+    bool cancel_heating();
+    void extrude();
+    void extruding();
+    bool cancel_extrude();
 
 private:
-    static constexpr uint16_t tuning_extruder_filament = 100; //!< Filament to extrude (10 cm)
-    static constexpr uint16_t tuning_extruder_delta = 20; //!< Amount of filament supposes tp remain after extruding (2 cm)
-
     float extruded_ = 0.0;
+    float previous_z_ = 0.0;
     friend Parent;
 };
 

@@ -5,11 +5,8 @@ Create a new release.
 
 if [[ "$OSTYPE" != "darwin"* ]]; then echo "Work only on macOS, sorry" ; exit 1; fi
 
-function pause(){
-   read -r -s -k "?$*"$'\n'
-}
-
-version="5.3.0"
+. ./functions.sh
+. ./version.sh
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
@@ -59,13 +56,13 @@ rm -rf "${release:?}/*"
 
 echo
 echo "***** Create SD image and SD raw zip file..."
-./create-sd-image.sh "${version}"
+./create-sd-image.sh
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo
 echo "***** Generate other microSD images..."
-./create-sd-calibration-image.sh "${version}"
-./create-sd-reset-image.sh "${version}"
+./create-sd-calibration-image.sh
+./create-sd-reset-image.sh
 
 echo
 echo "***** Compile Mainboard firmwares..."

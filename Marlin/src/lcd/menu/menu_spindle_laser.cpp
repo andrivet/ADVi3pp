@@ -26,7 +26,7 @@
 
 #include "../../inc/MarlinConfig.h"
 
-#if HAS_LCD_MENU && HAS_CUTTER
+#if HAS_MARLINUI_MENU && HAS_CUTTER
 
   #include "menu_item.h"
 
@@ -64,7 +64,7 @@
     #if ENABLED(SPINDLE_CHANGE_DIR)
       if (!is_enabled) {
         editable.state = is_rev;
-        ACTION_ITEM_P(is_rev ? GET_TEXT(MSG_CUTTER(REVERSE)) : GET_TEXT(MSG_CUTTER(FORWARD)), []{ cutter.set_reverse(!editable.state); });
+        ACTION_ITEM_F(is_rev ? GET_TEXT_F(MSG_CUTTER(REVERSE)) : GET_TEXT_F(MSG_CUTTER(FORWARD)), []{ cutter.set_reverse(!editable.state); });
       }
     #endif
 
@@ -74,11 +74,11 @@
       ACTION_ITEM(MSG_LASER_FIRE_PULSE, cutter.test_fire_pulse);
     #endif
 
-    #if BOTH(MARLIN_DEV_MODE, HAL_CAN_SET_PWM_FREQ) && defined(SPINDLE_LASER_FREQUENCY)
+    #if BOTH(MARLIN_DEV_MODE, HAL_CAN_SET_PWM_FREQ) && SPINDLE_LASER_FREQUENCY
       EDIT_ITEM_FAST(CUTTER_MENU_FREQUENCY_TYPE, MSG_CUTTER_FREQUENCY, &cutter.frequency, 2000, 80000, cutter.refresh_frequency);
     #endif
 
     END_MENU();
   }
 
-#endif // HAS_LCD_MENU && HAS_CUTTER
+#endif // HAS_MARLINUI_MENU && HAS_CUTTER

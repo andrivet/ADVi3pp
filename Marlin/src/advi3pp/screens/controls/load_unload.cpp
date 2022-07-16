@@ -60,7 +60,13 @@ Page LoadUnload::do_prepare_page()
     if(!core.ensure_not_printing())
         return Page::None;
     send_data();
+    previous_z_ = Core::ensure_z_enough_room();;
     return Page::LoadUnload;
+}
+
+void LoadUnload::do_back_command() {
+  ExtUI::setAxisPosition_mm(previous_z_, ExtUI::Z, 20);
+  Parent::do_back_command();
 }
 
 //! Prepare Load or Unload step #1: set the target temperature, setup the next step and display a wait message
@@ -81,14 +87,14 @@ void LoadUnload::prepare()
 void LoadUnload::load_command()
 {
     prepare();
-    core.inject_commands(F("M701\nM104 S0"));
+    core.inject_commands(F("M701 Z0\nM104 S0")); // Load filament, set hotend temp
 }
 
 //! Start Unload action.
 void LoadUnload::unload_command()
 {
     prepare();
-    core.inject_commands(F("M702\nM104 S0"));
+    core.inject_commands(F("M702 Z0\nM104 S0")); // Unload filament, set hotend temp
 }
 
 

@@ -31,12 +31,16 @@ struct LoadUnload: Screen<LoadUnload>
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void do_back_command();
     void prepare();
     void load_command();
     void unload_command();
     void send_data();
 
     friend Parent;
+
+private:
+  float previous_z_ = 0;
 };
 
 extern LoadUnload load_unload;

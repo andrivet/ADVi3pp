@@ -32,6 +32,10 @@ private:
     Page do_prepare_page();
     void do_back_command();
     void do_save_command();
+
+    bool start();
+    bool abort();
+
     void point1_command();
     void point2_command();
     void point3_command();
@@ -42,7 +46,7 @@ private:
     void pointC_command();
     void pointD_command();
     void leveling_task();
-    void move(int x, int y);
+    void move(float x, float y);
 
     friend Parent;
 };

@@ -22,6 +22,7 @@
 #include "pid_tuning.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"
+#include "../../core/pid.h"
 #include "../../core/status.h"
 #include "../settings/pid_settings.h"
 #include "../print/temperatures.h"
@@ -168,8 +169,7 @@ void PidTuning::on_finished(ExtUI::result_t result)
     if(result != ExtUI::PID_DONE)
         return;
 
-    pid_settings.add_pid(kind_, temperature_);
-
+    pid.add_pid(kind_, temperature_);
     pid_settings.show();
 }
 

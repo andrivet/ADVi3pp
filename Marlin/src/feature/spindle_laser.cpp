@@ -39,7 +39,8 @@
 #endif
 
 SpindleLaser cutter;
-uint8_t SpindleLaser::power;
+uint8_t SpindleLaser::power,
+        SpindleLaser::last_power_applied; // = 0                      // Basic power state tracking
 #if ENABLED(LASER_FEATURE)
   cutter_test_pulse_t SpindleLaser::testPulse = 50;                   // Test fire Pulse time ms value.
 #endif
@@ -57,7 +58,7 @@ cutter_power_t SpindleLaser::menuPower,                               // Power s
  */
 void SpindleLaser::init() {
   #if ENABLED(SPINDLE_SERVO)
-    MOVE_SERVO(SPINDLE_SERVO_NR, SPINDLE_SERVO_MIN);
+    servo[SPINDLE_SERVO_NR].move(SPINDLE_SERVO_MIN);
   #else
     OUT_WRITE(SPINDLE_LASER_ENA_PIN, !SPINDLE_LASER_ACTIVE_STATE);    // Init spindle to off
   #endif
@@ -66,10 +67,10 @@ void SpindleLaser::init() {
   #endif
   #if ENABLED(SPINDLE_LASER_USE_PWM)
     SET_PWM(SPINDLE_LASER_PWM_PIN);
-    set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Set to lowest speed
+    hal.set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_PWM_OFF); // Set to lowest speed
   #endif
-  #if ENABLED(HAL_CAN_SET_PWM_FREQ) && defined(SPINDLE_LASER_FREQUENCY)
-    set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_FREQUENCY);
+  #if ENABLED(HAL_CAN_SET_PWM_FREQ) && SPINDLE_LASER_FREQUENCY
+    hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), SPINDLE_LASER_FREQUENCY);
     TERN_(MARLIN_DEV_MODE, frequency = SPINDLE_LASER_FREQUENCY);
   #endif
   #if ENABLED(AIR_EVACUATION)
@@ -78,9 +79,7 @@ void SpindleLaser::init() {
   #if ENABLED(AIR_ASSIST)
     OUT_WRITE(AIR_ASSIST_PIN, !AIR_ASSIST_ACTIVE);                    // Init Air Assist OFF
   #endif
-  #if ENABLED(I2C_AMMETER)
-    ammeter.init();                                                   // Init I2C Ammeter
-  #endif
+  TERN_(I2C_AMMETER, ammeter.init());                                 // Init I2C Ammeter
 }
 
 #if ENABLED(SPINDLE_LASER_USE_PWM)
@@ -90,10 +89,10 @@ void SpindleLaser::init() {
    * @param ocr Power value
    */
   void SpindleLaser::_set_ocr(const uint8_t ocr) {
-    #if NEEDS_HARDWARE_PWM && SPINDLE_LASER_FREQUENCY
-      set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), TERN(MARLIN_DEV_MODE, frequency, SPINDLE_LASER_FREQUENCY));
+    #if ENABLED(HAL_CAN_SET_PWM_FREQ) && SPINDLE_LASER_FREQUENCY
+      hal.set_pwm_frequency(pin_t(SPINDLE_LASER_PWM_PIN), TERN(MARLIN_DEV_MODE, frequency, SPINDLE_LASER_FREQUENCY));
     #endif
-    set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
+    hal.set_pwm_duty(pin_t(SPINDLE_LASER_PWM_PIN), ocr ^ SPINDLE_LASER_PWM_OFF);
   }
 
   void SpindleLaser::set_ocr(const uint8_t ocr) {
@@ -115,7 +114,6 @@ void SpindleLaser::init() {
  * @param opwr Power value. Range 0 to MAX. When 0 disable spindle/laser.
  */
 void SpindleLaser::apply_power(const uint8_t opwr) {
-  static uint8_t last_power_applied = 0;
   if (opwr == last_power_applied) return;
   last_power_applied = opwr;
   power = opwr;
@@ -133,7 +131,7 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
       isReady = false;
     }
   #elif ENABLED(SPINDLE_SERVO)
-    MOVE_SERVO(SPINDLE_SERVO_NR, power);
+    servo[SPINDLE_SERVO_NR].move(power);
   #else
     WRITE(SPINDLE_LASER_ENA_PIN, enabled() ? SPINDLE_LASER_ACTIVE_STATE : !SPINDLE_LASER_ACTIVE_STATE);
     isReady = true;
@@ -161,8 +159,8 @@ void SpindleLaser::apply_power(const uint8_t opwr) {
 
 #if ENABLED(AIR_ASSIST)
   // Enable / disable air assist
-  void SpindleLaser::air_assist_enable()  { WRITE(AIR_ASSIST_PIN,  AIR_ASSIST_PIN); } // Turn ON
-  void SpindleLaser::air_assist_disable() { WRITE(AIR_ASSIST_PIN, !AIR_ASSIST_PIN); } // Turn OFF
+  void SpindleLaser::air_assist_enable()  { WRITE(AIR_ASSIST_PIN,  AIR_ASSIST_ACTIVE); } // Turn ON
+  void SpindleLaser::air_assist_disable() { WRITE(AIR_ASSIST_PIN, !AIR_ASSIST_ACTIVE); } // Turn OFF
   void SpindleLaser::air_assist_toggle()  { TOGGLE(AIR_ASSIST_PIN); } // Toggle state
 #endif
 

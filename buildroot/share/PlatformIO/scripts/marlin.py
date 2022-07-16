@@ -41,21 +41,16 @@ def custom_ld_script(ldname):
 		elif flag == "-T":
 			env["LINKFLAGS"][i + 1] = apath
 
-# Encrypt ${PROGNAME}.bin and save it with a new name
-# Called by specific encrypt() functions, mostly for MKS boards
+# Encrypt ${PROGNAME}.bin and save it with a new name. This applies (mostly) to MKS boards
+# This PostAction is set up by offset_and_rename.py for envs with 'build.encrypt_mks'.
 def encrypt_mks(source, target, env, new_name):
 	import sys
 
 	key = [0xA3, 0xBD, 0xAD, 0x0D, 0x41, 0x11, 0xBB, 0x8D, 0xDC, 0x80, 0x2D, 0xD0, 0xD2, 0xC4, 0x9B, 0x1E, 0x26, 0xEB, 0xE3, 0x33, 0x4A, 0x15, 0xE4, 0x0A, 0xB3, 0xB1, 0x3C, 0x93, 0xBB, 0xAF, 0xF7, 0x3E]
 
 	# If FIRMWARE_BIN is defined by config, override all
-	import re
-	patt = re.compile("^\\s*#define\\s+FIRMWARE_BIN\\s+\"?(.+)\"?")
-	with open(join("Marlin", "Configuration.h"), encoding="utf-8") as f:
-		for line in f:
-			m = patt.search(line)
-			if m != None:
-				new_name = m.group(1)
+	mf = env["MARLIN_FEATURES"]
+	if "FIRMWARE_BIN" in mf: new_name = mf["FIRMWARE_BIN"]
 
 	fwpath = target[0].path
 	fwfile = open(fwpath, "rb")

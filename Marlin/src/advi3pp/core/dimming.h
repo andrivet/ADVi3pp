@@ -21,32 +21,46 @@
 #pragma once
 
 #include <stdint.h>
+#include "settings.h"
 
 namespace ADVi3pp {
 
 //! LCD screen brightness and dimming
-struct Dimming
-{
-    Dimming();
+struct Dimming : Settings<Dimming> {
+  Dimming();
 
-    void send();
-    bool receive();
-    void reset(bool force = false);
-    void change_brightness(uint8_t brightness);
+  bool receive();
+  void send();
+  void sleep_on();
+  void sleep_off();
+  void send_brightness_to_lcd();
+  void send_brightness_to_lcd(uint8_t brightness);
+
+  bool is_enabled() const { return enabled_; }
+  uint16_t get_dimming_time() const { return dimming_time_; }
+  uint8_t get_normal_brightness() const { return ui.brightness; }
+  uint8_t get_dimming_brightness() const { return dimming_brightness_; }
+  void set_settings(bool dimming, uint8_t dimming_time, uint8_t normal_brightness, uint8_t dimming_brightness);
 
 private:
-    void set_next_checking_time();
-    void set_next_dimming_time();
-    void send_brightness();
-    uint8_t get_adjusted_brightness();
+  friend Parent;
+
+  void do_write(EepromWrite& eeprom) const;
+  bool do_validate(EepromRead& eeprom);
+  void do_read(EepromRead& eeprom);
+  void do_reset();
+  uint16_t do_size_of() const;
 
 private:
-    static constexpr uint8_t dimming_ratio = 5; //!< Ratio (in percent) between normal and dimmed LCD panel
-    static constexpr uint16_t dimming_delay = 5 * 60; //!< Delay before dimming the LCD panel (5 minutes)
+  void set_next_checking_time();
+  void reset_touch();
 
-    bool dimmed_ = false;
-    uint32_t next_check_time_ = 0;
-    uint32_t next_dimming_time_ = 0;
+private:
+  bool dimmed_ = false;
+  uint32_t next_check_time_ = 0;
+  bool enabled_ = true;
+  uint8_t dimming_brightness_ = 5;
+  uint8_t dimming_time_ = 2;
 };
 
 extern Dimming dimming;

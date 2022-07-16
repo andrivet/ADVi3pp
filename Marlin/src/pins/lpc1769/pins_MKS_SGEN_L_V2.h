@@ -36,10 +36,8 @@
 // EEPROM, MKS SGEN_L V2.0 hardware has 4K EEPROM on the board
 //
 #if NO_EEPROM_SELECTED
-  //#define SDCARD_EEPROM_EMULATION
-  //#define I2C_EEPROM                            // AT24C32
-  #define FLASH_EEPROM_EMULATION
-  #define MARLIN_EEPROM_SIZE              0x1000  // 4KB
+  #define I2C_EEPROM                              // AT24C32
+  #define MARLIN_EEPROM_SIZE              0x1000  // 4K
 #endif
 
 //
@@ -102,6 +100,12 @@
 #ifndef Z_MIN_PROBE_PIN
   #define Z_MIN_PROBE_PIN                  P1_24
 #endif
+
+//
+// Filament Runout Sensor
+//
+#define FIL_RUNOUT_PIN                     P1_28  // X+
+#define FIL_RUNOUT2_PIN                    P1_26  // Y+
 
 //
 // Steppers
@@ -203,6 +207,14 @@
 #define TEMP_1_PIN                      P0_25_A2  // Analog Input A2 (TH2)
 #define TEMP_2_PIN                      P0_26_A3  // Analog Input A3 (P0.26, No pull up)
 
+#if HOTENDS == 1 && !REDUNDANT_TEMP_MATCH(SOURCE, E1)
+  #if TEMP_SENSOR_PROBE
+    #define TEMP_PROBE_PIN            TEMP_1_PIN
+  #elif TEMP_SENSOR_CHAMBER
+    #define TEMP_CHAMBER_PIN          TEMP_1_PIN
+  #endif
+#endif
+
 //
 // Heaters / Fans
 //
@@ -260,9 +272,9 @@
 /**                ------                                     ------
  *  (BEEPER) 1.31 |10  9 | 1.30 (BTN_ENC)        (MISO) 0.8  |10  9 | 0.7  (SD_SCK)
  *  (LCD_EN) 0.18 | 8  7 | 0.16 (LCD_RS)      (BTN_EN1) 3.25 | 8  7 | 0.28 (SD_CS2)
- *  (LCD_D4) 0.15 | 6  5 | 0.17 (LCD_D5)      (BTN_EN2) 3.26 | 6  5 | 0.9  (SD_MOSI)
+ *  (LCD_D4) 0.15   6  5 | 0.17 (LCD_D5)      (BTN_EN2) 3.26   6  5 | 0.9  (SD_MOSI)
  *  (LCD_D6)  1.0 | 4  3 | 1.22 (LCD_D7)    (SD_DETECT) 0.27 | 4  3 | RST
- *            GND | 2  1 | 5V                            GND | 2  1 | NC
+ *            GND | 2  1 | 5V                            GND | 2  1 | --
  *                 ------                                     ------
  *                  EXP1                                       EXP2
  */
@@ -327,9 +339,10 @@
       #define KILL_PIN                     -1     // NC
 
     #elif HAS_SPI_TFT                             // Config for Classic UI (emulated DOGM) and Color UI
+
       #define TFT_CS_PIN             EXP1_04_PIN
-      #define TFT_A0_PIN             EXP1_03_PIN
       #define TFT_DC_PIN             EXP1_03_PIN
+      #define TFT_A0_PIN             TFT_DC_PIN
       #define TFT_MISO_PIN           EXP2_10_PIN
       #define TFT_BACKLIGHT_PIN      EXP1_08_PIN
       #define TFT_RESET_PIN          EXP1_07_PIN

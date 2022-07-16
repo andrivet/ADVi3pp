@@ -21,17 +21,13 @@
 #include "../../parameters.h"
 #include "pid_settings.h"
 #include "../../core/dgus.h"
+#include "../../core/pid.h"
 #include "../tuning/pid_tuning.h"
 
 namespace ADVi3pp {
 
 PidSettings pid_settings;
 
-
-PidSettings::PidSettings()
-{
-    do_reset();
-}
 
 //! Handle PID Settings command
 //! @param key_value    The sub-action to handle
@@ -82,70 +78,11 @@ void PidSettings::previous_command()
 //! Handle the show next PID values command
 void PidSettings::next_command()
 {
-    if(index_ >= NB_PIDs - 1)
+    if(index_ >= Pid::NB_PIDs - 1)
         return;
     from_lcd();
     index_ += 1;
     to_lcd();
-}
-
-//! Store current data in permanent memory (EEPROM)
-//! @param eeprom EEPROM writer
-void PidSettings::do_write(EepromWrite& eeprom) const
-{
-    for(size_t i = 0; i < NB_PIDs; ++i)
-    {
-        eeprom.write(bed_pid_[i]);
-        eeprom.write(hotend_pid_[i]);
-    }
-}
-
-//! Validate data from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-bool PidSettings::do_validate(EepromRead &eeprom)
-{
-    Pid pid{};
-    for(size_t i = 0; i < NB_PIDs; ++i)
-    {
-        eeprom.read(pid);
-        eeprom.read(pid);
-    }
-    return true;
-}
-
-//! Restore data from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-void PidSettings::do_read(EepromRead& eeprom)
-{
-    for(size_t i = 0; i < NB_PIDs; ++i)
-    {
-        eeprom.read(bed_pid_[i]);
-        eeprom.read(hotend_pid_[i]);
-    }
-}
-
-//! Reset settings
-void PidSettings::do_reset()
-{
-    for(size_t i = 0; i < NB_PIDs; ++i)
-    {
-        bed_pid_[i].temperature_ = default_bed_temperature;
-        bed_pid_[i].Kp_ = DEFAULT_bedKp;
-        bed_pid_[i].Ki_ = DEFAULT_bedKi;
-        bed_pid_[i].Kd_ = DEFAULT_bedKd;
-
-        hotend_pid_[i].temperature_ = default_hotend_temperature;
-        hotend_pid_[i].Kp_ = DEFAULT_Kp;
-        hotend_pid_[i].Ki_ = DEFAULT_Ki;
-        hotend_pid_[i].Kd_ = DEFAULT_Kd;
-    }
-}
-
-//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
-//! @return Number of bytes
-uint16_t PidSettings::do_size_of() const
-{
-    return NB_PIDs * 2 * sizeof(Pid);
 }
 
 //! Prepare the page before being displayed and return the right Page value
@@ -161,7 +98,7 @@ void PidSettings::do_save_command()
 {
     from_lcd();
     assert(kind_ <= TemperatureKind::Hotend);
-    set_marlin_pid();
+    pid.set_marlin_pid(kind_, index_);
     Parent::do_save_command();
 }
 
@@ -172,128 +109,21 @@ void PidSettings::do_back_command()
     Parent::do_back_command();
 }
 
-//! Set the current PID values from what is recorded
-void PidSettings::set_marlin_pid() const
-{
-    assert(kind_ <= TemperatureKind::Hotend);
-    const Pid& pid = get_pid();
-
-    if(kind_ == TemperatureKind::Hotend)
-        ExtUI::setPIDValues(pid.Kp_, pid.Ki_, pid.Kd_, ExtUI::E0);
-    else
-        ExtUI::setBedPIDValues(pid.Kp_, pid.Ki_, pid.Kd_);
-
-    Log::log() << F("Set") << (kind_ == TemperatureKind::Hotend ? F("Hotend") : F("Bed"))
-               << F("PID") << index_ << F("for temperature") << pid.temperature_
-               << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
-}
-
-//! Record the current PID values
-void PidSettings::get_marlin_pid()
-{
-    assert(kind_ <= TemperatureKind::Hotend);
-    Pid& pid = get_pid();
-
-    if(kind_ == TemperatureKind::Hotend) {
-        pid.Kp_ = ExtUI::getPIDValues_Kp(ExtUI::E0);
-        pid.Ki_ = ExtUI::getPIDValues_Ki(ExtUI::E0);
-        pid.Kd_ = ExtUI::getPIDValues_Kd(ExtUI::E0);
-    }
-    else {
-        pid.Kp_ = ExtUI::getBedPIDValues_Kp();
-        pid.Ki_ = ExtUI::getBedPIDValues_Ki();
-        pid.Kd_ = ExtUI::getBedPIDValues_Kd();
-    }
-
-    Log::log() << F("Get") << (kind_ == TemperatureKind::Hotend ? F("Hotend") : F("Bed"))
-               << F("PID") << index_ << F("for temperature") << pid.temperature_
-               << F("P =") << pid.Kp_ << F("I =") << pid.Ki_ << F("D =") << pid.Kd_ << Log::endl();
-
-}
-
-adv::array<Pid, PidSettings::NB_PIDs>& PidSettings::get_pids()
-{
-    assert(kind_ <= TemperatureKind::Hotend);
-    return (kind_ == TemperatureKind::Hotend) ? hotend_pid_ : bed_pid_;
-}
-
-const adv::array<Pid, PidSettings::NB_PIDs>& PidSettings::get_pids() const
-{
-    assert(kind_ <= TemperatureKind::Hotend);
-    return (kind_ == TemperatureKind::Hotend) ? hotend_pid_ : bed_pid_;
-}
-
-Pid& PidSettings::get_pid() {
-    return get_pids()[index_];
-}
-
-const Pid& PidSettings::get_pid() const {
-    return get_pids()[index_];
-}
-
-//! Record new PID values for a given temperature
-//! @param kind Kind of PID values: Hotend or Bed
-//! @param temperature Temperature for these PID values
-void PidSettings::add_pid(TemperatureKind kind, uint16_t temperature)
-{
-    kind_ = kind;
-    auto& pid = get_pids();
-    for(size_t i = 0; i < NB_PIDs; ++i)
-    {
-        if(temperature == pid[i].temperature_)
-        {
-            index_ = i;
-            get_marlin_pid();
-            return;
-        }
-    }
-
-    // Temperature not found, so move PIDs and forget the last one, set index to 0 and update values
-    for(size_t i = NB_PIDs - 1; i > 0; --i)
-        pid[i] = pid[i - 1];
-    index_ = 0;
-    pid[0].temperature_ = temperature;
-    get_marlin_pid();
-}
-
-//! Choose the best PID values for the given temperature
-//! @param kind Kind of PID values: Hotend or Bed
-//! @param temperature Temperature for these PID values
-void PidSettings::choose_best_pid(TemperatureKind kind, uint16_t temperature)
-{
-    index_ = 0;
-    kind_ = kind;
-
-    uint16_t best_difference = 500;
-    const auto& pid = get_pids();
-
-    for(size_t i = 0; i < NB_PIDs; ++i)
-    {
-        auto difference = abs(temperature - pid[i].temperature_);
-        if(difference < best_difference)
-        {
-            best_difference = difference;
-            index_ = i;
-        }
-    }
-
-    set_marlin_pid();
-}
 
 //! Send the current data to the LCD panel.
 void PidSettings::to_lcd() const
 {
-    const Pid& pid = get_pid();
+    const PidValue& value = pid.get_pid(kind_, index_);
     WriteRamRequest{Variable::Value0}.write_words(
         kind_ == TemperatureKind::Hotend ? 0u : 1u,
-        pid.temperature_,
-        pid.Kp_ * 100,
-        pid.Ki_ * 100,
-        pid.Kd_ * 100
+        value.temperature_,
+        value.Kp_ * 100,
+        value.Ki_ * 100,
+        value.Kd_ * 100
     );
 
     ADVString<8> indexes;
-    indexes << index_ + 1 << F(" / ") << NB_PIDs;
+    indexes << index_ + 1 << F(" / ") << Pid::NB_PIDs;
     WriteRamRequest{Variable::ShortText0}.write_text(indexes);
 }
 
@@ -311,14 +141,15 @@ void PidSettings::from_lcd()
     uint16_t d = response.read_word();
 
     kind_ = kind ? TemperatureKind::Bed : TemperatureKind::Hotend;
-    Pid& pid = get_pid();
+    PidValue& value = pid.get_pid(kind_, index_);
 
-    pid.Kp_ = static_cast<float>(p) / 100;
-    pid.Ki_ = static_cast<float>(i) / 100;
-    pid.Kd_ = static_cast<float>(d) / 100;
-    pid.temperature_ = temperature;
+    value.Kp_ = static_cast<float>(p) / 100;
+    value.Ki_ = static_cast<float>(i) / 100;
+    value.Kd_ = static_cast<float>(d) / 100;
+    value.temperature_ = temperature;
 
-    set_marlin_pid();
+    pid.set_marlin_pid(kind_, index_);
 }
+
 
 }

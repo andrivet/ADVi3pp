@@ -48,8 +48,7 @@ struct Core
 
     void startup();
     void idle();
-    void killed(const FlashChar* error);
-    void wait_user_confirm();
+    void killed(float temp, const FlashChar* error, const FlashChar* component);
 
     bool ensure_not_printing();
     bool is_busy();
@@ -59,6 +58,7 @@ struct Core
     template<size_t L> ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version);
 
     static PinState get_pin_state(uint8_t pin);
+    static float ensure_z_enough_room();
 
 private:
     bool init();
@@ -68,6 +68,7 @@ private:
     void from_lcd();
     void to_lcd();
     void send_lcd_data();
+    void send_lcd_touch_request();
 
 private:
     Once once_{};

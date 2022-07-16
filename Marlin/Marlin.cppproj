@@ -604,6 +604,12 @@
     <Compile Include="src\advi3pp\core\pages.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\core\pid.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\pid.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\core\serial-out.h">
       <SubType>compile</SubType>
     </Compile>
@@ -620,6 +626,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\core\task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\marlin\extui.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\controls\controls.h">
@@ -644,6 +653,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\info\copyrights.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\killed.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\info\killed.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\info\sponsors.h">
@@ -673,9 +688,6 @@
     <Compile Include="src\advi3pp\screens\print\change_filament.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\print\pause.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\print\pause_options.h">
       <SubType>compile</SubType>
     </Compile>
@@ -689,6 +701,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\settings\acceleration_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\beeper_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\beeper_settings.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\settings\eeprom_mismatch.h">
@@ -719,6 +737,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\settings\sensor_settings.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\skew_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\settings\skew_settings.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\settings\step_settings.h">
@@ -793,10 +817,10 @@
     <Compile Include="src\feature\babystep.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\feature\bedlevel\abl\abl.cpp">
+    <Compile Include="src\feature\bedlevel\abl\bbl.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\feature\bedlevel\abl\abl.h">
+    <Compile Include="src\feature\bedlevel\abl\bbl.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\feature\bedlevel\mbl\mesh_bed_leveling.cpp">
@@ -850,6 +874,9 @@
     <Compile Include="src\gcode\calibrate\M48.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\gcode\calibrate\M852.cpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\gcode\config\M43.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -863,6 +890,18 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\gcode.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M250.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M255.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M414.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\gcode\lcd\M995.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\gcode\parser.h">
@@ -946,12 +985,6 @@
     <Compile Include="src\HAL\AVR\u8g_com_HAL_AVR_sw_spi.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\HAL\AVR\watchdog.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\HAL\AVR\watchdog.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\HAL\HAL.h">
       <SubType>compile</SubType>
     </Compile>
@@ -973,16 +1006,10 @@
     <Compile Include="src\HAL\shared\esp_wifi.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\HAL\shared\HAL_MinSerial.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\HAL\shared\eeprom_api.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\HAL\shared\esp_wifi.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\HAL\shared\HAL_MinSerial.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\HAL\shared\HAL_SPI.h">
@@ -995,6 +1022,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\HAL\shared\math_32bit.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\MinSerial.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\HAL\shared\MinSerial.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\HAL\shared\progmem.h">
@@ -1096,9 +1129,6 @@
     <Compile Include="src\advi3pp\core\task.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\marlin\extui_advi3pp.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\marlin\marlin_ui.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1151,9 +1181,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\change_filament.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\print\pause.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\pause_options.cpp">

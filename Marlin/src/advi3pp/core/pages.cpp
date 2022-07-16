@@ -32,25 +32,16 @@ Log& operator<<(Log& log, Page page)
     return log;
 }
 
-#ifdef ADVi3PP_DEBUG
-void Pages::log()
-{
-    auto l = Log::log();
-
-    l << F("Stack:");
-    back_pages_.log(l);
-    l << F("Current:") << current_page_ << F("-") << get_cleared_bits(current_page_, Page::Temporary);
-    l << F("Forward:") << forward_page_ << F("-") << get_cleared_bits(forward_page_, Page::Temporary);
-    l << Log::endl();
+bool Pages::is_temporary(Page page) {
+  return test_one_bit(page, Page::Temporary);
 }
-#endif
 
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
 void Pages::show(Page page)
 {
     auto current = get_current_page();
-    if(!test_one_bit(current, Page::Temporary) && current != Page::Main)
+    if(!is_temporary(current) && current != Page::Main)
         back_pages_.push(current);
 
    show_(page);
@@ -61,16 +52,18 @@ void Pages::show_(Page page)
     WriteRegisterRequest{Register::PictureID}.write_page(get_cleared_bits(page, Page::Temporary));
 
     current_page_ = page;
-    log();
 }
 
 //! Retrieve the current page on the LCD screen
-Page Pages::get_current_page()
-{
+Page Pages::get_current_page() {
     // Boot page switches automatically (animation) to the Main page
 	if(current_page_ == Page::None || current_page_ == Page::Boot)
         current_page_ = Page::Main;
     return current_page_;
+}
+
+bool Pages::is_current_page_temporary() {
+  return is_temporary(get_current_page());
 }
 
 //! Set page to display after the completion of an operation.
@@ -78,7 +71,6 @@ void Pages::save_forward_page()
 {
     auto current = get_current_page();
     forward_page_ = current;
-    log();
 }
 
 //! Show the "Back" page on the LCD display.

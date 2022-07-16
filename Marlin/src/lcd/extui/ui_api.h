@@ -57,7 +57,7 @@ namespace ExtUI {
 
   static constexpr size_t eeprom_data_size = 48;
 
-  enum axis_t     : uint8_t { X, Y, Z, I, J, K, X2, Y2, Z2, Z3, Z4 };
+  enum axis_t     : uint8_t { X, Y, Z, I, J, K, U, V, W, X2, Y2, Z2, Z3, Z4 };
   enum extruder_t : uint8_t { E0, E1, E2, E3, E4, E5, E6, E7 };
   enum heater_t   : uint8_t { H0, H1, H2, H3, H4, H5, BED, CHAMBER, COOLER };
   enum fan_t      : uint8_t { FAN0, FAN1, FAN2, FAN3, FAN4, FAN5, FAN6, FAN7 };
@@ -84,8 +84,10 @@ namespace ExtUI {
   void injectCommands(const char * const); // @advi3++ add const qualifier
   bool commandsInQueue();
 
-  GcodeSuite::MarlinBusyState getHostKeepaliveState();
-  bool getHostKeepaliveIsPaused();
+  #if ENABLED(HOST_KEEPALIVE_FEATURE)
+    GcodeSuite::MarlinBusyState getHostKeepaliveState();
+    bool getHostKeepaliveIsPaused();
+  #endif
 
   bool isHeaterIdle(const heater_t);
   bool isHeaterIdle(const extruder_t);
@@ -198,7 +200,7 @@ namespace ExtUI {
   #endif
 
   inline void simulateUserClick() {
-    #if ANY(HAS_LCD_MENU, EXTENSIBLE_UI, DWIN_CREALITY_LCD_JYERSUI)
+    #if ANY(HAS_MARLINUI_MENU, EXTENSIBLE_UI, DWIN_CREALITY_LCD_JYERSUI)
       ui.lcd_clicked = true;
     #endif
   }
@@ -219,6 +221,7 @@ namespace ExtUI {
   void setTargetFan_percent(const_float_t, const fan_t);
   void coolDown();
   void setAxisPosition_mm(const_float_t, const axis_t, const feedRate_t=0);
+  void setMultipleAxisPosition_mm(size_t nb_axis, float *, const axis_t *, const feedRate_t); // @advi3++
   void setAxisPosition_mm(const_float_t, const extruder_t, const feedRate_t=0);
   void setAxisSteps_per_mm(const_float_t, const axis_t);
   void setAxisSteps_per_mm(const_float_t, const extruder_t);
@@ -236,7 +239,6 @@ namespace ExtUI {
   void setFlow_percent(const int16_t, const extruder_t);
   bool awaitingUserConfirm();
   void setUserConfirmed();
-  void waitUserConfirmation(); // @advi3++
 
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse);
@@ -320,6 +322,11 @@ namespace ExtUI {
       float getCaseLightBrightness_percent();
       void setCaseLightBrightness_percent(const_float_t);
     #endif
+  #endif
+
+  #if ENABLED(POWER_LOSS_RECOVERY)
+    bool getPowerLossRecoveryEnabled();
+    void setPowerLossRecoveryEnabled(const bool);
   #endif
 
   #if ENABLED(PIDTEMP)
@@ -422,27 +429,27 @@ namespace ExtUI {
   void onMediaRemoved();
   void onMediaOpenError(const char* filename); // @advi3++
   void onPlayTone(const uint16_t frequency, const uint16_t duration);
-  void onPrinterKilled(FSTR_P const error, FSTR_P const component);
+  void onPrinterKilled(float temp, FSTR_P const error, FSTR_P const component);
   void onPrintTimerStarted();
   void onPrintTimerPaused();
   void onPrintTimerStopped();
-  void onPrintFinished();
+  void onPrintDone();
   void onFilamentRunout(const extruder_t extruder);
   void onUserConfirmRequired(const char * const msg);
   void onUserConfirmRequired(FSTR_P const fstr);
   void onStatusChanged(const char * const msg);
   void onStatusChanged(FSTR_P const fstr);
   void onHomingStart();
-  void onHomingComplete();
+  void onHomingDone();
   void onSteppersDisabled();
   void onSteppersEnabled();
   void onFactoryReset();
   void onStoreSettings(char *);
   void onLoadSettings(const char *);
   void onPostprocessSettings();
-  void onConfigurationStoreWritten(bool success);
-  void onConfigurationStoreRead(bool success);
-  void onConfigurationStoreValidated(bool success); // @advi3++
+  void onSettingsStored(bool success);
+  void onSettingsLoaded(bool success);
+  void onSettingsValidated(bool success); // @advi3++
 
   // @advi3++
   #if ENABLED(EEPROM_SETTINGS)
@@ -467,6 +474,15 @@ namespace ExtUI {
     bool bltouchStow();
   #endif
 
+  // @advi3++
+  #if ENABLED(SKEW_CORRECTION)
+    #if ENABLED(SKEW_CORRECTION_FOR_Z)
+        void setSkewFactors(float xy, float xz, float yz);
+    #else
+        void setSkewFactors(float xy);
+    #endif
+  #endif
+
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume();
   #endif
@@ -477,7 +493,6 @@ namespace ExtUI {
   #endif
 
   // @advi3++
-  bool isPrintingPaused();
   void setAllAxisUnhomed();
   void setAllAxisPositionUnknown();
   void finishAndDisableHeaters();
@@ -485,6 +500,8 @@ namespace ExtUI {
   void kill(PGM_P const lcd_error=nullptr, PGM_P const lcd_component=nullptr, const bool steppers_off=false);
   void killRightNow(const bool steppers_off=false);
   void watchdogReset();
+  void stopMove();
+  void setAbsoluteZAxisPosition_mm(const_float_t position);
 };
 
 /**

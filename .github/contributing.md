@@ -41,7 +41,7 @@ When you are creating a Bug Report, please [include as many details as possible]
 
 #### How Do I Submit A (Good) Bug Report?
 
-Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). Use the New Issue button to create an issue and provide the following information by filling in [the template](issue_template.md).
+Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). Use the New Issue button to create an issue and provide the following information by filling in [the template](ISSUE_TEMPLATE/bug_report.yml).
 
 Explain the problem and include additional details to help maintainers reproduce the problem:
 
@@ -68,7 +68,7 @@ Include details about your configuration and environment:
 
 This section guides you through submitting a suggestion for **ADVi3++**, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion and find related suggestions.
 
-Before creating a suggestion, please check [this list](#before-submitting-a-suggestion) as you might find out that you don't need to create one. When you are creating an enhancement suggestion, please [include as many details as possible](#how-do-i-submit-a-good-enhancement-suggestion). Fill in [the template](issue_template.md), including the steps that you imagine you would take if the feature you're requesting existed.
+Before creating a suggestion, please check [this list](https://github.com/MarlinFirmware/Marlin/issues?q=is%3Aopen+is%3Aissue+label%3A%22T%3A+Feature+Request%22) as you might find out that you don't need to create one. When you are creating an enhancement suggestion, please [include as many details as possible](#how-do-i-submit-a-good-feature-request). Fill in [the template](ISSUE_TEMPLATE/feature_request.yml), including the steps that you imagine you would take if the feature you're requesting existed.
 
 #### Before Submitting a Feature Request
 

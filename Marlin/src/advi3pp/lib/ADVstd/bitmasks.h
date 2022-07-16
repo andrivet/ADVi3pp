@@ -121,6 +121,13 @@ void set_bits(E& lhs, E rhs)
 }
 
 template<typename E, typename = typename enable_if<enable_bitmask_operators<E>::enable, E&>::type>
+void set_one_bit(E& value, E bit_to_change, bool bit_value)
+{
+  value &= ~bit_to_change;
+  if(bit_value) value |= (static_cast<E>(-1) & bit_to_change);
+}
+
+template<typename E, typename = typename enable_if<enable_bitmask_operators<E>::enable, E&>::type>
 void clear_bits(E& lhs, E rhs)
 {
     lhs &= ~rhs;

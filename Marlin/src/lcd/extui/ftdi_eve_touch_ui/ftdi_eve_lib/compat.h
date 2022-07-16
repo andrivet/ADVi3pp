@@ -40,13 +40,13 @@
     template<typename port_t,uint8_t bits>
     struct port_pin {
       typedef port_t port;
-      static inline void set_high()         {port::port() = (port::port() |   bits);}
-      static inline void set_low()          {port::port() = (port::port() & (~bits));}
-      static inline void set_input()        {port::ddr()  = (port::ddr()  & (~bits));}
-      static inline void set_input_pullup() {set_input(); set_high();}
-      static inline void set_output()       {port::ddr()  = (port::ddr()  |   bits);}
-      static inline uint8_t read()          {return port::pin() & bits;}
-      static inline void write(bool v)      {if (v) set_high(); else set_low();}
+      static void set_high()         {port::port() = (port::port() |   bits);}
+      static void set_low()          {port::port() = (port::port() & (~bits));}
+      static void set_input()        {port::ddr()  = (port::ddr()  & (~bits));}
+      static void set_input_pullup() {set_input(); set_high();}
+      static void set_output()       {port::ddr()  = (port::ddr()  |   bits);}
+      static uint8_t read()          {return port::pin() & bits;}
+      static void write(bool v)      {if (v) set_high(); else set_low();}
     };
 
     #define MAKE_AVR_PORT_PINS(ID) \
@@ -109,13 +109,13 @@
     template<uint8_t p>
     struct arduino_digital_pin {
       static constexpr uint8_t pin = p;
-      static inline void set_high()          {digitalWrite(p, HIGH);}
-      static inline void set_low()           {digitalWrite(p, LOW);}
-      static inline void set_input()         {pinMode(p, INPUT);}
-      static inline void set_input_pullup()  {pinMode(p, INPUT_PULLUP);}
-      static inline void set_output()        {pinMode(p, OUTPUT);}
-      static inline uint8_t read()           {return digitalRead(p);}
-      static inline void write(bool v)       {digitalWrite(p, v ? HIGH : LOW);}
+      static void set_high()          {digitalWrite(p, HIGH);}
+      static void set_low()           {digitalWrite(p, LOW);}
+      static void set_input()         {pinMode(p, INPUT);}
+      static void set_input_pullup()  {pinMode(p, INPUT_PULLUP);}
+      static void set_output()        {pinMode(p, OUTPUT);}
+      static uint8_t read()           {return digitalRead(p);}
+      static void write(bool v)       {digitalWrite(p, v ? HIGH : LOW);}
     };
 
     #define MAKE_ARDUINO_PINS(ID) typedef arduino_digital_pin<ID> ARDUINO_DIGITAL_##ID;
@@ -240,8 +240,8 @@
   #define IS_PROBE(V...) SECOND(V, 0)     // Get the second item passed, or 0
   #define PROBE() ~, 1                    // Second item will be 1 if this is passed
   #define _NOT_0 PROBE()
-  #define NOT(x) IS_PROBE(_CAT(_NOT_, x)) // NOT('0') gets '1'. Anything else gets '0'.
-  #define _BOOL(x) NOT(NOT(x))            // NOT('0') gets '0'. Anything else gets '1'.
+  #define NOT(x) IS_PROBE(_CAT(_NOT_, x)) //   NOT('0') gets '1'. Anything else gets '0'.
+  #define _BOOL(x) NOT(NOT(x))            // _BOOL('0') gets '0'. Anything else gets '1'.
 
   #define _DO_1(W,C,A)       (_##W##_1(A))
   #define _DO_2(W,C,A,B)     (_##W##_1(A) C _##W##_1(B))

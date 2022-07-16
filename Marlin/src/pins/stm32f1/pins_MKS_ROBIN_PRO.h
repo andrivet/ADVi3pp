@@ -28,7 +28,7 @@
 #include "env_validate.h"
 
 #if HOTENDS > 3 || E_STEPPERS > 3
-  #error "MKS Robin pro supports up to 3 hotends / E-steppers. Comment out this line to continue."
+  #error "MKS Robin pro supports up to 3 hotends / E steppers."
 #endif
 
 #define BOARD_INFO_NAME "MKS Robin pro"
@@ -185,7 +185,9 @@
 //
 #if ENABLED(MKS_PWC)
   #if ENABLED(TFT_LVGL_UI)
-    #undef PSU_CONTROL
+    #if ENABLED(PSU_CONTROL)
+      #error "PSU_CONTROL is incompatible with MKS_PWC plus TFT_LVGL_UI."
+    #endif
     #undef MKS_PWC
     #define SUICIDE_PIN                     PG11
     #define SUICIDE_PIN_STATE               LOW

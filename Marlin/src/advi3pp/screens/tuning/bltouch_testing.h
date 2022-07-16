@@ -43,6 +43,8 @@ private:
 private:
     bool do_dispatch(KeyValue key_value);
     Page do_prepare_page();
+    void do_back_command();
+    void do_save_command();
     void step1();
     void step1yes();
     void step1no();

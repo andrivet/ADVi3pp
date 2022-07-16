@@ -22,12 +22,13 @@
 
 #include "../../inc/MarlinConfigPre.h"
 
-#if HAS_LCD_MENU
+#if HAS_MARLINUI_MENU
 
 #include "menu.h"
 #include "../../module/planner.h"
 #include "../../module/motion.h"
 #include "../../module/printcounter.h"
+#include "../../module/temperature.h"
 #include "../../gcode/queue.h"
 
 #if HAS_BUZZER
@@ -46,7 +47,7 @@
 ///////////// Global Variables /////////////
 ////////////////////////////////////////////
 
-#if HAS_LEVELING && ANY(LEVEL_BED_CORNERS, PROBE_OFFSET_WIZARD, X_AXIS_TWIST_COMPENSATION)
+#if HAS_LEVELING && ANY(LCD_BED_TRAMMING, PROBE_OFFSET_WIZARD, X_AXIS_TWIST_COMPENSATION)
   bool leveling_was_active; // = false
 #endif
 #if ANY(PROBE_MANUALLY, MESH_BED_LEVELING, X_AXIS_TWIST_COMPENSATION)
@@ -67,12 +68,13 @@ typedef struct {
 menuPosition screen_history[6];
 uint8_t screen_history_depth = 0;
 
-int8_t MenuItemBase::itemIndex;   // Index number for draw and action
-PGM_P MenuItemBase::itemString;   // A PSTR for substitution
-chimera_t editable;               // Value Editing
+int8_t MenuItemBase::itemIndex;         // Index number for draw and action
+FSTR_P MenuItemBase::itemStringF;       // A string for substitution
+const char *MenuItemBase::itemStringC;
+chimera_t editable;                     // Value Editing
 
 // Menu Edit Items
-PGM_P        MenuEditItemBase::editLabel;
+FSTR_P       MenuEditItemBase::editLabel;
 void*        MenuEditItemBase::editValue;
 int32_t      MenuEditItemBase::minEditValue,
              MenuEditItemBase::maxEditValue;
@@ -133,7 +135,7 @@ void MenuEditItemBase::edit_screen(strfunc_t strfunc, loadfunc_t loadfunc) {
 
 // Going to an edit screen sets up some persistent values first
 void MenuEditItemBase::goto_edit_screen(
-  PGM_P const el,         // Edit label
+  FSTR_P const el,        // Edit label
   void * const ev,        // Edit value pointer
   const int32_t minv,     // Encoder minimum
   const int32_t maxv,     // Encoder maximum
@@ -162,15 +164,12 @@ void MenuEditItemBase::goto_edit_screen(
 
 #include "../../MarlinCore.h"
 
-bool printer_busy() {
-  return planner.movesplanned() || printingIsActive();
-}
-
 /**
  * General function to go directly to a screen
  */
 void MarlinUI::goto_screen(screenFunc_t screen, const uint16_t encoder/*=0*/, const uint8_t top/*=0*/, const uint8_t items/*=0*/) {
   if (currentScreen != screen) {
+    thermalManager.set_menu_cold_override(false);
 
     TERN_(IS_DWIN_MARLINUI, did_first_redraw = false);
 
@@ -205,14 +204,14 @@ void MarlinUI::goto_screen(screenFunc_t screen, const uint16_t encoder/*=0*/, co
     if (on_status_screen()) {
       defer_status_screen(false);
       clear_menu_history();
-      TERN_(AUTO_BED_LEVELING_UBL, ubl.lcd_map_control = false);
+      TERN_(AUTO_BED_LEVELING_UBL, bedlevel.lcd_map_control = false);
     }
 
     clear_lcd();
 
     // Re-initialize custom characters that may be re-used
     #if HAS_MARLINUI_HD44780
-      if (TERN1(AUTO_BED_LEVELING_UBL, !ubl.lcd_map_control))
+      if (TERN1(AUTO_BED_LEVELING_UBL, !bedlevel.lcd_map_control))
         set_custom_characters(on_status_screen() ? CHARSET_INFO : CHARSET_MENU);
     #endif
 
@@ -220,7 +219,7 @@ void MarlinUI::goto_screen(screenFunc_t screen, const uint16_t encoder/*=0*/, co
     screen_changed = true;
     TERN_(HAS_MARLINUI_U8GLIB, drawing_screen = false);
 
-    TERN_(HAS_LCD_MENU, encoder_direction_normal());
+    TERN_(HAS_MARLINUI_MENU, encoder_direction_normal());
 
     set_selection(false);
   }
@@ -234,8 +233,8 @@ void MarlinUI::goto_screen(screenFunc_t screen, const uint16_t encoder/*=0*/, co
 // Display a "synchronize" screen with a custom message until
 // all moves are finished. Go back to calling screen when done.
 //
-void MarlinUI::synchronize(PGM_P const msg/*=nullptr*/) {
-  static PGM_P sync_message = msg ?: GET_TEXT(MSG_MOVING);
+void MarlinUI::synchronize(FSTR_P const fmsg/*=nullptr*/) {
+  static FSTR_P sync_message = fmsg ?: GET_TEXT_F(MSG_MOVING);
   push_current_screen();
   goto_screen([]{
     if (should_draw()) MenuItem_static::draw(LCD_HEIGHT >= 4, sync_message);
@@ -276,11 +275,7 @@ void scroll_screen(const uint8_t limit, const bool is_menu) {
 #if HAS_BUZZER
   void MarlinUI::completion_feedback(const bool good/*=true*/) {
     TERN_(HAS_TOUCH_SLEEP, wakeup_screen()); // Wake up on rotary encoder click...
-    if (good) {
-      BUZZ(100, 659);
-      BUZZ(100, 698);
-    }
-    else BUZZ(20, 440);
+    if (good) OKAY_BUZZ(); else ERR_BUZZ();
   }
 #endif
 
@@ -325,12 +320,12 @@ void scroll_screen(const uint8_t limit, const bool is_menu) {
     }
     if (ui.should_draw()) {
       if (do_probe) {
-        MenuEditItemBase::draw_edit_screen(GET_TEXT(MSG_ZPROBE_ZOFFSET), BABYSTEP_TO_STR(probe.offset.z));
+        MenuEditItemBase::draw_edit_screen(GET_TEXT_F(MSG_ZPROBE_ZOFFSET), BABYSTEP_TO_STR(probe.offset.z));
         TERN_(BABYSTEP_ZPROBE_GFX_OVERLAY, ui.zoffset_overlay(probe.offset.z));
       }
       else {
         #if ENABLED(BABYSTEP_HOTEND_Z_OFFSET)
-          MenuEditItemBase::draw_edit_screen(GET_TEXT(MSG_HOTEND_OFFSET_Z), ftostr54sign(hotend_offset[active_extruder].z));
+          MenuEditItemBase::draw_edit_screen(GET_TEXT_F(MSG_HOTEND_OFFSET_Z), ftostr54sign(hotend_offset[active_extruder].z));
         #endif
       }
     }
@@ -341,7 +336,7 @@ void scroll_screen(const uint8_t limit, const bool is_menu) {
 void _lcd_draw_homing() {
   if (ui.should_draw()) {
     constexpr uint8_t line = (LCD_HEIGHT - 1) / 2;
-    MenuItem_static::draw(line, GET_TEXT(MSG_LEVEL_BED_HOMING));
+    MenuItem_static::draw(line, GET_TEXT_F(MSG_LEVEL_BED_HOMING));
   }
 }
 
@@ -363,12 +358,13 @@ bool MarlinUI::update_selection() {
 }
 
 void MenuItem_confirm::select_screen(
-  PGM_P const yes, PGM_P const no,
+  FSTR_P const yes, FSTR_P const no,
   selectFunc_t yesFunc, selectFunc_t noFunc,
-  PGM_P const pref, const char * const string/*=nullptr*/, PGM_P const suff/*=nullptr*/
+  FSTR_P const pref, const char * const string/*=nullptr*/, FSTR_P const suff/*=nullptr*/
 ) {
   ui.defer_status_screen();
-  const bool ui_selection = ui.update_selection(), got_click = ui.use_click();
+  const bool ui_selection = !yes ? false : !no || ui.update_selection(),
+             got_click = ui.use_click();
   if (got_click || ui.should_draw()) {
     draw_select_screen(yes, no, ui_selection, pref, string, suff);
     if (got_click) {
@@ -378,4 +374,4 @@ void MenuItem_confirm::select_screen(
   }
 }
 
-#endif // HAS_LCD_MENU
+#endif // HAS_MARLINUI_MENU

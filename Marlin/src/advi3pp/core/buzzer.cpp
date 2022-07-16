@@ -22,43 +22,97 @@
 #include "logging.h"
 #include "dgus.h"
 #include "buzzer.h"
-#include "dimming.h"
-#include "settings.h"
+
 
 namespace ADVi3pp {
 
-const uint8_t BUZZ_ON_PRESS_DURATION = 10;  // x 1 ms
-const uint8_t BUZZ_ON_ACTION_DURATION = 20; // x 1 ms
-
 Buzzer buzzer;
+
+
+void Buzzer::buzz(uint8_t duration) {
+  send_buzz_command_to_lcd(duration);
+}
+
+void Buzzer::set_settings(bool buzz_on_action, bool buzz_on_press, uint8_t buzz_duration) {
+  buzz_on_action_ = buzz_on_action;
+  buzz_on_press_ = buzz_on_press;
+  buzz_duration_ = buzz_duration;
+}
+
+//! Store current data in permanent memory (EEPROM)
+//! @param eeprom EEPROM writer
+void Buzzer::do_write(EepromWrite& eeprom) const {
+  eeprom.write(buzz_on_action_);
+  eeprom.write(buzz_on_press_);
+  eeprom.write(buzz_duration_);
+}
+
+//! Validate data from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
+bool Buzzer::do_validate(EepromRead &eeprom) {
+  bool value;
+  uint8_t buzz_duration;
+  eeprom.read(value);
+  eeprom.read(value);
+  eeprom.read(buzz_duration);
+  return true;
+}
+
+//! Restore data from permanent memory (EEPROM).
+//! @param eeprom EEPROM reader
+void Buzzer::do_read(EepromRead& eeprom) {
+  eeprom.read(buzz_on_action_);
+  eeprom.read(buzz_on_press_);
+  eeprom.read(buzz_duration_);
+}
+
+//! Reset settings
+void Buzzer::do_reset() {
+  buzz_on_action_ = true;
+  buzz_on_press_ = false;
+  buzz_duration_ = 1;
+}
+
+//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
+//! @return Number of bytes
+uint16_t Buzzer::do_size_of() const {
+  return sizeof(buzz_on_action_) + sizeof(buzz_on_press_) + sizeof(buzz_duration_);
+}
+
+//! Send the buzz command to the LCD panel
+//! @param duration Duration of the sound
+void Buzzer::send_buzz_command_to_lcd()
+{
+  send_buzz_command_to_lcd(get_buzz_duration());
+}
+
+//! Send the buzz command to the LCD panel
+//! @param duration Duration of the sound
+void Buzzer::send_buzz_command_to_lcd(uint8_t duration)
+{
+  if(duration <= 0)
+    return;
+  WriteRegisterRequest{Register::BuzzerBeepingTime}.write_byte(duration);
+}
 
 //! Activate the LCD internal buzzer for the given duration.
 //! Note: If the buzzer is disabled, does nothing.
 void Buzzer::buzz_on_action()
 {
-    dimming.reset();
-    if(!settings.is_feature_enabled(Feature::BuzzOnAction))
-        return;
+  ui.refresh_screen_timeout();
+  if(!is_buzz_on_action_enabled())
+    return;
 
-    send_buzz_command_to_lcd(BUZZ_ON_ACTION_DURATION);
-}
-
-//! Send the buzz command to the LCD panel
-//! @param duration Duration of the sound
-void Buzzer::send_buzz_command_to_lcd(long duration)
-{
-    duration /= 10;
-
-    WriteRegisterRequest{Register::BuzzerBeepingTime}.write_byte(static_cast<uint8_t>(duration > UINT8_MAX ? UINT8_MAX : duration));
+  send_buzz_command_to_lcd();
 }
 
 //! Buzz briefly when the LCD panel is pressed.
 //! Note: If buzz on press is disabled, does nothing
 void Buzzer::buzz_on_press()
 {
-    if(!settings.is_feature_enabled(Feature::BuzzOnPress))
+    if(!is_buzz_on_press_enabled())
         return;
-    send_buzz_command_to_lcd(BUZZ_ON_PRESS_DURATION);
+    send_buzz_command_to_lcd();
 }
 
 }

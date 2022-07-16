@@ -34,8 +34,8 @@ COMMIT_STEPS=0
 #cd "$CONFIGREPO" 2>/dev/null || { echo "Can't find Configurations repo!" ; exit 1; }
 
 ACTION=${1:-init}
-IMPORT=${2:-"import-2.0.x"}
-EXPORT=${3:-"bugfix-2.0.x"}
+IMPORT=${2:-"import-2.1.x"}
+EXPORT=${3:-"bugfix-2.1.x"}
 
 echo -n "Doing grhh ... " ; grhh ; echo
 
@@ -52,7 +52,7 @@ if [[ $ACTION == "manual" ]]; then
   git checkout $IMPORT || exit
 
   # Reset from the latest complete state
-  #git reset --hard bugfix-2.0.x
+  #git reset --hard bugfix-2.1.x
 
   cp "$MARLINREPO/Marlin/"Configuration*.h "$CDEF/"
   #git add . && git commit -m "Changes from Marlin ($(date '+%Y-%m-%d %H:%M'))."
@@ -74,6 +74,8 @@ if [[ $ACTION == "init" ]]; then
   # a 'BASE' branch with only defaults as a starting point.
   #
 
+  SED=$(which gsed sed | head -n1)
+
   echo "- Initializing BASE branch..."
 
   # Use the import branch as the source
@@ -81,6 +83,14 @@ if [[ $ACTION == "init" ]]; then
 
   # Copy to a temporary location
   TEMP=$( mktemp -d ) ; cp -R config $TEMP
+
+  # Strip all #error lines
+  IFS=$'\n'; set -f
+  for fn in $( find $TEMP/config -type f -name "Configuration.h" ); do
+    $SED -i~ -e "20,30{/#error/d}" "$fn"
+    rm "$fn~"
+  done
+  unset IFS; set +f
 
   # Make sure we're not on the 'BASE' branch...
   git checkout init-repo >/dev/null 2>&1 || exit
@@ -149,7 +159,6 @@ if [[ $ACTION == "init" ]]; then
   ((COMMIT_STEPS)) && git add . >/dev/null && git commit -m "Reset TPARA..." >/dev/null
 
   # Update the %VERSION% in the README.md file
-  SED=$(which gsed sed | head -n1)
   VERS=$( echo $EXPORT | $SED 's/release-//' )
   eval "${SED} -E -i~ -e 's/%VERSION%/$VERS/g' README.md"
   rm -f README.md~

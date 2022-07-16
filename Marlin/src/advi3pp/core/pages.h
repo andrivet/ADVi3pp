@@ -32,6 +32,7 @@ struct Pages
 {
     void show(Page page);
     Page get_current_page();
+    bool is_current_page_temporary();
     void save_forward_page();
     void show_back_page();
     void show_forward_page();
@@ -39,12 +40,7 @@ struct Pages
 
 private:
     void show_(Page page);
-
-#ifdef ADVi3PP_DEBUG
-    void log();
-#else
-    void log() {}
-#endif
+    static bool is_temporary(Page page);
 
 private:
     Stack<Page, 8> back_pages_{};

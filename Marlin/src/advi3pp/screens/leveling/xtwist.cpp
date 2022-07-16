@@ -82,7 +82,7 @@ Page XTwist::do_prepare_page()
     z_offsets_.fill(0);
 
     wait.wait(F("Homing..."));
-    core.inject_commands(F("G28 F6000"));  // homing
+    core.inject_commands(F("G28 O F6000"));  // homing
     background_task.set(Callback{this, &XTwist::post_home_task}, 200);
 
     return Page::None;
@@ -110,8 +110,7 @@ void XTwist::do_back_command()
 {
     // enable enstops, raise head
     ExtUI::setSoftEndstopState(true);
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(4, ExtUI::Z, FEEDRATE_Z);
 
     Parent::do_back_command();
 }
@@ -123,9 +122,8 @@ void XTwist::do_save_command()
     for(size_t i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, z_offsets_[i]);
 
     // enable enstops, raise head
-    ExtUI::setSoftEndstopState(true);
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
+    ExtUI::setSoftEndstopState(true);;
+    ExtUI::setAxisPosition_mm(4, ExtUI::Z, FEEDRATE_Z);
 
     Parent::do_save_command();
 }
@@ -158,17 +156,10 @@ float XTwist::get_x_mm(Point x) const
 
 void XTwist::move_x(Point x)
 {
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(4, ExtUI::Z);
-
-    ExtUI::setFeedrate_mm_s(FEEDRATE_X);
-    ExtUI::setAxisPosition_mm(get_x_mm(x), ExtUI::X);
-
-    ExtUI::setFeedrate_mm_s(FEEDRATE_X);
-    ExtUI::setAxisPosition_mm(Y_BED_SIZE / 2.0f, ExtUI::Y);
-
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(z_offsets_[static_cast<size_t>(x)], ExtUI::Z);
+    ExtUI::setAxisPosition_mm(4, ExtUI::Z, FEEDRATE_Z);
+    ExtUI::setAxisPosition_mm(get_x_mm(x), ExtUI::X, FEEDRATE_X);
+    ExtUI::setAxisPosition_mm(Y_BED_SIZE / 2.0f, ExtUI::Y, FEEDRATE_X);
+    ExtUI::setAxisPosition_mm(z_offsets_[static_cast<size_t>(x)], ExtUI::Z, FEEDRATE_Z);
 
     point_ = x;
 }
@@ -216,8 +207,7 @@ double XTwist::get_multiplier_value() const
 //! @param offset Offset for the adjustment.
 void XTwist::adjust_height(double offset_value)
 {
-    ExtUI::setFeedrate_mm_s(FEEDRATE_Z);
-    ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset_value, ExtUI::Z);
+    ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + offset_value, ExtUI::Z, FEEDRATE_Z);
     z_offsets_[static_cast<size_t>(point_)] = ExtUI::getAxisPosition_mm(ExtUI::Z);
 }
 

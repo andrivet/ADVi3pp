@@ -33,9 +33,9 @@
 
 #if EITHER(NO_EEPROM_SELECTED, FLASH_EEPROM_EMULATION)
   #define FLASH_EEPROM_EMULATION
-  #define EEPROM_PAGE_SIZE     (0x800U)           // 2KB
+  #define EEPROM_PAGE_SIZE     (0x800U)           // 2K
   #define EEPROM_START_ADDRESS (0x8000000UL + (STM32_FLASH_SIZE) * 1024UL - (EEPROM_PAGE_SIZE) * 2UL)
-  #define MARLIN_EEPROM_SIZE    EEPROM_PAGE_SIZE  // 2KB
+  #define MARLIN_EEPROM_SIZE    EEPROM_PAGE_SIZE  // 2K
 #endif
 
 //
@@ -120,11 +120,11 @@
 /**
  *        SKR Mini E3 V1.0, V1.2                      SKR Mini E3 V2.0
  *                ------                                    ------
- *            5V | 1  2 | GND                           5V | 1  2 | GND
- *  (LCD_EN) PB7 | 3  4 | PB8  (LCD_RS)      (LCD_EN) PB15 | 3  4 | PB8  (LCD_RS)
- *  (LCD_D4) PB9 | 5  6   PA10 (BTN_EN2)     (LCD_D4) PB9  | 5  6   PA10 (BTN_EN2)
- *         RESET | 7  8 | PA9  (BTN_EN1)             RESET | 7  8 | PA9  (BTN_EN1)
- * (BTN_ENC) PB6 | 9 10 | PB5  (BEEPER)     (BTN_ENC) PA15 | 9 10 | PB5  (BEEPER)
+ * (BEEPER)  PB5  |10  9 | PB6 (BTN_ENC)    (BEEPER)  PB5  |10  9 | PA15 (BTN_ENC)
+ * (BTN_EN1) PA9  | 8  7 | RESET            (BTN_EN1) PA9  | 8  7 | RESET
+ * (BTN_EN2) PA10   6  5 | PB9  (LCD_D4)    (BTN_EN2) PA10   6  5 | PB9  (LCD_D4)
+ * (LCD_RS)  PB8  | 4  3 | PB7  (LCD_EN)    (LCD_RS)  PB8  | 4  3 | PB15 (LCD_EN)
+ *            GND | 2  1 | 5V                          GND | 2  1 | 5V
  *                ------                                    ------
  *                 EXP1                                      EXP1
  */
@@ -136,21 +136,23 @@
   #define EXP1_3                            PB7
 #endif
 
-#if EITHER(HAS_DWIN_E3V2, IS_DWIN_MARLINUI)
+#if HAS_DWIN_E3V2 || IS_DWIN_MARLINUI
   /**
-   *        ------              ------              ------
-   *   VCC | 1  2 | GND    VCC | 1  2 | GND    GND |  2 1 | VCC
-   *     A | 3  4 | B        A | 3  4 | B        B |  4 3 | A
-   *       | 5  6   TX    BEEP | 5  6   ENT    ENT |  6 5 | BEEP
-   *       | 7  8 | RX      TX | 7  8 | RX      RX |  8 7 | TX
-   *  BEEP | 9 10 | ENT        | 9 10 |            | 10 9 |
-   *        ------              ------              ------
-   *         EXP1                DWIN             DWIN (plug)
+   *        ------                ------                ------
+   * (ENT) |10  9 | (BEEP)       |10  9 |              |10  9 |
+   *  (RX) | 8  7 |         (RX) | 8  7 | (TX)      RX | 8  7 | TX
+   *  (TX)   6  5 |        (ENT)   6  5 | (BEEP)   ENT | 6  5 | BEEP
+   *   (B) | 4  3 | (A)      (B) | 4  3 | (A)        B | 4  3 | A
+   *   GND | 2  1 | (VCC)    GND | 2  1 | VCC      GND | 2  1 | VCC
+   *        ------                ------                ------
+   *         EXP1                  DWIN               DWIN (plug)
    *
    * All pins are labeled as printed on DWIN PCB. Connect TX-TX, A-A and so on.
    */
 
-  #error "Ender-3 V2 display requires a custom cable, see diagram above this line. Comment out this line to continue."
+  #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
+    #error "CAUTION! Ender-3 V2 display requires a custom cable. See 'pins_BTT_SKR_MINI_E3_common.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
+  #endif
 
   #define BEEPER_PIN                      EXP1_9
   #define BTN_EN1                         EXP1_3
@@ -173,7 +175,9 @@
 
   #elif ENABLED(ZONESTAR_LCD)                     // ANET A8 LCD Controller - Must convert to 3.3V - CONNECTING TO 5V WILL DAMAGE THE BOARD!
 
-    #error "CAUTION! ZONESTAR_LCD requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. Comment out this line to continue."
+    #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
+      #error "CAUTION! ZONESTAR_LCD requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
+    #endif
 
     #define LCD_PINS_RS                     PB9
     #define LCD_PINS_ENABLE               EXP1_9
@@ -201,20 +205,22 @@
 
     #if ENABLED(TFTGLCD_PANEL_SPI)
 
-      #error "CAUTION! TFTGLCD_PANEL_SPI requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. Comment out this line to continue."
+      #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
+        #error "CAUTION! TFTGLCD_PANEL_SPI requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
+      #endif
 
       /**
        * TFTGLCD_PANEL_SPI display pinout
        *
-       *               Board                                        Display
-       *               ------                                       ------
-       *           5V | 1  2 | GND                (SPI1-MISO) MISO | 1  2 | SCK   (SPI1-SCK)
-       * (FREE)   PB7 | 3  4 | PB8  (LCD_CS)      (PA9)     LCD_CS | 3  4 | SD_CS (PA10)
-       * (FREE)   PB9 | 5  6 | PA10 (SD_CS)                 (FREE) | 5  6 | MOSI  (SPI1-MOSI)
-       *        RESET | 7  8 | PA9  (MOD_RESET)   (PB5)     SD_DET | 7  8 | (FREE)
-       * (BEEPER) PB6 | 9 10 | PB5  (SD_DET)                   GND | 9 10 | 5V
-       *               ------                                       ------
-       *                EXP1                                         EXP1
+       *                   Board                        Display
+       *                   ------                        ------
+       * (SD_DET)    PB5  |10  9 | PB6 (BEEPER)      5V |10  9 | GND
+       * (MOD_RESET) PA9  | 8  7 | RESET             -- | 8  7 | (SD_DET)
+       * (SD_CS)     PA10   6  5 | PB9          (MOSI)  | 6  5 | --
+       * (LCD_CS)    PB8  | 4  3 | PB7          (SD_CS) | 4  3 | (LCD_CS)
+       *              GND | 2  1 | 5V           (SCK)   | 2  1 | (MISO)
+       *                   ------                        ------
+       *                    EXP1                          EXP1
        *
        * Needs custom cable:
        *
@@ -236,28 +242,96 @@
 
     #endif
 
+  #elif ENABLED(FYSETC_MINI_12864_2_1)
+
+    #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
+      #error "CAUTION! FYSETC_MINI_12864_2_1 / MKS_MINI_12864_V3 / BTT_MINI_12864_V1 requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
+    #endif
+
+    /**
+     * FYSETC_MINI_12864_2_1 / MKS_MINI_12864_V3 / BTT_MINI_12864_V1 display pinout
+     *
+     *       Board                      Display
+     *       ------                     ------
+     * PB5  |10  9 | PA15       (BEEP) |10  9 | BTN_ENC
+     * PA9  | 8  7 | RESET      LCD_CS | 8  7 | LCD A0
+     * PA10 | 6  5 | PB9       LCD_RST | 6  5 | RED
+     * PB8  | 4  3 | PB15      (GREEN) | 4  3 | (BLUE)
+     * GND  | 2  1 | 5V            GND | 2  1 | 5V
+     *       ------                     ------
+     *        EXP1                       EXP1
+     *
+     *            ---                   ------
+     *       RST | 1 |          (MISO) |10  9 | SCK
+     * (RX2) PA2 | 2 |         BTN_EN1 | 8  7 | (SS)
+     * (TX2) PA3 | 3 |         BTN_EN2 | 6  5 | MOSI
+     *       GND | 4 |            (CD) | 4  3 | (RST)
+     *        5V | 5 |           (GND) | 2  1 | (KILL)
+     *            ---                   ------
+     *            TFT                    EXP2
+     *
+     * Needs custom cable:
+     *
+     *    Board             Display
+     *
+     *   EXP1-1 ----------- EXP1-1
+     *   EXP1-2 ----------- EXP1-2
+     *   EXP1-3 ----------- EXP2-6
+     *   EXP1-4 ----------- EXP1-5
+     *   EXP1-5 ----------- EXP2-8
+     *   EXP1-6 ----------- EXP1-6
+     *   EXP1-8 ----------- EXP1-8
+     *   EXP1-9 ----------- EXP1-9
+     *  EXP1-10 ----------- EXP1-7
+     *
+     *    TFT-2 ----------- EXP2-9
+     *    TFT-3 ----------- EXP2-5
+     *
+     * for backlight configuration see steps 2 (V2.1) and 3 in https://wiki.fysetc.com/Mini12864_Panel/
+     */
+
+    #define LCD_PINS_RS                     PA9     // CS
+    #define LCD_PINS_ENABLE                 PA3     // MOSI
+    #define LCD_BACKLIGHT_PIN               -1
+    #define NEOPIXEL_PIN                    PB8
+    #define LCD_CONTRAST                    255
+    #define LCD_RESET_PIN                   PA10
+
+    #define DOGLCD_CS                       PA9
+    #define DOGLCD_A0                       PB5
+    #define DOGLCD_SCK                      PA2
+    #define DOGLCD_MOSI                     PA3
+
+    #define BTN_ENC                         PA15
+    #define BTN_EN1                         PB9
+    #define BTN_EN2                         PB15
+
+    #define FORCE_SOFT_SPI
+
   #else
-    #error "Only CR10_STOCKDISPLAY, ZONESTAR_LCD, ENDER2_STOCKDISPLAY, MKS_MINI_12864, and TFTGLCD_PANEL_(SPI|I2C) are currently supported on the BIGTREE_SKR_MINI_E3."
+    #error "Only CR10_STOCKDISPLAY, ZONESTAR_LCD, ENDER2_STOCKDISPLAY, MKS_MINI_12864, TFTGLCD_PANEL_(SPI|I2C), FYSETC_MINI_12864_2_1, MKS_MINI_12864_V3, and BTT_MINI_12864_V1 are currently supported on the BIGTREE_SKR_MINI_E3."
   #endif
 
 #endif // HAS_WIRED_LCD
 
 #if BOTH(TOUCH_UI_FTDI_EVE, LCD_FYSETC_TFT81050)
 
-  #error "CAUTION! LCD_FYSETC_TFT81050 requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. Comment out this line to continue."
+  #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
+    #error "CAUTION! LCD_FYSETC_TFT81050 requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
+  #endif
 
   /**
    * FYSETC TFT TFT81050 display pinout
    *
-   *               Board                                        Display
-   *               ------                                       ------
-   *           5V | 1  2 | GND                (SPI1-MISO) MISO | 1  2 | SCK   (SPI1-SCK)
-   * (FREE)   PB7 | 3  4 | PB8  (LCD_CS)      (PA9)  MOD_RESET | 3  4 | SD_CS (PA10)
-   * (FREE)   PB9 | 5  6 | PA10 (SD_CS)       (PB8)     LCD_CS | 5  6 | MOSI  (SPI1-MOSI)
-   *        RESET | 7  8 | PA9  (MOD_RESET)   (PB5)     SD_DET | 7  8 | RESET
-   * (BEEPER) PB6 | 9 10 | PB5  (SD_DET)                   GND | 9 10 | 5V
-   *               ------                                       ------
-   *                EXP1                                         EXP1
+   *                   Board                            Display
+   *                   ------                           ------
+   * (SD_DET)    PB5  |10  9 | PB6 (BEEPER)         5V |10  9 | GND
+   * (MOD_RESET) PA9  | 8  7 | RESET           (RESET) | 8  7 | (SD_DET)
+   * (SD_CS)     PA10   6  5 | PB9             (MOSI)  | 6  5 | (LCD_CS)
+   * (LCD_CS)    PB8  | 4  3 | PB7             (SD_CS) | 4  3 | (MOD_RESET)
+   *              GND | 2  1 | 5V              (SCK)   | 2  1 | (MISO)
+   *                   ------                           ------
+   *                    EXP1                             EXP1
    *
    * Needs custom cable:
    *

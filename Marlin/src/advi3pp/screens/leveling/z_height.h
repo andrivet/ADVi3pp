@@ -55,6 +55,7 @@ private:
 private:
     Multiplier multiplier_ = Multiplier::M1;
     float old_offset_ = 0;
+    millis_t last_click_time_ = 0;
     friend Parent;
 };
 #else

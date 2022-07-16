@@ -27,6 +27,11 @@
 
 namespace ADVi3pp {
 
+namespace {
+  constexpr uint16_t FILAMENT_TO_EXTRUDE = 100; //!< Filament to extrude (10 cm)
+  constexpr uint16_t REMAINING_FILAMENT = 20; //!< Amount of filament supposes tp remain after extruding (2 cm)
+}
+
 ExtruderTuning extruder_tuning;
 
 //! Handle Extruder Tuning command
@@ -61,36 +66,72 @@ Page ExtruderTuning::do_prepare_page()
         return Page::None;
     pages.save_forward_page();
     send_data();
+    previous_z_ = Core::ensure_z_enough_room();
     return Page::ExtruderTuningTemp;
 }
 
+void ExtruderTuning::do_back_command() {
+  ExtUI::setAxisPosition_mm(previous_z_, ExtUI::Z, 20);
+  Parent::do_back_command();
+}
+
+void ExtruderTuning::do_save_command() {
+  ExtUI::setAxisPosition_mm(previous_z_, ExtUI::Z, 20);
+  Parent::do_save_command();
+}
+
 //! Start extruder tuning.
-void ExtruderTuning::start_command()
-{
-    ReadRam frame{Variable::Value0};
-    if(!frame.send_receive(1))
-    {
-        Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
-        return;
-    }
+void ExtruderTuning::start_command() {
+  ReadRam frame{Variable::Value0};
+  if (!frame.send_receive(1)) {
+    Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
+    return;
+  }
 
-    uint16_t temperature = frame.read_word();
-    ExtUI::setTargetTemp_celsius(temperature, ExtUI::E0);
-    wait.wait(F("Heating the extruder..."));
+  uint16_t temperature = frame.read_word();
+  ExtUI::setTargetTemp_celsius(temperature, ExtUI::E0);
+  wait.wait_back(F("Heating the extruder..."), WaitCallback{this, &ExtruderTuning::cancel_heating});
+  background_task.set(Callback{this, &ExtruderTuning::heating}, 500);
+}
 
-    core.inject_commands(F("G1 Z10 F1200\nM83\nG92 E0"));   // raise head, relative E mode, reset E axis
+void ExtruderTuning::heating() {
+  if(ExtUI::getActualTemp_celsius(ExtUI::E0) < ExtUI::getTargetTemp_celsius(ExtUI::E0) - 2)
+    return;
+  background_task.clear();
+  extrude();
+}
 
-    auto before = ExtUI::getAxisPosition_mm(ExtUI::E0); // should be 0 (because of G92) but prefer to be sure
-    ExtUI::extrudeFilament(tuning_extruder_filament);
-    extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0) - before;
+bool ExtruderTuning::cancel_heating() {
+  background_task.clear();
+  ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+  return true;
+}
 
-    ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
-    core.inject_commands(F("M82\nG92 E0"));  // absolute E mode, reset E axis
+void ExtruderTuning::extrude() {
+  extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0);
+  wait.wait_back(F("Extrude filament..."), WaitCallback{this, &ExtruderTuning::cancel_extrude});
+  background_task.set(Callback{this, &ExtruderTuning::extruding}, 100);
+  ExtUI::setAxisPosition_mm(extruded_ + FILAMENT_TO_EXTRUDE, ExtUI::E0);
+}
 
-    // Always set to default 20mm
-    WriteRamRequest{Variable::Value0}.write_word(200);
+void ExtruderTuning::extruding() {
+  if(ExtUI::isMoving())
+    return;
+  background_task.clear();
+  ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
 
-    pages.show(Page::ExtruderTuningMeasure);
+  extruded_ -= ExtUI::getAxisPosition_mm(ExtUI::E0);
+  // Always set to default 20mm
+  WriteRamRequest{Variable::Value0}.write_word(200);
+
+  pages.show(Page::ExtruderTuningMeasure);
+}
+
+bool ExtruderTuning::cancel_extrude() {
+  background_task.clear();
+  ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+  ExtUI::stopMove();
+  return true;
 }
 
 //! Compute the extruder (E axis) new value and show the steps settings.
@@ -104,7 +145,7 @@ void ExtruderTuning::settings_command()
     }
 
     uint16_t e = frame.read_word();
-    auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + tuning_extruder_delta - e / 10.0);
+    auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + REMAINING_FILAMENT - e / 10.0);
 
     ExtUI::setAxisSteps_per_mm(new_value, ExtUI::E0);
     steps_settings.show();

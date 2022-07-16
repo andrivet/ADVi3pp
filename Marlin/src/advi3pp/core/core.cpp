@@ -28,6 +28,7 @@
 #include "task.h"
 #include "dgus.h"
 #include "buzzer.h"
+#include "reentrant.h"
 #include "../screens/core/no_sensor.h"
 #include "../screens/controls/controls.h"
 #include "../screens/core/wait.h"
@@ -55,6 +56,7 @@
 #include "../screens/settings/factory_reset.h"
 #include "../screens/settings/sensor_settings.h"
 #include "../screens/settings/lcd_settings.h"
+#include "../screens/settings/beeper_settings.h"
 #include "../screens/settings/print_settings.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/step_settings.h"
@@ -62,15 +64,18 @@
 #include "../screens/settings/acceleration_settings.h"
 #include "../screens/settings/linear_advance_settings.h"
 #include "../screens/settings/runout_settings.h"
+#include "../screens/settings/skew_settings.h"
 #include "../screens/info/versions.h"
 #include "../screens/info/statistics.h"
 #include "../screens/info/copyrights.h"
 #include "../screens/info/sponsors.h"
+#include "../screens/info/killed.h"
 
 namespace ADVi3pp {
 
-static const unsigned int FROM_LCD_DELAY = 100; // ms
-static const unsigned int TO_LCD_DELAY = 250; // ms
+static constexpr unsigned int FROM_LCD_DELAY = 0; // ms
+static constexpr unsigned int TO_LCD_DELAY = 250; // ms
+static constexpr float Z_ROOM = 20; // mm
 
 Core core;
 
@@ -107,7 +112,6 @@ bool Core::init()
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
     send_sponsors();
     graphs.clear();
-    dimming.reset(true);
     versions.send_versions();
 
 #if HAS_LEVELING
@@ -117,7 +121,7 @@ bool Core::init()
     from_lcd_task.set(Callback{this, &Core::from_lcd}, FROM_LCD_DELAY);
     to_lcd_task.set(Callback{this, &Core::to_lcd}, TO_LCD_DELAY);
 
-    if(eeprom_mismatch.does_mismatch())
+    if(settings.does_eeprom_mismatch())
         eeprom_mismatch.show();
     else
         pages.show(Page::Boot);
@@ -127,43 +131,47 @@ bool Core::init()
 
 void Core::idle()
 {
-    init();
+    static Reentrant reentrant;
+    ReentrantScope scope{reentrant};
 
-    from_lcd_task.execute();
+    if(!scope.reentrant()) {
+      init();
+      from_lcd_task.execute();
+    }
+
     to_lcd_task.execute();
-    background_task.execute();
+
+    if(!scope.reentrant())
+      background_task.execute();
 }
 
 void Core::to_lcd() {
     update_progress();
     send_lcd_data();
     graphs.update();
+    send_lcd_touch_request();
 }
 
-void Core::killed(const FlashChar* error)
+void Core::killed(float temp, const FlashChar* error, const FlashChar* component)
 {
-    status.set(error);
-    send_lcd_data();
-    pages.show(Page::Killed);
-}
-
-void Core::wait_user_confirm()
-{
-    wait.wait_continue();
+  status.set(error);
+  send_lcd_data();
+  dimming.sleep_off();
+  killed_page.show(temp, component);
 }
 
 //! Note to forks author:
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void Core::send_gplv3_7b_notice()
 {
-    SERIAL_ECHO_START();
-    SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2022 Sebastien Andrivet");
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2022 Sebastien Andrivet");
 }
 
 void Core::send_sponsors()
 {
-    SERIAL_ECHO_START();
-    SERIAL_ECHOLNPGM("Premium Sponsors: Alexander Cherenegar, Mauro Gil");
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM("Premium Sponsors: Alexander Cherenegar, Mauro Gil");
 }
 
 //! Update the progress bar if the printer is printing for the SD card
@@ -172,46 +180,22 @@ void Core::update_progress()
     // TODO Not sure it is necessary
 }
 
-struct Reentrant
-{
-    static bool reentrant_;
-    Reentrant() = default;
-    ~Reentrant() { reentrant_ = false; }
-    bool reentrant()
-    {
-        if(reentrant_)
-        {
-            Log::log() << F("Reentrancy detected") << Log::endl();
-            return true;
-        }
-        reentrant_ = true;
-        return false;
-    }
-};
-
-bool Reentrant::reentrant_ = false;
-
 //! Read a frame from the LCD and act accordingly.
 void Core::from_lcd()
 {
-    Reentrant reentrant;
-    if(reentrant.reentrant()) return;
-
     if(dimming.receive())
         return;
 
     ReadAction frame{};
-    if(!frame.receive()) {
-		NoFrameLogging no_log{};
-        dimming.send();
+    if(!frame.receive())
         return;
-    }
 
     buzzer.buzz_on_press();
-    dimming.reset();
+    ui.refresh_screen_timeout();
 
     Action action = frame.get_parameter();
     auto key_code = frame.read_key_value();
+    uint16_t raw_value = static_cast<int16_t>(key_code);
 
     Log::frame(LogState::Start) << F("=R==> Action =") << static_cast<uint16_t>(action)
       << F("KeyValue =") << static_cast<uint16_t>(key_code) << Log::endl();
@@ -256,6 +240,8 @@ void Core::from_lcd()
         case Action::Setup:                 setup.handle(key_code); break;
         case Action::XTwist:                xtwist.handle(key_code); break;
         case Action::Runout:                runout_settings.handle(key_code); break;
+        case Action::Skew:                  skew_settings.handle(key_code); break;
+        case Action::BeeperSettings:        beeper_settings.handle(key_code); break;
 
         case Action::MoveXPlus:             move.x_plus_command(); break;
         case Action::MoveXMinus:            move.x_minus_command(); break;
@@ -277,12 +263,19 @@ void Core::from_lcd()
         case Action::HotendPlus:            print_settings.hotend_plus_command(); break;
         case Action::BedMinus:              print_settings.bed_minus_command(); break;
         case Action::BedPlus:               print_settings.bed_plus_command(); break;
-        case Action::LCDBrightness:         lcd_settings.change_brightness(static_cast<int16_t>(key_code)); break;
         case Action::XTwistMinus:           xtwist.minus(); break;
         case Action::XTwistPlus:            xtwist.plus(); break;
+        case Action::BeepDuration:          beeper_settings.duration_command(raw_value); break;
+        case Action::NormalBrightness:      lcd_settings.normal_brightness_command(raw_value); break;
+        case Action::DimmingBrightness:     lcd_settings.dimming_brightness_command(raw_value); break;
 
         default:                            Log::error() << F("Invalid action ") << static_cast<uint16_t>(action) << Log::endl(); break;
     }
+}
+
+void Core::send_lcd_touch_request() {
+  NoFrameLogging no_log{};
+  dimming.send();
 }
 
 //! Update the status of the printer on the LCD.
@@ -367,5 +360,11 @@ Core::PinState Core::get_pin_state(uint8_t pin)
     return (*portInputRegister(port) & mask) ? PinState::On : PinState::Off;
 }
 
+float Core::ensure_z_enough_room() {
+  auto previous_z = ExtUI::getAxisPosition_mm(ExtUI::Z);
+  if(previous_z < 10)
+    ExtUI::setAxisPosition_mm(Z_ROOM, ExtUI::Z, 20);
+  return previous_z;
+}
 
 }

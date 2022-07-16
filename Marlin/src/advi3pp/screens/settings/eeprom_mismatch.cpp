@@ -39,22 +39,4 @@ void EepromMismatch::do_save_command()
     pages.show(Page::Setup);
 }
 
-//! Check the EEPROM value mismatch flag.
-bool EepromMismatch::does_mismatch() const
-{
-    return mismatch_;
-}
-
-//! Set the EEPROM value mismatch flag.
-void EepromMismatch::set_mismatch()
-{
-    mismatch_ = true;
-}
-
-//! Reset the EEPROM value mismatch flag.
-void EepromMismatch::reset_mismatch()
-{
-    mismatch_ = false;
-}
-
 }
