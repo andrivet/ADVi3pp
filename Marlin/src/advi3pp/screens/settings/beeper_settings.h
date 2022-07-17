@@ -36,15 +36,14 @@ private:
   bool do_dispatch(KeyValue key_value);
   Page do_prepare_page();
   void do_save_command();
-  void send_values() const;
-  bool get_values();
+  void send_values(bool on_action, bool on_press, uint8_t duration) const;
+  bool get_values(bool &on_action, bool &on_press, uint8_t &duration);
 
   void on_action_command();
   void on_press_command();
 
   bool buzz_on_action_ = true;
   bool buzz_on_press_ = false;
-  uint8_t buzz_duration_ = 1; // x 10ms
 };
 
 extern BeeperSettings beeper_settings;
