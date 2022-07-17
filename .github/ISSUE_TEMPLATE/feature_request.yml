@@ -1,0 +1,70 @@
+name: ✨ Request a feature
+description: Request a new ADVi3++ Firmware feature
+title: "(feature summary)"
+labels: 'T: enhancement'
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Do you want to ask a question? Are you looking for support? Please ask your questions on [ADVi3++ Community](https://community.advi3pp.com) (you have to be [a sponsor of the project](https://www.patreon.com/bePatron?u=6504486) to ask questions).
+
+  - type: markdown
+    attributes:
+      value: >
+        **Thank you for requesting a new ADVi3++ Firmware feature!**
+
+        ## Before Requesting a Feature Request
+
+        - Read and understand our [Code of Conduct](https://github.com/andrivet/ADVi3pp/blob/master/.github/code_of_conduct.md). You are expected to comply with it, including treating everyone with respect.
+
+  - type: dropdown
+    attributes:
+      label: Did you check that your request is not a duplicate?
+      description: >-
+        Always check the other reports and be sure you are not reporting something already requested.
+      options:
+        - Yes, I have checked and this is a new request.
+        - No, I check it right now!
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: Is your request specific to your setup only or can it benefit to many people?
+      description: >-
+        Your request should not be specific to your very particular situation but should benefit to many people.
+      options:
+        - My request will benefit to many people.
+        - My request is too specific.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Is your feature request related to a problem? Please describe.
+      description: A clear description of the problem (e.g., "I need X but ADVi3++ can't do it [...]").
+
+  - type: textarea
+    attributes:
+      label: Describe the feature you want
+      description: A clear description of the feature and how you think it should work.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Please provide enough information (such as links to web sites, blogs, technical description) so that anyone can understand what you are talking about.
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: Have you provided enough and precise information?
+      description: >-
+        Your request should be precise enough with enough information.
+      options:
+        - Yes, I have provided precise information in the Additional context box.
+        - No, but I will right now.
+    validations:
+      required: true
