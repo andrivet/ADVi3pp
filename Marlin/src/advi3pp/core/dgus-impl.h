@@ -134,9 +134,9 @@ inline bool OutFrame<Param, cmd>::write_word_parameter() const
 // --------------------------------------------------------------------
 
 template<typename Param, Command cmd>
-bool ReadOutFrame<Param, cmd>::write(uint8_t nb_bytes)
+bool ReadOutFrame<Param, cmd>::write(uint8_t nb_elements)
 {
-    return Parent::write_header(1) && Parent::write_byte_data(nb_bytes);
+    return Parent::write_header(1) && Parent::write_byte_data(nb_elements);
 }
 
 // --------------------------------------------------------------------
@@ -316,9 +316,9 @@ bool InFrame<Param, cmd, mode>::check_word_parameter() const
 // --------------------------------------------------------------------
 
 template<typename Param, Command cmd, ReceiveMode mode>
-bool OutInFrame<Param, cmd, mode>::send_receive(uint8_t nb_bytes)
+bool OutInFrame<Param, cmd, mode>::send_receive(uint8_t nb_elements)
 {
-    if(!ReadOutFrame<Param, cmd>{Parent::parameter_}.write(nb_bytes))
+    if(!ReadOutFrame<Param, cmd>{Parent::parameter_}.write(nb_elements))
         return false;
     return Parent::receive();
 }
