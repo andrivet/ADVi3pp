@@ -43,12 +43,10 @@ private:
     void do_back_command();
     void do_save_command();
     void dimming_command();
-    void send_values();
-    uint8_t get_dimming_time() const;
+    void send_values(uint16_t time, uint8_t normal, uint8_t dimmed);
+    bool get_values(uint16_t &time, uint8_t &normal, uint8_t &dimmed) const;
 
     bool dimming_ = false;
-    uint8_t normal_brightness_ = LCD_BRIGHTNESS_DEFAULT;
-    uint8_t dimming_brightness_ = 5;
 };
 
 extern LcdSettings lcd_settings;

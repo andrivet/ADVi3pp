@@ -1,5 +1,9 @@
 # ADVi3++ Changelog
 
+## 5.4.0 (2022-07-17)
+
+* **#292** - [LCD and beeper settings are not saved or taken into account](https://github.com/andrivet/ADVi3pp/issues/292)
+
 ## 5.4.0 (2022-07-15)
 
 * **#291** - [When pressing on a move button, it continues for a while after the button is released](https://github.com/andrivet/ADVi3pp/issues/291)

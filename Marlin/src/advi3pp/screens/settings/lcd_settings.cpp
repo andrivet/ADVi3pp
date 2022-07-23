@@ -48,9 +48,10 @@ bool LcdSettings::do_dispatch(KeyValue key_value) {
 //! @return The index of the page to display
 Page LcdSettings::do_prepare_page() {
   dimming_ = dimming.is_enabled();
-  normal_brightness_ = dimming.get_normal_brightness();
-  dimming_brightness_ = dimming.get_dimming_brightness();
-  send_values();
+  auto dimming_time = dimming.get_dimming_time();
+  auto normal_brightness = dimming.get_normal_brightness();
+  auto dimming_brightness = dimming.get_dimming_brightness();
+  send_values(dimming_time, normal_brightness, dimming_brightness);
   return Page::LCD;
 }
 
@@ -60,27 +61,36 @@ void LcdSettings::do_back_command() {
 }
 
 void LcdSettings::do_save_command() {
-  auto dimming_time = get_dimming_time();
-  dimming.set_settings(dimming_, dimming_time, normal_brightness_, dimming_brightness_);
+  uint16_t dimming_time; uint8_t normal_brightness, dimming_brightness;
+  if(get_values(dimming_time, normal_brightness, dimming_brightness))
+    dimming.set_settings(dimming_, dimming_time, normal_brightness, dimming_brightness);
   dimming.send_brightness_to_lcd();
   Parent::do_save_command();
 }
 
-void LcdSettings::send_values() {
-  auto dimming_time = dimming.get_dimming_time();
-  WriteRamRequest{Variable::Value0}.write_words(dimming_, dimming_time);
-  WriteRamRequest{Variable::NormalBrightness}.write_words(normal_brightness_, dimming_brightness_);
+void LcdSettings::send_values(uint16_t time, uint8_t normal, uint8_t dimmed) {
+  WriteRamRequest{Variable::Value0}.write_words(dimming_, time);
+  WriteRamRequest{Variable::NormalBrightness}.write_words(normal, dimmed);
 }
 
-uint8_t LcdSettings::get_dimming_time() const {
-  ReadRam frame{Variable::Value0};
-  if(!frame.send_receive(2))
+bool LcdSettings::get_values(uint16_t &time, uint8_t &normal, uint8_t &dimmed) const {
+  ReadRam frame{Variable::Value1};
+  if(!frame.send_receive(1))
   {
     Log::error() << F("Receiving Frame (Dimming time)") << Log::endl();
-    return 1;
+    return false;
   }
+  time = frame.read_word();
 
-  return frame.read_word();
+  ReadRam frame2{Variable::NormalBrightness};
+  if(!frame2.send_receive(2))
+  {
+    Log::error() << F("Receiving Frame (brightness)") << Log::endl();
+    return false;
+  }
+  normal = frame2.read_word();
+  dimmed = frame2.read_word();
+  return true;
 }
 
 //! Handle the Dimming (On/Off) command

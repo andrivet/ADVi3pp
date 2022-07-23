@@ -51,25 +51,26 @@ Page BeeperSettings::do_prepare_page()
 {
   buzz_on_action_ =  buzzer.is_buzz_on_action_enabled();
   buzz_on_press_ = buzzer.is_buzz_on_press_enabled();
-  buzz_duration_ = buzzer.get_buzz_duration();
+  auto buzz_duration = buzzer.get_buzz_duration();
 
-  send_values();
+  send_values(buzz_on_action_, buzz_on_press_, buzz_duration);
   return Page::BuzzerSettings;
 }
 
 void BeeperSettings::do_save_command() {
-  get_values();
-  buzzer.set_settings(buzz_on_action_, buzz_on_press_, buzz_duration_);
+  bool on_action, on_press; uint8_t duration;
+  if(get_values(on_action, on_press, duration))
+    buzzer.set_settings(on_action, on_press, duration);
   Parent::do_save_command();
 }
 
-void BeeperSettings::send_values() const
+void BeeperSettings::send_values(bool on_action, bool on_press, uint8_t duration) const
 {
-  WriteRamRequest{Variable::Value0}.write_words(buzz_on_action_, buzz_on_press_);
-  WriteRamRequest{Variable::BeepDuration}.write_words(buzz_duration_ * 10ul);
+  WriteRamRequest{Variable::Value0}.write_words(on_action, on_press);
+  WriteRamRequest{Variable::BeepDuration}.write_words(duration * 10ul);
 }
 
-bool BeeperSettings::get_values() {
+bool BeeperSettings::get_values(bool &on_action, bool &on_press, uint8_t &duration) {
   ReadRam frame{Variable::Value0};
   if(!frame.send_receive(2))
   {
@@ -77,17 +78,19 @@ bool BeeperSettings::get_values() {
     return false;
   }
 
-  buzz_on_action_ = frame.read_word();
-  buzz_on_press_ = frame.read_word();
+  on_action = frame.read_word();
+  on_press = frame.read_word();
 
   ReadRam frame2{Variable::BeepDuration};
-  if(!frame.send_receive(1))
+  if(!frame2.send_receive(1))
   {
     Log::error() << F("Receiving Frame (Buzzer ExtendedSettings)") << Log::endl();
     return false;
   }
 
-  buzz_duration_ = frame2.read_word() / 10;
+  duration = frame2.read_word() / 10;
+  Log::log() << duration << Log::endl();
+  return true;
 }
 
 //! Handle the change duration command.
@@ -98,12 +101,12 @@ void BeeperSettings::duration_command(uint16_t duration)
 
 void BeeperSettings::on_action_command() {
   buzz_on_action_ = !buzz_on_action_;
-  send_values();
+  WriteRamRequest{Variable::Value0}.write_words(buzz_on_action_);
 }
 
 void BeeperSettings::on_press_command() {
   buzz_on_press_ = !buzz_on_press_;
-  send_values();
+  WriteRamRequest{Variable::Value1}.write_words(buzz_on_press_);
 }
 
 }
