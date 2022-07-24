@@ -44,7 +44,7 @@ const FlashChar* get_sensor_name(size_t index)
 #if defined(BLTOUCH)
     auto baseggio            = F("Indianagio Front");
     static const FlashChar* names[NB_SENSOR_POSITIONS + 1] = {your, baseggio, teaching_tech_side, advi3pp};
-#elif defined(ADVi3PP_54)
+#elif defined(ADVi3PP_54) || defined(PROXIMITY_PROBE)
     auto mark2               = F("Mark II");
     static const FlashChar* names[NB_SENSOR_POSITIONS + 1] = {your, mark2, teaching_tech_side, advi3pp};
 #else
@@ -62,7 +62,7 @@ const SensorPosition SENSOR_POSITION[NB_SENSOR_POSITIONS] =
     {  +150, -4270 },    // Baseggio/Indianagio Front
     { -2400, -3800 },    // Teaching Tech Left
     { -2800, -4000 }     // ADVi3++ Left
-#elif defined(ADVi3PP_54)
+#elif defined(ADVi3PP_54) || defined(PROXIMITY_PROBE)
     {     0,  6000 },    // Mark II
     { -2400, -3800 },    // Teaching Tech Left
     { -2800, -4000 }     // ADVi3++ Left

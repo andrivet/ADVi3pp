@@ -994,6 +994,11 @@
   #define Z_MIN_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
   #define Z_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
   #define Z_MIN_PROBE_ENDSTOP_INVERTING false // Set to true to invert the logic of the probe.
+#elif ENABLED(PROXIMITY_PROBE)
+  #define Z_MIN_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
+  #define Z_MAX_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
+  #define Z_MIN_PROBE_ENDSTOP_INVERTING true // Set to true to invert the logic of the probe.
+
 #else // @advi3++: Mark II or Mark I no probe
   #define Z_MIN_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
   #define Z_MAX_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
@@ -1201,8 +1206,8 @@
  *   (e.g., an inductive probe or a nozzle-based probe-switch.)
  */
 // @advi3++: Mark II probe is fix
-#ifdef ADVi3PP_54
-#define FIX_MOUNTED_PROBE
+#if defined(ADVi3PP_54) || defined(PROXIMITY_PROBE)
+  #define FIX_MOUNTED_PROBE
 #endif
 
 /**

@@ -41,6 +41,9 @@
     #define Z_STOP_PIN          25   // PA3 / AD3
     #define Z_MIN_PROBE_PIN     25   // PA3 / AD3
     #define SERVO0_PIN          40   // PG1 / !RD
+  #elif ENABLED(PROXIMITY_PROBE)
+    #define Z_STOP_PIN          25   // PA3 / AD3
+    #define Z_MIN_PROBE_PIN     25   // PA3 / AD3
   #else
     #define Z_STOP_PIN          23   // PA1 / AD1
   #endif

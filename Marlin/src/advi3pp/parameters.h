@@ -36,6 +36,9 @@
 // build a BLTouch release.
 // #define BLTOUCH
 
+// build proximity sensor release
+// #define PROXIMITY_PROBE
+
 #ifdef ADVi3PP_DEBUG
 
     // To log various aspects of ADVi3++
@@ -73,6 +76,6 @@
     #define HAS_FILAMENT_SENSOR
 #endif
 
-#if defined(BLTOUCH) || defined(ADVi3PP_54)
+#if defined(BLTOUCH) || defined(ADVi3PP_54) || defined(PROXIMITY_PROBE)
     #define ADVi3PP_PROBE 1
 #endif
