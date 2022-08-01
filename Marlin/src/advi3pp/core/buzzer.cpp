@@ -91,7 +91,7 @@ void Buzzer::send_buzz_command_to_lcd()
 void Buzzer::send_buzz_command_to_lcd(uint8_t duration)
 {
   if(duration <= 0)
-    return;
+    duration = 1;
   WriteRegisterRequest{Register::BuzzerBeepingTime}.write_byte(duration);
 }
 
@@ -104,6 +104,17 @@ void Buzzer::buzz_on_action()
     return;
 
   send_buzz_command_to_lcd();
+}
+
+//! Activate the LCD internal buzzer for the given duration.
+//! Note: If the buzzer is disabled, does nothing.
+void Buzzer::buzz_on_action(uint8_t duration)
+{
+  ui.refresh_screen_timeout();
+  if(!is_buzz_on_action_enabled())
+    return;
+
+  send_buzz_command_to_lcd(duration);
 }
 
 //! Buzz briefly when the LCD panel is pressed.

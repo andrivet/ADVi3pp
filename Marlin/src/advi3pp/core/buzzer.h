@@ -29,6 +29,7 @@ namespace ADVi3pp {
 struct Buzzer: Settings<Buzzer> {
   void buzz(uint8_t duration);
   void buzz_on_action();
+  void buzz_on_action(uint8_t duration);
   void buzz_on_press();
 
   bool is_buzz_on_action_enabled() const { return buzz_on_action_; }

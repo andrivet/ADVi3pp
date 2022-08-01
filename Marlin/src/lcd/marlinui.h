@@ -247,6 +247,7 @@ public:
 
   #if HAS_BUZZER
     static void buzz(const long duration, const uint16_t freq);
+    static void buzz_m300(const long duration, const uint16_t freq); // @advi3++
   #endif
 
   FORCE_INLINE static void chirp() {

@@ -62,7 +62,7 @@ void onMediaOpenError(const char* filename) {
 
 void onPlayTone(const uint16_t frequency, const uint16_t duration) {
   Log::log() << F("ExtUI::onPlayTone ") << frequency << " " << duration << Log::endl();
-  buzzer.buzz_on_action();
+  buzzer.buzz_on_action(duration);
 }
 
 void onPrinterKilled(float temp, FSTR_P const error, FSTR_P const component) {

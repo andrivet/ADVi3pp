@@ -121,6 +121,7 @@
 
   // Buzz indirectly via the MarlinUI instance
   #define BUZZ(d,f) ui.buzz(d,f)
+  #define BUZZ_M300(d, f)  ui.buzz_m300(d,f) // @advi3++
   #include "../lcd/marlinui.h"
 
 #else
