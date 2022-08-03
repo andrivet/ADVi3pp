@@ -1,6 +1,12 @@
 # ADVi3++ Changelog
 
-## 5.4.0 (2022-07-17)
+## 5.4.2 (2022-08-03)
+
+* **#298** - [The computation of the Extruder Tuning is wrong](https://github.com/andrivet/ADVi3pp/issues/298)
+* **#297** - [The firmware does not take into account arguments for the M300 code](https://github.com/andrivet/ADVi3pp/issues/297)
+* **#293** - [BLTouch - warning on transposed black and white wires](https://github.com/andrivet/ADVi3pp/issues/293)
+
+## 5.4.1 (2022-07-17)
 
 * **#292** - [LCD and beeper settings are not saved or taken into account](https://github.com/andrivet/ADVi3pp/issues/292)
 
