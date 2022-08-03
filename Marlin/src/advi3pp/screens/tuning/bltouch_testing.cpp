@@ -162,8 +162,8 @@ void BLTouchTesting::step4()
     auto brown = wire_value(Wires::Brown);
     auto red = wire_value(Wires::Red);
     auto orange = wire_value(Wires::Orange);
-    auto black = wire_value(Wires::Black);
-    auto white = wire_value(Wires::White);
+    auto black = /*wire_value(Wires::Black);*/ true; // Temporary workaround
+    auto white = /*wire_value(Wires::White);*/ true;
 
     if(brown == 1 && red == 1 && orange == 1 && black == 1 && white == 1)
         status.set(F("No problem detected with BLTouch"));
