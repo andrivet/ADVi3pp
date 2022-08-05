@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -26,20 +26,21 @@
 
 #include "../../inc/MarlinConfigPre.h"
 
-#if BOTH(HAS_MARLINUI_MENU, POWER_LOSS_RECOVERY)
+#if HAS_LCD_MENU && ENABLED(POWER_LOSS_RECOVERY)
 
-#include "menu_item.h"
+#include "menu.h"
 #include "../../gcode/queue.h"
 #include "../../sd/cardreader.h"
-#include "../../feature/powerloss.h"
+#include "../../feature/power_loss_recovery.h"
 
 static void lcd_power_loss_recovery_resume() {
   ui.return_to_status();
-  queue.inject(F("M1000"));
+  queue.inject_P(PSTR("M1000"));
 }
 
-void lcd_power_loss_recovery_cancel() {
-  recovery.cancel();
+static void lcd_power_loss_recovery_cancel() {
+  card.removeJobRecoveryFile();
+  card.autostart_index = 0;
   ui.return_to_status();
 }
 
@@ -54,4 +55,4 @@ void menu_job_recovery() {
   END_MENU();
 }
 
-#endif // HAS_MARLINUI_MENU && POWER_LOSS_RECOVERY
+#endif // HAS_LCD_MENU && POWER_LOSS_RECOVERY

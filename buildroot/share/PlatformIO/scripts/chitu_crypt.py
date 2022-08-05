@@ -1,117 +1,125 @@
-#
-# chitu_crypt.py
-# Customizations for Chitu boards
-#
-import pioutil
-if pioutil.is_pio_build():
-	import os,random,struct,uuid,marlin
-	# Relocate firmware from 0x08000000 to 0x08008800
-	marlin.relocate_firmware("0x08008800")
+import os
+import struct
+Import("env")
 
-	def calculate_crc(contents, seed):
-		accumulating_xor_value = seed;
+# Relocate firmware from 0x08000000 to 0x08008800
+for define in env['CPPDEFINES']:
+    if define[0] == "VECT_TAB_ADDR":
+        env['CPPDEFINES'].remove(define)
+env['CPPDEFINES'].append(("VECT_TAB_ADDR", "0x8008800"))
 
-		for i in range(0, len(contents), 4):
-			value = struct.unpack('<I', contents[ i : i + 4])[0]
-			accumulating_xor_value = accumulating_xor_value ^ value
-		return accumulating_xor_value
+custom_ld_script = os.path.abspath("buildroot/share/PlatformIO/ldscripts/chitu_f103.ld")
+for i, flag in enumerate(env["LINKFLAGS"]):
+    if "-Wl,-T" in flag:
+        env["LINKFLAGS"][i] = "-Wl,-T" + custom_ld_script
+    elif flag == "-T":
+        env["LINKFLAGS"][i + 1] = custom_ld_script
 
-	def xor_block(r0, r1, block_number, block_size, file_key):
-		# This is the loop counter
-		loop_counter = 0x0
 
-		# This is the key length
-		key_length = 0x18
+def calculate_crc(contents, seed):
+    accumulating_xor_value = seed;
 
-		# This is an initial seed
-		xor_seed = 0x4BAD
+    for i in range(0, len(contents), 4):
+        value = struct.unpack('<I', contents[ i : i + 4])[0]
+        accumulating_xor_value = accumulating_xor_value ^ value
+    return accumulating_xor_value
 
-		# This is the block counter
-		block_number = xor_seed * block_number
+def xor_block(r0, r1, block_number, block_size, file_key):
+    # This is the loop counter
+    loop_counter = 0x0
 
-		#load the xor key from the file
-		r7 =  file_key
+    # This is the key length
+    key_length = 0x18
 
-		for loop_counter in range(0, block_size):
-			# meant to make sure different bits of the key are used.
-			xor_seed = int(loop_counter / key_length)
+    # This is an initial seed
+    xor_seed = 0x4bad
 
-			# IP is a scratch register / R12
-			ip = loop_counter - (key_length * xor_seed)
+    # This is the block counter
+    block_number = xor_seed * block_number
 
-			# xor_seed = (loop_counter * loop_counter) + block_number
-			xor_seed = (loop_counter * loop_counter) + block_number
+    #load the xor key from the file
+    r7 =  file_key
 
-			# shift the xor_seed left by the bits in IP.
-			xor_seed = xor_seed >> ip
+    for loop_counter in range(0, block_size):
+        # meant to make sure different bits of the key are used.
+        xor_seed = int(loop_counter/key_length)
 
-			# load a byte into IP
-			ip = r0[loop_counter]
+        # IP is a scratch register / R12
+        ip = loop_counter - (key_length * xor_seed)
 
-			# XOR the seed with r7
-			xor_seed = xor_seed ^ r7
+        # xor_seed = (loop_counter * loop_counter) + block_number
+        xor_seed = (loop_counter * loop_counter) + block_number
 
-			# and then with IP
-			xor_seed = xor_seed ^ ip
+        # shift the xor_seed left by the bits in IP.
+        xor_seed = xor_seed >> ip
 
-			#Now store the byte back
-			r1[loop_counter] = xor_seed & 0xFF
+        # load a byte into IP
+        ip = r0[loop_counter]
 
-			#increment the loop_counter
-			loop_counter = loop_counter + 1
+        # XOR the seed with r7
+        xor_seed = xor_seed ^ r7
 
-	def encrypt_file(input, output_file, file_length):
-		input_file = bytearray(input.read())
-		block_size = 0x800
-		key_length = 0x18
+        # and then with IP
+        xor_seed = xor_seed ^ ip
 
-		uid_value = uuid.uuid4()
-		file_key = int(uid_value.hex[0:8], 16)
+        #Now store the byte back
+        r1[loop_counter] = xor_seed & 0xFF
 
-		xor_crc = 0xEF3D4323;
+        #increment the loop_counter
+        loop_counter = loop_counter + 1
 
-		# the input file is exepcted to be in chunks of 0x800
-		# so round the size
-		while len(input_file) % block_size != 0:
-			input_file.extend(b'0x0')
 
-		# write the file header
-		output_file.write(struct.pack(">I", 0x443D2D3F))
-		# encrypt the contents using a known file header key
+def encrypt_file(input, output_file, file_length):
+    input_file = bytearray(input.read())
+    block_size = 0x800
+    key_length = 0x18
+    file_key = 0xDAB27F94
 
-		# write the file_key
-		output_file.write(struct.pack("<I", file_key))
+    xor_crc = 0xef3d4323;
 
-		#TODO - how to enforce that the firmware aligns to block boundaries?
-		block_count = int(len(input_file) / block_size)
-		print ("Block Count is ", block_count)
-		for block_number in range(0, block_count):
-			block_offset = (block_number * block_size)
-			block_end = block_offset + block_size
-			block_array = bytearray(input_file[block_offset: block_end])
-			xor_block(block_array, block_array, block_number, block_size, file_key)
-			for n in range (0, block_size):
-				input_file[block_offset + n] = block_array[n]
+    # the input file is exepcted to be in chunks of 0x800
+    # so round the size
+    while len(input_file) % block_size != 0:
+        input_file.extend(b'0x0')
 
-			# update the expected CRC value.
-			xor_crc = calculate_crc(block_array, xor_crc)
+    # write the file header
+    output_file.write(struct.pack(">I", 0x443D2D3F))
+    # encrypt the contents using a known file header key
 
-		# write CRC
-		output_file.write(struct.pack("<I", xor_crc))
+    # write the file_key
+    output_file.write(struct.pack(">I", 0x947FB2DA))
 
-		# finally, append the encrypted results.
-		output_file.write(input_file)
-		return
+    #TODO - how to enforce that the firmware aligns to block boundaries?
+    block_count = int(len(input_file) / block_size)
+    print "Block Count is ", block_count
+    for block_number in range(0, block_count):
+        block_offset = (block_number * block_size)
+        block_end = block_offset + block_size
+        block_array = bytearray(input_file[block_offset: block_end])
+        xor_block(block_array, block_array, block_number, block_size, file_key)
+        for n in range (0, block_size):
+            input_file[block_offset + n] = block_array[n]
 
-	# Encrypt ${PROGNAME}.bin and save it as 'update.cbd'
-	def encrypt(source, target, env):
-		firmware = open(target[0].path, "rb")
-		update = open(target[0].dir.path + '/update.cbd', "wb")
-		length = os.path.getsize(target[0].path)
+        # update the expected CRC value.
+        xor_crc = calculate_crc(block_array, xor_crc)
 
-		encrypt_file(firmware, update, length)
+    # write CRC
+    output_file.write(struct.pack("<I", xor_crc))
 
-		firmware.close()
-		update.close()
+    # finally, append the encrypted results.
+    output_file.write(input_file)
+    return
 
-	marlin.add_post_action(encrypt);
+
+# Encrypt ${PROGNAME}.bin and save it as 'update.cbd'
+def encrypt(source, target, env):
+    firmware = open(target[0].path, "rb")
+    update = open(target[0].dir.path +'/update.cbd', "wb")
+    length = os.path.getsize(target[0].path)
+
+    encrypt_file(firmware, update, length)
+
+    firmware.close()
+    update.close()
+
+env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", encrypt);

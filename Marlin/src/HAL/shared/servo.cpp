@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -48,6 +48,7 @@
  * readMicroseconds()    - Get the last-written servo pulse width in microseconds.
  * attached()            - Return true if a servo is attached.
  * detach()              - Stop an attached servo from pulsing its i/o pin.
+ *
  */
 
 #include "../../inc/MarlinConfig.h"
@@ -65,9 +66,9 @@ uint8_t ServoCount = 0;                         // the total number of attached 
 
 /************ static functions common to all instances ***********************/
 
-static bool anyTimerChannelActive(const timer16_Sequence_t timer) {
+static boolean isTimerActive(timer16_Sequence_t timer) {
   // returns true if any servo is active on this timer
-  LOOP_L_N(channel, SERVOS_PER_TIMER) {
+  for (uint8_t channel = 0; channel < SERVOS_PER_TIMER; channel++) {
     if (SERVO(timer, channel).Pin.isActive)
       return true;
   }
@@ -101,18 +102,17 @@ int8_t Servo::attach(const int inPin, const int inMin, const int inMax) {
   max = (MAX_PULSE_WIDTH - inMax) / 4;
 
   // initialize the timer if it has not already been initialized
-  const timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
-  if (!anyTimerChannelActive(timer)) initISR(timer);
-  servo_info[servoIndex].Pin.isActive = true;  // this must be set after the check for anyTimerChannelActive
+  timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
+  if (!isTimerActive(timer)) initISR(timer);
+  servo_info[servoIndex].Pin.isActive = true;  // this must be set after the check for isTimerActive
 
   return servoIndex;
 }
 
 void Servo::detach() {
   servo_info[servoIndex].Pin.isActive = false;
-  const timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
-  if (!anyTimerChannelActive(timer)) finISR(timer);
-  //pinMode(servo_info[servoIndex].Pin.nbr, INPUT); // set servo pin to input
+  timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
+  if (!isTimerActive(timer)) finISR(timer);
 }
 
 void Servo::write(int value) {
@@ -129,9 +129,9 @@ void Servo::writeMicroseconds(int value) {
     value = constrain(value, SERVO_MIN(min), SERVO_MAX(max)) - (TRIM_DURATION);
     value = usToTicks(value);  // convert to ticks after compensating for interrupt overhead - 12 Aug 2009
 
-    CRITICAL_SECTION_START();
+    CRITICAL_SECTION_START;
     servo_info[channel].ticks = value;
-    CRITICAL_SECTION_END();
+    CRITICAL_SECTION_END;
   }
 }
 
@@ -150,7 +150,9 @@ void Servo::move(const int value) {
   if (attach(0) >= 0) {
     write(value);
     safe_delay(servo_delay[servoIndex]);
-    TERN_(DEACTIVATE_SERVOS_AFTER_MOVE, detach());
+    #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE)
+      detach();
+    #endif
   }
 }
 

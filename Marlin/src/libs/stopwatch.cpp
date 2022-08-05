@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -25,7 +25,7 @@
 #include "../inc/MarlinConfig.h"
 
 #if ENABLED(EXTENSIBLE_UI)
-  #include "../lcd/extui/ui_api.h"
+  #include "../lcd/extensible_ui/ui_api.h"
 #endif
 
 Stopwatch::State Stopwatch::state;
@@ -34,10 +34,14 @@ millis_t Stopwatch::startTimestamp;
 millis_t Stopwatch::stopTimestamp;
 
 bool Stopwatch::stop() {
-  debug(F("stop"));
+  #if ENABLED(DEBUG_STOPWATCH)
+    Stopwatch::debug(PSTR("stop"));
+  #endif
 
   if (isRunning() || isPaused()) {
-    TERN_(EXTENSIBLE_UI, ExtUI::onPrintTimerStopped());
+    #if ENABLED(EXTENSIBLE_UI)
+      ExtUI::onPrintTimerStopped();
+    #endif
     state = STOPPED;
     stopTimestamp = millis();
     return true;
@@ -46,10 +50,14 @@ bool Stopwatch::stop() {
 }
 
 bool Stopwatch::pause() {
-  debug(F("pause"));
+  #if ENABLED(DEBUG_STOPWATCH)
+    Stopwatch::debug(PSTR("pause"));
+  #endif
 
   if (isRunning()) {
-    TERN_(EXTENSIBLE_UI, ExtUI::onPrintTimerPaused());
+    #if ENABLED(EXTENSIBLE_UI)
+      ExtUI::onPrintTimerPaused();
+    #endif
     state = PAUSED;
     stopTimestamp = millis();
     return true;
@@ -58,9 +66,13 @@ bool Stopwatch::pause() {
 }
 
 bool Stopwatch::start() {
-  debug(F("start"));
+  #if ENABLED(DEBUG_STOPWATCH)
+    Stopwatch::debug(PSTR("start"));
+  #endif
 
-  TERN_(EXTENSIBLE_UI, ExtUI::onPrintTimerStarted());
+  #if ENABLED(EXTENSIBLE_UI)
+    ExtUI::onPrintTimerStarted();
+  #endif
 
   if (!isRunning()) {
     if (isPaused()) accumulator = duration();
@@ -74,14 +86,18 @@ bool Stopwatch::start() {
 }
 
 void Stopwatch::resume(const millis_t with_time) {
-  debug(F("resume"));
+  #if ENABLED(DEBUG_STOPWATCH)
+    Stopwatch::debug(PSTR("resume"));
+  #endif
 
   reset();
   if ((accumulator = with_time)) state = RUNNING;
 }
 
 void Stopwatch::reset() {
-  debug(F("reset"));
+  #if ENABLED(DEBUG_STOPWATCH)
+    Stopwatch::debug(PSTR("reset"));
+  #endif
 
   state = STOPPED;
   startTimestamp = 0;
@@ -90,13 +106,18 @@ void Stopwatch::reset() {
 }
 
 millis_t Stopwatch::duration() {
-  return accumulator + MS_TO_SEC((isRunning() ? millis() : stopTimestamp) - startTimestamp);
+  return ((isRunning() ? millis() : stopTimestamp)
+          - startTimestamp) / 1000UL + accumulator;
 }
 
 #if ENABLED(DEBUG_STOPWATCH)
 
-  void Stopwatch::debug(FSTR_P const func) {
-    if (DEBUGGING(INFO)) SERIAL_ECHOLNPGM("Stopwatch::", func, "()");
+  void Stopwatch::debug(const char func[]) {
+    if (DEBUGGING(INFO)) {
+      SERIAL_ECHOPGM("Stopwatch::");
+      serialprintPGM(func);
+      SERIAL_ECHOLNPGM("()");
+    }
   }
 
 #endif

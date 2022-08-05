@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -39,22 +39,20 @@
 #endif
 
 #if ENABLED(PCA9533)
-  #include "pca9533.h"
-#endif
-
-#if EITHER(CASE_LIGHT_USE_RGB_LED, CASE_LIGHT_USE_NEOPIXEL)
-  #include "../../feature/caselight.h"
+  #include <SailfishRGB_LED.h>
 #endif
 
 #if ENABLED(LED_COLOR_PRESETS)
-  const LEDColor LEDLights::defaultLEDColor = LEDColor(
-    LED_USER_PRESET_RED, LED_USER_PRESET_GREEN, LED_USER_PRESET_BLUE
-    OPTARG(HAS_WHITE_LED, LED_USER_PRESET_WHITE)
-    OPTARG(NEOPIXEL_LED, LED_USER_PRESET_BRIGHTNESS)
+  const LEDColor LEDLights::defaultLEDColor = MakeLEDColor(
+    LED_USER_PRESET_RED,
+    LED_USER_PRESET_GREEN,
+    LED_USER_PRESET_BLUE,
+    LED_USER_PRESET_WHITE,
+    LED_USER_PRESET_BRIGHTNESS
   );
 #endif
 
-#if ANY(LED_CONTROL_MENU, PRINTER_EVENT_LEDS, CASE_LIGHT_IS_COLOR_LED)
+#if EITHER(LED_CONTROL_MENU, PRINTER_EVENT_LEDS)
   LEDColor LEDLights::color;
   bool LEDLights::lights_on;
 #endif
@@ -70,50 +68,46 @@ void LEDLights::setup() {
       if (PWM_PIN(RGB_LED_W_PIN)) SET_PWM(RGB_LED_W_PIN); else SET_OUTPUT(RGB_LED_W_PIN);
     #endif
   #endif
-  TERN_(NEOPIXEL_LED, neo.init());
-  TERN_(PCA9533, PCA9533_init());
-  TERN_(LED_USER_PRESET_STARTUP, set_default());
+  #if ENABLED(NEOPIXEL_LED)
+    neo.init();
+  #endif
+  #if ENABLED(PCA9533)
+    RGBinit();
+  #endif
+  #if ENABLED(LED_USER_PRESET_STARTUP)
+    set_default();
+  #endif
 }
 
 void LEDLights::set_color(const LEDColor &incol
-  OPTARG(NEOPIXEL_IS_SEQUENTIAL, bool isSequence/*=false*/)
+  #if ENABLED(NEOPIXEL_LED)
+    , bool isSequence/*=false*/
+  #endif
 ) {
 
   #if ENABLED(NEOPIXEL_LED)
 
     const uint32_t neocolor = LEDColorWhite() == incol
                             ? neo.Color(NEO_WHITE)
-                            : neo.Color(incol.r, incol.g, incol.b OPTARG(HAS_WHITE_LED, incol.w));
+                            : neo.Color(incol.r, incol.g, incol.b, incol.w);
+    static uint16_t nextLed = 0;
 
-    #if ENABLED(NEOPIXEL_IS_SEQUENTIAL)
-      static uint16_t nextLed = 0;
-      #ifdef NEOPIXEL_BKGD_INDEX_FIRST
-        while (WITHIN(nextLed, NEOPIXEL_BKGD_INDEX_FIRST, NEOPIXEL_BKGD_INDEX_LAST)) {
-          neo.reset_background_color();
-          if (++nextLed >= neo.pixels()) { nextLed = 0; return; }
-        }
-      #endif
-    #endif
-
-    #if BOTH(CASE_LIGHT_MENU, CASE_LIGHT_USE_NEOPIXEL)
-      // Update brightness only if caselight is ON or switching leds off
-      if (caselight.on || incol.is_off())
-    #endif
-    neo.set_brightness(incol.i);
-
-    #if ENABLED(NEOPIXEL_IS_SEQUENTIAL)
-      if (isSequence) {
-        neo.set_pixel_color(nextLed, neocolor);
-        neo.show();
+    #ifdef NEOPIXEL_BKGD_LED_INDEX
+      if (NEOPIXEL_BKGD_LED_INDEX == nextLed) {
         if (++nextLed >= neo.pixels()) nextLed = 0;
         return;
       }
     #endif
 
-    #if BOTH(CASE_LIGHT_MENU, CASE_LIGHT_USE_NEOPIXEL)
-      // Update color only if caselight is ON or switching leds off
-      if (caselight.on || incol.is_off())
-    #endif
+    neo.set_brightness(incol.i);
+
+    if (isSequence) {
+      neo.set_pixel_color(nextLed, neocolor);
+      neo.show();
+      if (++nextLed >= neo.pixels()) nextLed = 0;
+      return;
+    }
+
     neo.set_color(neocolor);
 
   #endif
@@ -129,23 +123,26 @@ void LEDLights::set_color(const LEDColor &incol
 
     // This variant uses 3-4 separate pins for the RGB(W) components.
     // If the pins can do PWM then their intensity will be set.
-    #define _UPDATE_RGBW(C,c) do {                     \
-      if (PWM_PIN(RGB_LED_##C##_PIN))                  \
-        hal.set_pwm_duty(pin_t(RGB_LED_##C##_PIN), c); \
-      else                                             \
-        WRITE(RGB_LED_##C##_PIN, c ? HIGH : LOW);      \
-    }while(0)
-    #define UPDATE_RGBW(C,c) _UPDATE_RGBW(C, TERN1(CASE_LIGHT_USE_RGB_LED, caselight.on) ? incol.c : 0)
-    UPDATE_RGBW(R,r); UPDATE_RGBW(G,g); UPDATE_RGBW(B,b);
+    #define UPDATE_RGBW(C,c) do { if (PWM_PIN(RGB_LED_##C##_PIN)) \
+        analogWrite(pin_t(RGB_LED_##C##_PIN), incol.c); \
+      else WRITE(RGB_LED_##C##_PIN, incol.c ? HIGH : LOW); }while(0)
+    UPDATE_RGBW(R,r);
+    UPDATE_RGBW(G,g);
+    UPDATE_RGBW(B,b);
     #if ENABLED(RGBW_LED)
       UPDATE_RGBW(W,w);
     #endif
 
   #endif
 
-  // Update I2C LED driver
-  TERN_(PCA9632, PCA9632_set_led_color(incol));
-  TERN_(PCA9533, PCA9533_set_rgb(incol.r, incol.g, incol.b));
+  #if ENABLED(PCA9632)
+    // Update I2C LED driver
+    pca9632_set_led_color(incol);
+  #endif
+
+  #if ENABLED(PCA9533)
+    RGBsetColor(incol.r, incol.g, incol.b, true);
+  #endif
 
   #if EITHER(LED_CONTROL_MENU, PRINTER_EVENT_LEDS)
     // Don't update the color when OFF
@@ -158,62 +155,18 @@ void LEDLights::set_color(const LEDColor &incol
   void LEDLights::toggle() { if (lights_on) set_off(); else update(); }
 #endif
 
-#if LED_POWEROFF_TIMEOUT > 0
+#ifdef LED_BACKLIGHT_TIMEOUT
 
   millis_t LEDLights::led_off_time; // = 0
 
   void LEDLights::update_timeout(const bool power_on) {
-    if (lights_on) {
-      const millis_t ms = millis();
-      if (power_on)
-        reset_timeout(ms);
-      else if (ELAPSED(ms, led_off_time))
-        set_off();
-    }
+    const millis_t ms = millis();
+    if (power_on)
+      reset_timeout(ms);
+    else if (ELAPSED(ms, led_off_time))
+      set_off();
   }
 
 #endif
 
-#if ENABLED(NEOPIXEL2_SEPARATE)
-
-  #if ENABLED(NEO2_COLOR_PRESETS)
-    const LEDColor LEDLights2::defaultLEDColor = LEDColor(
-      NEO2_USER_PRESET_RED, NEO2_USER_PRESET_GREEN, NEO2_USER_PRESET_BLUE
-      OPTARG(HAS_WHITE_LED2, NEO2_USER_PRESET_WHITE)
-      OPTARG(NEOPIXEL_LED, NEO2_USER_PRESET_BRIGHTNESS)
-    );
-  #endif
-
-  #if ENABLED(LED_CONTROL_MENU)
-    LEDColor LEDLights2::color;
-    bool LEDLights2::lights_on;
-  #endif
-
-  LEDLights2 leds2;
-
-  void LEDLights2::setup() {
-    neo2.init();
-    TERN_(NEO2_USER_PRESET_STARTUP, set_default());
-  }
-
-  void LEDLights2::set_color(const LEDColor &incol) {
-    const uint32_t neocolor = LEDColorWhite() == incol
-                            ? neo2.Color(NEO2_WHITE)
-                            : neo2.Color(incol.r, incol.g, incol.b OPTARG(HAS_WHITE_LED2, incol.w));
-    neo2.set_brightness(incol.i);
-    neo2.set_color(neocolor);
-
-    #if ENABLED(LED_CONTROL_MENU)
-      // Don't update the color when OFF
-      lights_on = !incol.is_off();
-      if (lights_on) color = incol;
-    #endif
-  }
-
-  #if ENABLED(LED_CONTROL_MENU)
-    void LEDLights2::toggle() { if (lights_on) set_off(); else update(); }
-  #endif
-
-#endif  // NEOPIXEL2_SEPARATE
-
-#endif  // HAS_COLOR_LEDS
+#endif // HAS_COLOR_LEDS

@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -16,33 +16,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 #pragma once
-
-// @advi3++: Change the name depending of the model of the printer and the model of the sensor
-#if defined(ADVi3PP_54)
-    #define ADVi3PP_NAME "ADVi3++MarkII"
-#elif defined(ADVi3PP_52C)
-    #if defined(BLTOUCH)
-      #define ADVi3PP_NAME "ADVi3++HE180021-BLTouch"
-    #else
-      #define ADVi3PP_NAME "ADVi3++HE180021"
-    #endif
-#else
-#if defined(BLTOUCH)
-    #define ADVi3PP_NAME "ADVi3++BLTouch"
-#else
-    #define ADVi3PP_NAME "ADVi3++"
-#endif
-#endif
 
 /**
  * Release version. Leave the Marlin version or apply a custom scheme.
  */
 #ifndef SHORT_BUILD_VERSION
-  #define SHORT_BUILD_VERSION "2.1"
+  #define SHORT_BUILD_VERSION "bugfix-2.0.x"
 #endif
 
 /**
@@ -50,7 +33,7 @@
  * vendor name, download location, GitHub account, etc.
  */
 #ifndef DETAILED_BUILD_VERSION
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 5.1.0-dev)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (GitHub)"
 #endif
 
 /**
@@ -59,7 +42,7 @@
  * version was tagged.
  */
 #ifndef STRING_DISTRIBUTION_DATE
-  #define STRING_DISTRIBUTION_DATE "2022-06-04"
+  #define STRING_DISTRIBUTION_DATE "2019-12-16"
 #endif
 
 /**
@@ -69,7 +52,7 @@
  * to alert users to major changes.
  */
 
-#define MARLIN_HEX_VERSION 02010000
+#define MARLIN_HEX_VERSION 020000
 #ifndef REQUIRED_CONFIGURATION_H_VERSION
   #define REQUIRED_CONFIGURATION_H_VERSION MARLIN_HEX_VERSION
 #endif
@@ -99,14 +82,14 @@
  * providing the source code to your customers.)
  */
 #ifndef SOURCE_CODE_URL
-  #define SOURCE_CODE_URL "https://github.com/andrivet/ADVi3pp/" // @advi3++
+  #define SOURCE_CODE_URL "https://github.com/MarlinFirmware/Marlin"
 #endif
 
 /**
  * Default generic printer UUID.
  */
 #ifndef DEFAULT_MACHINE_UUID
-  #define DEFAULT_MACHINE_UUID "44b2f5d6-e7e4-47bf-be81-c2a6b4fc7975" // @advi3++
+  #define DEFAULT_MACHINE_UUID "cede2a2f-41a2-4748-9b12-c55c62f367ff"
 #endif
 
   /**
@@ -114,7 +97,7 @@
    * documentation about a specific Marlin release. Displayed in the Info Menu.
    */
 #ifndef WEBSITE_URL
-  #define WEBSITE_URL "https://community.advi3pp.com/c/user-manual" // @advi3++
+  #define WEBSITE_URL "http://marlinfw.org"
 #endif
 
 /**
@@ -122,18 +105,18 @@
  * Currently only supported by DUE platform
  */
 #ifndef USB_DEVICE_VENDOR_ID
-  #define USB_DEVICE_VENDOR_ID            0x03EB /* ATMEL VID */
+  #define  USB_DEVICE_VENDOR_ID           0x03EB /* ATMEL VID */
 #endif
 #ifndef USB_DEVICE_PRODUCT_ID
-  #define USB_DEVICE_PRODUCT_ID           0x2424 /* MSC / CDC */
+  #define  USB_DEVICE_PRODUCT_ID          0x2424 /* MSC / CDC */
 #endif
 //! USB Device string definitions (Optional)
 #ifndef USB_DEVICE_MANUFACTURE_NAME
-  #define USB_DEVICE_MANUFACTURE_NAME     WEBSITE_URL
+  #define  USB_DEVICE_MANUFACTURE_NAME    WEBSITE_URL
 #endif
 #ifdef CUSTOM_MACHINE_NAME
-  #define USB_DEVICE_PRODUCT_NAME         CUSTOM_MACHINE_NAME
+  #define  USB_DEVICE_PRODUCT_NAME        CUSTOM_MACHINE_NAME
 #else
-  #define USB_DEVICE_PRODUCT_NAME         MACHINE_NAME
+  #define  USB_DEVICE_PRODUCT_NAME        MACHINE_NAME
 #endif
-#define USB_DEVICE_SERIAL_NAME            "123985739853"
+#define  USB_DEVICE_SERIAL_NAME           "123985739853"

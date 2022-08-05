@@ -66,12 +66,10 @@ wchar_t get_val_utf82uni(uint8_t *pstart) {
  */
 uint8_t* get_utf8_value(uint8_t *pstart, wchar_t *pval) {
   uint32_t val = 0;
-  const uint8_t *p = pstart;
+  uint8_t *p = pstart;
   /*size_t maxlen = strlen(pstart);*/
 
   assert(NULL != pstart);
-
-  #define NEXT_6_BITS() do{ val <<= 6; p++; val |= (*p & 0x3F); }while(0)
 
   if (0 == (0x80 & *p)) {
     val = (size_t)*p;
@@ -79,41 +77,57 @@ uint8_t* get_utf8_value(uint8_t *pstart, wchar_t *pval) {
   }
   else if (0xC0 == (0xE0 & *p)) {
     val = *p & 0x1F;
-    NEXT_6_BITS();
+    val <<= 6;
+    p++;
+    val |= (*p & 0x3F);
     p++;
     assert((wchar_t)val == get_val_utf82uni(pstart));
   }
   else if (0xE0 == (0xF0 & *p)) {
     val = *p & 0x0F;
-    NEXT_6_BITS();
-    NEXT_6_BITS();
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
     p++;
     assert((wchar_t)val == get_val_utf82uni(pstart));
   }
   else if (0xF0 == (0xF8 & *p)) {
     val = *p & 0x07;
-    NEXT_6_BITS();
-    NEXT_6_BITS();
-    NEXT_6_BITS();
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
     p++;
     assert((wchar_t)val == get_val_utf82uni(pstart));
   }
   else if (0xF8 == (0xFC & *p)) {
     val = *p & 0x03;
-    NEXT_6_BITS();
-    NEXT_6_BITS();
-    NEXT_6_BITS();
-    NEXT_6_BITS();
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
     p++;
     assert((wchar_t)val == get_val_utf82uni(pstart));
   }
   else if (0xFC == (0xFE & *p)) {
     val = *p & 0x01;
-    NEXT_6_BITS();
-    NEXT_6_BITS();
-    NEXT_6_BITS();
-    NEXT_6_BITS();
-    NEXT_6_BITS();
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
+    val <<= 6; p++;
+    val |= (*p & 0x3F);
     p++;
     assert((wchar_t)val == get_val_utf82uni(pstart));
   }
@@ -142,12 +156,12 @@ uint8_t* get_utf8_value(uint8_t *pstart, wchar_t *pval) {
   return p;
 }
 
-void usage(char *progname) {
+void usage(char* progname) {
   fprintf(stderr, "usage: %s\n", progname);
   fprintf(stderr, "   read data from stdin\n");
 }
 
-void utf8_parse(const char *msg, unsigned int len) {
+void utf8_parse(const char* msg, unsigned int len) {
   uint8_t *pend = NULL;
   uint8_t *p;
   uint8_t *pre;

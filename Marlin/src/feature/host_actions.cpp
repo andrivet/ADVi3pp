@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -24,9 +24,9 @@
 
 #if ENABLED(HOST_ACTION_COMMANDS)
 
-//#define DEBUG_HOST_ACTIONS
-
 #include "host_actions.h"
+
+//#define DEBUG_HOST_ACTIONS
 
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
   #include "pause.h"
@@ -37,166 +37,138 @@
   #include "runout.h"
 #endif
 
-HostUI hostui;
-
-void HostUI::action(FSTR_P const fstr, const bool eol) {
-  PORT_REDIRECT(SerialMask::All);
+void host_action(const char * const pstr, const bool eol) {
   SERIAL_ECHOPGM("//action:");
-  SERIAL_ECHOF(fstr);
+  serialprintPGM(pstr);
   if (eol) SERIAL_EOL();
 }
 
 #ifdef ACTION_ON_KILL
-  void HostUI::kill() { action(F(ACTION_ON_KILL)); }
+  void host_action_kill() { host_action(PSTR(ACTION_ON_KILL)); }
 #endif
 #ifdef ACTION_ON_PAUSE
-  void HostUI::pause(const bool eol/*=true*/) { action(F(ACTION_ON_PAUSE), eol); }
+  void host_action_pause(const bool eol/*=true*/) { host_action(PSTR(ACTION_ON_PAUSE), eol); }
 #endif
 #ifdef ACTION_ON_PAUSED
-  void HostUI::paused(const bool eol/*=true*/) { action(F(ACTION_ON_PAUSED), eol); }
+  void host_action_paused(const bool eol/*=true*/) { host_action(PSTR(ACTION_ON_PAUSED), eol); }
 #endif
 #ifdef ACTION_ON_RESUME
-  void HostUI::resume() { action(F(ACTION_ON_RESUME)); }
+  void host_action_resume() { host_action(PSTR(ACTION_ON_RESUME)); }
 #endif
 #ifdef ACTION_ON_RESUMED
-  void HostUI::resumed() { action(F(ACTION_ON_RESUMED)); }
+  void host_action_resumed() { host_action(PSTR(ACTION_ON_RESUMED)); }
 #endif
 #ifdef ACTION_ON_CANCEL
-  void HostUI::cancel() { action(F(ACTION_ON_CANCEL)); }
-#endif
-#ifdef ACTION_ON_START
-  void HostUI::start() { action(F(ACTION_ON_START)); }
-#endif
-
-#if ENABLED(G29_RETRY_AND_RECOVER)
-  #ifdef ACTION_ON_G29_RECOVER
-    void HostUI::g29_recover() { action(F(ACTION_ON_G29_RECOVER)); }
-  #endif
-  #ifdef ACTION_ON_G29_FAILURE
-    void HostUI::g29_failure() { action(F(ACTION_ON_G29_FAILURE)); }
-  #endif
-#endif
-
-#ifdef SHUTDOWN_ACTION
-  void HostUI::shutdown() { action(F(SHUTDOWN_ACTION)); }
+  void host_action_cancel() { host_action(PSTR(ACTION_ON_CANCEL)); }
 #endif
 
 #if ENABLED(HOST_PROMPT_SUPPORT)
 
-  PromptReason HostUI::host_prompt_reason = PROMPT_NOT_DEFINED;
-
-  PGMSTR(CONTINUE_STR, "Continue");
-  PGMSTR(DISMISS_STR, "Dismiss");
+  const char CONTINUE_STR[] PROGMEM = "Continue";
 
   #if HAS_RESUME_CONTINUE
     extern bool wait_for_user;
   #endif
 
-  void HostUI::notify(const char * const cstr) {
-    PORT_REDIRECT(SerialMask::All);
-    action(F("notification "), false);
-    SERIAL_ECHOLN(cstr);
+  PromptReason host_prompt_reason = PROMPT_NOT_DEFINED;
+
+  void host_action_notify(const char * const message) {
+    host_action(PSTR("notification "), false);
+    serialprintPGM(message);
+    SERIAL_EOL();
   }
 
-  void HostUI::notify_P(PGM_P const pstr) {
-    PORT_REDIRECT(SerialMask::All);
-    action(F("notification "), false);
-    SERIAL_ECHOLNPGM_P(pstr);
-  }
-
-  void HostUI::prompt(FSTR_P const ptype, const bool eol/*=true*/) {
-    PORT_REDIRECT(SerialMask::All);
-    action(F("prompt_"), false);
-    SERIAL_ECHOF(ptype);
+  void host_action_prompt(const char * const ptype, const bool eol=true) {
+    host_action(PSTR("prompt_"), false);
+    serialprintPGM(ptype);
     if (eol) SERIAL_EOL();
   }
 
-  void HostUI::prompt_plus(FSTR_P const ptype, FSTR_P const fstr, const char extra_char/*='\0'*/) {
-    prompt(ptype, false);
-    PORT_REDIRECT(SerialMask::All);
+  void host_action_prompt_plus(const char * const ptype, const char * const pstr, const bool eol=true) {
+    host_action_prompt(ptype, false);
     SERIAL_CHAR(' ');
-    SERIAL_ECHOF(fstr);
-    if (extra_char != '\0') SERIAL_CHAR(extra_char);
+    serialprintPGM(pstr);
+    if (eol) SERIAL_EOL();
+  }
+  void host_action_prompt_begin(const char * const pstr, const bool eol/*=true*/) { host_action_prompt_plus(PSTR("begin"), pstr, eol); }
+  void host_action_prompt_button(const char * const pstr) { host_action_prompt_plus(PSTR("button"), pstr); }
+  void host_action_prompt_end() { host_action_prompt(PSTR("end")); }
+  void host_action_prompt_show() { host_action_prompt(PSTR("show")); }
+  void host_prompt_do(const PromptReason reason, const char * const pstr, const char * const pbtn/*=nullptr*/) {
+    host_prompt_reason = reason;
+    host_action_prompt_end();
+    host_action_prompt_begin(pstr);
+    if (pbtn) host_action_prompt_button(pbtn);
+    host_action_prompt_show();
+  }
+
+  inline void say_m876_response(const char * const pstr) {
+    SERIAL_ECHOPGM("M876 Responding PROMPT_");
+    serialprintPGM(pstr);
     SERIAL_EOL();
   }
-  void HostUI::prompt_begin(const PromptReason reason, FSTR_P const fstr, const char extra_char/*='\0'*/) {
-    prompt_end();
-    host_prompt_reason = reason;
-    prompt_plus(F("begin"), fstr, extra_char);
-  }
-  void HostUI::prompt_button(FSTR_P const fstr) { prompt_plus(F("button"), fstr); }
-  void HostUI::prompt_end() { prompt(F("end")); }
-  void HostUI::prompt_show() { prompt(F("show")); }
 
-  void HostUI::_prompt_show(FSTR_P const btn1, FSTR_P const btn2) {
-    if (btn1) prompt_button(btn1);
-    if (btn2) prompt_button(btn2);
-    prompt_show();
-  }
-  void HostUI::prompt_do(const PromptReason reason, FSTR_P const fstr, FSTR_P const btn1/*=nullptr*/, FSTR_P const btn2/*=nullptr*/) {
-    prompt_begin(reason, fstr);
-    _prompt_show(btn1, btn2);
-  }
-  void HostUI::prompt_do(const PromptReason reason, FSTR_P const fstr, const char extra_char, FSTR_P const btn1/*=nullptr*/, FSTR_P const btn2/*=nullptr*/) {
-    prompt_begin(reason, fstr, extra_char);
-    _prompt_show(btn1, btn2);
-  }
-
-  #if ENABLED(ADVANCED_PAUSE_FEATURE)
-    void HostUI::filament_load_prompt() {
-      const bool disable_to_continue = TERN0(HAS_FILAMENT_SENSOR, runout.filament_ran_out);
-      prompt_do(PROMPT_FILAMENT_RUNOUT, F("Paused"), F("PurgeMore"),
-        disable_to_continue ? F("DisableRunout") : FPSTR(CONTINUE_STR)
-      );
-    }
-  #endif
-
-  //
-  // Handle responses from the host, such as:
-  //  - Filament runout responses: Purge More, Continue
-  //  - General "Continue" response
-  //  - Resume Print response
-  //  - Dismissal of info
-  //
-  void HostUI::handle_response(const uint8_t response) {
+  void host_response_handler(const uint8_t response) {
+    #ifdef DEBUG_HOST_ACTIONS
+      SERIAL_ECHOLNPAIR("M876 Handle Reason: ", host_prompt_reason);
+      SERIAL_ECHOLNPAIR("M876 Handle Response: ", response);
+    #endif
+    const char *msg = PSTR("UNKNOWN STATE");
     const PromptReason hpr = host_prompt_reason;
-    host_prompt_reason = PROMPT_NOT_DEFINED;  // Reset now ahead of logic
+    host_prompt_reason = PROMPT_NOT_DEFINED;
     switch (hpr) {
       case PROMPT_FILAMENT_RUNOUT:
-        switch (response) {
-
-          case 0: // "Purge More" button
-            #if BOTH(M600_PURGE_MORE_RESUMABLE, ADVANCED_PAUSE_FEATURE)
-              pause_menu_response = PAUSE_RESPONSE_EXTRUDE_MORE;  // Simulate menu selection (menu exits, doesn't extrude more)
-            #endif
-            break;
-
-          case 1: // "Continue" / "Disable Runout" button
-            #if BOTH(M600_PURGE_MORE_RESUMABLE, ADVANCED_PAUSE_FEATURE)
-              pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT;  // Simulate menu selection
-            #endif
+        msg = PSTR("FILAMENT_RUNOUT");
+        if (response == 0) {
+          #if ENABLED(ADVANCED_PAUSE_FEATURE)
+            pause_menu_response = PAUSE_RESPONSE_EXTRUDE_MORE;
+          #endif
+          host_action_prompt_end();   // Close current prompt
+          host_action_prompt_begin(PSTR("Paused"));
+          host_action_prompt_button(PSTR("Purge More"));
+          if (false
             #if HAS_FILAMENT_SENSOR
-              if (runout.filament_ran_out) {                      // Disable a triggered sensor
-                runout.enabled = false;
-                runout.reset();
-              }
+              || runout.filament_ran_out
             #endif
-            break;
+          )
+            host_action_prompt_button(PSTR("DisableRunout"));
+          else {
+            host_prompt_reason = PROMPT_FILAMENT_RUNOUT;
+            host_action_prompt_button(CONTINUE_STR);
+          }
+          host_action_prompt_show();
+        }
+        else if (response == 1) {
+          #if HAS_FILAMENT_SENSOR
+            if (runout.filament_ran_out) {
+              runout.enabled = false;
+              runout.reset();
+            }
+          #endif
+          #if ENABLED(ADVANCED_PAUSE_FEATURE)
+            pause_menu_response = PAUSE_RESPONSE_RESUME_PRINT;
+          #endif
         }
         break;
       case PROMPT_USER_CONTINUE:
-        TERN_(HAS_RESUME_CONTINUE, wait_for_user = false);
+        #if HAS_RESUME_CONTINUE
+          wait_for_user = false;
+        #endif
+        msg = PSTR("FILAMENT_RUNOUT_CONTINUE");
         break;
       case PROMPT_PAUSE_RESUME:
-        #if BOTH(ADVANCED_PAUSE_FEATURE, SDSUPPORT)
+        msg = PSTR("LCD_PAUSE_RESUME");
+        #if ENABLED(ADVANCED_PAUSE_FEATURE)
           extern const char M24_STR[];
           queue.inject_P(M24_STR);
         #endif
         break;
       case PROMPT_INFO:
+        msg = PSTR("GCODE_INFO");
         break;
       default: break;
     }
+    say_m876_response(msg);
   }
 
 #endif // HOST_PROMPT_SUPPORT

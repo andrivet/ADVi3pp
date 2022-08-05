@@ -8,10 +8,11 @@
 				"MarlinFirmware/lib",
 				"Marlin/lib",
 				"datatmp",
+				"Marlin/*/src",
 				".vscode"
 			],
 			"binary_file_patterns":
-			[ "*.psd", "*.png", "*.jpg", "*.jpeg", "*.bdf", "*.patch", "avrdude_5.*", "*.svg", "*.bin", "*.woff" ],
+			[ "*.psd", "*.png", "*.jpg", "*.jpeg", "*.bdf", "*.patch", "avrdude_5.*", "*.svg" ],
 			"file_exclude_patterns":
 			[
 				"Marlin/platformio.ini",
@@ -19,8 +20,7 @@
 				"Marlin/.gitignore",
 				"Marlin/*/platformio.ini",
 				"Marlin/*/.travis.yml",
-				"Marlin/*/.gitignore",
-				"*.d"
+				"Marlin/*/.gitignore"
 			],
 			"path": "../../.."
 		}

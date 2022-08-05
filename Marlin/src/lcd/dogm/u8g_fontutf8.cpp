@@ -9,7 +9,7 @@
 
 #include "../../inc/MarlinConfigPre.h"
 
-#if HAS_MARLINUI_U8GLIB
+#if HAS_GRAPHICAL_LCD
 
 #include <string.h>
 #include "../fontutils.h"
@@ -104,7 +104,7 @@ static void fontgroup_drawwchar(font_group_t *group, const font_t *fnt_default, 
  * Get the screen pixel width of a ROM UTF-8 string
  */
 static void fontgroup_drawstring(font_group_t *group, const font_t *fnt_default, const char *utf8_msg, read_byte_cb_t cb_read_byte, void * userdata, fontgroup_cb_draw_t cb_draw_ram) {
-  const uint8_t *p = (uint8_t*)utf8_msg;
+  uint8_t *p = (uint8_t*)utf8_msg;
   for (;;) {
     wchar_t val = 0;
     p = get_utf8_value_cb(p, cb_read_byte, &val);
@@ -140,6 +140,7 @@ static int fontgroup_cb_draw_u8g(void *userdata, const font_t *fnt_current, cons
 
   if (pdata->fnt_prev != fnt_current) {
     u8g_SetFont(pdata->pu8g, (const u8g_fntpgm_uint8_t*)fnt_current);
+    //u8g_SetFontPosBottom(pdata->pu8g);
     pdata->fnt_prev = fnt_current;
   }
   if ((pdata->max_width != PIXEL_LEN_NOLIMIT) && (pdata->adv + u8g_GetStrPixelWidth(pdata->pu8g, (char*)msg) > pdata->max_width))
@@ -255,6 +256,7 @@ static int fontgroup_cb_draw_u8gstrlen(void *userdata, const font_t *fnt_current
 
   if (pdata->fnt_prev != fnt_current) {
     u8g_SetFont(pdata->pu8g, (const u8g_fntpgm_uint8_t*)fnt_current);
+    u8g_SetFontPosBottom(pdata->pu8g);
     pdata->fnt_prev = fnt_current;
   }
   pdata->adv += u8g_GetStrPixelWidth(pdata->pu8g, (char*)msg);
@@ -312,4 +314,4 @@ int uxg_GetUtf8StrPixelWidthP(u8g_t *pu8g, PGM_P utf8_msg) {
   return data.adv;
 }
 
-#endif // HAS_MARLINUI_U8GLIB
+#endif // HAS_GRAPHICAL_LCD
