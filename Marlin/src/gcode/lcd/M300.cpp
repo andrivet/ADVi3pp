@@ -34,12 +34,12 @@
  */
 void GcodeSuite::M300() {
   uint16_t const frequency = parser.ushortval('S', 260);
-  uint16_t duration = parser.ushortval('P', 1000);
+  uint16_t duration = parser.ushortval('P', 1); // @advi3++
 
   // Limits the tone duration to 0-5 seconds.
   NOMORE(duration, 5000U);
 
-  BUZZ(duration, frequency);
+  BUZZ_M300(duration, frequency); // @advi3++
 }
 
 #endif // HAS_BUZZER

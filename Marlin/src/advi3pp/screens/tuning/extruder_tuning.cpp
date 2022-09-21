@@ -120,8 +120,8 @@ void ExtruderTuning::extruding() {
   background_task.clear();
   ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
 
-  extruded_ -= ExtUI::getAxisPosition_mm(ExtUI::E0);
-  // Always set to default 20mm
+  extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0) - extruded_;
+  // Always set default to 20mm
   WriteRamRequest{Variable::Value0}.write_word(200);
 
   pages.show(Page::ExtruderTuningMeasure);
@@ -145,6 +145,8 @@ void ExtruderTuning::settings_command()
     }
 
     uint16_t e = frame.read_word();
+    // Note: e is divided by 10 because the LCD panel gives a value in 0.1 mm unit
+    // Formula: new_value = old_value * theoretical_extruded / actual_extruded
     auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + REMAINING_FILAMENT - e / 10.0);
 
     ExtUI::setAxisSteps_per_mm(new_value, ExtUI::E0);

@@ -26,8 +26,13 @@
 using namespace ADVi3pp;
 
 
-void MarlinUI::buzz(const long duration, const uint16_t freq) {
+void MarlinUI::buzz(const long, const uint16_t) {
     buzzer.buzz_on_action();
+}
+
+void MarlinUI::buzz_m300(const long duration, const uint16_t) {
+  if(duration <= 0) return;
+  buzzer.buzz_on_action(duration / 10);
 }
 
 void MarlinUI::sleep_on() {
