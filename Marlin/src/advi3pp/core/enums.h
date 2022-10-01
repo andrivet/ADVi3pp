@@ -41,7 +41,6 @@ enum class Page: uint16_t
     Move                    = 38,               // 0x0026
     SdCard                  = 40 | Temporary,   // 0x0028
     Print                   = 42,               // 0x002A
-    Sponsors                = 44,               // 0x002C
     Waiting                 = 46 | Temporary,   // 0x802E
     ManualLeveling          = 48,               // 0x0030
     ExtruderTuningTemp      = 50,               // 0x0032
@@ -184,7 +183,7 @@ enum class Action: uint16_t
     AccelerationSettings    = 0x0416,
     PauseOptions            = 0x0417,
     Copyrights              = 0x0418,
-    Sponsors                = 0x0419,
+    //unused                = 0x0419,
     SensorGrid              = 0x041A,
     SensorZHeight           = 0x041B,
     ChangeFilament          = 0x041C,

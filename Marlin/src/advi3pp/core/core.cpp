@@ -68,7 +68,6 @@
 #include "../screens/info/versions.h"
 #include "../screens/info/statistics.h"
 #include "../screens/info/copyrights.h"
-#include "../screens/info/sponsors.h"
 #include "../screens/info/killed.h"
 
 namespace ADVi3pp {
@@ -110,7 +109,6 @@ bool Core::init()
     dgus.setup();
     status.set(GET_TEXT_F(WELCOME_MSG)); // This welcome message is not displayed on power-on
     send_gplv3_7b_notice(); // You are not authorized to remove or alter this notice
-    send_sponsors();
     graphs.clear();
     versions.send_versions();
 
@@ -168,12 +166,6 @@ void Core::send_gplv3_7b_notice()
   SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2022 Sebastien Andrivet");
 }
 
-void Core::send_sponsors()
-{
-  SERIAL_ECHO_START();
-  SERIAL_ECHOLNPGM("Premium Sponsors: Alexander Cherenegar, Mauro Gil");
-}
-
 //! Update the progress bar if the printer is printing for the SD card
 void Core::update_progress()
 {
@@ -209,7 +201,6 @@ void Core::from_lcd()
         case Action::Preheat:               preheat.handle(key_code); break;
         case Action::Move:                  move.handle(key_code); break;
         case Action::SdCard:                sd_card.handle(key_code); break;
-        case Action::Sponsors:              sponsors.handle(key_code); break;
         case Action::FactoryReset:          factory_reset.handle(key_code); break;
         case Action::ManualLeveling:        manual_leveling.handle(key_code); break;
         case Action::ExtruderTuning:        extruder_tuning.handle(key_code); break;
