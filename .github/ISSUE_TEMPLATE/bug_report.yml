@@ -1,7 +1,6 @@
 name: 🪲 Report a bug
 description: Create a bug report to help improve ADVi3++ Firmware
-title: "(bug summary)"
-labels: 'T: not confirmed'
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
@@ -25,7 +24,7 @@ body:
     attributes:
       label: Did you check that your report is not a duplicate?
       description: >-
-        Always check the other reports and be sure you are not reporting something already known..
+        Always check the other reports and be sure you are not reporting something already known.
       options:
         - Yes, I have checked and this is a new bug not previously reported.
         - No, I check it right now!
