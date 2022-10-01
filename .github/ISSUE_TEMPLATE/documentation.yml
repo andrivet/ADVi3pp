@@ -18,7 +18,7 @@ body:
 
         ## Instructions
 
-        Please follow the instructions below. Failure to do so may result in your issue being closed. See [Contributing to ADVi3++](https://github.com/andrivet/ADVi3pp/blob/master/.github/contributing.md) for additional guidelines.
+        - Please follow the instructions below. Failure to do so may result in your issue being closed. See [Contributing to ADVi3++](https://github.com/andrivet/ADVi3pp/blob/master/.github/contributing.md) for additional guidelines.
 
   - type: dropdown
     attributes:
@@ -47,7 +47,7 @@ body:
 
   - type: textarea
     attributes:
-      label: Describe the issuet
+      label: Describe the issue
       description: A clear description of the issue with context such as links.
     validations:
       required: true
