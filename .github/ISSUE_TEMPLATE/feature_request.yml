@@ -1,7 +1,6 @@
 name: ✨ Request a feature
 description: Request a new ADVi3++ Firmware feature
-title: "(feature summary)"
-labels: 'T: enhancement'
+labels: ["enhancement"]
 body:
   - type: markdown
     attributes:

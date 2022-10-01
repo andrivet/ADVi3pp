@@ -1,0 +1,64 @@
+name: 📖 Report something related to the documentation
+description: Create a report to help improve ADVi3++ documentation
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Do you want to ask a question? Are you looking for support? Please ask your questions on [ADVi3++ Community](https://community.advi3pp.com) (you have to be [a sponsor of the project](https://www.patreon.com/bePatron?u=6504486) to ask questions).
+
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you for reporting something related to ADVi3++ documentation.**
+
+        ## Before making a report
+
+        - Read and understand our [Code of Conduct](https://github.com/andrivet/ADVi3pp/blob/master/.github/code_of_conduct.md). You are expected to comply with it, including treating everyone with respect.
+
+        ## Instructions
+
+        Please follow the instructions below. Failure to do so may result in your issue being closed. See [Contributing to ADVi3++](https://github.com/andrivet/ADVi3pp/blob/master/.github/contributing.md) for additional guidelines.
+
+  - type: dropdown
+    attributes:
+      label: Did you check that your report is not a duplicate?
+      description: >-
+        Always check the other reports and be sure you are not reporting something already known.
+      options:
+        - Yes, I have checked and this is a new bug not previously reported.
+        - No, I check it right now!
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: What kind of report is it?
+      description: >-
+        To help understand the issue you are reporting.
+      options:
+        - There is something wrong in the documentation.
+        - There is something missing in the documentation.
+        - There is something unclear in the documentation.
+        - There is something out-of-date in the documentation.
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Describe the issuet
+      description: A clear description of the issue with context such as links.
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: Have you provided enough and precise information?
+      description: >-
+        Your request should be precise enough with enough information.
+      options:
+        - Yes, I have provided precise information.
+        - No, but I will right now.
+    validations:
+      required: true
