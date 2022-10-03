@@ -152,7 +152,7 @@ bool WriteOutFrame<Param, cmd>::write_byte(uint8_t value)
 template<typename Param, Command cmd>
 bool WriteOutFrame<Param, cmd>::write_word(uint16_t value)
 {
-    return Parent::write_header(2) & Parent::write_word_data(value);
+    return Parent::write_header(2) && Parent::write_word_data(value);
 }
 
 template<typename Param, Command cmd>
