@@ -30,12 +30,17 @@ struct SdCard: Screen<SdCard>
 {
     enum class FileType { None, File, Folder };
 
-    void show_first_page();
+    void on_media_inserted();
+    void on_media_removed();
+    void on_media_error();
 
 private:
     bool do_dispatch(KeyValue value);
     Page do_prepare_page();
-    void show_current_page();
+    void show_initial();
+    void show_folder_first_page();
+    void show_folder_current_page();
+    void show_empty();
     void get_file_name(uint8_t index_in_page, ADVString<48>& name, FileType &type);
     void up_command();
     void down_command();
@@ -43,12 +48,11 @@ private:
     void select_command(uint16_t file_index);
     void select_file();
     void select_directory();
+    bool check_media();
 
 private:
     static constexpr uint16_t nb_visible_sd_files = 5; //!< Number of files per page on the SD screen
 
-    uint16_t nb_files_ = 0;
-    uint16_t last_file_index_ = 0;
     uint16_t page_index_ = 0;
     ExtUI::FileList files_{};
 

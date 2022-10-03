@@ -358,4 +358,25 @@ float Core::ensure_z_enough_room() {
   return previous_z;
 }
 
+void Core::media_inserted() {
+  status.set(F("SD card detected."));
+  if(pages.get_current_page() != Page::SdCard)
+    return;
+  sd_card.on_media_inserted();
+}
+
+void Core::media_removed() {
+  status.set(F("SD card removed."));
+  if(pages.get_current_page() != Page::SdCard)
+    return;
+  sd_card.on_media_removed();
+}
+
+void Core::media_error() {
+  status.set(F("Error reading SD card."));
+  if(pages.get_current_page() != Page::SdCard)
+    return;
+  sd_card.on_media_error();
+}
+
 }

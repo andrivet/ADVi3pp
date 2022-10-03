@@ -42,21 +42,19 @@ void onIdle()
   core.idle();
 }
 
-// There is no way to detect media changes, so this part is not implemented
 void onMediaInserted() {
-  Log::log() << F("ExtUI::onMediaInserted") << Log::endl();
+  core.media_inserted();
 }
 
 void onMediaError() {
-  Log::log() << F("ExtUI::onMediaError") << Log::endl();
+  core.media_error();
 }
 
 void onMediaRemoved() {
-  Log::log() << F("ExtUI::onMediaRemoved") << Log::endl();
+  core.media_removed();
 }
 
 void onMediaOpenError(const char* filename) {
-  Log::log() << F("ExtUI::onMediaOpenError ") << filename << Log::endl();
   status.set(F("Error opening file"));
 }
 

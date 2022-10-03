@@ -96,17 +96,27 @@
 
 #define FAN_PIN                 5  // PE3 / PWM5
 
+//
+// Filament Runout sensor
+//
 #define FIL_RUNOUT_PIN          36 // PC1 / A9
+
+//
+// SD card
+//
+#define SD_DETECT_PIN          49  // PL0
+#define SD_MISO_PIN            50  // PB3
+#define SD_MOSI_PIN            51  // PB2
+#define SD_SCK_PIN             52  // PB1
+#define SD_SS_PIN              53  // PB0 / SS
+#define SDSS                   SD_SS_PIN
 
 //
 // Misc. Functions
 //
-#define SDSS                   53  // PB0 / SS
 #define LED_PIN                13  // PB7 / PWM13
 
-#define SD_MISO_PIN            50  // PB3
-#define SD_MOSI_PIN            51  // PB2
-#define SD_SCK_PIN             52  // PB1
+
 
 
 /**

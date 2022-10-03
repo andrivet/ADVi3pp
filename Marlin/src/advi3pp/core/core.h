@@ -60,6 +60,10 @@ struct Core
     static PinState get_pin_state(uint8_t pin);
     static float ensure_z_enough_room();
 
+    void media_inserted();
+    void media_removed();
+    void media_error();
+
 private:
     bool init();
     void send_gplv3_7b_notice();

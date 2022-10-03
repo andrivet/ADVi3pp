@@ -1144,6 +1144,8 @@ namespace ExtUI {
 
   bool isMediaInserted() { return TERN0(SDSUPPORT, IS_SD_INSERTED()); }
   void mountMedia() { card.mount(); } // @advi3++
+  void releaseMedia() { card.release(); } // @advi3++
+  bool isMediaMounted() { return card.flag.mounted; } // @advi3++
 
   void pausePrint()  { ui.pause_print(); }
   void resumePrint() { ui.resume_print(); }

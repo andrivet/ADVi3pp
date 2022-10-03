@@ -101,21 +101,9 @@ void Controls::show_print()
 }
 
 //! Show the SD card page (if a SD card is inserted)
-void Controls::show_sd()
-{
-    background_task.clear();
-
-    ExtUI::mountMedia();
-    ExtUI::FileList{}.refresh();
-    status.reset();
-    if(!ExtUI::isMediaInserted())
-    {
-        status.set(F("No SD card detected."));
-        pages.show_back_page();
-        return;
-    }
-
-    sd_card.show();
+void Controls::show_sd() {
+  background_task.clear();
+  sd_card.show();
 }
 
 }
