@@ -22,11 +22,11 @@
 #include "../../../lcd/extui/ui_api.h"
 #include "controls.h"
 #include "../../core/dgus.h"
-#include "../../core/status.h"
 #include "../core/wait.h"
 #include "../print/temperatures.h"
 #include "../print/sd_card.h"
-#include "../settings/print_settings.h"
+#include "../print/print_settings.h"
+#include "../print/baby_steps.h"
 
 namespace ADVi3pp {
 
@@ -35,69 +35,73 @@ Controls controls;
 //! Dispatch a key value to the right handler
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool Controls::do_dispatch(KeyValue key_value)
-{
-    // Do not call Parent::do_dispatch
+bool Controls::do_dispatch(KeyValue key_value) {
+  // Do not call Parent::do_dispatch
 
-    switch(key_value)
-    {
-        case KeyValue::Temps:           show_temps(); break;
-        case KeyValue::Print:           show_print(); break;
-        case KeyValue::Controls:        pages.show(Page::Controls); break;
-        case KeyValue::Tuning:          pages.show(Page::Tuning); break;
-        case KeyValue::Settings:        pages.show(Page::Settings); break;
-        case KeyValue::Infos:           pages.show(Page::Infos); break;
-        case KeyValue::Motors:          pages.show(Page::MotorsSettings); break;
-        case KeyValue::Leveling:        pages.show(Page::Leveling); break;
-        case KeyValue::PrintSettings:   show_print_settings(); break;
-        case KeyValue::Back:            back_command(); break;
-        default:                        return false;
-    }
+  switch(key_value) {
+    case KeyValue::Temps:           show_temps(); break;
+    case KeyValue::Print:           show_print(); break;
+    case KeyValue::Controls:        pages.show(Page::Controls); break;
+    case KeyValue::Tuning:          pages.show(Page::Tuning); break;
+    case KeyValue::Settings:        pages.show(Page::Settings); break;
+    case KeyValue::Infos:           pages.show(Page::Infos); break;
+    case KeyValue::Motors:          pages.show(Page::MotorsSettings); break;
+    case KeyValue::Leveling:        pages.show(Page::Leveling); break;
+    case KeyValue::PrintSettings:   show_print_settings(); break;
+    case KeyValue::BabySteps:       show_baby_steps(); break;
+    case KeyValue::Back:            back_command(); break;
+    default:                        return false;
+  }
 
-    return true;
+  return true;
 }
 
 //! Show one of the temperature graph screens depending of the context: either the SD printing screen,
 //! the printing screen or the temperature screen.
-void Controls::show_temps()
-{
-    if(!ExtUI::isPrinting() && !ExtUI::isPrintingPaused())
-    {
-        temperatures.show();
-        return;
-    }
+void Controls::show_temps() {
+  if(!ExtUI::isPrinting() && !ExtUI::isPrintingPaused()) {
+    temperatures.show();
+    return;
+  }
 
-    // If there is a print running (or paused), display the print screen.
-    pages.show(Page::Print);
+  // If there is a print running (or paused), display the print screen.
+  pages.show(Page::Print);
 }
 
 //! Show Print Settings page (only if a print is running or paused)
-void Controls::show_print_settings()
-{
-    if(!ExtUI::isPrinting() && !ExtUI::isPrintingPaused())
-    {
-        temperatures.show();
-        return;
-    }
+void Controls::show_print_settings() {
+  if(!ExtUI::isPrinting() && !ExtUI::isPrintingPaused()) {
+    temperatures.show();
+    return;
+  }
 
-    // If there is a print running (or paused), display the print settings.
-    print_settings.show();
+  // If there is a print running (or paused), display the print settings.
+  print_settings.show();
+}
+
+//! Show Print Settings page (only if a print is running or paused)
+void Controls::show_baby_steps() {
+  if(!ExtUI::isPrinting() && !ExtUI::isPrintingPaused()) {
+    temperatures.show();
+    return;
+  }
+
+  // If there is a print running (or paused), display the print settings.
+  baby_steps.show();
 }
 
 //! Show one of the Printing screens depending of the context:
 //! - If a print is running, display the Print screen
 //! - Otherwise, try to access the SD card. Depending of the result, display the SD card Page or the Temperatures page
-void Controls::show_print()
-{
-    // If there is a print running (or paused), display the SD or USB print screen
-    if(ExtUI::isPrinting() || ExtUI::isPrintingPaused())
-    {
-        pages.show(Page::Print);
-        return;
-    }
+void Controls::show_print() {
+  // If there is a print running (or paused), display the SD or USB print screen
+  if(ExtUI::isPrinting() || ExtUI::isPrintingPaused()) {
+    pages.show(Page::Print);
+    return;
+  }
 
-    wait.wait(F("Accessing the SD card..."));
-    background_task.set(Callback {this, &Controls::show_sd});
+  wait.wait(F("Accessing the SD card..."));
+  background_task.set(Callback {this, &Controls::show_sd});
 }
 
 //! Show the SD card page (if a SD card is inserted)

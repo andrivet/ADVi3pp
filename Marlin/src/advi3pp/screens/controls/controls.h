@@ -25,20 +25,20 @@
 namespace ADVi3pp {
 
 //! Controls Page
-struct Controls: Screen<Controls>
-{
+struct Controls: Screen<Controls> {
 private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
+  bool do_dispatch(KeyValue key_value);
+  Page do_prepare_page();
 
 private:
-    void show_temps();
-    void show_print_settings();
-    void show_print();
-    void show_sd();
+  void show_temps();
+  void show_print_settings();
+  void show_baby_steps();
+  void show_print();
+  void show_sd();
 
 private:
-    friend Parent;
+  friend Parent;
 };
 
 extern Controls controls;

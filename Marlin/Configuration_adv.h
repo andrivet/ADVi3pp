@@ -2029,9 +2029,11 @@
     #endif
   #endif
 
-  //#define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
-
-  #ifdef ADVi3PP_PROBE // @advi3++: Sensor only
+  // @advi3++ If no sensor, use BABYSTEP_DISPLAY_TOTAL, else BABYSTEP_ZPROBE_OFFSET
+  // from what I understand from the code (ExtUI::getZOffset_mm), using both gives wrong results
+  #ifndef ADVi3PP_PROBE
+    #define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
+  #else
     #define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
   #endif
   #if ENABLED(BABYSTEP_ZPROBE_OFFSET)

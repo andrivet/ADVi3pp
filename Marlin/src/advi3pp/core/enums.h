@@ -41,6 +41,7 @@ enum class Page: uint16_t
     Move                    = 38,               // 0x0026
     SdCard                  = 40 | Temporary,   // 0x0028
     Print                   = 42,               // 0x002A
+    BabySteps               = 44,               // 0x002C
     Waiting                 = 46 | Temporary,   // 0x802E
     ManualLeveling          = 48,               // 0x0030
     ExtruderTuningTemp      = 50,               // 0x0032
@@ -110,7 +111,7 @@ enum class Variable: uint16_t
     ZLayer                  = 0x0008,
     SensorActive            = 0x0009,
     Feedrate                = 0x000A,
-    Babysteps               = 0x000B,
+    Flowrate                = 0x000B,
     Message                 = 0x0010,
     CenteredMessage         = 0x0028,
     ProgressText            = 0x0040,
@@ -157,6 +158,7 @@ enum class Variable: uint16_t
 //! List of actions sent by the LCD.
 enum class Action: uint16_t
 {
+    None                    = 0,
     // 4 - Actions
     Controls                = 0x0400,
     PrintCommand            = 0x0401,
@@ -198,6 +200,7 @@ enum class Action: uint16_t
     Runout                  = 0x0425,
     Skew                    = 0x0426,
     BeeperSettings          = 0x0427,
+    BabySteps               = 0x0428,
 
     // 6 - Moves
     MoveXMinus              = 0x0600,
@@ -226,6 +229,8 @@ enum class Action: uint16_t
     BeepDuration            = 0x0617,
     NormalBrightness        = 0x0618,
     DimmingBrightness       = 0x0619,
+    FlowrateMinus           = 0x061A,
+    FlowratePlus            = 0x061B,
 
     Undefined                = 0xFFFF
 };
@@ -244,6 +249,7 @@ enum class KeyValue: uint16_t
     Motors                  = 0x0006,
     Leveling                = 0x0007,
     PrintSettings           = 0x0008,
+    BabySteps               = 0x0009,
 
     PrintStop               = 0x0001,
     PrintPause              = 0x0002,
