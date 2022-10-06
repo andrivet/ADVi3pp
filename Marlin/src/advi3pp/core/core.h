@@ -22,6 +22,7 @@
 
 #include "string.h"
 #include "task.h"
+#include "enums.h"
 
 class GCodeParser;
 
@@ -75,6 +76,8 @@ private:
 
 private:
     Once once_{};
+    Action last_action_ = Action::None;
+    millis_t last_action_time_ = 0;
 };
 
 extern Core core;

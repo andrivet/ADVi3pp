@@ -57,7 +57,8 @@
 #include "../screens/settings/sensor_settings.h"
 #include "../screens/settings/lcd_settings.h"
 #include "../screens/settings/beeper_settings.h"
-#include "../screens/settings/print_settings.h"
+#include "../screens/print/print_settings.h"
+#include "../screens/print/baby_steps.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/step_settings.h"
 #include "../screens/settings/feedrate_settings.h"
@@ -75,6 +76,7 @@ namespace ADVi3pp {
 static constexpr unsigned int FROM_LCD_DELAY = 0; // ms
 static constexpr unsigned int TO_LCD_DELAY = 250; // ms
 static constexpr float Z_ROOM = 20; // mm
+static constexpr unsigned int ANTI_BOUNCE_DELAY = 20; // ms
 
 Core core;
 
@@ -188,6 +190,15 @@ void Core::from_lcd()
     Action action = frame.get_parameter();
     auto key_code = frame.read_key_value();
     uint16_t raw_value = static_cast<int16_t>(key_code);
+    millis_t now = millis();
+    bool bounce = action == last_action_ && (now - last_action_time_) < ANTI_BOUNCE_DELAY;
+    last_action_ = action;
+    last_action_time_ = now;
+
+    if(bounce) {
+      Log::log() << "Bounce detected" << Log::endl();
+      return;
+    }
 
     Log::frame(LogState::Start) << F("=R==> Action =") << static_cast<uint16_t>(action)
       << F("KeyValue =") << static_cast<uint16_t>(key_code) << Log::endl();
@@ -212,6 +223,7 @@ void Core::from_lcd()
         case Action::Statistics:            statistics.handle(key_code); break;
         case Action::Versions:              versions.handle(key_code); break;
         case Action::PrintSettings:         print_settings.handle(key_code); break;
+        case Action::BabySteps:             baby_steps.handle(key_code); break;
         case Action::PIDSettings:           pid_settings.handle(key_code); break;
         case Action::StepsSettings:         steps_settings.handle(key_code); break;
         case Action::FeedrateSettings:      feedrates_settings.handle(key_code); break;
@@ -242,12 +254,14 @@ void Core::from_lcd()
         case Action::MoveZMinus:            move.z_minus_command(); break;
         case Action::MoveEPlus:             move.e_plus_command(); break;
         case Action::MoveEMinus:            move.e_minus_command(); break;
-        case Action::BabyMinus:             print_settings.baby_minus_command(); break;
-        case Action::BabyPlus:              print_settings.baby_plus_command(); break;
+        case Action::BabyMinus:             baby_steps.baby_minus_command(); break;
+        case Action::BabyPlus:              baby_steps.baby_plus_command(); break;
         case Action::ZHeightMinus:          sensor_z_height.minus(); break;
         case Action::ZHeightPlus:           sensor_z_height.plus(); break;
         case Action::FeedrateMinus:         print_settings.feedrate_minus_command(); break;
         case Action::FeedratePlus:          print_settings.feedrate_plus_command(); break;
+        case Action::FlowrateMinus:         print_settings.flowrate_minus_command(); break;
+        case Action::FlowratePlus:          print_settings.flowrate_plus_command(); break;
         case Action::FanMinus:              print_settings.fan_minus_command(); break;
         case Action::FanPlus:               print_settings.fan_plus_command(); break;
         case Action::HotendMinus:           print_settings.hotend_minus_command(); break;
@@ -296,7 +310,8 @@ void Core::send_lcd_data()
         progress_var_high,
         0, // Reserved
         probe_state,
-        ExtUI::getFeedrate_percent()
+        ExtUI::getFeedrate_percent(),
+        ExtUI::getFlow_percent(ExtUI::E0)
     );
 
     status.send();
