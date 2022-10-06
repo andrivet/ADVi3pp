@@ -67,6 +67,9 @@ struct Log
     Log& operator<<(uint8_t data);
     Log& operator<<(uint16_t data);
     Log& operator<<(uint32_t data);
+    Log& operator<<(int8_t data);
+    Log& operator<<(int16_t data);
+    Log& operator<<(int32_t data);
     Log& operator<<(double data);
     template<typename T, size_t S> Log& operator<<(adv::array<T, S> data);
     Log& write(const uint8_t* data, size_t size);
@@ -141,6 +144,9 @@ struct Log
     Log& operator<<(uint8_t) { return log(); }
     Log& operator<<(uint16_t) { return log(); }
     Log& operator<<(uint32_t) { return log(); }
+    Log& operator<<(int8_t data) { return log(); }
+    Log& operator<<(int16_t data) { return log(); }
+    Log& operator<<(int32_t data) { return log(); }
     Log& operator<<(double) { return log(); }
     template<typename T, size_t S> Log& operator<<(adv::array<T, S> data) { return log(); }
     Log& write(const uint8_t* data, size_t size) { return log(); }

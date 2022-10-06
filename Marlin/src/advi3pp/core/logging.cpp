@@ -115,6 +115,18 @@ Log& Log::operator<<(uint32_t data)
     return *this;
 }
 
+Log& Log::operator<<(int8_t data) {
+  return this->operator<<(static_cast<uint8_t>(data));
+}
+
+Log& Log::operator<<(int16_t data) {
+  return this->operator<<(static_cast<uint16_t>(data));
+}
+
+Log& Log::operator<<(int32_t data) {
+  return this->operator<<(static_cast<uint32_t>(data));
+}
+
 Log& Log::operator<<(double data)
 {
     if(enabled_ && !suspend_) {
