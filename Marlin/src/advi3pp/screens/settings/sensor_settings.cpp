@@ -135,15 +135,15 @@ void SensorSettings::send_values() const
 {
     if(index_ == 0)
         WriteRamRequest{Variable::Value0}.write_words(
-            ExtUI::getProbeOffset_mm(ExtUI::X) * 100.0f,
-            ExtUI::getProbeOffset_mm(ExtUI::Y) * 100.0f,
-            ExtUI::getZOffset_mm() * 100.0f
+            lround(ExtUI::getProbeOffset_mm(ExtUI::X) * 100.0),
+            lround(ExtUI::getProbeOffset_mm(ExtUI::Y) * 100.0),
+            lround(ExtUI::getZOffset_mm() * 100.0)
         );
     else
         WriteRamRequest{Variable::Value0}.write_words(
             SENSOR_POSITION[index_ - 1].x,
             SENSOR_POSITION[index_ - 1].y,
-            ExtUI::getZOffset_mm() * 100.0f
+            lround(ExtUI::getZOffset_mm() * 100.0)
         );
 }
 

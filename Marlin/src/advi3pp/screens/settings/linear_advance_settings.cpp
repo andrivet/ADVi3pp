@@ -30,7 +30,7 @@ LinearAdvanceSettings linear_advance_settings;
 //! @return The index of the page to display
 Page LinearAdvanceSettings::do_prepare_page()
 {
-    WriteRamRequest{Variable::Value0}.write_word(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 100);
+    WriteRamRequest{Variable::Value0}.write_word(lround(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 100.0));
     return Page::LinearAdvanceSettings;
 }
 
