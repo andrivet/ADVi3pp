@@ -25,7 +25,7 @@
 namespace ADVi3pp {
 
 //! List of multipliers in Print Settings
-const float BABYSTEPS_MULTIPLIERS[] = {0.02, 0.04, 0.08};
+const int BABYSTEPS_MULTIPLIERS[] = {8, 16, 32};
 
 BabySteps baby_steps;
 
@@ -50,8 +50,8 @@ bool BabySteps::do_dispatch(KeyValue key_value)
 }
 
 //! Get the value corresponding the the current multiplier.
-//! @return The value of the current multiplier, or the first one in the case of an invalid multiplier
-float BabySteps::get_multiplier_value() const {
+//! @return The value of the current multiplier (in steps), or the first one in the case of an invalid multiplier
+int BabySteps::get_multiplier_value() const {
   if(multiplier_ < Multiplier::M1 || multiplier_ > Multiplier::M3) {
     Log::error() << F("Invalid multiplier value: ") << static_cast<uint16_t >(multiplier_) << Log::endl();
     return BABYSTEPS_MULTIPLIERS[0];
@@ -67,38 +67,35 @@ void BabySteps::send_multiplier() const {
 
 //! Send the current data to the LCD panel.
 void BabySteps::send_z_offset() {
-  WriteRamRequest{Variable::Value1}.write_words(100.0 * ExtUI::getZOffset_mm());
+  WriteRamRequest{Variable::Value1}.write_words(lround(100.0 * ExtUI::getZOffset_mm()));
 }
 
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
 Page BabySteps::do_prepare_page() {
+  save_ = false;
   send_multiplier();
   background_task.set(Callback{this, &BabySteps::send_z_offset}, 200);
   return Page::BabySteps;
 }
 
-void BabySteps::do_save_command() {
-  background_task.clear();
-  Parent::do_save_command();
-}
-
 void BabySteps::do_back_command() {
   background_task.clear();
+  if(save_) settings.save();
   Parent::do_back_command();
 }
 
 //! Handle the -Babystep command
 void BabySteps::baby_minus_command() {
-  auto distance = -ExtUI::mmToWholeSteps(get_multiplier_value(), ExtUI::Z);
-  ExtUI::smartAdjustAxis_steps(distance, ExtUI::Z, true);
+  save_= true;
+  ExtUI::smartAdjustAxis_steps(-get_multiplier_value(), ExtUI::Z, true);
 }
 
 //! Handle the +Babystep command
 void BabySteps::baby_plus_command() {
-  auto distance = ExtUI::mmToWholeSteps(get_multiplier_value(), ExtUI::Z);
-  ExtUI::smartAdjustAxis_steps(distance, ExtUI::Z, true);
+  save_= true;
+  ExtUI::smartAdjustAxis_steps(get_multiplier_value(), ExtUI::Z, true);
 }
 
 }

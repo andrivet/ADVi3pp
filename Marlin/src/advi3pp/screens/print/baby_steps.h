@@ -34,14 +34,14 @@ struct BabySteps: Screen<BabySteps> {
 private:
   bool do_dispatch(KeyValue value);
   Page do_prepare_page();
-  void do_save_command();
   void do_back_command();
   void send_multiplier() const;
   void send_z_offset();
-  float get_multiplier_value() const;
+  int get_multiplier_value() const;
 
 private:
   Multiplier multiplier_ = Multiplier::M1;
+  bool save_ = false;
 
   friend Parent;
 };
