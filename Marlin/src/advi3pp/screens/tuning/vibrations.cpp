@@ -98,8 +98,7 @@ void Vibrations::move_finished() {
 
     background_task.clear();
     status.reset();
-    pages.show_back_page();
-    pages.show_back_page();
+    pages.show_back_page(2);
 }
 
 void Vibrations::move_finished2() {
@@ -107,8 +106,7 @@ void Vibrations::move_finished2() {
 
     background_task.clear();
     status.reset();
-    pages.show_back_page();
-    pages.show_back_page();
+    pages.show_back_page(2);
 }
 
 void Vibrations::move_x() {

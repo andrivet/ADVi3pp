@@ -115,8 +115,7 @@ void Print::process_stop_code()
     ExtUI::stopPrint();
 
     status.set(F("Print Stopped"));
-    pages.show_back_page();
-    pages.show_back_page();
+    pages.show_back_page(2);
 }
 
 //! Process Pause (A0) code and actually pause the print (if any running).
