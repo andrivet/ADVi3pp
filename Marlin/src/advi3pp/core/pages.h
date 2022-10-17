@@ -33,20 +33,44 @@ struct Pages
     void show(Page page);
     Page get_current_page();
     bool is_current_page_temporary();
+    bool current_page_ensure_no_move();
     void save_forward_page();
-    void show_back_page();
+    void show_back_page(unsigned nb_back = 1);
     void show_forward_page();
     void reset();
+    void save();
+    void back();
 
 private:
+    static void save_task();
+    static void back_task();
     void show_(Page page);
     static bool is_temporary(Page page);
+    static bool ensure_no_move(Page page);
 
 private:
     Stack<Page, 8> back_pages_{};
     Page forward_page_ = Page::None;
     Page current_page_ = Page::Main;
 };
+
+
+inline bool Pages::is_temporary(Page page) {
+  return test_one_bit(page, Page::Temporary);
+}
+
+inline bool Pages::is_current_page_temporary() {
+  return is_temporary(get_current_page());
+}
+
+inline bool Pages::ensure_no_move(Page page) {
+  return test_one_bit(page, Page::EnsureNoMove);
+}
+
+inline bool Pages::current_page_ensure_no_move() {
+  return ensure_no_move(get_current_page());
+}
+
 
 extern Pages pages;
 

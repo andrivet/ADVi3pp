@@ -21,6 +21,9 @@
 #include "../parameters.h"
 #include "dgus.h"
 #include "pages.h"
+#include "core.h"
+#include "settings.h"
+#include "../screens/core/wait.h"
 
 namespace ADVi3pp {
 
@@ -30,10 +33,6 @@ Log& operator<<(Log& log, Page page)
 {
     log << static_cast<uint16_t>(page);
     return log;
-}
-
-bool Pages::is_temporary(Page page) {
-  return test_one_bit(page, Page::Temporary);
 }
 
 //! Show the given page on the LCD screen
@@ -49,8 +48,7 @@ void Pages::show(Page page)
 
 void Pages::show_(Page page)
 {
-    WriteRegisterRequest{Register::PictureID}.write_page(get_cleared_bits(page, Page::Temporary));
-
+    WriteRegisterRequest{Register::PictureID}.write_page(page & Page::PageNumber);
     current_page_ = page;
 }
 
@@ -62,30 +60,26 @@ Page Pages::get_current_page() {
     return current_page_;
 }
 
-bool Pages::is_current_page_temporary() {
-  return is_temporary(get_current_page());
-}
-
 //! Set page to display after the completion of an operation.
 void Pages::save_forward_page()
 {
-    auto current = get_current_page();
-    forward_page_ = current;
+    forward_page_ = get_current_page();
 }
 
 //! Show the "Back" page on the LCD display.
-void Pages::show_back_page()
+void Pages::show_back_page(unsigned nb_back)
 {
-    if(back_pages_.is_empty())
-    {
-        show_(Page::Main);
-        return;
+  for(; nb_back > 0; --nb_back) {
+    if (back_pages_.is_empty()) {
+      show_(Page::Main);
+      return;
     }
 
     auto back = back_pages_.pop();
-    if(back == forward_page_)
-        forward_page_ = Page::None;
+    if (back == forward_page_)
+      forward_page_ = Page::None;
     show_(back);
+  }
 }
 
 //! Show the "Next" page on the LCD display.
@@ -117,6 +111,39 @@ void Pages::show_forward_page()
 void Pages::reset()
 {
     back_pages_.empty();
+}
+
+void Pages::save() {
+  settings.save();
+  if(current_page_ensure_no_move() && core.is_busy()) {
+    wait.wait(F("Please wait..."));
+    background_task.set(Callback{&Pages::save_task});
+  }
+  else
+    pages.show_forward_page();
+}
+
+void Pages::save_task() {
+  if(core.is_busy()) return;
+  background_task.clear();
+  status.reset();
+  pages.show_forward_page();
+}
+
+void Pages::back() {
+  if(current_page_ensure_no_move() && core.is_busy()) {
+    wait.wait(F("Please wait..."));
+    background_task.set(Callback{&Pages::back_task});
+  }
+  else
+    pages.show_back_page();
+}
+
+void Pages::back_task() {
+  if(core.is_busy()) return;
+  background_task.clear();
+  status.reset();
+  pages.show_back_page(2);
 }
 
 }

@@ -25,76 +25,79 @@
 
 namespace ADVi3pp {
 
-enum class Page: uint16_t
-{
+enum class Page: uint16_t {
     Temporary               = 0x8000,
+    EnsureNoMove            = 0x4000,
+    PageNumber              = 0x00FF,
 
     None                    = 0,
-    Main                    = 22,               // 0x0016
-    Controls                = 24,               // 0x0018
-    Tuning                  = 26,               // 0x001A
-    Settings                = 28,               // 0x001C
-    LoadUnload              = 30,               // 0x001E
-    WaitBack                = 32 | Temporary,   // 0x8020
-    WaitBackContinue        = 34 | Temporary,   // 0x8022
-    Preheat                 = 36,               // 0x0024
-    Move                    = 38,               // 0x0026
-    SdCard                  = 40 | Temporary,   // 0x0028
-    Print                   = 42,               // 0x002A
-    BabySteps               = 44,               // 0x002C
-    Waiting                 = 46 | Temporary,   // 0x802E
-    ManualLeveling          = 48,               // 0x0030
-    ExtruderTuningTemp      = 50,               // 0x0032
-    WaitContinue            = 52 | Temporary,   // 0x8034
-    ExtruderTuningMeasure   = 54,               // 0x0036
-    Leveling                = 56,               // 0x0038
-    PidTuning               = 58,               // 0x003A
-    Killed                  = 60 | Temporary,   // 0x803C
-    MotorsSettings          = 62,               // 0x003E
-    PidSettings             = 64,               // 0x0040
-    FactoryReset            = 66 | Temporary,   // 0x8042
-    Statistics              = 68,               // 0x0044
-    Versions                = 70,               // 0x0046
-    StepsSettings           = 72,               // 0x0048
-    FeedrateSettings        = 74,               // 0x004A
-    AccelerationSettings    = 76,               // 0x004C
-    PauseOptions            = 78 | Temporary,   // 0x804E
-    PrintSettings           = 80,               // 0x0050
-    Setup                   = 82,               // 0x0052
-    SetupNoSensor           = 84,               // 0x0054
-    Temperature             = 86,               // 0x0056
-    Infos                   = 88,               // 0x0058
-    VibrationsTuning        = 90,               // 0x005A
-    NoSensor                = 92 | Temporary,   // 0x805C
-    SensorSettings          = 94,               // 0x005E
-    LCD                     = 96,               // 0x0060
-    Copyrights              = 98,               // 0x0062
-    KeyboardInteger         = 100,              // 0x0064
-    SensorGrid              = 102,              // 0x0066
-    EEPROMMismatch          = 104 | Temporary,  // 0x8068
-    ZHeightTuning           = 106,              // 0x006A
-    LinearAdvanceTuning     = 108,              // 0x006C
-    LinearAdvanceSettings   = 110,              // 0x006E
-    IO                      = 112,              // 0x0070
-    BLTouchTesting1         = 114 | Temporary,  // 0x8072
-    BLTouchTesting2         = 116 | Temporary,  // 0x8074
-    BLTouchTesting3         = 118 | Temporary,  // 0x8076
-    BLTouchTesting4         = 120 | Temporary,  // 0x8078
-    KeyboardDecimal         = 122,              // 0x007A
-    KeyboardSignedInteger   = 124,              // 0x007C
-    KeyboardSignedDecimal   = 126,              // 0x007E
-    LevelingNoSensor        = 128,              // 0x0080
-    ManualMesh              = 130,              // 0x0082
-    XTwist                  = 132,              // 0x0084
-    Runout                  = 134,              // 0x0086
-    Skew1Settings           = 136,
-    Skew2Settings           = 138,
-    Skew3Settings           = 140,
-    BuzzerSettings          = 142,
+    Main                    = 22,                             // 0x0016
+    Controls                = 24,                             // 0x0018
+    Tuning                  = 26,                             // 0x001A
+    Settings                = 28,                             // 0x001C
+    LoadUnload              = 30 | EnsureNoMove,              // 0x401E
+    WaitBack                = 32 | Temporary,                 // 0x8020
+    WaitBackContinue        = 34 | Temporary,                 // 0x8022
+    Preheat                 = 36 | EnsureNoMove,              // 0x0024
+    Move                    = 38 | EnsureNoMove,              // 0x0026
+    SdCard                  = 40 | EnsureNoMove | Temporary,  // 0xC028
+    Print                   = 42,                             // 0x002A
+    BabySteps               = 44,                             // 0x002C
+    Waiting                 = 46 | Temporary,                 // 0x802E
+    ManualLeveling          = 48 | EnsureNoMove,              // 0x4030
+    ExtruderTuningTemp      = 50 | EnsureNoMove,              // 0x4032
+    WaitContinue            = 52 | Temporary,                 // 0x8034
+    ExtruderTuningMeasure   = 54 | EnsureNoMove,              // 0x4036
+    Leveling                = 56 | EnsureNoMove,              // 0x4038
+    PidTuning               = 58 | EnsureNoMove,              // 0x403A
+    Killed                  = 60 | Temporary,                 // 0x803C
+    MotorsSettings          = 62,                             // 0x003E
+    PidSettings             = 64,                             // 0x0040
+    FactoryReset            = 66 | Temporary,                 // 0x8042
+    Statistics              = 68,                             // 0x0044
+    Versions                = 70,                             // 0x0046
+    StepsSettings           = 72,                             // 0x0048
+    FeedrateSettings        = 74,                             // 0x004A
+    AccelerationSettings    = 76,                             // 0x004C
+    PauseOptions            = 78 | Temporary,                 // 0x804E
+    PrintSettings           = 80 | EnsureNoMove,              // 0x4050
+    Setup                   = 82,                             // 0x0052
+    SetupNoSensor           = 84,                             // 0x0054
+    Temperature             = 86,                             // 0x0056
+    Infos                   = 88,                             // 0x0058
+    VibrationsTuning        = 90 | EnsureNoMove,              // 0x405A
+    NoSensor                = 92 | Temporary,                 // 0x805C
+    SensorSettings          = 94,                             // 0x005E
+    LCD                     = 96,                             // 0x0060
+    Copyrights              = 98,                             // 0x0062
+    KeyboardInteger         = 100,                            // 0x0064
+    SensorGrid              = 102,                            // 0x0066
+    EEPROMMismatch          = 104 | Temporary,                // 0x8068
+    ZHeightTuning           = 106 | EnsureNoMove,             // 0x406A
+    LinearAdvanceTuning     = 108 | EnsureNoMove,             // 0x406C
+    LinearAdvanceSettings   = 110,                            // 0x006E
+    IO                      = 112,                            // 0x0070
+    BLTouchTesting1         = 114 | Temporary,                // 0x8072
+    BLTouchTesting2         = 116 | Temporary,                // 0x8074
+    BLTouchTesting3         = 118 | Temporary,                // 0x8076
+    BLTouchTesting4         = 120 | EnsureNoMove | Temporary, // 0xC078
+    KeyboardDecimal         = 122,                            // 0x007A
+    KeyboardSignedInteger   = 124,                            // 0x007C
+    KeyboardSignedDecimal   = 126,                            // 0x007E
+    LevelingNoSensor        = 128,                            // 0x0080
+    ManualMesh              = 130,                            // 0x0082
+    XTwist                  = 132 | EnsureNoMove,             // 0x4084
+    Runout                  = 134,                            // 0x0086
+    Skew1Settings           = 136,                            // 0x0088
+    Skew2Settings           = 138,                            // 0x008A
+    Skew3Settings           = 140,                            // 0x008C
+    BuzzerSettings          = 142,                            // 0x008E
+    AutomaticLeveling       = 144 | EnsureNoMove,             // 0x408F
 
-    Boot                    = 200 | Temporary   // 0x00C8
+    Boot                    = 200 | Temporary                 // 0x80C8
 };
 ENABLE_BITMASK_OPERATOR(Page);
+
 
 //! List of variables and their addresses.
 enum class Variable: uint16_t
