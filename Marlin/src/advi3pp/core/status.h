@@ -38,7 +38,8 @@ struct Status
     void reset();
     void set(const FlashChar* message);
     void set(const char* message);
-    void set(const FlashChar* fmt, va_list& args);
+    void format(const FlashChar* fmt, va_list& args);
+    void format(const FlashChar* fmt, ...);
     bool has() const;
 
     void send();

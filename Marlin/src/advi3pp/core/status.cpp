@@ -55,12 +55,19 @@ void Status::set(const char* message)
     has_status_ = true;
 }
 
-void Status::set(const FlashChar* fmt, va_list& args)
+void Status::format(const FlashChar* fmt, va_list& args)
 {
     ADVString<message_length> text{};
     text.set(fmt, args);
     send_status(text);
     has_status_ = true;
+}
+
+void Status::format(const FlashChar* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  format(fmt, args);
+  va_end(args);
 }
 
 void Status::send()
