@@ -28,16 +28,19 @@ namespace ADVi3pp {
 struct AutomaticLeveling: Screen<AutomaticLeveling> {
   void on_start() {}
   void on_progress(uint8_t index, uint8_t x, uint8_t y);
-  void on_done();
+  void on_done(bool success);
 
 private:
   bool do_dispatch(KeyValue key_value);
   Page do_prepare_page();
+  void do_back_command();
   void reset_command();
   void start();
   void home_task();
 
 private:
+  bool lcd_leveling_ = false;
+
   friend Parent;
 };
 

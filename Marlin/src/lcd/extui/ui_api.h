@@ -176,8 +176,9 @@ namespace ExtUI {
       void setMeshPoint(const xy_uint8_t &pos, const_float_t zval);
       void moveToMeshPoint(const xy_uint8_t &pos, const_float_t z);
       void onLevelingStart();
-      void onLevelingDone();
+      void onLevelingDone(bool success);
       void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos);
+      void cancelLeveling();
       void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval);
       inline void onMeshUpdate(const xy_int8_t &pos, const_float_t zval) { onMeshUpdate(pos.x, pos.y, zval); }
 

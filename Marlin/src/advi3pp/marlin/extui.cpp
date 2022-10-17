@@ -172,8 +172,8 @@ void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos
   automatic_leveling.on_progress(index, xpos, ypos);
 }
 
-void onLevelingDone() {
-  automatic_leveling.on_done();
+void onLevelingDone(bool success) {
+  automatic_leveling.on_done(success);
 }
 
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {

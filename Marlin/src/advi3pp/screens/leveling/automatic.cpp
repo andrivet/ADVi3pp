@@ -21,7 +21,6 @@
 #include "../../parameters.h"
 #include "../../core/core.h"
 #include "../../core/status.h"
-#include "../../core/string.h"
 #include "../../screens/core/wait.h"
 #include "grid.h"
 #include "automatic.h"
@@ -47,15 +46,14 @@ bool AutomaticLeveling::do_dispatch(KeyValue key_value)
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page AutomaticLeveling::do_prepare_page()
-{
+Page AutomaticLeveling::do_prepare_page() {
 #ifdef ADVi3PP_PROBE
-    if(!core.ensure_not_printing())
-        return Page::None;
-    start();
-    return Page::None;
+  if(!core.ensure_not_printing())
+      return Page::None;
+  start();
+  return Page::None;
 #else
-    return Page::NoSensor;
+  return Page::NoSensor;
 #endif
 }
 
@@ -68,7 +66,14 @@ void AutomaticLeveling::reset_command()
 #endif
 }
 
+void AutomaticLeveling::do_back_command() {
+  status.set(F("Canceling leveling..."));
+  ExtUI::cancelLeveling();
+  Parent::do_back_command();
+}
+
 void AutomaticLeveling::start() {
+  lcd_leveling_ = true;
   pages.save_forward_page();
   wait.wait(F("Homing..."));
   core.inject_commands(F("G28 O F6000"));
@@ -82,6 +87,9 @@ void AutomaticLeveling::home_task() {
 
   background_task.clear();
   pages.show(Page::AutomaticLeveling);
+
+  adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
+  WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
 
   // homing, raise head, leveling, go back to corner, activate compensation
 #ifdef ADVi3PP_PROBE
@@ -105,12 +113,22 @@ void AutomaticLeveling::on_progress(uint8_t index, uint8_t x, uint8_t y) {
 
 //! Called by Marlin when G29 (automatic bed leveling) is finished.
 //! @param success Boolean indicating if the leveling was successful or not.
-void AutomaticLeveling::on_done() {
-  if(pages.get_current_page() != Page::AutomaticLeveling) {
-    settings.save();
-    ExtUI::setLevelingActive(true);
+void AutomaticLeveling::on_done(bool success) {
+  Log::log() << "on_done" << success << Log::endl();
+  if(!success)
+    status.set(F("Leveling failure or aborted, please wait..."));
+
+  if(!lcd_leveling_) {
+    if(success) {
+      settings.save();
+      ExtUI::setLevelingActive(true);
+    }
     return;
   }
+
+  lcd_leveling_ = false;
+  if(!success)
+    return;
 
   status.reset();
   leveling_grid.show();
