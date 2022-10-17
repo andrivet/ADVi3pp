@@ -107,14 +107,13 @@ void Screen<Self>::do_show_command()
 template<typename Self>
 void Screen<Self>::do_save_command()
 {
-    settings.save();
-    pages.show_forward_page();
+    pages.save();
 }
 
 template<typename Self>
 void Screen<Self>::do_back_command()
 {
-    pages.show_back_page();
+    pages.back();
 }
 
 }
