@@ -62,6 +62,7 @@ Page SdCard::do_prepare_page() {
 //! Show first SD card page
 void SdCard::show_initial() {
   ExtUI::mountMedia();
+  status.reset();
 
   if(!ExtUI::isMediaInserted() || !ExtUI::isMediaMounted()) {
     show_empty();
