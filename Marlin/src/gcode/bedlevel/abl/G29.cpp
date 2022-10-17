@@ -711,13 +711,8 @@ G29_TYPE GcodeSuite::G29() {
 
           if (abl.verbose_level) SERIAL_ECHOLNPGM("Probing mesh point ", pt_index, "/", abl.abl_points, ".");
           // @advi3++: Display x, y
+          ExtUI::onLevelingProgress(pt_index, abl.probePos.x, abl.probePos.y);
           //TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i"), GET_TEXT(MSG_PROBING_POINT), int(pt_index), int(abl.abl_points)));
-          TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i (%i, %i mm)"),
-            GET_TEXT(MSG_PROBING_POINT),
-            int(pt_index),
-            int(abl.abl_points),
-            int(abl.probePos.x),
-            int(abl.probePos.y)));
 
           abl.measured_z = faux ? 0.001f * random(-100, 101) : probe.probe_at_point(abl.probePos, raise_after, abl.verbose_level);
 

@@ -25,21 +25,20 @@
 namespace ADVi3pp {
 
 //! Automatic Leveling Page
-struct AutomaticLeveling: Screen<AutomaticLeveling>
-{
-    void leveling_finished(bool success);
+struct AutomaticLeveling: Screen<AutomaticLeveling> {
+  void on_start() {}
+  void on_progress(uint8_t index, uint8_t x, uint8_t y);
+  void on_done();
 
 private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void reset_command();
-    void start();
-    bool leveling_failed();
+  bool do_dispatch(KeyValue key_value);
+  Page do_prepare_page();
+  void reset_command();
+  void start();
+  void home_task();
 
 private:
-    bool sensor_interactive_leveling_ = false;
-
-    friend Parent;
+  friend Parent;
 };
 
 extern AutomaticLeveling automatic_leveling;

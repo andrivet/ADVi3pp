@@ -23,7 +23,6 @@
 #include "../core/core.h"
 #include "../core/buzzer.h"
 #include "../core/status.h"
-#include "../core/settings.h"
 #include "../screens/core/wait.h"
 #include "../screens/leveling/automatic.h"
 #include "../screens/tuning/pid_tuning.h"
@@ -96,7 +95,7 @@ void onUserConfirmRequired(const char * const msg) {
 
 void onStatusChanged(const char * const msg) {
   Log::log() << F("ExtUI::onStatusChanged") << msg << Log::endl();
-  wait.set_status(msg);
+  status.set(msg);
 }
 
 void onHomingStart() {
@@ -166,11 +165,15 @@ void onSettingsValidated(bool success) {
 }
 
 void onLevelingStart() {
-  Log::log() << F("ExtUI::onLevelingStart") << Log::endl();
+  automatic_leveling.on_start();
+}
+
+void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos) {
+  automatic_leveling.on_progress(index, xpos, ypos);
 }
 
 void onLevelingDone() {
-  Log::log() << F("ExtUI::onLevelingDone") << Log::endl();
+  automatic_leveling.on_done();
 }
 
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
@@ -181,14 +184,6 @@ void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, probe_state_t state) {
   // Called to indicate a special condition
   Log::log() << F("ExtUI::onMeshUpdate") << Log::endl();
-}
-
-void onAutomaticLevelingFinished(bool success) {
-  Log::log() << F("ExtUI::onAutomaticLevelingFinished") << Log::endl();
-
-#if HAS_LEVELING
-    automatic_leveling.leveling_finished(success);
-#endif
 }
 
 #if ENABLED(POWER_LOSS_RECOVERY)

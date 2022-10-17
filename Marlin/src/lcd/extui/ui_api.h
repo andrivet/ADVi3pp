@@ -177,6 +177,7 @@ namespace ExtUI {
       void moveToMeshPoint(const xy_uint8_t &pos, const_float_t z);
       void onLevelingStart();
       void onLevelingDone();
+      void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos);
       void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval);
       inline void onMeshUpdate(const xy_int8_t &pos, const_float_t zval) { onMeshUpdate(pos.x, pos.y, zval); }
 
@@ -463,11 +464,6 @@ namespace ExtUI {
     void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
     uint16_t getSizeofSettings();
-  #endif
-
-  // @advi3++
-  #if HAS_LEVELING
-    void onAutomaticLevelingFinished(bool success);
   #endif
 
   // @advi3++
