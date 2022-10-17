@@ -109,12 +109,6 @@ void Wait::wait_user(const char* message) {
   }
 }
 
-void Wait::set_status(const char* message) {
-  if(pages.is_current_page_temporary())
-    pages.show_back_page();
-  status.set(message);
-}
-
 //! Default action when the continue button is pressed (inform Marlin)
 bool Wait::on_continue()
 {

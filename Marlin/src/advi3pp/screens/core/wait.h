@@ -40,7 +40,6 @@ struct Wait: Screen<Wait>
     void wait_back(const FlashChar* message);
     void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
     void wait_user(const char* message);
-    void set_status(const char* message);
 
 private:
     Page do_prepare_page();
