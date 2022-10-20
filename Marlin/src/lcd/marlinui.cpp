@@ -1478,7 +1478,9 @@ void MarlinUI::init() {
       else if (print_job_timer.needsService(3)) msg = FPSTR(service3);
     #endif
 
-    else if (!no_welcome) msg = GET_TEXT_F(WELCOME_MSG);
+    // @advi3++ will detect the empty string and clear and pending wait screen
+    // else if (!no_welcome) msg = GET_TEXT_F(WELCOME_MSG);
+    else if (!no_welcome) msg = F("");
 
     else if (ENABLED(DWIN_LCD_PROUI))
         msg = F("");

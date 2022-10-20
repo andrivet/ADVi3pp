@@ -95,7 +95,10 @@ void onUserConfirmRequired(const char * const msg) {
 
 void onStatusChanged(const char * const msg) {
   Log::log() << F("ExtUI::onStatusChanged") << msg << Log::endl();
-  status.set(msg);
+  if(msg == NULL || *msg == 0)
+    status.reset_and_clear();
+  else
+    status.set(msg);
 }
 
 void onHomingStart() {

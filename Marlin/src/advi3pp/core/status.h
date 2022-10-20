@@ -36,6 +36,7 @@ const size_t et_length = 8; //!< Size of the elaplsed time message to be display
 struct Status
 {
     void reset();
+    void reset_and_clear();
     void set(const FlashChar* message);
     void set(const char* message);
     void format(const FlashChar* fmt, va_list& args);

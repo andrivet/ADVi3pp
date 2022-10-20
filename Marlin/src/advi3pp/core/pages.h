@@ -32,7 +32,7 @@ struct Pages
 {
     void show(Page page);
     Page get_current_page();
-    bool is_current_page_temporary();
+    void clear_temporaries();
     bool current_page_ensure_no_move();
     void save_forward_page();
     void show_back_page(unsigned nb_back = 1);
@@ -57,10 +57,6 @@ private:
 
 inline bool Pages::is_temporary(Page page) {
   return test_one_bit(page, Page::Temporary);
-}
-
-inline bool Pages::is_current_page_temporary() {
-  return is_temporary(get_current_page());
 }
 
 inline bool Pages::ensure_no_move(Page page) {

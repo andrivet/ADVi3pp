@@ -22,6 +22,7 @@
 #include "../../lcd/extui/ui_api.h"
 #include "logging.h"
 #include "status.h"
+#include "pages.h"
 #include "dgus.h"
 #include "enums.h"
 
@@ -34,6 +35,11 @@ void Status::reset()
 {
     has_status_ = false;
     set("");
+}
+
+void Status::reset_and_clear() {
+  pages.clear_temporaries();
+  reset();
 }
 
 bool Status::has() const

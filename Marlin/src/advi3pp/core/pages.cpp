@@ -146,4 +146,14 @@ void Pages::back_task() {
   pages.show_back_page(2);
 }
 
+void Pages::clear_temporaries() {
+  Page page = get_current_page();
+  if(!is_temporary(page))
+    return;
+
+  while(is_temporary(page) && !back_pages_.is_empty())
+    page = back_pages_.pop();
+  show_(page);
+}
+
 }
