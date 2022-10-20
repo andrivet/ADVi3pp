@@ -193,25 +193,25 @@ void Move::disable_motors_command() {
 //! Go to home on the X axis.
 void Move::x_home_command() {
   stop_move();
-  core.inject_commands(F("G28 X F6000"));
+  core.inject_commands(F("G28 X"));
 }
 
 //! Go to home on the Y axis.
 void Move::y_home_command() {
   stop_move();
-  core.inject_commands(F("G28 Y F6000"));
+  core.inject_commands(F("G28 Y"));
 }
 
 //! Go to home on the Z axis.
 void Move::z_home_command() {
   stop_move();
-  core.inject_commands(F("G28 Z F1200"));
+  core.inject_commands(F("G28 Z"));
 }
 
 //! Go to home on all axis.
 void Move::all_home_command() {
   stop_move();
-  core.inject_commands(F("G28 F6000"));
+  core.inject_commands(F("G28"));
 }
 
 }

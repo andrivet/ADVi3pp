@@ -103,9 +103,7 @@ bool ManualLeveling::abort() {
 
 bool ManualLeveling::start() {
   wait.wait(F("Homing..."));
-  ExtUI::setAllAxisUnhomed();
-  ExtUI::setAllAxisPositionUnknown();
-  core.inject_commands(F("G28 O F6000")); // Homing
+  core.inject_commands(F("G28 O")); // Homing
 #if HAS_LEVELING
   ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
 #endif

@@ -68,7 +68,7 @@ Page Vibrations::do_prepare_page()
         return Page::VibrationsTuning;
 
     wait.wait(F("Please wait while the printer is homed..."));
-    core.inject_commands(F("G28 O F6000"));
+    core.inject_commands(F("G28 O"));
     background_task.set(Callback{this, &Vibrations::homing});
     return Page::None;
 }
