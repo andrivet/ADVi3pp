@@ -31,6 +31,7 @@ struct LevelingGrid: Screen<LevelingGrid>
 private:
     Page do_prepare_page();
     void do_save_command();
+    void do_back_command();
 
     friend Parent;
 };

@@ -52,6 +52,11 @@ void LevelingGrid::do_save_command()
     Parent::do_save_command();
 }
 
+void LevelingGrid::do_back_command() {
+  pages.back();
+  Parent::do_back_command();
+}
+
 #else
 
 //! Prepare the page before being displayed and return the right Page value
