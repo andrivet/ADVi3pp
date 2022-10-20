@@ -76,7 +76,7 @@ void AutomaticLeveling::start() {
   lcd_leveling_ = true;
   pages.save_forward_page();
   wait.wait(F("Homing..."));
-  core.inject_commands(F("G28 O F6000"));
+  core.inject_commands(F("G28 O\nG1 Z4 F1200"));
   background_task.set(Callback{this, &AutomaticLeveling::home_task}, 200);
 }
 
@@ -92,11 +92,7 @@ void AutomaticLeveling::home_task() {
   WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
 
   // homing, raise head, leveling, go back to corner, activate compensation
-#ifdef ADVi3PP_PROBE
-  core.inject_commands(F("G1 Z4 F1200\nG29 E\nG28 X Y F6000\nM420 S1"));
-#else
-  core.inject_commands(F("G1 Z4 F1200\nG29 S1\nG28 X Y F6000\nM420 S1"));
-#endif
+  core.inject_commands(ExtUI::isLevelingHighSpeed() ? F("G29") : F("G29 E"));
 }
 
 void AutomaticLeveling::on_progress(uint8_t index, uint8_t x, uint8_t y) {
@@ -117,6 +113,8 @@ void AutomaticLeveling::on_done(bool success) {
   Log::log() << "on_done" << success << Log::endl();
   if(!success)
     status.set(F("Leveling failure or aborted, please wait..."));
+
+  core.inject_commands(F("G28 X Y"));
 
   if(!lcd_leveling_) {
     if(success) {

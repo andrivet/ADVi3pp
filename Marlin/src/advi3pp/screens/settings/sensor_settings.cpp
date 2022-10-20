@@ -38,11 +38,11 @@ const FlashChar* get_sensor_name(size_t index)
 {
     // Note: F macro can be used only in a function, this is why this is coded like this
     auto your                = F("Your Sensor");
-    auto teaching_tech_side  = F("Teaching Tech Left");
-    auto advi3pp             = F("ADVi3++ Left");
+    auto teaching_tech_side  = F("Teaching Tech");
+    auto advi3pp             = F("ADVi3++");
 
 #if defined(BLTOUCH)
-    auto baseggio            = F("Indianagio Front");
+    auto baseggio            = F("Indianagio");
     static const FlashChar* names[NB_SENSOR_POSITIONS + 1] = {your, baseggio, teaching_tech_side, advi3pp};
 #elif defined(ADVi3PP_54)
     auto mark2               = F("Mark II");
@@ -86,6 +86,7 @@ bool SensorSettings::do_dispatch(KeyValue key_value)
     {
         case KeyValue::SensorSettingsPrevious:  previous_command(); break;
         case KeyValue::SensorSettingsNext:      next_command(); break;
+        case KeyValue::SensorSettingsHighSpeed: highspeed_command(); break;
         default:                                return false;
     }
 
@@ -97,8 +98,10 @@ bool SensorSettings::do_dispatch(KeyValue key_value)
 Page SensorSettings::do_prepare_page()
 {
     index_ = 0;
+    highspeed_ = ExtUI::isLevelingHighSpeed();
     send_name();
     send_values();
+    send_highspeed_value();
     pages.save_forward_page();
     return Page::SensorSettings;
 }
@@ -107,6 +110,7 @@ Page SensorSettings::do_prepare_page()
 void SensorSettings::do_save_command()
 {
     get_values();
+    ExtUI::setLevelingHighSpeed(highspeed_);
     Parent::do_save_command();
 }
 
@@ -131,6 +135,15 @@ void SensorSettings::next_command()
     send_values();
 }
 
+void SensorSettings::highspeed_command() {
+  highspeed_ = !highspeed_;
+  send_highspeed_value();
+}
+
+void SensorSettings::send_highspeed_value() const {
+  WriteRamRequest{Variable::Value3}.write_word(highspeed_ ? 1 : 0);
+}
+
 void SensorSettings::send_values() const
 {
     if(index_ == 0)
@@ -149,7 +162,7 @@ void SensorSettings::send_values() const
 
 void SensorSettings::send_name() const
 {
-    ADVString<28> title{get_sensor_name(index_)};
+    ADVString<14> title{get_sensor_name(index_)};
     WriteRamRequest{Variable::LongTextCentered0}.write_centered_text(title);
 }
 

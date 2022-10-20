@@ -302,6 +302,7 @@ enum class KeyValue: uint16_t
 
     SensorSettingsPrevious  = 0x0001,
     SensorSettingsNext      = 0x0002,
+    SensorSettingsHighSpeed = 0x0003,
 
     LCDDimming              = 0x0001,
 

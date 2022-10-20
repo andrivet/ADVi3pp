@@ -170,15 +170,17 @@ namespace ExtUI {
     bool getLevelingActive();
     void setLevelingActive(const bool);
     bool getMeshValid();
+    bool isLevelingHighSpeed(); // @advi3++
+    void setLevelingHighSpeed(bool set = true); // @advi3++
     #if HAS_MESH
       bed_mesh_t& getMeshArray();
       float getMeshPoint(const xy_uint8_t &pos);
       void setMeshPoint(const xy_uint8_t &pos, const_float_t zval);
       void moveToMeshPoint(const xy_uint8_t &pos, const_float_t z);
       void onLevelingStart();
-      void onLevelingDone(bool success);
-      void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos);
-      void cancelLeveling();
+      void onLevelingDone(bool success); // @advi3++
+      void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos); // @advi3++
+      void cancelLeveling(); // @advi3++
       void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval);
       inline void onMeshUpdate(const xy_int8_t &pos, const_float_t zval) { onMeshUpdate(pos.x, pos.y, zval); }
 

@@ -1055,7 +1055,7 @@
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
 // @advi3++: Set reasonable default values for Wanhao i3 Plus 
-#define DEFAULT_MAX_FEEDRATE          { 450, 450, 5, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 450, 450, 10, 25 }
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
 #if ENABLED(LIMITED_MAX_FR_EDITING)
@@ -1331,10 +1331,10 @@
 #define PROBING_MARGIN 10
 
 // X and Y axis travel speed (mm/min) between probes
-#define XY_PROBE_FEEDRATE (100*60) // @advi3++
+#define XY_PROBE_FEEDRATE (150*60) // @advi3++
 
 // Feedrate (mm/min) for the first approach when double-probing (MULTIPLE_PROBING == 2)
-#define Z_PROBE_FEEDRATE_FAST (20*60) // @advi3++
+#define Z_PROBE_FEEDRATE_FAST (10*60) // @advi3++
 
 // Feedrate (mm/min) for the "accurate" probe of each point
 #define Z_PROBE_FEEDRATE_SLOW (Z_PROBE_FEEDRATE_FAST / 2)
@@ -1953,7 +1953,7 @@
 
 // Homing speeds (linear=mm/min, rotational=°/min)
 // @advi3++
-#define HOMING_FEEDRATE_MM_M { (100*60), (100*60), (20*60) }
+#define HOMING_FEEDRATE_MM_M { (100*60), (100*60), (10*60) }
 
 // Validate that endstops are triggered on homing moves
 // @advi3++: Do not validate when using the Simulator
