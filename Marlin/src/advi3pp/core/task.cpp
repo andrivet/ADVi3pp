@@ -21,6 +21,7 @@
 #include "../parameters.h"
 #include <Arduino.h>
 #include "task.h"
+#include "logging.h"
 
 namespace ADVi3pp {
 
@@ -34,12 +35,14 @@ Task::Task(const Callback& callback, unsigned int delay, Activation activation)
 //! Set the next task and its delay
 //! @param task     The next background task
 //! @param delta    Duration to be added to the current time to execute the background task
-void Task::set(const Callback& callback, unsigned int delay, Activation activation)
-{
-    delay_ = delay;
-    activation_ = activation;
-    callback_ = callback;
-    set_next_execute_time();
+void Task::set(const Callback& callback, unsigned int delay, Activation activation) {
+  if(callback_)
+    Log::error() << F("Task::set but there is already an active task") << Log::endl();
+
+  delay_ = delay;
+  activation_ = activation;
+  callback_ = callback;
+  set_next_execute_time();
 }
 
 //! Reset the background task

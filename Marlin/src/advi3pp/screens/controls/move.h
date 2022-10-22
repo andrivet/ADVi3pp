@@ -65,6 +65,8 @@ private:
   void move(Direction direction);
   void stop_move();
   void task();
+  void home_command(const FlashChar *cmd);
+  void home_task();
 
 private:
   Direction direction_ = Direction::None;
