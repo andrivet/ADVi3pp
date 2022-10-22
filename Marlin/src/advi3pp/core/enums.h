@@ -60,7 +60,7 @@ enum class Page: uint16_t {
     FeedrateSettings        = 74,                             // 0x004A
     AccelerationSettings    = 76,                             // 0x004C
     PauseOptions            = 78 | Temporary,                 // 0x804E
-    PrintSettings           = 80 | EnsureNoMove,              // 0x4050
+    PrintSettings           = 80,                             // 0x0050
     Setup                   = 82,                             // 0x0052
     SetupNoSensor           = 84,                             // 0x0054
     Temperature             = 86,                             // 0x0056
