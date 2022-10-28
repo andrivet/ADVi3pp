@@ -25,28 +25,34 @@
 namespace ADVi3pp {
 
 //! LCD Setting Page
-struct LcdSettings: Screen<LcdSettings>
-{
-    void normal_brightness_command(uint16_t brightness);
-    void dimming_brightness_command(uint16_t brightness);
+struct LcdSettings: Screen<LcdSettings> {
+  static constexpr Page PAGE = Page::LCD;
+  static constexpr Action ACTION = Action::LCD;
 
-    bool receive();
-    void send();
-    void sleep_on();
-    void sleep_off();
+  void normal_brightness_command(uint16_t brightness);
+  void dimming_brightness_command(uint16_t brightness);
+
+  bool receive();
+  void send();
+  void sleep_on();
+  void sleep_off();
 
 private:
-    friend Parent;
 
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void do_back_command();
-    void do_save_command();
-    void dimming_command();
-    void send_values(uint16_t time, uint8_t normal, uint8_t dimmed);
-    bool get_values(uint16_t &time, uint8_t &normal, uint8_t &dimmed) const;
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_back_command();
+  void on_save_command();
+  void on_abort();
 
-    bool dimming_ = false;
+  void dimming_command();
+  void send_values(uint16_t time, uint8_t normal, uint8_t dimmed);
+  bool get_values(uint16_t &time, uint8_t &normal, uint8_t &dimmed) const;
+
+  friend Parent;
+
+private:
+  bool dimming_ = false;
 };
 
 extern LcdSettings lcd_settings;

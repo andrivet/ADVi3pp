@@ -94,33 +94,27 @@ void Move::set_position() const {
 //! Execute a move command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool Move::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::MoveXHome:           x_home_command(); break;
-        case KeyValue::MoveYHome:           y_home_command(); break;
-        case KeyValue::MoveZHome:           z_home_command(); break;
-        case KeyValue::MoveAllHome:         all_home_command(); break;
-        case KeyValue::DisableMotors:       disable_motors_command(); break;
-        default: Log::log() << "Invalid KeyValue" << Log::endl(); return false;
-    }
-
+bool Move::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
+
+  switch(key_value)     {
+    case KeyValue::MoveXHome:           x_home_command(); break;
+    case KeyValue::MoveYHome:           y_home_command(); break;
+    case KeyValue::MoveZHome:           z_home_command(); break;
+    case KeyValue::MoveAllHome:         all_home_command(); break;
+    case KeyValue::DisableMotors:       disable_motors_command(); break;
+    default: Log::log() << "Invalid KeyValue" << Log::endl(); return false;
+  }
+
+  return true;
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page Move::do_prepare_page()
-{
-    if(!core.ensure_not_printing())
-        return Page::None;
-    ExtUI::finishAndDisableHeaters(); // To circumvent homing problems
-    direction_ = Direction::None;
-    return Page::Move;
+void Move::on_enter() {
+  ExtUI::finishAndDisableHeaters(); // To circumvent homing problems
+  direction_ = Direction::None;
 }
 
 void Move::move(Direction direction) {

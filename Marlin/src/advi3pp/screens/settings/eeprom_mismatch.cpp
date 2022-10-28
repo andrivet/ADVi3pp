@@ -25,18 +25,10 @@ namespace ADVi3pp {
 
 EepromMismatch eeprom_mismatch;
 
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page EepromMismatch::do_prepare_page()
-{
-    return Page::EEPROMMismatch;
-}
-
 //! Handles the Save (Continue) command
-void EepromMismatch::do_save_command()
-{
-    settings.save();
-    pages.show(Page::Setup);
+void EepromMismatch::on_save_command() {
+  settings.save();
+  pages.show(Page::Setup, Action::Setup);
 }
 
 }

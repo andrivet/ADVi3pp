@@ -26,10 +26,13 @@ namespace ADVi3pp {
 
 //! Skew Settings Page
 struct SkewSettings: Screen<SkewSettings> {
+  static constexpr Page PAGE = Page::Skew1Settings;
+  static constexpr Action ACTION = Action::Skew;
+
 private:
-  bool do_dispatch(KeyValue key_value);
-  Page do_prepare_page();
-  void do_save_command();
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_save_command();
 
   void step1();
   void step2();

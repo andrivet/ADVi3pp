@@ -26,14 +26,24 @@ namespace ADVi3pp {
 
 //! Automatic Leveling Page
 struct AutomaticLeveling: Screen<AutomaticLeveling> {
+#ifdef ADVi3PP_PROBE
+  static constexpr Page PAGE = Page::AutomaticLeveling;
+  static constexpr Action ACTION = Action::AutomaticLeveling;
+#else
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::None;
+#endif
+
   void on_start() {}
   void on_progress(uint8_t index, uint8_t x, uint8_t y);
   void on_done(bool success);
 
 private:
-  bool do_dispatch(KeyValue key_value);
-  Page do_prepare_page();
-  void do_back_command();
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_back_command();
+  void on_abort();
+
   void reset_command();
   void start();
   void home_task();

@@ -25,13 +25,16 @@
 namespace ADVi3pp {
 
 //! Acceleration Settings Page
-struct AccelerationSettings: Screen<AccelerationSettings>
-{
-private:
-    Page do_prepare_page();
-    void do_save_command();
+struct AccelerationSettings: Screen<AccelerationSettings> {
+  static constexpr Page PAGE = Page::AccelerationSettings;
+  static constexpr Action ACTION = Action::AccelerationSettings;
 
-    friend Parent;
+private:
+  void on_enter();
+  void on_save_command();
+
+private:
+  friend Parent;
 };
 
 extern AccelerationSettings accelerations_settings;

@@ -25,13 +25,17 @@
 namespace ADVi3pp {
 
 //! Setup Page
-struct Setup: Screen<Setup>
-{
-private:
-    Page do_prepare_page();
+struct Setup: Screen<Setup> {
+#ifdef ADVi3PP_PROBE
+  static constexpr Page PAGE = Page::Setup;
+  static constexpr Action ACTION = Action::Setup;
+#else
+  static constexpr Page PAGE = Page::SetupNoSensor;
+  static constexpr Action ACTION = Action::Setup;
+#endif
 
 private:
-    friend Parent;
+  friend Parent;
 };
 
 extern Setup setup;

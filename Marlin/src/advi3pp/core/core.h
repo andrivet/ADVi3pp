@@ -34,50 +34,49 @@ namespace ADVi3pp {
 // ----------------------------------------------------------------------------
 
 struct Once {
-    operator bool();
+  operator bool();
 private:
-    bool once_ = true;
+  bool once_ = true;
 };
 
 // ----------------------------------------------------------------------------
 // Core
 // ----------------------------------------------------------------------------
 
-struct Core
-{
-    enum class PinState: uint8_t { Off = 0, On = 1, Output = 2};
+struct Core {
+  enum class PinState: uint8_t { Off = 0, On = 1, Output = 2};
 
-    void startup();
-    void idle();
-    void killed(float temp, const FlashChar* error, const FlashChar* component);
+  void startup();
+  void idle();
+  void killed(float temp, const FlashChar* error, const FlashChar* component);
 
-    bool ensure_not_printing();
-    bool is_busy();
-    void inject_commands(const FlashChar* commands);
-    void inject_commands(const char *commands);
+  bool is_busy();
+  void inject_commands(const FlashChar* commands);
+  void inject_commands(const char *commands);
+  void process_action(Action action, KeyValue key_value);
 
-    template<size_t L> ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version);
+  template<size_t L> ADVString<L>& convert_version(ADVString<L>& version, uint16_t hex_version);
 
-    static PinState get_pin_state(uint8_t pin);
-    static float ensure_z_enough_room();
+  static PinState get_pin_state(uint8_t pin);
+  static float ensure_z_enough_room();
 
-    void media_inserted();
-    void media_removed();
-    void media_error();
-
-private:
-    bool init();
-    void send_gplv3_7b_notice();
-    void update_progress();
-    void from_lcd();
-    void to_lcd();
-    void send_lcd_data();
-    void send_lcd_touch_request();
+  void media_inserted();
+  void media_removed();
+  void media_error();
 
 private:
-    Once once_{};
-    Action last_action_ = Action::None;
-    millis_t last_action_time_ = 0;
+  bool init();
+  void send_gplv3_7b_notice();
+  void update_progress();
+  void from_lcd();
+  void to_lcd();
+  void send_lcd_data();
+  void send_lcd_touch_request();
+
+private:
+  Once once_{};
+  Action last_action_ = Action::None;
+  millis_t last_action_time_ = 0;
 };
 
 extern Core core;
@@ -86,11 +85,9 @@ extern Core core;
 //! @param hex_version  Hexadecimal representation of the version
 //! @return             Version as a string
 template<size_t L>
-ADVString<L>& Core::convert_version(ADVString<L>& version, uint16_t hex_version)
-{
-    version << hex_version / 0x0100 << '.' << (hex_version % 0x100) / 0x10 << '.' << hex_version % 0x10;
-    return version;
+ADVString<L>& Core::convert_version(ADVString<L>& version, uint16_t hex_version) {
+  version << hex_version / 0x0100 << '.' << (hex_version % 0x100) / 0x10 << '.' << hex_version % 0x10;
+  return version;
 }
-
 
 }

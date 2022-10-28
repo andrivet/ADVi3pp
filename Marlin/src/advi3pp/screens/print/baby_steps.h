@@ -26,15 +26,19 @@ namespace ADVi3pp {
 
 //! Print Settings Page
 struct BabySteps: Screen<BabySteps> {
+  static constexpr Page PAGE = Page::BabySteps;
+  static constexpr Action ACTION = Action::BabySteps;
+
   void baby_minus_command();
   void baby_plus_command();
 
   enum class Multiplier: uint8_t { M1, M2, M3 };
 
 private:
-  bool do_dispatch(KeyValue value);
-  Page do_prepare_page();
-  void do_back_command();
+  bool on_dispatch(KeyValue value);
+  void on_enter();
+  void on_back_command();
+
   void send_multiplier() const;
   void send_z_offset();
   int get_multiplier_value() const;

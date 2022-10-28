@@ -33,68 +33,57 @@ LoadUnload load_unload;
 //! Handle Load & Unload actions.
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool LoadUnload::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::Load:    load_command(); break;
-        case KeyValue::Unload:  unload_command(); break;
-        default:                return false;
-    }
-
+bool LoadUnload::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
+
+  switch(key_value){
+    case KeyValue::Load:    load_command(); break;
+    case KeyValue::Unload:  unload_command(); break;
+    default:                return false;
+  }
+
+  return true;
 }
 
-void LoadUnload::send_data()
-{
-    WriteRamRequest{Variable::Value0}.write_word(settings.get_last_used_temperature(TemperatureKind::Hotend));
+void LoadUnload::send_data() {
+  WriteRamRequest{Variable::Value0}.write_word(settings.get_last_used_temperature(TemperatureKind::Hotend));
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page LoadUnload::do_prepare_page()
-{
-    if(!core.ensure_not_printing())
-        return Page::None;
-    send_data();
-    previous_z_ = Core::ensure_z_enough_room();;
-    return Page::LoadUnload;
+void LoadUnload::on_enter() {
+  send_data();
+  previous_z_ = Core::ensure_z_enough_room();;
 }
 
-void LoadUnload::do_back_command() {
+void LoadUnload::on_back_command() {
   ExtUI::setAxisPosition_mm(previous_z_, ExtUI::Z, 20);
-  Parent::do_back_command();
+  Parent::on_back_command();
 }
 
 //! Prepare Load or Unload step #1: set the target temperature, setup the next step and display a wait message
 //! @param background Background task to detect if it is time for step #2
-void LoadUnload::prepare()
-{
-    ReadRam frame{Variable::Value0};
-    if(!frame.send_receive(1))
-    {
-        Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
-        return;
-    }
+void LoadUnload::prepare() {
+  ReadRam frame{Variable::Value0};
+  if(!frame.send_receive(1))     {
+    Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
+    return;
+  }
 
-    ExtUI::setTargetTemp_celsius(frame.read_word(), ExtUI::E0);
+  ExtUI::setTargetTemp_celsius(frame.read_word(), ExtUI::E0);
 }
 
 //! Start Load action.
-void LoadUnload::load_command()
-{
-    prepare();
-    core.inject_commands(F("M701 Z0\nM104 S0")); // Load filament, set hotend temp
+void LoadUnload::load_command() {
+  prepare();
+  core.inject_commands(F("M701 Z0\nM104 S0")); // Load filament, set hotend temp
 }
 
 //! Start Unload action.
-void LoadUnload::unload_command()
-{
-    prepare();
-    core.inject_commands(F("M702 Z0\nM104 S0")); // Unload filament, set hotend temp
+void LoadUnload::unload_command() {
+  prepare();
+  core.inject_commands(F("M702 Z0\nM104 S0")); // Unload filament, set hotend temp
 }
 
 

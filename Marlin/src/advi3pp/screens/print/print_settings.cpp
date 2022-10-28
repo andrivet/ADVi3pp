@@ -30,16 +30,10 @@ PrintSettings print_settings;
 //! Handle Print Settings command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool PrintSettings::do_dispatch(KeyValue key_value) {
-  if(Parent::do_dispatch(key_value))
+bool PrintSettings::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
   return true;
-}
-
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page PrintSettings::do_prepare_page() {
-  return Page::PrintSettings;
 }
 
 //! Handle the -Feedrate command

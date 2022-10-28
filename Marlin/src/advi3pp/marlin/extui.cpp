@@ -36,8 +36,7 @@ void onStartup() {
   core.startup();
 }
 
-void onIdle()
-{
+void onIdle() {
   core.idle();
 }
 
@@ -68,7 +67,7 @@ void onPrinterKilled(float temp, FSTR_P const error, FSTR_P const component) {
 }
 
 void onPrintTimerStarted() {
-  Log::log() << F("ExtUI::onPrintTimerStarted") << Log::endl();
+  pages.go_to_print();
 }
 
 void onPrintTimerPaused() {

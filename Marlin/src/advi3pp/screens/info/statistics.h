@@ -25,13 +25,14 @@
 namespace ADVi3pp {
 
 //! Statistics Page
-struct Statistics: Screen<Statistics>
-{
-private:
-    Page do_prepare_page();
-    void send_stats();
+struct Statistics: Screen<Statistics> {
+  static constexpr Page PAGE = Page::Statistics;
+  static constexpr Action ACTION = Action::Statistics;
 
-    friend Parent;
+private:
+  void on_enter();
+  void send_stats();
+  friend Parent;
 };
 
 extern Statistics statistics;

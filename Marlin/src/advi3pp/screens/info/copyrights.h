@@ -25,12 +25,12 @@
 namespace ADVi3pp {
 
 //! Copyrights Page
-struct Copyrights: Screen<Copyrights>
-{
-private:
-    Page do_prepare_page();
+struct Copyrights: Screen<Copyrights> {
+  static constexpr Page PAGE = Page::Copyrights;
+  static constexpr Action ACTION = Action::Copyrights;
 
-    friend Parent;
+private:
+  friend Parent;
 };
 
 extern Copyrights copyrights;

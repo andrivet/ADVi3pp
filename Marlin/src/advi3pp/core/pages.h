@@ -28,30 +28,36 @@ namespace ADVi3pp {
 
 
 //! Display a page on top of the others; display back and forward pages
-struct Pages
-{
-    void show(Page page);
-    Page get_current_page();
-    void clear_temporaries();
-    bool current_page_ensure_no_move();
-    void save_forward_page();
-    void show_back_page(unsigned nb_back = 1);
-    void show_forward_page();
-    void reset();
-    void save();
-    void back();
+struct Pages {
+  void show(Page page, Action action);
+  Page get_current_page() { return get_current_context().page; }
+  void clear_temporaries();
+  void go_to_print();
+  bool current_page_ensure_no_move();
+  void check_no_print(Page page);
+  void save_forward_page();
+  void show_back_page(unsigned nb_back = 1);
+  void show_forward_page();
+  void reset();
+  void save();
+  void back();
 
 private:
-    static void save_task();
-    static void back_task();
-    void show_(Page page);
-    static bool is_temporary(Page page);
-    static bool ensure_no_move(Page page);
+  struct Context {Page page; Action action; };
+
+  static void save_task();
+  static void back_task();
+  Context get_current_context();
+  void show_(Context context);
+  static bool is_temporary(Page page);
+  static bool ensure_no_move(Page page);
 
 private:
-    Stack<Page, 8> back_pages_{};
-    Page forward_page_ = Page::None;
-    Page current_page_ = Page::Main;
+  static constexpr size_t STACK_SIZE = 8;
+
+  Stack<Context, STACK_SIZE> back_{};
+  Context forward_ = Context{Page::None, Action::None};
+  Context current_ = Context{Page::Main, Action::None};
 };
 
 
@@ -60,7 +66,7 @@ inline bool Pages::is_temporary(Page page) {
 }
 
 inline bool Pages::ensure_no_move(Page page) {
-  return test_one_bit(page, Page::EnsureNoMove);
+  return test_one_bit(page, Page::ExitFinishMove);
 }
 
 inline bool Pages::current_page_ensure_no_move() {

@@ -31,15 +31,13 @@ namespace ADVi3pp {
 Dimming dimming;
 
 //! Constructor. Initialize dimming check time and dimming delay time
-Dimming::Dimming()
-{
-    set_next_checking_time();
+Dimming::Dimming() {
+  set_next_checking_time();
 }
 
 //! Set the next dimming check time
-void Dimming::set_next_checking_time()
-{
-    next_check_time_ = millis() + 200;
+void Dimming::set_next_checking_time() {
+  next_check_time_ = millis() + 200;
 }
 
 void Dimming::set_settings(bool dimming, uint8_t dimming_time, uint8_t normal_brightness, uint8_t dimming_brightness) {
@@ -89,17 +87,14 @@ uint16_t Dimming::do_size_of() const {
   return sizeof(enabled_) + sizeof(dimming_brightness_) + sizeof(dimming_time_);
 }
 
-
-void Dimming::send()
-{
-    if(!is_enabled() || !dimmed_ || !ELAPSED(millis(), next_check_time_))
-        return;
-    set_next_checking_time();
-    ReadRegisterRequest{Register::TouchPanelFlag}.write(1);
+void Dimming::send() {
+  if(!is_enabled() || !dimmed_ || !ELAPSED(millis(), next_check_time_))
+    return;
+  set_next_checking_time();
+  ReadRegisterRequest{Register::TouchPanelFlag}.write(1);
 }
 
-bool Dimming::receive()
-{
+bool Dimming::receive() {
   NoFrameLogging no_log{};
   bool received = false;
 
@@ -127,14 +122,12 @@ void Dimming::reset_touch() {
 }
 
 //! Set the brightness of the LCD panel
-void Dimming::send_brightness_to_lcd(uint8_t brightness)
-{
+void Dimming::send_brightness_to_lcd(uint8_t brightness) {
   WriteRegisterRequest{Register::Brightness}.write_byte(brightness);
 }
 
 //! Set the brightness of the LCD panel
-void Dimming::send_brightness_to_lcd()
-{
+void Dimming::send_brightness_to_lcd() {
   send_brightness_to_lcd(dimmed_ ? dimming_brightness_ : get_normal_brightness());
 }
 

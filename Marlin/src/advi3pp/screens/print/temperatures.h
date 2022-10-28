@@ -26,18 +26,20 @@
 namespace ADVi3pp {
 
 //! Temperatures Graph
-struct Temperatures: Screen<Temperatures>
-{
-    void show(const Callback& back);
-    void show();
+struct Temperatures: Screen<Temperatures> {
+  static constexpr Page PAGE = Page::Temperature;
+  static constexpr Action ACTION = Action::Temperatures;
+
+  void show(const Callback& back);
+  void show();
 
 private:
-    Page do_prepare_page();
-    void do_back_command();
+  void on_back_command();
 
-    Callback back_;
+private:
+  Callback back_;
 
-    friend Parent;
+  friend Parent;
 };
 
 extern Temperatures temperatures;

@@ -29,47 +29,43 @@ namespace ADVi3pp {
 
 AutomaticLeveling automatic_leveling;
 
-bool AutomaticLeveling::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::LevelingResetProbe:	reset_command(); break;
-        default: return false;
-    }
-
+bool AutomaticLeveling::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
+
+  switch(key_value) {
+    case KeyValue::LevelingResetProbe:	reset_command(); break;
+    default: return false;
+  }
+
+  return true;
 }
 
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page AutomaticLeveling::do_prepare_page() {
+void AutomaticLeveling::on_enter() {
 #ifdef ADVi3PP_PROBE
-  if(!core.ensure_not_printing())
-      return Page::None;
   start();
-  return Page::None;
-#else
-  return Page::NoSensor;
 #endif
 }
 
-void AutomaticLeveling::reset_command()
-{
+void AutomaticLeveling::reset_command() {
 #ifdef ADVi3PP_PROBE
-    core.inject_commands(F("M280 P0 S160"));
+  core.inject_commands(F("M280 P0 S160"));
 #else
-    pages.show(Page::NoSensor);
+  pages.show(PAGE, ACTION);
 #endif
 }
 
-void AutomaticLeveling::do_back_command() {
+void AutomaticLeveling::on_back_command() {
   status.set(F("Canceling leveling..."));
   ExtUI::cancelLeveling();
-  Parent::do_back_command();
+  Parent::on_back_command();
+}
+
+void AutomaticLeveling::on_abort() {
+  ExtUI::cancelLeveling();
 }
 
 void AutomaticLeveling::start() {
@@ -86,7 +82,7 @@ void AutomaticLeveling::home_task() {
     return;
 
   background_task.clear();
-  pages.show(Page::AutomaticLeveling);
+  pages.show(PAGE, ACTION);
 
   adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
   WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());

@@ -26,37 +26,40 @@
 namespace ADVi3pp {
 
 //! SD Card Page
-struct SdCard: Screen<SdCard>
-{
-    enum class FileType { None, File, Folder };
+struct SdCard: Screen<SdCard> {
+  static constexpr Page PAGE = Page::SdCard;
+  static constexpr Action ACTION = Action::SdCard;
 
-    void on_media_inserted();
-    void on_media_removed();
-    void on_media_error();
+  enum class FileType { None, File, Folder };
 
-private:
-    bool do_dispatch(KeyValue value);
-    Page do_prepare_page();
-    void show_initial();
-    void show_folder_first_page();
-    void show_folder_current_page();
-    void show_empty();
-    void get_file_name(uint8_t index_in_page, ADVString<48>& name, FileType &type);
-    void up_command();
-    void down_command();
-    void parent_command();
-    void select_command(uint16_t file_index);
-    void select_file();
-    void select_directory();
-    bool check_media();
+  void on_media_inserted();
+  void on_media_removed();
+  void on_media_error();
 
 private:
-    static constexpr uint16_t nb_visible_sd_files = 5; //!< Number of files per page on the SD screen
+  bool on_dispatch(KeyValue value);
+  void on_enter();
 
-    uint16_t page_index_ = 0;
-    ExtUI::FileList files_{};
+  void show_initial();
+  void show_folder_first_page();
+  void show_folder_current_page();
+  void show_empty();
+  void get_file_name(uint8_t index_in_page, ADVString<48>& name, FileType &type);
+  void up_command();
+  void down_command();
+  void parent_command();
+  void select_command(uint16_t file_index);
+  void select_file();
+  void select_directory();
+  bool check_media();
 
-    friend Parent;
+private:
+  static constexpr uint16_t NB_VISIBLE_SD_FILES = 5; //!< Number of files per page on the SD screen
+
+  uint16_t page_index_ = 0;
+  ExtUI::FileList files_{};
+
+  friend Parent;
 };
 
 extern SdCard sd_card;

@@ -25,14 +25,16 @@
 namespace ADVi3pp {
 
 //! Versions Page
-struct Versions: Screen<Versions>
-{
-    void send_versions() const;
+struct Versions: Screen<Versions> {
+  static constexpr Page PAGE = Page::Versions;
+  static constexpr Action ACTION = Action::Versions;
+
+  void send_versions() const;
 
 private:
-    Page do_prepare_page();
+  void on_enter();
 
-    friend Parent;
+ friend Parent;
 };
 
 extern Versions versions;

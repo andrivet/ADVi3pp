@@ -38,154 +38,131 @@ void selftest_bltouch_command() { core.inject_commands(F("M280 P0 S120")); }
 //! Execute acommand
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool BLTouchTesting::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::BLTouchTestingStep1Yes:  step1yes(); break;
-        case KeyValue::BLTouchTestingStep1No:   step1no(); break;
-        case KeyValue::BLTouchTestingStep2Yes:  step2yes(); break;
-        case KeyValue::BLTouchTestingStep2No:   step2no(); break;
-        case KeyValue::BLTouchTestingStep3Yes:  step3yes(); break;
-        case KeyValue::BLTouchTestingStep3No:   step3no(); break;
-        default: return false;
-    }
-
+bool BLTouchTesting::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
+
+  switch(key_value) {
+    case KeyValue::BLTouchTestingStep1Yes:  step1yes(); break;
+    case KeyValue::BLTouchTestingStep1No:   step1no(); break;
+    case KeyValue::BLTouchTestingStep2Yes:  step2yes(); break;
+    case KeyValue::BLTouchTestingStep2No:   step2no(); break;
+    case KeyValue::BLTouchTestingStep3Yes:  step3yes(); break;
+    case KeyValue::BLTouchTestingStep3No:   step3no(); break;
+    default: return false;
+  }
+
+  return true;
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page BLTouchTesting::do_prepare_page()
-{
-    if(!core.ensure_not_printing())
-        return Page::None;
-    pages.save_forward_page();
-    step1();
-    return Page::BLTouchTesting1;
+void BLTouchTesting::on_enter() {
+  pages.save_forward_page();
+  step1();
 }
 
-void BLTouchTesting::do_back_command()
-{
-    reset_bltouch_command();
-    Parent::do_back_command();
+void BLTouchTesting::on_back_command() {
+  reset_bltouch_command();
+  Parent::on_back_command();
 }
 
-void BLTouchTesting::do_save_command()
-{
-    // Do not call parent, there nothing to save
-    pages.show_forward_page();
+void BLTouchTesting::on_abort() {
+  reset_bltouch_command();
 }
 
-void BLTouchTesting::step1()
-{
-    status.reset();
-    tested_ = ok_ = Wires::None;
-    set_bits(tested_, Wires::Brown | Wires::Red);
-    reset_bltouch_command();
+void BLTouchTesting::on_save_command() {
+  // Do not call parent, there nothing to save
+  pages.show_forward_page();
 }
 
-void BLTouchTesting::step1yes()
-{
-    set_bits(ok_, Wires::Brown | Wires::Red);
-    step2();
+//! Test if the BLTouch is powered
+void BLTouchTesting::step1() {
+  status.reset();
+  tested_ = ok_ = Wires::None;
+  set_bits(tested_, Wires::Brown | Wires::Red);
+  reset_bltouch_command();
 }
 
-void BLTouchTesting::step1no()
-{
-    status.set(F("Problem with Red/Brown wiring"));
+void BLTouchTesting::step1yes() {
+  set_bits(ok_, Wires::Brown | Wires::Red);
+  step2();
+}
+
+void BLTouchTesting::step1no() {
+  status.set(F("Problem with Red/Brown wiring"));
+  step4();
+}
+
+//! BLTouch deploy and stow
+void BLTouchTesting::step2() {
+  set_bits(tested_, Wires::Orange);
+  selftest_bltouch_command();
+  pages.show(Page::BLTouchTesting2, ACTION);
+}
+
+void BLTouchTesting::step2yes() {
+  set_bits(ok_, Wires::Orange);
+  reset_bltouch_command();
+  step3();
+}
+
+void BLTouchTesting::step2no() {
+  reset_bltouch_command();
+  status.set(F("Problem with Orange wiring"));
+  step4();
+}
+
+//! Detect bed
+void BLTouchTesting::step3() {
+  ExtUI::delay_ms(500);
+
+  set_bits(tested_, Wires::White | Wires::Black);
+  pages.show(Page::BLTouchTesting3, ACTION);
+  if(ExtUI::bltouchDeploy()) {
+    status.set(F("Deployment of BLTouch failed"));
     step4();
+  }
 }
 
-void BLTouchTesting::step2()
-{
-    set_bits(tested_, Wires::Orange);
-    selftest_bltouch_command();
-    pages.show(Page::BLTouchTesting2);
+void BLTouchTesting::step3yes() {
+  if(digitalRead(Z_MIN_PIN) == HIGH)
+    set_bits(ok_, Wires::White | Wires::Black);
+  else
+    status.set(F("Are white and black wires inverted?"));
+  step4();
 }
 
-void BLTouchTesting::step2yes()
-{
-    set_bits(ok_, Wires::Orange);
-    reset_bltouch_command();
-    step3();
+void BLTouchTesting::step3no() {
+  status.set(F("Problem with white or black wires"));
+  step4();
 }
 
-void BLTouchTesting::step2no()
-{
-    reset_bltouch_command();
-    status.set(F("Problem with Orange wiring"));
-    step4();
+uint16_t BLTouchTesting::wire_value(Wires wire) {
+  return test_one_bit(ok_, wire) ? 1 : test_one_bit(tested_, wire) ? 2 : 0;
 }
 
-void BLTouchTesting::step3()
-{
-    ExtUI::delay_ms(500);
+void BLTouchTesting::step4() {
+  ExtUI::bltouchStow();
 
-    set_bits(tested_, Wires::White | Wires::Black);
-    pages.show(Page::BLTouchTesting3);
-    if(ExtUI::bltouchDeploy())
-    {
-        status.set(F("Deployment of BLTouch failed"));
-        clear_bits(ok_, Wires::Orange);
-        step4();
-    }
-}
+  auto brown = wire_value(Wires::Brown);
+  auto red = wire_value(Wires::Red);
+  auto orange = wire_value(Wires::Orange);
+  auto black = wire_value(Wires::Black);
+  auto white = wire_value(Wires::White);
 
-void BLTouchTesting::step3yes()
-{
-    if(digitalRead(Z_MIN_PIN) == HIGH)
-      set_bits(ok_, Wires::White | Wires::Black);
-    else
-      status.set(F("Are white and black wires inverted?"));
-    step4();
-}
+  if(brown == 1 && red == 1 && orange == 1 && black == 1 && white == 1)
+    status.set(F("No problem detected with BLTouch"));
 
-void BLTouchTesting::step3no()
-{
-    status.set(F("Problem with white or black wires"));
-    step4();
-}
+  WriteRamRequest{Variable::Value0}.write_words(
+    brown,
+    red,
+    orange,
+    black,
+    white
+  );
 
-uint16_t BLTouchTesting::wire_value(Wires wire)
-{
-    return test_one_bit(ok_, wire) ? 1 : test_one_bit(tested_, wire) ? 2 : 0;
-}
-
-void BLTouchTesting::step4()
-{
-    ExtUI::bltouchStow();
-
-    auto brown = wire_value(Wires::Brown);
-    auto red = wire_value(Wires::Red);
-    auto orange = wire_value(Wires::Orange);
-    auto black = /*wire_value(Wires::Black);*/ true; // Temporary workaround
-    auto white = /*wire_value(Wires::White);*/ true;
-
-    if(brown == 1 && red == 1 && orange == 1 && black == 1 && white == 1)
-        status.set(F("No problem detected with BLTouch"));
-
-    WriteRamRequest{Variable::Value0}.write_words(
-        brown,
-        red,
-        orange,
-        black,
-        white
-    );
-
-    pages.show(Page::BLTouchTesting4);
-}
-
-#else
-
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page BLTouchTesting::do_prepare_page()
-{
-    return Page::NoSensor;
+  pages.show(Page::BLTouchTesting4, ACTION);
 }
 
 #endif

@@ -46,33 +46,31 @@ void Task::set(const Callback& callback, unsigned int delay, Activation activati
 }
 
 //! Reset the background task
-void Task::clear()
-{
-    callback_ = nullptr;
+void Task::clear() {
+  callback_ = nullptr;
 }
 
 //! If there is an operating running, execute its next step
-bool Task::execute(bool force_execute)
-{
-    if(!callback_)
-        return false;
+bool Task::execute(bool force_execute) {
+  if(!callback_)
+    return false;
 
-    if(!force_execute && !ELAPSED(millis(), next_execute_time_))
-        return false;
+  if(!force_execute && !ELAPSED(millis(), next_execute_time_))
+    return false;
 
-    // Clear before calling to avoid reentrancy issues
-    Callback callback{callback_};
-    if(activation_ == Activation::ONE_TIME)
-      callback_ = nullptr;
-    else
-      set_next_execute_time();
+  // Clear before calling to avoid reentrancy issues
+  Callback callback{callback_};
+  if(activation_ == Activation::ONE_TIME)
+    callback_ = nullptr;
+  else
+    set_next_execute_time();
 
-    callback();
-    return true;
+  callback();
+  return true;
 }
 
 void Task::set_next_execute_time() {
-    next_execute_time_ = millis() + delay_;
+  next_execute_time_ = millis() + delay_;
 }
 
 }

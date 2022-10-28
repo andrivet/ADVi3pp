@@ -31,39 +31,26 @@ LevelingGrid leveling_grid;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page LevelingGrid::do_prepare_page()
-{
-    ExtUI::bed_mesh_t& z_values = ExtUI::getMeshArray();
+void LevelingGrid::on_enter() {
+  ExtUI::bed_mesh_t& z_values = ExtUI::getMeshArray();
 
-    adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
-    for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
-        for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
-            data[y * GRID_MAX_POINTS_X + x] = static_cast<int16_t>(lround(z_values[x][y] * 100));
+  adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
+  for(auto y = 0; y < GRID_MAX_POINTS_Y; y++)
+    for(auto x = 0; x < GRID_MAX_POINTS_X; x++)
+      data[y * GRID_MAX_POINTS_X + x] = static_cast<int16_t>(lround(z_values[x][y] * 100));
 
-    WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
-
-    return Page::SensorGrid;
+  WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
 }
 
 //! Handles the Save (Continue) command
-void LevelingGrid::do_save_command()
-{
-    ExtUI::setLevelingActive(true);
-    Parent::do_save_command();
+void LevelingGrid::on_save_command() {
+  ExtUI::setLevelingActive(true);
+  Parent::on_save_command();
 }
 
-void LevelingGrid::do_back_command() {
+void LevelingGrid::on_back_command() {
   pages.back();
-  Parent::do_back_command();
-}
-
-#else
-
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page LevelingGrid::do_prepare_page()
-{
-    return Page::NoSensor;
+  Parent::on_back_command();
 }
 
 #endif

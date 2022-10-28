@@ -26,48 +26,50 @@ namespace ADVi3pp {
 
 #ifdef ADVi3PP_PROBE
 //! Sensor Z Height Tuning Page
-struct SensorZHeight: Screen<SensorZHeight>
-{
-    void minus();
-    void plus();
+struct SensorZHeight: Screen<SensorZHeight> {
+  static constexpr Page PAGE = Page::ZHeightTuning;
+  static constexpr Action ACTION = Action::SensorZHeight;
 
-    enum class Multiplier: uint8_t
-    {
-        M1 = 0,
-        M2 = 1,
-        M3 = 2
-    };
+  void minus();
+  void plus();
 
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void do_save_command();
-    void do_back_command();
-    void post_home_task();
-    void multiplier1_command();
-    void multiplier2_command();
-    void multiplier3_command();
-    double get_multiplier_value() const;
-    void adjust_height(double offset);
-    void send_data() const;
-    void reset();
+  enum class Multiplier: uint8_t {
+      M1 = 0,
+      M2 = 1,
+      M3 = 2
+  };
 
 private:
-    Multiplier multiplier_ = Multiplier::M1;
-    float old_offset_ = 0;
-    millis_t last_click_time_ = 0;
-    friend Parent;
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_save_command();
+  void on_back_command();
+  void on_abort();
+
+  void post_home_task();
+  void multiplier1_command();
+  void multiplier2_command();
+  void multiplier3_command();
+  double get_multiplier_value() const;
+  void adjust_height(double offset);
+  void send_data() const;
+  void reset();
+
+private:
+  Multiplier multiplier_ = Multiplier::M1;
+  float old_offset_ = 0;
+  millis_t last_click_time_ = 0;
+  friend Parent;
 };
 #else
 //! Sensor Z Height Tuning Page
-struct SensorZHeight: Screen<SensorZHeight>
-{
-    void minus() {}
-    void plus() {}
+struct SensorZHeight: Screen<SensorZHeight> {
+  void minus() {}
+  void plus() {}
 
 private:
-    Page do_prepare_page();
-    friend Parent;
+  static constexpr Page PAGE = Page::NoSensor;
+  friend Parent;
 };
 #endif
 

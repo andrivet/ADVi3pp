@@ -33,9 +33,8 @@ BabySteps baby_steps;
 //! Handle Baby Steps command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool BabySteps::do_dispatch(KeyValue key_value)
-{
-  if(Parent::do_dispatch(key_value))
+bool BabySteps::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
 
   switch(key_value) {
@@ -73,17 +72,16 @@ void BabySteps::send_z_offset() {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page BabySteps::do_prepare_page() {
+void BabySteps::on_enter() {
   save_ = false;
   send_multiplier();
   background_task.set(Callback{this, &BabySteps::send_z_offset}, 200);
-  return Page::BabySteps;
 }
 
-void BabySteps::do_back_command() {
+void BabySteps::on_back_command() {
   background_task.clear();
   if(save_) settings.save();
-  Parent::do_back_command();
+  Parent::on_back_command();
 }
 
 //! Handle the -Babystep command

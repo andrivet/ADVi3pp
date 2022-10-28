@@ -36,12 +36,11 @@ SkewSettings skew_settings;
 //! Execute a command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool SkewSettings::do_dispatch(KeyValue key_value) {
-  if(Parent::do_dispatch(key_value))
+bool SkewSettings::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
 
-  switch(key_value)
-  {
+  switch(key_value) {
     case KeyValue::SkewStep2:  step2(); break;
     case KeyValue::SkewStep3:  step3(); break;
     default: return false;
@@ -52,10 +51,9 @@ bool SkewSettings::do_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page SkewSettings::do_prepare_page() {
+void SkewSettings::on_enter() {
   pages.save_forward_page();
   step1();
-  return Page::Skew1Settings;
 }
 
 void SkewSettings::set_default_values() {
@@ -69,13 +67,13 @@ void SkewSettings::step1() {
 void SkewSettings::step2() {
   xy_ = get_factor();
   set_default_values();
-  pages.show(Page::Skew2Settings);
+  pages.show(Page::Skew2Settings, ACTION);
 }
 
 void SkewSettings::step3() {
   xz_ = get_factor();
   set_default_values();
-  pages.show(Page::Skew3Settings);
+  pages.show(Page::Skew3Settings, ACTION);
 }
 
 float SkewSettings::get_factor() {
@@ -93,7 +91,7 @@ float SkewSettings::get_factor() {
 }
 
 //! Save the settings
-void SkewSettings::do_save_command() {
+void SkewSettings::on_save_command() {
   float yz = get_factor();
   if(abs(xy_) < 0.000001) xy_ = 0;
   if(abs(xz_) < 0.000001) xz_ = 0;
@@ -105,7 +103,7 @@ void SkewSettings::do_save_command() {
    )
     ExtUI::setSkewFactors(xy_, xz_, yz);
 
-  Parent::do_save_command();
+  Parent::on_save_command();
 }
 
 }

@@ -29,28 +29,22 @@
 
 namespace ADVi3pp {
 
-
 //! Handle inputs from the LCD Panel
 template<typename Self>
-struct Screen: adv::Crtp<Self, Screen>
-{
-public:
-    void handle(KeyValue value);
-    void show();
-
-    bool dispatch(KeyValue value) { return this->self().do_dispatch(value); }
-    void show_command() { this->self().do_show_command(); }
-    void save_command() { this->self().do_save_command(); }
-    void back_command() { this->self().do_back_command(); }
-    Page prepare_page() { return this->self().do_prepare_page(); }
+struct Screen: adv::Crtp<Self, Screen> {
+  void handle(KeyValue value);
+  void show();
 
 protected:
-    Page do_prepare_page();
-    bool do_dispatch(KeyValue value);
-    void do_show_command();
-    void do_save_command();
-    void do_back_command();
-    void invalid(KeyValue value);
+  bool on_dispatch(KeyValue value);
+  Page on_get_page() const;
+  void on_enter();
+  void on_save_command();
+  void on_back_command();
+  void on_abort();
+
+private:
+  static constexpr Page PAGE = Page::None;
 };
 
 // --------------------------------------------------------------------
@@ -58,62 +52,53 @@ protected:
 // --------------------------------------------------------------------
 
 template<typename Self>
-Page Screen<Self>::do_prepare_page()
-{
-    return Page::None;
-}
-
-template<typename Self>
-void Screen<Self>::handle(KeyValue value)
-{
-    if(!dispatch(value))
-        invalid(value);
-}
-
-template<typename Self>
-bool Screen<Self>::do_dispatch(KeyValue value)
-{
-    switch(value)
-    {
-        case KeyValue::Show: show_command(); break;
-        case KeyValue::Save: save_command(); break;
-        case KeyValue::Back: back_command(); break;
-        default: return false;
-    }
-
-    return true;
-}
-
-template<typename Self>
-void Screen<Self>::invalid(KeyValue value)
-{
+void Screen<Self>::handle(KeyValue value) {
+  if(!this->self().on_dispatch(value))
     Log::error() << F("Invalid key value ") << static_cast<uint16_t>(value) << Log::endl();
 }
 
 template<typename Self>
-void Screen<Self>::show()
-{
-    Page page = prepare_page();
-    if(page != Page::None)
-        pages.show(page);
+Page Screen<Self>::on_get_page() const {
+  return this->self().PAGE;
 }
 
 template<typename Self>
-void Screen<Self>::do_show_command()
-{
-    show();
+void Screen<Self>::on_enter() {}
+
+template<typename Self>
+bool Screen<Self>::on_dispatch(KeyValue value) {
+  switch(value) {
+    case KeyValue::Show: show(); break;
+    case KeyValue::Abort: this->self().on_abort(); break;
+    case KeyValue::Save:  this->self().on_save_command(); break;
+    case KeyValue::Back:  this->self().on_back_command(); break;
+    default: return false;
+  }
+
+  return true;
 }
 
 template<typename Self>
-void Screen<Self>::do_save_command()
-{
+void Screen<Self>::show() {
+  Page page = this->self().on_get_page();
+  pages.check_no_print(page);
+
+  this->self().on_enter();
+  if(page != Page::None)
+    pages.show(page, this->self().ACTION);
+}
+
+template<typename Self>
+void Screen<Self>::on_save_command() {
     pages.save();
 }
 
 template<typename Self>
-void Screen<Self>::do_back_command()
-{
+void Screen<Self>::on_back_command() {
     pages.back();
 }
+
+template<typename Self>
+void Screen<Self>::on_abort() {}
 
 }

@@ -40,54 +40,52 @@ struct log_exception: std::exception {};
 // NoLogging
 // --------------------------------------------------------------------
 
-struct NoFrameLogging
-{
-    NoFrameLogging();
-    ~NoFrameLogging();
+struct NoFrameLogging {
+  NoFrameLogging();
+  ~NoFrameLogging();
 
-    void allow();
+  void allow();
 
 private:
-    bool suspend_ = false;
+  bool suspend_ = false;
 };
 
 // --------------------------------------------------------------------
 // Log
 // --------------------------------------------------------------------
 
-struct Log
-{
-    Log(bool enabled);
+struct Log {
+  Log(bool enabled);
 
-    struct EndOfLine {};
+  struct EndOfLine {};
 
-    Log& operator<<(const char* data);
-    Log& operator<<(const FlashChar* data);
-    Log& operator<<(bool data);
-    Log& operator<<(uint8_t data);
-    Log& operator<<(uint16_t data);
-    Log& operator<<(uint32_t data);
-    Log& operator<<(int8_t data);
-    Log& operator<<(int16_t data);
-    Log& operator<<(int32_t data);
-    Log& operator<<(double data);
-    template<typename T, size_t S> Log& operator<<(adv::array<T, S> data);
-    Log& write(const uint8_t* data, size_t size);
-    Log& operator<<(EndOfLine eol);
+  Log& operator<<(const char* data);
+  Log& operator<<(const FlashChar* data);
+  Log& operator<<(bool data);
+  Log& operator<<(uint8_t data);
+  Log& operator<<(uint16_t data);
+  Log& operator<<(uint32_t data);
+  Log& operator<<(int8_t data);
+  Log& operator<<(int16_t data);
+  Log& operator<<(int32_t data);
+  Log& operator<<(double data);
+  template<typename T, size_t S> Log& operator<<(adv::array<T, S> data);
+  Log& write(const uint8_t* data, size_t size);
+  Log& operator<<(EndOfLine eol);
 
-    static Log& log(LogState state = LogState::Start);
-    static Log& error();
-    static Log& frame(LogState state = LogState::Continue);
-    static EndOfLine endl() { return EndOfLine{}; }
-    void dump(const uint8_t* bytes, size_t size = 1, bool separator = true);
+  static Log& log(LogState state = LogState::Start);
+  static Log& error();
+  static Log& frame(LogState state = LogState::Continue);
+  static EndOfLine endl() { return EndOfLine{}; }
+  void dump(const uint8_t* bytes, size_t size = 1, bool separator = true);
 
 private:
-    static Log logging_;
-    static Log frame_logging_;
-    bool enabled_ = true;
-    bool suspend_ = false;
+  static Log logging_;
+  static Log frame_logging_;
+  bool enabled_ = true;
+  bool suspend_ = false;
 
-    friend NoFrameLogging;
+  friend NoFrameLogging;
 };
 
 // --------------------------------------------------------------------
@@ -99,8 +97,8 @@ inline Log::Log(bool enabled): enabled_{enabled} {
 
 template<typename T, size_t S>
 Log& Log::operator<<(adv::array<T, S> data) {
-    write(data.data(), S);
-    return *this;
+  write(data.data(), S);
+  return *this;
 }
 
 // --------------------------------------------------------------------
@@ -110,17 +108,17 @@ Log& Log::operator<<(adv::array<T, S> data) {
 inline NoFrameLogging::NoFrameLogging()
 : suspend_{Log::frame_logging_.suspend_} {
 #ifndef ADVi3PP_LOG_ALL_FRAMES
-    Log::frame_logging_.suspend_ = true;
+  Log::frame_logging_.suspend_ = true;
 #endif
 }
 
 inline NoFrameLogging::~NoFrameLogging() {
-    allow();
+  allow();
 }
 
 inline void NoFrameLogging::allow() {
 #ifndef ADVi3PP_LOG_ALL_FRAMES
-    Log::frame_logging_.suspend_ = suspend_;
+  Log::frame_logging_.suspend_ = suspend_;
 #endif
 }
 
@@ -134,48 +132,46 @@ void assert_(const char *msg, const char *file, uint16_t line);
 void debug_break();
 
 #else
-struct Log
-{
-    struct EndOfLine {};
+struct Log {
+  struct EndOfLine {};
 
-    Log& operator<<(const char*) { return log(); }
-    Log& operator<<(const FlashChar*) { return log(); }
-    Log& operator<<(bool data) { return log(); }
-    Log& operator<<(uint8_t) { return log(); }
-    Log& operator<<(uint16_t) { return log(); }
-    Log& operator<<(uint32_t) { return log(); }
-    Log& operator<<(int8_t data) { return log(); }
-    Log& operator<<(int16_t data) { return log(); }
-    Log& operator<<(int32_t data) { return log(); }
-    Log& operator<<(double) { return log(); }
-    template<typename T, size_t S> Log& operator<<(adv::array<T, S> data) { return log(); }
-    Log& write(const uint8_t* data, size_t size) { return log(); }
-    void operator<<(EndOfLine) {};
+  Log& operator<<(const char*) { return log(); }
+  Log& operator<<(const FlashChar*) { return log(); }
+  Log& operator<<(bool data) { return log(); }
+  Log& operator<<(uint8_t) { return log(); }
+  Log& operator<<(uint16_t) { return log(); }
+  Log& operator<<(uint32_t) { return log(); }
+  Log& operator<<(int8_t data) { return log(); }
+  Log& operator<<(int16_t data) { return log(); }
+  Log& operator<<(int32_t data) { return log(); }
+  Log& operator<<(double) { return log(); }
+  template<typename T, size_t S> Log& operator<<(adv::array<T, S> data) { return log(); }
+  Log& write(const uint8_t* data, size_t size) { return log(); }
+  void operator<<(EndOfLine) {};
 
-    static Log& log() { static Log log; return log; }
-    static Log& error();
-    static Log& frame(LogState state = LogState::Continue) { return log(); }
-    static EndOfLine endl() { return EndOfLine{}; }
-    static void dump(const uint8_t*, size_t) {}
+  static Log& log() { static Log log; return log; }
+  static Log& error();
+  static Log& frame(LogState state = LogState::Continue) { return log(); }
+  static EndOfLine endl() { return EndOfLine{}; }
+  static void dump(const uint8_t*, size_t) {}
 
 #ifdef ADVi3PP_UNIT_TEST
-    Log& operator<<(unsigned long data) { return log(); }
+  Log& operator<<(unsigned long data) { return log(); }
 #endif
 };
 
-struct NoFrameLogging
-{
-    NoFrameLogging() {}
-    ~NoFrameLogging() {}
+struct NoFrameLogging {
+  NoFrameLogging() {}
+  ~NoFrameLogging() {}
 
-    void allow() {}
+  void allow() {}
 };
 
 inline Log& Log::error() {
 #ifdef ADV_UNIT_TESTS
-    throw log_exception();
+  throw log_exception();
 #endif
-    return log();
+  return log();
 }
 
 #ifndef assert

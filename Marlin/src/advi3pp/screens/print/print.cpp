@@ -32,101 +32,87 @@ Print print;
 //! Handle print commands.
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool Print::do_dispatch(KeyValue value)
-{
-    if(Parent::do_dispatch(value))
-        return true;
-
-    switch(value)
-    {
-        case KeyValue::PrintStop:           stop_command(); break;
-        case KeyValue::PrintPause:          pause_resume_command(); break;
-        case KeyValue::PrintAdvancedPause:  advanced_pause_command(); break;
-        default:                            return false;
-    }
-
+bool Print::on_dispatch(KeyValue value) {
+  if(Parent::on_dispatch(value))
     return true;
+
+  switch(value) {
+    case KeyValue::PrintStop:           stop_command(); break;
+    case KeyValue::PrintPause:          pause_resume_command(); break;
+    case KeyValue::PrintAdvancedPause:  advanced_pause_command(); break;
+    default:                            return false;
+  }
+
+  return true;
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page Print::do_prepare_page()
-{
+void Print::on_enter() {
 #ifdef ADVi3PP_PROBE
-    if(!ExtUI::getLevelingActive())
-        status.set(F("WARNING: Bed leveling not active."));
+  if(!ExtUI::getLevelingActive())
+    status.set(F("WARNING: Bed leveling not active."));
 #endif
-    return Page::Print;
 }
 
 //! Stop printing
-void Print::stop_command()
-{
-    if(!ExtUI::isPrinting())
-        return;
+void Print::stop_command() {
+  if(!ExtUI::isPrinting())
+    return;
 
-    wait.wait_back_continue(F("Abort printing?"),
-      WaitCallback{this, &Print::cancel_abort_print}, WaitCallback{this, &Print::abort_print});
+  wait.wait_back_continue(F("Abort printing?"),
+    WaitCallback{this, &Print::cancel_abort_print}, WaitCallback{this, &Print::abort_print});
 }
 
-bool Print::cancel_abort_print()
-{
-    status.set(F("Continue printing"));
-    return true;
+bool Print::cancel_abort_print() {
+  status.set(F("Continue printing"));
+  return true;
 }
 
-bool Print::abort_print()
-{
-    ExtUI::stopPrint();
-    return false;
+bool Print::abort_print() {
+  ExtUI::stopPrint();
+  return false;
 }
 
 //! Pause printing
-void Print::pause_resume_command()
-{
-    if(!ExtUI::isPrinting())
-        return;
+void Print::pause_resume_command() {
+  if(!ExtUI::isPrinting())
+      return;
 
-    if(ExtUI::isPrintingPaused())
-    {
-        wait.wait(F("Resume printing..."));
-        ExtUI::resumePrint();
-    }
-    else
-    {
-        wait.wait(F("Pause printing..."));
-        ExtUI::pausePrint();
-    }
+  if(ExtUI::isPrintingPaused()) {
+    wait.wait(F("Resume printing..."));
+    ExtUI::resumePrint();
+  }
+  else{
+    wait.wait(F("Pause printing..."));
+    ExtUI::pausePrint();
+  }
 }
 
 //! Advanced Pause for filament change
-void Print::advanced_pause_command()
-{
-    if(!ExtUI::isPrinting())
-        return;
+void Print::advanced_pause_command() {
+  if(!ExtUI::isPrinting())
+    return;
 
-    wait.wait(F("Pausing..."));
-    core.inject_commands(F("M600"));
+  wait.wait(F("Pausing..."));
+  core.inject_commands(F("M600"));
 }
 
 //! Process Stop (A1) code and actually stop the print (if any running).
-void Print::process_stop_code()
-{
-    ExtUI::stopPrint();
+void Print::process_stop_code() {
+  ExtUI::stopPrint();
 
-    status.set(F("Print Stopped"));
-    pages.show_back_page(2);
+  status.set(F("Print Stopped"));
+  pages.show_back_page(2);
 }
 
 //! Process Pause (A0) code and actually pause the print (if any running).
-void Print::process_pause_resume_code()
-{
-    core.inject_commands(F("M600"));
+void Print::process_pause_resume_code() {
+  core.inject_commands(F("M600"));
 }
 
-void Print::pause_finished()
-{
-    pages.show_back_page();
+void Print::pause_finished() {
+  pages.show_back_page();
 }
 
 

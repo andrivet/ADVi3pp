@@ -25,14 +25,14 @@
 namespace ADVi3pp {
 
 //! Killed Page
-struct Killed: Screen<Killed>
-{
+struct Killed: Screen<Killed> {
+  static constexpr Page PAGE = Page::Killed;
+  static constexpr Action ACTION = Action::None;
+
   void show(float temp, const FlashChar* component);
 
 private:
-    Page do_prepare_page();
-
-    friend Parent;
+  friend Parent;
 };
 
 extern Killed killed_page;

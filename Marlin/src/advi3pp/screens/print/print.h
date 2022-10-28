@@ -25,22 +25,27 @@
 namespace ADVi3pp {
 
 //! Printing Page
-struct Print: Screen<Print>
-{
-    void process_pause_resume_code();
-    void process_stop_code();
-    void pause_finished();
+struct Print: Screen<Print> {
+  static constexpr Page PAGE = Page::Print;
+  static constexpr Action ACTION = Action::PrintCommand;
+
+  void process_pause_resume_code();
+  void process_stop_code();
+  void pause_finished();
 
 private:
-    bool do_dispatch(KeyValue value);
-    Page do_prepare_page();
-    void stop_command();
-    bool cancel_abort_print();
-    bool abort_print();
-    void pause_resume_command();
-    void advanced_pause_command();
+  bool on_dispatch(KeyValue value);
+  void on_enter();
 
-    friend Parent;
+  void stop_command();
+  bool cancel_abort_print();
+  bool abort_print();
+  void pause_resume_command();
+  void advanced_pause_command();
+
+private:
+
+  friend Parent;
 };
 
 extern Print print;

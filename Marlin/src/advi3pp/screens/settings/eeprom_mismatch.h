@@ -25,13 +25,14 @@
 namespace ADVi3pp {
 
 //! EEPROM Mismatch Page
-struct EepromMismatch: Screen<EepromMismatch>
-{
-private:
-    Page do_prepare_page();
-    void do_save_command();
+struct EepromMismatch: Screen<EepromMismatch> {
+  static constexpr Page PAGE = Page::EEPROMMismatch;
+  static constexpr Action ACTION = Action::EEPROMMismatch;
 
-    friend Parent;
+private:
+  void on_save_command();
+
+  friend Parent;
 };
 
 extern EepromMismatch eeprom_mismatch;

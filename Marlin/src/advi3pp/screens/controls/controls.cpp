@@ -35,21 +35,22 @@ Controls controls;
 //! Dispatch a key value to the right handler
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool Controls::do_dispatch(KeyValue key_value) {
-  // Do not call Parent::do_dispatch
+bool Controls::on_dispatch(KeyValue key_value) {
+  // Do not call Parent::on_dispatch
+  // No need to implement save or abort
 
   switch(key_value) {
     case KeyValue::Temps:           show_temps(); break;
     case KeyValue::Print:           show_print(); break;
-    case KeyValue::Controls:        pages.show(Page::Controls); break;
-    case KeyValue::Tuning:          pages.show(Page::Tuning); break;
-    case KeyValue::Settings:        pages.show(Page::Settings); break;
-    case KeyValue::Infos:           pages.show(Page::Infos); break;
-    case KeyValue::Motors:          pages.show(Page::MotorsSettings); break;
-    case KeyValue::Leveling:        pages.show(Page::Leveling); break;
+    case KeyValue::Controls:        pages.show(Page::Controls, Action::None); break;
+    case KeyValue::Tuning:          pages.show(Page::Tuning, Action::None); break;
+    case KeyValue::Settings:        pages.show(Page::Settings, Action::None); break;
+    case KeyValue::Infos:           pages.show(Page::Infos, Action::None); break;
+    case KeyValue::Motors:          pages.show(Page::MotorsSettings, Action::None); break;
+    case KeyValue::Leveling:        pages.show(Page::Leveling, Action::None); break;
     case KeyValue::PrintSettings:   show_print_settings(); break;
     case KeyValue::BabySteps:       show_baby_steps(); break;
-    case KeyValue::Back:            back_command(); break;
+    case KeyValue::Back:            on_back_command(); break;
     default:                        return false;
   }
 
@@ -65,7 +66,7 @@ void Controls::show_temps() {
   }
 
   // If there is a print running (or paused), display the print screen.
-  pages.show(Page::Print);
+  pages.show(Page::Print, Action::PrintCommand);
 }
 
 //! Show Print Settings page (only if a print is running or paused)
@@ -96,7 +97,7 @@ void Controls::show_baby_steps() {
 void Controls::show_print() {
   // If there is a print running (or paused), display the SD or USB print screen
   if(ExtUI::isPrinting() || ExtUI::isPrintingPaused()) {
-    pages.show(Page::Print);
+    pages.show(Page::Print, Action::PrintCommand);
     return;
   }
 

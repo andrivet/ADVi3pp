@@ -26,6 +26,9 @@ namespace ADVi3pp {
 
 //! Print Settings Page
 struct PrintSettings: Screen<PrintSettings> {
+  static constexpr Page PAGE = Page::PrintSettings;
+  static constexpr Action ACTION = Action::PrintSettings;
+
   void feedrate_minus_command();
   void feedrate_plus_command();
   void flowrate_minus_command();
@@ -37,13 +40,9 @@ struct PrintSettings: Screen<PrintSettings> {
   void bed_minus_command();
   void bed_plus_command();
 
-protected:
-  bool do_dispatch(KeyValue value);
-
 private:
-  Page do_prepare_page();
+  bool on_dispatch(KeyValue value);
 
-private:
     friend Parent;
 };
 

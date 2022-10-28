@@ -25,13 +25,16 @@
 namespace ADVi3pp {
 
 //! Linear Advance Settings Page
-struct LinearAdvanceSettings: Screen<LinearAdvanceSettings>
-{
-private:
-    Page do_prepare_page();
-    void do_save_command();
+struct LinearAdvanceSettings: Screen<LinearAdvanceSettings> {
+  static constexpr Page PAGE = Page::LinearAdvanceSettings;
+  static constexpr Action ACTION = Action::LinearAdvanceSettings;
 
-    friend Parent;
+private:
+  void on_enter();
+  void on_save_command();
+
+private:
+  friend Parent;
 };
 
 extern LinearAdvanceSettings linear_advance_settings;

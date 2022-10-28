@@ -28,26 +28,22 @@ LinearAdvanceSettings linear_advance_settings;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page LinearAdvanceSettings::do_prepare_page()
-{
-    WriteRamRequest{Variable::Value0}.write_word(lround(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 100.0));
-    return Page::LinearAdvanceSettings;
+void LinearAdvanceSettings::on_enter() {
+  WriteRamRequest{Variable::Value0}.write_word(lround(ExtUI::getLinearAdvance_mm_mm_s(ExtUI::E0) * 100.0));
 }
 
 //! Handles the Save (Continue) command
-void LinearAdvanceSettings::do_save_command()
-{
-    ReadRam response{Variable::Value0};
-    if(!response.send_receive(1))
-    {
-        Log::error() << F("Receiving Frame (Linear Advance Settings)") << Log::endl();
-        return;
-    }
+void LinearAdvanceSettings::on_save_command() {
+  ReadRam response{Variable::Value0};
+  if(!response.send_receive(1)) {
+    Log::error() << F("Receiving Frame (Linear Advance Settings)") << Log::endl();
+    return;
+  }
 
-    uint16_t k = response.read_word();
-    ExtUI::setLinearAdvance_mm_mm_s(k / 100.0, ExtUI::E0);
+  uint16_t k = response.read_word();
+  ExtUI::setLinearAdvance_mm_mm_s(k / 100.0, ExtUI::E0);
 
-    Parent::do_save_command();
+  Parent::on_save_command();
 }
 
 }

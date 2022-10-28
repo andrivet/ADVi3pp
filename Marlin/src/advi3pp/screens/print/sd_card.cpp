@@ -31,12 +31,11 @@ SdCard sd_card;
 //! Execute a SD Card command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool SdCard::do_dispatch(KeyValue key_value) {
-  if(Parent::do_dispatch(key_value))
+bool SdCard::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
 
-  switch(key_value)
-  {
+  switch(key_value) {
     case KeyValue::SDUp: up_command(); break;
     case KeyValue::SDDown: down_command(); break;
     case KeyValue::SDParent: parent_command(); break;
@@ -54,9 +53,8 @@ bool SdCard::do_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page SdCard::do_prepare_page() {
+void SdCard::on_enter() {
   show_initial();
-  return Page::SdCard;
 }
 
 //! Show first SD card page
@@ -91,7 +89,7 @@ void SdCard::down_command() {
   if(!check_media())
       return;
 
-  if(files_.count() <= page_index_ * nb_visible_sd_files + nb_visible_sd_files)
+  if(files_.count() <= page_index_ * NB_VISIBLE_SD_FILES + NB_VISIBLE_SD_FILES)
     return;
 
   page_index_ += 1;
@@ -128,19 +126,18 @@ void SdCard::show_folder_current_page() {
   ADVString<48> name;
   FileType file_type = FileType::None;
 
-  for(uint8_t index = 0; index < nb_visible_sd_files; ++index)
-  {
-      get_file_name(index, name, file_type);
-      Log::log() << index << static_cast<uint16_t>(file_type) << name.get() << Log::endl();
+  for(uint8_t index = 0; index < NB_VISIBLE_SD_FILES; ++index) {
+    get_file_name(index, name, file_type);
+    Log::log() << index << static_cast<uint16_t>(file_type) << name.get() << Log::endl();
 
-      auto var = static_cast<Variable>(static_cast<uint16_t>(Variable::LongText0) + 24 * index);
-      WriteRamRequest{var}.write_text(name);
+    auto var = static_cast<Variable>(static_cast<uint16_t>(Variable::LongText0) + 24 * index);
+    WriteRamRequest{var}.write_text(name);
 
-      var = static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + index);
-      WriteRamRequest{var}.write_word(static_cast<uint16_t>(file_type));
+    var = static_cast<Variable>(static_cast<uint16_t>(Variable::Value0) + index);
+    WriteRamRequest{var}.write_word(static_cast<uint16_t>(file_type));
   }
 
-  auto nb_pages = (files_.count() + nb_visible_sd_files - 1) / nb_visible_sd_files;
+  auto nb_pages = (files_.count() + NB_VISIBLE_SD_FILES - 1) / NB_VISIBLE_SD_FILES;
   WriteRamRequest{Variable::Value5}.write_words(page_index_ + 1, nb_pages <= 0 ? 1 : nb_pages);
 }
 
@@ -150,7 +147,7 @@ void SdCard::show_empty() {
   ADVString<48> name;
   FileType file_type = FileType::None;
 
-  for(uint8_t index = 0; index < nb_visible_sd_files; ++index) {
+  for(uint8_t index = 0; index < NB_VISIBLE_SD_FILES; ++index) {
     auto var = static_cast<Variable>(static_cast<uint16_t>(Variable::LongText0) + 24 * index);
     WriteRamRequest{var}.write_text(name);
 
@@ -168,13 +165,12 @@ void SdCard::get_file_name(uint8_t index_in_page, ADVString<48>& name, FileType 
   name.reset();
   type = FileType::None;
 
-  auto absolute_index = index_in_page + page_index_ * nb_visible_sd_files;
-  if(absolute_index < files_.count())
-  {
-      ExtUI::FileList files{};
-      files.seek(absolute_index);
-      name += files.filename();
-      type = files.isDir() ? FileType::Folder : FileType::File;
+  auto absolute_index = index_in_page + page_index_ * NB_VISIBLE_SD_FILES;
+  if(absolute_index < files_.count()) {
+    ExtUI::FileList files{};
+    files.seek(absolute_index);
+    name += files.filename();
+    type = files.isDir() ? FileType::Folder : FileType::File;
   }
 }
 
@@ -184,17 +180,16 @@ void SdCard::select_command(uint16_t file_index) {
   if(!check_media())
     return;
 
-  auto absolute_index = file_index + page_index_ * nb_visible_sd_files;
+  auto absolute_index = file_index + page_index_ * NB_VISIBLE_SD_FILES;
   if(absolute_index >= files_.count())
-      return;
+    return;
 
   files_.seek(absolute_index);
 
   const char* filename = files_.shortFilename();
-  if(filename == nullptr) // If the SD card is not readable
-  {
-      ExtUI::onMediaOpenError(filename);
-      return;
+  if(filename == nullptr) { // If the SD card is not readable
+    ExtUI::onMediaOpenError(filename);
+    return;
   }
 
   if(files_.isDir())
@@ -206,7 +201,7 @@ void SdCard::select_command(uint16_t file_index) {
 void SdCard::select_file() {
   status.set_filename(files_.filename());
   ExtUI::printFile(files_.shortFilename());
-  pages.show(Page::Print);
+  pages.show(Page::Print, Action::PrintCommand);
 }
 
 void SdCard::select_directory() {

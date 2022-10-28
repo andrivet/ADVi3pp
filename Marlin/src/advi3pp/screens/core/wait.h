@@ -31,28 +31,31 @@ namespace ADVi3pp {
 using WaitCallback = adv::Callback<bool(*)()>;
 
 //! Display wait page and messages
-struct Wait: Screen<Wait>
-{
-    void wait();
-    void wait(const FlashChar* message);
-    void wait(const char* message);
-    void wait_back(const FlashChar* message, const WaitCallback& back);
-    void wait_back(const FlashChar* message);
-    void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
-    void wait_user(const char* message);
+struct Wait: Screen<Wait> {
+  static constexpr Page PAGE = Page::Waiting;
+  static constexpr Action ACTION = Action::Wait;
+
+  void wait();
+  void wait(const FlashChar* message);
+  void wait(const char* message);
+  void wait_back(const FlashChar* message, const WaitCallback& back);
+  void wait_back(const FlashChar* message);
+  void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
+  void wait_user(const char* message);
 
 private:
-    Page do_prepare_page();
-    void do_save_command();
-    void do_back_command();
-    bool on_continue();
-    bool on_back();
-    void wait_();
+  void on_save_command();
+  void on_back_command();
 
-    WaitCallback back_;
-    WaitCallback continue_;
+  bool cont();
+  bool back();
+  void wait_();
 
-    friend Parent;
+private:
+  WaitCallback back_;
+  WaitCallback continue_;
+
+  friend Parent;
 };
 
 extern Wait wait;

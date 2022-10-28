@@ -25,12 +25,12 @@
 namespace ADVi3pp {
 
 //! No Sensor Page
-struct NoSensor: Screen<NoSensor>
-{
-private:
-    Page do_prepare_page();
+struct NoSensor: Screen<NoSensor> {
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::NoSensor;
 
-    friend Parent;
+private:
+  friend Parent;
 };
 
 extern NoSensor no_sensor;

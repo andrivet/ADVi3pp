@@ -25,13 +25,15 @@
 namespace ADVi3pp {
 
 //! Step Settings Page
-struct StepSettings: Screen<StepSettings>
-{
-private:
-    Page do_prepare_page();
-    void do_save_command();
+struct StepSettings: Screen<StepSettings> {
+  static constexpr Page PAGE = Page::StepsSettings;
+  static constexpr Action ACTION = Action::StepsSettings;
 
-    friend Parent;
+private:
+  void on_enter();
+  void on_save_command();
+
+  friend Parent;
 };
 
 extern StepSettings steps_settings;

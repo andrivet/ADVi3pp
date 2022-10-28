@@ -26,27 +26,30 @@
 namespace ADVi3pp {
 
 
-struct PidSettings: Screen<PidSettings>
-{
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void do_save_command();
-    void do_back_command();
-    void save_bed_pid() const;
-    void hotend_command();
-    void save_hotend_pid() const;
-    void bed_command();
-    void previous_command();
-    void next_command();
-    void to_lcd() const;
-    void from_lcd();
+struct PidSettings: Screen<PidSettings> {
+  static constexpr Page PAGE = Page::PidSettings;
+  static constexpr Action ACTION = Action::PIDSettings;
 
 private:
-    TemperatureKind kind_ = TemperatureKind::Hotend;
-    uint8_t index_ = 0;
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_save_command();
+  void on_back_command();
 
-    friend Parent;
+  void save_bed_pid() const;
+  void hotend_command();
+  void save_hotend_pid() const;
+  void bed_command();
+  void previous_command();
+  void next_command();
+  void to_lcd() const;
+  void from_lcd();
+
+private:
+  TemperatureKind kind_ = TemperatureKind::Hotend;
+  uint8_t index_ = 0;
+
+  friend Parent;
 };
 
 extern PidSettings pid_settings;
