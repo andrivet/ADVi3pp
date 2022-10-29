@@ -26,7 +26,7 @@ namespace ADVi3pp {
 
 //! Extruder Tuning Page
 struct ExtruderTuning: Screen<ExtruderTuning> {
-  static constexpr Page PAGE = Page::ExtruderTuningTemp;
+  static constexpr Page PAGE = Page::ExtruderTuning;
   static constexpr Action ACTION = Action::ExtruderTuning;
 
 private:

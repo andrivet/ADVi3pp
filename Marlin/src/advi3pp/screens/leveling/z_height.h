@@ -28,7 +28,7 @@ namespace ADVi3pp {
 //! Sensor Z Height Tuning Page
 struct SensorZHeight: Screen<SensorZHeight> {
   static constexpr Page PAGE = Page::ZHeightTuning;
-  static constexpr Action ACTION = Action::SensorZHeight;
+  static constexpr Action ACTION = Action::ZHeightTuning;
 
   void minus();
   void plus();

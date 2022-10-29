@@ -42,9 +42,6 @@ protected:
   void on_save_command();
   void on_back_command();
   void on_abort();
-
-private:
-  static constexpr Page PAGE = Page::None;
 };
 
 // --------------------------------------------------------------------

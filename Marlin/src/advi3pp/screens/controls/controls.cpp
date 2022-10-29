@@ -66,7 +66,7 @@ void Controls::show_temps() {
   }
 
   // If there is a print running (or paused), display the print screen.
-  pages.show(Page::Print, Action::PrintCommand);
+  pages.show(Page::Print, Action::Print);
 }
 
 //! Show Print Settings page (only if a print is running or paused)
@@ -97,7 +97,7 @@ void Controls::show_baby_steps() {
 void Controls::show_print() {
   // If there is a print running (or paused), display the SD or USB print screen
   if(ExtUI::isPrinting() || ExtUI::isPrintingPaused()) {
-    pages.show(Page::Print, Action::PrintCommand);
+    pages.show(Page::Print, Action::Print);
     return;
   }
 

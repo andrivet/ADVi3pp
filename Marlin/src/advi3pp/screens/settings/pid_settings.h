@@ -28,7 +28,7 @@ namespace ADVi3pp {
 
 struct PidSettings: Screen<PidSettings> {
   static constexpr Page PAGE = Page::PidSettings;
-  static constexpr Action ACTION = Action::PIDSettings;
+  static constexpr Action ACTION = Action::PidSettings;
 
 private:
   bool on_dispatch(KeyValue key_value);

@@ -48,7 +48,7 @@ private:
   static void save_task();
   static void back_task();
   Context get_current_context();
-  void show_(Context context);
+  void send_page_to_lcd(Context context);
   static bool is_temporary(Page page);
   static bool ensure_no_move(Page page);
 

@@ -28,7 +28,7 @@ namespace ADVi3pp {
 //! Beeper Setting Page
 struct BeeperSettings: Screen<BeeperSettings> {
   static constexpr Page PAGE = Page::BuzzerSettings;
-  static constexpr Action ACTION = Action::BeeperSettings;
+  static constexpr Action ACTION = Action::BuzzerSettings;
 
   void duration_command(uint16_t duration);
 

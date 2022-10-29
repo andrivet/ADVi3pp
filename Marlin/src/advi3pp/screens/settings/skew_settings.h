@@ -26,7 +26,7 @@ namespace ADVi3pp {
 
 //! Skew Settings Page
 struct SkewSettings: Screen<SkewSettings> {
-  static constexpr Page PAGE = Page::Skew1Settings;
+  static constexpr Page PAGE = Page::Skew;
   static constexpr Action ACTION = Action::Skew;
 
 private:

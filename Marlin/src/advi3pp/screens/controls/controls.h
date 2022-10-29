@@ -26,6 +26,7 @@ namespace ADVi3pp {
 
 //! Controls Page
 struct Controls: Screen<Controls> {
+  static constexpr Page PAGE = Page::Controls;
   static constexpr Action ACTION = Action::Controls;
 
 private:

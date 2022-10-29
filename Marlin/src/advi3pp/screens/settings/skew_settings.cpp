@@ -67,13 +67,13 @@ void SkewSettings::step1() {
 void SkewSettings::step2() {
   xy_ = get_factor();
   set_default_values();
-  pages.show(Page::Skew2Settings, ACTION);
+  pages.show(Page::Skew2, ACTION);
 }
 
 void SkewSettings::step3() {
   xz_ = get_factor();
   set_default_values();
-  pages.show(Page::Skew3Settings, ACTION);
+  pages.show(Page::Skew3, ACTION);
 }
 
 float SkewSettings::get_factor() {

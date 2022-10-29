@@ -28,7 +28,7 @@ namespace ADVi3pp {
 #ifdef BLTOUCH
 //! BLTouch Testing Page
 struct BLTouchTesting: Screen<BLTouchTesting> {
-  static constexpr Page PAGE = Page::BLTouchTesting1;
+  static constexpr Page PAGE = Page::BLTouchTesting;
   static constexpr Action ACTION = Action::BLTouchTesting;
 
 private:

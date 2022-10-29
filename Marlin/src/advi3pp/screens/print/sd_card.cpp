@@ -201,7 +201,7 @@ void SdCard::select_command(uint16_t file_index) {
 void SdCard::select_file() {
   status.set_filename(files_.filename());
   ExtUI::printFile(files_.shortFilename());
-  pages.show(Page::Print, Action::PrintCommand);
+  pages.show(Page::Print, Action::Print);
 }
 
 void SdCard::select_directory() {

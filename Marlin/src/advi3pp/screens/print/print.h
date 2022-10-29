@@ -27,7 +27,7 @@ namespace ADVi3pp {
 //! Printing Page
 struct Print: Screen<Print> {
   static constexpr Page PAGE = Page::Print;
-  static constexpr Action ACTION = Action::PrintCommand;
+  static constexpr Action ACTION = Action::Print;
 
   void process_pause_resume_code();
   void process_stop_code();

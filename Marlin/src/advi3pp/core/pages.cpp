@@ -41,10 +41,10 @@ void Pages::show(Page page, Action action) {
   if(!is_temporary(current.page) && current.page != Page::Main)
     back_.push(current);
 
- show_(Context{page, action});
+  send_page_to_lcd(Context{page, action});
 }
 
-void Pages::show_(Context context) {
+void Pages::send_page_to_lcd(Context context) {
   WriteRegisterRequest{Register::PictureID}.write_page(context.page & Page::PageNumber);
   current_ = context;
 }
@@ -68,14 +68,14 @@ void Pages::save_forward_page() {
 void Pages::show_back_page(unsigned nb_back) {
   for(; nb_back > 0; --nb_back) {
     if (back_.is_empty()) {
-      show_(Context{Page::Main, Action::None});
+      send_page_to_lcd(Context{Page::Main, Action::None});
       return;
     }
 
     auto back = back_.pop();
     if (back.page == forward_.page)
       forward_.page = Page::None;
-    show_(back);
+    send_page_to_lcd(back);
   }
 }
 
@@ -89,7 +89,7 @@ void Pages::show_forward_page() {
   while(!back_.is_empty()) {
     auto back = back_.pop();
     if(back.page == forward_.page) {
-      show_(forward_);
+      send_page_to_lcd(forward_);
       forward_.page = Page::None;
       return;
     }
@@ -98,7 +98,7 @@ void Pages::show_forward_page() {
   Log::error() << F("Back pages do not contain page") << forward_.page << Log::endl();
   forward_.page = Page::None;
   reset();
-  show_(Context{Page::Main, Action::None});
+  send_page_to_lcd(Context{Page::Main, Action::None});
 }
 
 void Pages::reset() {
@@ -145,7 +145,7 @@ void Pages::clear_temporaries() {
 
   while(is_temporary(current.page) && !back_.is_empty())
     current = back_.pop();
-  show_(current);
+  send_page_to_lcd(current);
 }
 
 void Pages::check_no_print(Page page) {
@@ -160,7 +160,7 @@ void Pages::go_to_print() {
     core.process_action(current.action, KeyValue::Abort);
     current = back_.pop();
   }
-  show(Page::Print, Action::PrintCommand);
+  show(Page::Print, Action::Print);
 }
 
 }

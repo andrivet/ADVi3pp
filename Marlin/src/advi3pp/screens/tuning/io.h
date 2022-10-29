@@ -27,7 +27,7 @@ namespace ADVi3pp {
 //! Diagnosis Page
 struct IO: Screen<IO> {
   static constexpr Page PAGE = Page::IO;
-  static constexpr Action ACTION = Action::Diagnosis;
+  static constexpr Action ACTION = Action::IO;
 
 private:
   void on_enter();
