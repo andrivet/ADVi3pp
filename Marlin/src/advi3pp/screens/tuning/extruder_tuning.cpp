@@ -22,7 +22,7 @@
 #include "extruder_tuning.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"
-#include "../core/wait.h"
+#include "../../core/wait.h"
 #include "../settings/step_settings.h"
 
 namespace ADVi3pp {

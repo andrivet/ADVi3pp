@@ -22,7 +22,7 @@
 #include "print.h"
 #include "../../core/core.h"
 #include "../../core/status.h"
-#include "../core/wait.h"
+#include "../../core/wait.h"
 
 
 namespace ADVi3pp {

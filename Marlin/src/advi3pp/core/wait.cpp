@@ -18,8 +18,8 @@
  *
  */
 
-#include "../../parameters.h"
-#include "../../core/status.h"
+#include "../parameters.h"
+#include "../core/status.h"
 #include "wait.h"
 
 namespace ADVi3pp {

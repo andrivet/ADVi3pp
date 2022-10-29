@@ -20,12 +20,12 @@
 
 #pragma once
 
-#include "../../../lcd/extui/ui_api.h"
-#include "../../lib/ADVstd/ADVcrtp.h"
-#include "../../core/settings.h"
-#include "../../core/enums.h"
-#include "../../core/eeprom.h"
-#include "../../core/pages.h"
+#include "../../lcd/extui/ui_api.h"
+#include "../lib/ADVstd/ADVcrtp.h"
+#include "../core/settings.h"
+#include "../core/enums.h"
+#include "../core/eeprom.h"
+#include "../core/pages.h"
 
 namespace ADVi3pp {
 

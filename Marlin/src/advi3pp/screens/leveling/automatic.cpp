@@ -21,7 +21,7 @@
 #include "../../parameters.h"
 #include "../../core/core.h"
 #include "../../core/status.h"
-#include "../../screens/core/wait.h"
+#include "../../core/wait.h"
 #include "grid.h"
 #include "automatic.h"
 

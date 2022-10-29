@@ -22,7 +22,7 @@
 #include "manual.h"
 #include "xtwist.h"
 #include "../../core/core.h"
-#include "../../screens/core/wait.h"
+#include "../../core/wait.h"
 
 namespace ADVi3pp {
 

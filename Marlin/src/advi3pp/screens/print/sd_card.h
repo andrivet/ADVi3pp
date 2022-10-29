@@ -21,7 +21,7 @@
 #pragma once
 
 #include "../../core/string.h"
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 

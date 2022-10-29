@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include "../../core/task.h"
-#include "../../core/string.h"
-#include "../../core/status.h"
-#include "../../core/dgus.h"
+#include "../core/task.h"
+#include "../core/string.h"
+#include "../core/status.h"
+#include "../core/dgus.h"
 #include "../core/screen.h"
 
 namespace ADVi3pp {

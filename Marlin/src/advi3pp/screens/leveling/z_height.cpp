@@ -20,7 +20,7 @@
 
 #include "../../parameters.h"
 #include "../../core/core.h"
-#include "../../screens/core/wait.h"
+#include "../../core/wait.h"
 #include "z_height.h"
 
 namespace ADVi3pp {

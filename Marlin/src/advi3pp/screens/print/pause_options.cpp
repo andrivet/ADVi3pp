@@ -20,7 +20,7 @@
 
 #include "../../parameters.h"
 #include "pause_options.h"
-#include "../core/wait.h"
+#include "../../core/wait.h"
 
 namespace ADVi3pp {
 

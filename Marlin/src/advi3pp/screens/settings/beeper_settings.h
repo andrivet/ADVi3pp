@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 #include "../../core/buzzer.h"
 
 namespace ADVi3pp {

@@ -23,7 +23,7 @@
 #include "../core/core.h"
 #include "../core/buzzer.h"
 #include "../core/status.h"
-#include "../screens/core/wait.h"
+#include "../core/wait.h"
 #include "../screens/leveling/automatic.h"
 #include "../screens/tuning/pid_tuning.h"
 

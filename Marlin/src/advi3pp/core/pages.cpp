@@ -23,7 +23,7 @@
 #include "pages.h"
 #include "core.h"
 #include "settings.h"
-#include "../screens/core/wait.h"
+#include "wait.h"
 
 namespace ADVi3pp {
 

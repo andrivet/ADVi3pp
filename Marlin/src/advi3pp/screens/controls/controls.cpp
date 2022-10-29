@@ -22,7 +22,7 @@
 #include "../../../lcd/extui/ui_api.h"
 #include "controls.h"
 #include "../../core/dgus.h"
-#include "../core/wait.h"
+#include "../../core/wait.h"
 #include "../print/temperatures.h"
 #include "../print/sd_card.h"
 #include "../print/print_settings.h"

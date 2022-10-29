@@ -21,7 +21,7 @@
 #include "../../parameters.h"
 #include "move.h"
 #include "../../core/core.h"
-#include "../core/wait.h"
+#include "../../core/wait.h"
 
 namespace ADVi3pp {
 

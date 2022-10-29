@@ -21,7 +21,7 @@
 #include "../../parameters.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"
-#include "../core/wait.h"
+#include "../../core/wait.h"
 #include "vibrations.h"
 
 namespace ADVi3pp {
