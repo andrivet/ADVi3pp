@@ -99,22 +99,15 @@ bool ManualLeveling::abort() {
 }
 
 bool ManualLeveling::start() {
-  wait.wait(F("Homing..."));
-  core.inject_commands(F("G28 O")); // Homing
-#if HAS_LEVELING
   ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
-#endif
-  background_task.set(Callback{this, &ManualLeveling::leveling_task}, 200);
+  wait.home_and_wait(Callback{this, &ManualLeveling::leveling_task}, F("G28")); // Homing (always)
   return false;
 }
 
 //! Leveling Background task.
 void ManualLeveling::leveling_task() {
-  if(!ExtUI::isMachineHomed())
+  if(!wait.check_homed())
     return;
-
-  background_task.clear();
-  pages.show(PAGE, ACTION);
 }
 
 void ManualLeveling::move(float x, float y) {

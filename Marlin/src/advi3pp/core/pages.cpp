@@ -135,7 +135,8 @@ void Pages::back_task() {
   if(core.is_busy()) return;
   background_task.clear();
   status.reset();
-  pages.show_back_page(2);
+  pages.clear_temporaries();
+  pages.show_back_page();
 }
 
 void Pages::clear_temporaries() {

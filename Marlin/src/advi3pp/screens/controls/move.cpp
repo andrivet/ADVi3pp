@@ -187,35 +187,26 @@ void Move::disable_motors_command() {
 
 //! Go to home on the X axis.
 void Move::x_home_command() {
-  home_command(F("G28 X"));
+  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 X"));
 }
 
 //! Go to home on the Y axis.
 void Move::y_home_command() {
-  home_command(F("G28 Y"));
+  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 Y"));
 }
 
 //! Go to home on the Z axis.
 void Move::z_home_command() {
-  home_command(F("G28 Z"));
+  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 Z"));
 }
 
 //! Go to home on all axis.
 void Move::all_home_command() {
-  home_command(F("G28"));
-}
-
-void Move::home_command(const FlashChar *cmd) {
-  stop_move();
-  core.inject_commands(cmd);
-  wait.wait("Homing...");
-  background_task.set(Callback{this, &Move::home_task});
+  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28"));
 }
 
 void Move::home_task() {
-  if(core.is_busy()) return;
-  background_task.clear();
-  pages.show_back_page();
+  wait.check_homed();
 }
 
 }

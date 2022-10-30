@@ -71,18 +71,13 @@ void AutomaticLeveling::on_abort() {
 void AutomaticLeveling::start() {
   lcd_leveling_ = true;
   pages.save_forward_page();
-  wait.wait(F("Homing..."));
-  core.inject_commands(F("G28 O\nG1 Z4 F1200"));
-  background_task.set(Callback{this, &AutomaticLeveling::home_task}, 200);
+  wait.home_and_wait(Callback{this, &AutomaticLeveling::home_task}, F("G28\nG1 Z4 F1200")); // Homing, always
 }
 
 //! Check if the printer is homed, and continue the Z Height Tuning process.
 void AutomaticLeveling::home_task() {
-  if(core.is_busy() || !ExtUI::isMachineHomed())
+  if(!wait.check_homed())
     return;
-
-  background_task.clear();
-  pages.show(PAGE, ACTION);
 
   adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
   WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
@@ -109,8 +104,6 @@ void AutomaticLeveling::on_done(bool success) {
   Log::log() << "on_done" << success << Log::endl();
   if(!success)
     status.set(F("Leveling failure or aborted, please wait..."));
-
-  core.inject_commands(F("G28 X Y"));
 
   if(!lcd_leveling_) {
     if(success) {

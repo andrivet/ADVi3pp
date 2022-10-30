@@ -68,29 +68,21 @@ void XTwist::on_enter() {
     return;
   }
 
-  pages.save_forward_page();
-
   z_offsets_.fill(0);
-
-  wait.wait(F("Homing..."));
-  core.inject_commands(F("G28 O"));  // homing
-  background_task.set(Callback{this, &XTwist::post_home_task}, 200);
+  pages.save_forward_page();
+  wait.home_and_wait(Callback{this, &XTwist::post_home_task});
 }
 
 //! Check if the printer is homed, and continue the process.
 void XTwist::post_home_task() {
-  if(core.is_busy() || !ExtUI::isMachineHomed())
+  if(!wait.check_homed())
     return;
-
-  background_task.clear();
 
   send_data();
   status.reset();
 
   ExtUI::setSoftEndstopState(false);
   point_M_command();
-
-  pages.show(PAGE, ACTION);
 }
 
 //! Execute the Back command

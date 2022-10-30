@@ -90,7 +90,7 @@ void SensorZHeight::post_home_task() {
   ExtUI::setSoftEndstopState(false);
 
   send_data();
-  pages.show(PAGE, ACTION);
+  pages.clear_temporaries();
 }
 
 //! Execute the Back command

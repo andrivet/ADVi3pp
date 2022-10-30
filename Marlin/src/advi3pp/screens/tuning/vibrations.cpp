@@ -58,17 +58,11 @@ bool Vibrations::on_dispatch(KeyValue key_value) {
 //! @return The index of the page to display
 void Vibrations::on_enter() {
   set_values();
-  if(ExtUI::isMachineHomed()) return;
-
-  wait.wait(F("Please wait while the printer is homed..."));
-  core.inject_commands(F("G28 O"));
-  background_task.set(Callback{this, &Vibrations::homing});
+  wait.home_and_wait(Callback{this, &Vibrations::homing}, F("Please wait while the printer is homed..."));
 }
 
 void Vibrations::homing() {
-  if(!ExtUI::isMachineHomed()) return;
-  background_task.clear();
-  pages.show(Page::VibrationsTuning, ACTION);
+  if(!wait.check_homed()) return;
 }
 
 //! Execute the Back command

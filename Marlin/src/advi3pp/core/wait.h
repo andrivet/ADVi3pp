@@ -22,6 +22,7 @@
 
 #include "../core/task.h"
 #include "../core/string.h"
+#include "../core/core.h"
 #include "../core/status.h"
 #include "../core/dgus.h"
 #include "../core/screen.h"
@@ -42,6 +43,9 @@ struct Wait: Screen<Wait> {
   void wait_back(const FlashChar* message);
   void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
   void wait_user(const char* message);
+
+  void home_and_wait(const Callback &f, const FlashChar* cmd = nullptr, const FlashChar* msg = nullptr);
+  bool check_homed();
 
 private:
   void on_save_command();
