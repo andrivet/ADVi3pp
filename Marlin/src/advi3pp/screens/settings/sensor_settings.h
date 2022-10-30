@@ -24,22 +24,18 @@
 
 namespace ADVi3pp {
 
+#ifdef ADVi3PP_PROBE
+
 struct SensorPosition { int16_t x, y; };
 
 //! Sensor Settings Page
 struct SensorSettings: Screen<SensorSettings> {
-#ifdef ADVi3PP_PROBE
   static constexpr Page PAGE =  Page::SensorSettings;
   static constexpr Action ACTION = Action::SensorSettings;
-#else
-  static constexpr Page PAGE = Page::NoSensor;
-  static constexpr Action ACTION = Action::NoSensor;
-#endif
 
 private:
   void on_enter();
 
-#ifdef ADVi3PP_PROBE
   bool on_dispatch(KeyValue value);
   void on_save_command();
 
@@ -50,7 +46,6 @@ private:
   void send_name() const;
   void get_values();
   void send_highspeed_value() const;
-#endif
 
 private:
   uint16_t index_ = 0;
@@ -60,5 +55,7 @@ private:
 };
 
 extern SensorSettings sensor_settings;
+
+#endif
 
 }

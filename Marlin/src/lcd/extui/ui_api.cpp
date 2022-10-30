@@ -952,8 +952,10 @@ namespace ExtUI {
     bool getLevelingActive() { return planner.leveling_active; }
     void setLevelingActive(const bool state) { set_bed_leveling_enabled(state); }
     bool getMeshValid() { return leveling_is_valid(); }
+    #if ENABLED(BLTOUCH)
     bool isLevelingHighSpeed() { return bltouch.high_speed_mode; } // @advi3++
     void setLevelingHighSpeed(bool set) { bltouch.high_speed_mode = set; } // @advi3++
+    #endif
 
     #if HAS_MESH
 

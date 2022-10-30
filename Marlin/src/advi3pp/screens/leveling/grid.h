@@ -46,6 +46,7 @@ struct LevelingGrid: Screen<LevelingGrid>
 {
 private:
     static constexpr Page PAGE = Page::NoSensor;
+    static constexpr Action ACTION = Action::None;
     friend Parent;
 };
 

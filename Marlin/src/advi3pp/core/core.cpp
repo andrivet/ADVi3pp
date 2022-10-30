@@ -211,9 +211,7 @@ void Core::process_action(Action action, KeyValue key_code) {
     case manual_leveling.ACTION:          manual_leveling.handle(key_code); break;
     case extruder_tuning.ACTION:          extruder_tuning.handle(key_code); break;
     case pid_tuning.ACTION:               pid_tuning.handle(key_code); break;
-    case sensor_settings.ACTION:          sensor_settings.handle(key_code); break;
     case vibrations.ACTION:               vibrations.handle(key_code); break;
-    case no_sensor.ACTION:                no_sensor.handle(key_code); break;
     case lcd_settings.ACTION:             lcd_settings.handle(key_code); break;
     case statistics.ACTION:               statistics.handle(key_code); break;
     case versions.ACTION:                 versions.handle(key_code); break;
@@ -225,19 +223,26 @@ void Core::process_action(Action action, KeyValue key_code) {
     case accelerations_settings.ACTION:   accelerations_settings.handle(key_code); break;
     case pause_options.ACTION:            pause_options.handle(key_code); break;
     case copyrights.ACTION:               copyrights.handle(key_code); break;
-    case automatic_leveling.ACTION:       automatic_leveling.handle(key_code); break;
-    case leveling_grid.ACTION:            leveling_grid.handle(key_code); break;
-    case sensor_z_height.ACTION:          sensor_z_height.handle(key_code); break;
     case eeprom_mismatch.ACTION:          eeprom_mismatch.handle(key_code); break;
-    case bltouch_testing.ACTION:          bltouch_testing.handle(key_code); break;
     case linear_advance_settings.ACTION:  linear_advance_settings.handle(key_code); break;
     case io.ACTION:                       io.handle(key_code); break;
     case temperatures.ACTION:             temperatures.handle(key_code); break;
     case setup.ACTION:                    setup.handle(key_code); break;
-    case xtwist.ACTION:                   xtwist.handle(key_code); break;
     case runout_settings.ACTION:          runout_settings.handle(key_code); break;
     case skew_settings.ACTION:            skew_settings.handle(key_code); break;
     case beeper_settings.ACTION:          beeper_settings.handle(key_code); break;
+
+#ifdef ADVi3PP_PROBE
+    case no_sensor.ACTION:                no_sensor.handle(key_code); break;
+    case automatic_leveling.ACTION:       automatic_leveling.handle(key_code); break;
+    case leveling_grid.ACTION:            leveling_grid.handle(key_code); break;
+    case sensor_z_height.ACTION:          sensor_z_height.handle(key_code); break;
+    case xtwist.ACTION:                   xtwist.handle(key_code); break;
+    case sensor_settings.ACTION:          sensor_settings.handle(key_code); break;
+#endif
+#ifdef BLTOUCH
+    case bltouch_testing.ACTION:          bltouch_testing.handle(key_code); break;
+#endif
 
     case Action::MoveXPlus:               move.x_plus_command(); break;
     case Action::MoveXMinus:              move.x_minus_command(); break;

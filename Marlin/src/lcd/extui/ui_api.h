@@ -170,8 +170,13 @@ namespace ExtUI {
     bool getLevelingActive();
     void setLevelingActive(const bool);
     bool getMeshValid();
+    #if ENABLED(BLTOUCH)
     bool isLevelingHighSpeed(); // @advi3++
     void setLevelingHighSpeed(bool set = true); // @advi3++
+    #else
+    inline bool isLevelingHighSpeed() { return false; } // @advi3++
+    inline void setLevelingHighSpeed(bool set = true) {} // @advi3++
+    #endif
     #if HAS_MESH
       bed_mesh_t& getMeshArray();
       float getMeshPoint(const xy_uint8_t &pos);

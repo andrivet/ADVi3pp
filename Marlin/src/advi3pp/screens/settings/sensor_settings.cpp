@@ -25,9 +25,9 @@
 
 namespace ADVi3pp {
 
-SensorSettings sensor_settings;
-
 #ifdef ADVi3PP_PROBE
+
+SensorSettings sensor_settings;
 
 namespace { const size_t NB_SENSOR_POSITIONS = 3; }
 
