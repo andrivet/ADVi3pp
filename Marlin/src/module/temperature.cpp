@@ -1245,7 +1245,8 @@ inline void loud_kill(FSTR_P const lcd_msg, const heater_id_t heater_id, float t
     }
     buzzer.on();
   #endif
-  #if ENABLED(NOZZLE_PARK_FEATURE)
+  // @advi3++ Don't park, the printer will reset before displaying the error
+  #if ENABLED(NOZZLE_PARK_ON_ERROR)
     if (!homing_needed_error()) {
       nozzle.park(0);
       planner.synchronize();

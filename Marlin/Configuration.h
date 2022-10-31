@@ -2110,6 +2110,8 @@
  */ 
 // @advi3++: Enable nozzle parking
 #define NOZZLE_PARK_FEATURE
+// @advi3++: Do not park in case of hardware error
+//#define NOZZLE_PARK_ON_ERROR
 
 #if ENABLED(NOZZLE_PARK_FEATURE)
   // Specify a park position as { X, Y, Z_raise }
