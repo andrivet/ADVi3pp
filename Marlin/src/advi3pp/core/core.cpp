@@ -297,17 +297,17 @@ void Core::send_lcd_data() {
   NoFrameLogging no_logging{};
   // Send the current status in one frame
   WriteRamRequest{Variable::TargetBed}.write_words(
-    ExtUI::getTargetTemp_celsius(ExtUI::BED),
-    ExtUI::getActualTemp_celsius(ExtUI::BED),
-    ExtUI::getTargetTemp_celsius(ExtUI::E0),
-    ExtUI::getActualTemp_celsius(ExtUI::E0),
-    ExtUI::getActualFan_percent(ExtUI::FAN0),
+    lround(ExtUI::getTargetTemp_celsius(ExtUI::BED)),
+    lround(ExtUI::getActualTemp_celsius(ExtUI::BED)),
+    lround(ExtUI::getTargetTemp_celsius(ExtUI::E0)),
+    lround(ExtUI::getActualTemp_celsius(ExtUI::E0)),
+    lround(ExtUI::getActualFan_percent(ExtUI::FAN0)),
     lround(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100.0),
     progress_bar_low,
     progress_var_high,
     0, // Reserved
     probe_state,
-    ExtUI::getFeedrate_percent(),
+    lround(ExtUI::getFeedrate_percent()),
     ExtUI::getFlow_percent(ExtUI::E0)
   );
 
