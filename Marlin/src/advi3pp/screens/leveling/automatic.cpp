@@ -71,6 +71,8 @@ void AutomaticLeveling::on_abort() {
 void AutomaticLeveling::start() {
   lcd_leveling_ = true;
   pages.save_forward_page();
+  adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
+  WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
   wait.home_and_wait(Callback{this, &AutomaticLeveling::home_task}, F("G28\nG1 Z4 F1200")); // Homing, always
 }
 
@@ -78,11 +80,6 @@ void AutomaticLeveling::start() {
 void AutomaticLeveling::home_task() {
   if(!wait.check_homed())
     return;
-
-  adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
-  WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
-
-  // homing, raise head, leveling, go back to corner, activate compensation
   core.inject_commands(ExtUI::isLevelingHighSpeed() ? F("G29") : F("G29 E"));
 }
 
