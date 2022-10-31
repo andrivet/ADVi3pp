@@ -1233,7 +1233,7 @@ int16_t Temperature::getHeaterPower(const heater_id_t heater_id) {
 // Temperature Error Handlers
 //
 
-inline void loud_kill(FSTR_P const lcd_msg, const heater_id_t heater_id, float temp) {
+inline void loud_kill(FSTR_P const lcd_msg, const heater_id_t heater_id, float temp) { // @advi3++
   marlin_state = MF_KILLED;
   thermalManager.disable_all_heaters();
   #if HAS_BEEPER
@@ -1252,7 +1252,7 @@ inline void loud_kill(FSTR_P const lcd_msg, const heater_id_t heater_id, float t
       planner.synchronize();
     }
   #endif
-  kill(temp, lcd_msg, HEATER_FSTR(heater_id));
+  kill(temp, lcd_msg, HEATER_FSTR(heater_id));  // @advi3++
 }
 
 void Temperature::_temp_error(const heater_id_t heater_id, FSTR_P const serial_msg, FSTR_P const lcd_msg) {

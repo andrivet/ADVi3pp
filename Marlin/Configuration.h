@@ -2235,7 +2235,7 @@
  */
 // @advi3++: Wanhao i3 Plus has EEPROM so enable it to store values
 #define EEPROM_SETTINGS       // Persistent storage with M500 and M501
-//#define DISABLE_M503        // Saves ~2700 bytes of PROGMEM. Disable for release!
+//#define DISABLE_M503        // Saves ~2700 bytes of flash. Disable for release!
 #define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save PROGMEM.
 #define EEPROM_BOOT_SILENT    // Keep M503 quiet and only give errors during first load
 #if ENABLED(EEPROM_SETTINGS)
@@ -3091,12 +3091,10 @@
 // Mini DGUS Touch Display (without DWIN OS)
 #define EXTENSIBLE_UI
 #define ADVi3PP_UI
-#define HAS_BUZZER 1 // DGUS panel has a buzzer
 #define HAS_LCD_BRIGHTNESS 1
 #define LCD_BRIGHTNESS_MIN 0x01
 #define LCD_BRIGHTNESS_MAX 0x40
 #define LCD_BRIGHTNESS_DEFAULT LCD_BRIGHTNESS_MAX
-//#define PROGRESS_SCALE 1U
 
 #if ENABLED(EXTENSIBLE_UI)
   //#define EXTUI_LOCAL_BEEPER // Enables use of local Beeper pin with external display

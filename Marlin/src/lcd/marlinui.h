@@ -28,22 +28,6 @@
 
 #include "buttons.h"
 
-#include "../inc/MarlinConfig.h"
-
-// @advi3++
-#ifdef O //ADVi3PP_UI
-#include "../advi3pp/inc/advi3pp_marlin_ui.h"
-#include "extui/ui_api.h"
-#else
-
-#if HAS_BUZZER
-  #include "../libs/buzzer.h"
-#endif
-
-#if ENABLED(SDSUPPORT)
-  #include "../sd/cardreader.h"
-#endif
-
 #if ENABLED(TOUCH_SCREEN_CALIBRATION)
   #include "tft_io/touch_calibration.h"
 #endif
@@ -510,7 +494,7 @@ public:
     #endif
 
     static void draw_kill_screen();
-    static void kill_screen(float temp, FSTR_P const lcd_error, FSTR_P const lcd_component);
+    static void kill_screen(float temp, FSTR_P const lcd_error, FSTR_P const lcd_component); // @advi3++
     #if DISABLED(LIGHTWEIGHT_UI)
       static void draw_status_message(const bool blink);
     #endif
@@ -804,5 +788,3 @@ private:
 #define LCD_MESSAGE(M)         ui.set_status(GET_TEXT_F(M))
 #define LCD_ALERTMESSAGE_F(S)  ui.set_alert_status(F(S))
 #define LCD_ALERTMESSAGE(M)    ui.set_alert_status(GET_TEXT_F(M))
-
-#endif // @advi3++

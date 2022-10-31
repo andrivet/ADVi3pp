@@ -353,6 +353,7 @@ namespace ExtUI {
     line_to_current_position(feedrate ?: manual_feedrate_mm_s[axis]);
   }
 
+  // @advi3++
   void setMultipleAxisPosition_mm(size_t nb_axis, float *positions, const axis_t *axis, const feedRate_t feedrate) {
 
     for(size_t i = 0; i < nb_axis; ++i) {
@@ -1122,7 +1123,7 @@ namespace ExtUI {
   }
   void setUserConfirmed() { TERN_(HAS_RESUME_CONTINUE, wait_for_user = false); }
 
-  void cancelLeveling() { ::g29_cancel = true; }
+  void cancelLeveling() { ::g29_cancel = true; } // @advi3++
 
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse response) { pause_menu_response = response; }
@@ -1234,7 +1235,7 @@ namespace ExtUI {
     #endif
   }
 
-  // @advi3++ PR candidates
+  // @advi3++
   void setAllAxisUnhomed()
   {
     ::set_all_unhomed();
@@ -1398,11 +1399,11 @@ void MarlinUI::init_lcd() { ExtUI::onStartup(); }
 
 void MarlinUI::update() { ExtUI::onIdle(); }
 
-void MarlinUI::kill_screen(float temp, FSTR_P const error, FSTR_P const component) {
+void MarlinUI::kill_screen(float temp, FSTR_P const error, FSTR_P const component) { // @advi3++
   using namespace ExtUI;
   if (!flags.printer_killed) {
     flags.printer_killed = true;
-    onPrinterKilled(temp, error, component);
+    onPrinterKilled(temp, error, component); // @advi3++
   }
 }
 

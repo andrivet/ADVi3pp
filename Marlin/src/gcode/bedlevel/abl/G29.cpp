@@ -438,7 +438,7 @@ G29_TYPE GcodeSuite::G29() {
       TERN_(DWIN_LCD_PROUI, DWIN_LevelingStart());
     #endif
 
-    ::g29_cancel = false;
+    ::g29_cancel = false; // @advi3++
     TERN_(EXTENSIBLE_UI, ExtUI::onLevelingStart());
 
     if (!faux) {

@@ -119,11 +119,10 @@
 
 #elif USE_MARLINUI_BUZZER
 
-  // Buzz indirectly via the MarlinUI instance
-  #define BUZZ(d,f) ui.buzz(d,f)
-  #define BUZZ_M300(d, f)  ui.buzz_m300(d,f) // @advi3++
+  // Use MarlinUI for a buzzer on the LCD
   #include "../lcd/marlinui.h"
   #define BUZZ(d,f) ui.buzz(d,f)
+  #define BUZZ_M300(d, f)  ui.buzz_m300(d,f) // @advi3++
 
 #else
 

@@ -1451,7 +1451,7 @@
 // LCD Print Progress options
 #if EITHER(SDSUPPORT, LCD_SET_PROGRESS_MANUALLY)
   #if CAN_SHOW_REMAINING_TIME
-    #define SHOW_REMAINING_TIME         // Display estimated time to completion advi3++
+    #define SHOW_REMAINING_TIME         // Display estimated time to completion @advi3++
     #if ENABLED(SHOW_REMAINING_TIME)
       //#define USE_M73_REMAINING_TIME    // Use remaining time from M73 command instead of estimation
       //#define ROTATE_PROGRESS_DISPLAY   // Display (P)rogress, (E)lapsed, and (R)emaining time
@@ -1488,7 +1488,7 @@
 
   // The standard SD detect circuit reads LOW when media is inserted and HIGH when empty.
   // Enable this option and set to HIGH if your SD cards are incorrectly detected.
-#ifdef ADVi3PP_HARDWARE_SIMULATOR
+#ifdef ADVi3PP_HARDWARE_SIMULATOR // @advi3++
   #define SD_DETECT_STATE HIGH
 #endif
 
