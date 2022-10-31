@@ -179,6 +179,8 @@ void Move::e_minus_command() {
 
 //! Disable the motors.
 void Move::disable_motors_command() {
+  // If printing, do nothing
+  if(ExtUI::isPrinting()) return;
   stop_move();
   core.inject_commands(F("M84")); // Disable steppers
   ExtUI::setAllAxisUnhomed();

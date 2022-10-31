@@ -113,12 +113,12 @@ void Preheat::on_save_command() {
 
 //! Cooldown the bed and the nozzle, turn off the fan
 void Preheat::cooldown_command() {
-  if(!ExtUI::isPrinting())
-    return;
-
+  // If printing, do nothing
+  if(ExtUI::isPrinting()) return;
   ExtUI::setTargetTemp_celsius(0, ExtUI::BED);
   ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
   ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+  status.set(F("Cool down..."));
 }
 
 }
