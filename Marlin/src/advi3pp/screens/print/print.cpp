@@ -57,11 +57,10 @@ void Print::on_enter() {
 
 //! Stop printing
 void Print::stop_command() {
-  if(!ExtUI::isPrinting())
-    return;
+  if(!ExtUI::isPrinting()) return;
 
   wait.wait_back_continue(F("Abort printing?"),
-    WaitCallback{this, &Print::cancel_abort_print}, WaitCallback{this, &Print::abort_print});
+  WaitCallback{this, &Print::cancel_abort_print}, WaitCallback{this, &Print::abort_print});
 }
 
 bool Print::cancel_abort_print() {
@@ -97,23 +96,5 @@ void Print::advanced_pause_command() {
   wait.wait(F("Pausing..."));
   core.inject_commands(F("M600"));
 }
-
-//! Process Stop (A1) code and actually stop the print (if any running).
-void Print::process_stop_code() {
-  ExtUI::stopPrint();
-
-  status.set(F("Print Stopped"));
-  pages.show_back_page(2);
-}
-
-//! Process Pause (A0) code and actually pause the print (if any running).
-void Print::process_pause_resume_code() {
-  core.inject_commands(F("M600"));
-}
-
-void Print::pause_finished() {
-  pages.show_back_page();
-}
-
 
 }

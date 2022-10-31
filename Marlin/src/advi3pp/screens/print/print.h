@@ -29,10 +29,6 @@ struct Print: Screen<Print> {
   static constexpr Page PAGE = Page::Print;
   static constexpr Action ACTION = Action::Print;
 
-  void process_pause_resume_code();
-  void process_stop_code();
-  void pause_finished();
-
 private:
   bool on_dispatch(KeyValue value);
   void on_enter();
