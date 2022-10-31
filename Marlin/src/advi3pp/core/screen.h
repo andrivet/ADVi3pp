@@ -78,7 +78,7 @@ bool Screen<Self>::on_dispatch(KeyValue value) {
 template<typename Self>
 void Screen<Self>::show() {
   Page page = this->self().on_get_page();
-  pages.check_no_print(page);
+  if(!pages.check_no_print(page)) return;
 
   this->self().on_enter();
   if(page != Page::None)

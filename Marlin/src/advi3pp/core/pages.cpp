@@ -29,7 +29,7 @@ namespace ADVi3pp {
 
 Pages pages;
 
-Log& operator<<(Log& log, Page page) {
+inline Log& operator<<(Log& log, Page page) {
   log << static_cast<uint16_t>(page);
   return log;
 }
@@ -38,6 +38,7 @@ Log& operator<<(Log& log, Page page) {
 //! @param [in] page The page to be displayed on the LCD screen
 void Pages::show(Page page, Action action) {
   auto current = get_current_context();
+  // Don't push temporary screens or Main (Main is implicitly always at the top)
   if(!is_temporary(current.page) && current.page != Page::Main)
     back_.push(current);
 
@@ -45,6 +46,8 @@ void Pages::show(Page page, Action action) {
 }
 
 void Pages::send_page_to_lcd(Context context) {
+  Log::log() << "Show page:" << context.page << Log::endl();
+  Log::log() << "Back pages:" << back_ << Log::endl();
   WriteRegisterRequest{Register::PictureID}.write_page(context.page & Page::PageNumber);
   current_ = context;
 }
@@ -52,10 +55,8 @@ void Pages::send_page_to_lcd(Context context) {
 //! Retrieve the current page on the LCD screen
 Pages::Context Pages::get_current_context() {
   // Boot page switches automatically (animation) to the Main page
-	if(current_.page == Page::None || current_.page == Page::Boot) {
-    current_.page = Page::Main;
-    current_.action = Action::Controls;
-  }
+	if(current_.page == Page::None || current_.page == Page::Boot)
+    current_= Context{Page::Main, Action::Controls};
   return current_;
 }
 
@@ -66,21 +67,23 @@ void Pages::save_forward_page() {
 
 //! Show the "Back" page on the LCD display.
 void Pages::show_back_page(unsigned nb_back) {
-  for(; nb_back > 0; --nb_back) {
-    if (back_.is_empty()) {
-      send_page_to_lcd(Context{Page::Main, Action::None});
-      return;
-    }
+  Context context{Page::Main, Action::Controls};
 
-    auto back = back_.pop();
-    if (back.page == forward_.page)
-      forward_.page = Page::None;
-    send_page_to_lcd(back);
+  for(; nb_back > 0; --nb_back) {
+    if (back_.is_empty())
+      break;
+
+    context = back_.pop();
+    if (context.page == forward_.page)
+      forward_ = Context{Page::None, Action::None};
   }
+
+  send_page_to_lcd(context);
 }
 
 //! Show the "Next" page on the LCD display.
 void Pages::show_forward_page() {
+  // If no forward page defined, use the back page
   if(forward_.page == Page::None) {
     show_back_page();
     return;
@@ -90,15 +93,14 @@ void Pages::show_forward_page() {
     auto back = back_.pop();
     if(back.page == forward_.page) {
       send_page_to_lcd(forward_);
-      forward_.page = Page::None;
+      forward_ = Context{Page::None, Action::None};
       return;
     }
   }
 
   Log::error() << F("Back pages do not contain page") << forward_.page << Log::endl();
-  forward_.page = Page::None;
-  reset();
-  send_page_to_lcd(Context{Page::Main, Action::None});
+  forward_ = Context{Page::None, Action::None};
+  send_page_to_lcd(Context{Page::Main, Action::Controls});
 }
 
 void Pages::reset() {
@@ -149,19 +151,29 @@ void Pages::clear_temporaries() {
   send_page_to_lcd(current);
 }
 
-void Pages::check_no_print(Page page) {
+bool Pages::check_no_print(Page page) {
   if(!test_one_bit(page, Page::EnterNoPrint) || !ExtUI::isPrinting())
-    return;
+    return true;
   wait.wait_back(F("This is not accessible when printing"));
+  return false;
 }
 
 void Pages::go_to_print() {
   auto current = pages.get_current_context();
-  while(current.page != Page::None && current.page != Page::Main) {
+  Log::log() << "Current page:" << current.page << Log::endl();
+  Log::log() << "Back pages:" << back_ << Log::endl();
+
+  // If already on the print page, do nothing
+  if(current.page == Page::Print)
+    return;
+
+  // Otherwise, pop the back pages and send abort messages
+  while(!back_.is_empty() && current.page != Page::Print) {
     core.process_action(current.action, KeyValue::Abort);
     current = back_.pop();
   }
-  show(Page::Print, Action::Print);
+  // Display print page
+  send_page_to_lcd(Context{Page::Print, Action::Print});
 }
 
 }

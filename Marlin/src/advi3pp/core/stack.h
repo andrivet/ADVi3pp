@@ -41,13 +41,19 @@ private:
 };
 
 template<typename T, size_t S>
-void Stack<T, S>::push(T e) {
+inline Log& operator<<(Log& log, Stack<T, S> stack) {
+  stack.log(log);
+  return log;
+}
+
+template<typename T, size_t S>
+inline void Stack<T, S>::push(T e) {
   assert(top_ <= S);
   elements_[top_++] = e;
 }
 
 template<typename T, size_t S>
-T Stack<T, S>::pop() {
+inline T Stack<T, S>::pop() {
   assert(!is_empty());
   return elements_[--top_];
 }
@@ -58,7 +64,7 @@ bool Stack<T, S>::is_empty() const {
 }
 
 template<typename T, size_t S>
-void Stack<T, S>::empty() {
+inline void Stack<T, S>::empty() {
   top_ = 0;
 }
 

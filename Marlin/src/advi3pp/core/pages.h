@@ -34,7 +34,7 @@ struct Pages {
   void clear_temporaries();
   void go_to_print();
   bool current_page_ensure_no_move();
-  void check_no_print(Page page);
+  bool check_no_print(Page page);
   void save_forward_page();
   void show_back_page(unsigned nb_back = 1);
   void show_forward_page();
@@ -43,7 +43,7 @@ struct Pages {
   void back();
 
 private:
-  struct Context {Page page; Action action; };
+  struct Context {Page page = Page::None; Action action = Action::None; };
 
   static void save_task();
   static void back_task();
@@ -52,6 +52,11 @@ private:
   static bool is_temporary(Page page);
   static bool ensure_no_move(Page page);
 
+  friend inline Log& operator<<(Log& log, Pages::Context context) {
+    log << "(P:" << static_cast<uint16_t>(context.page) << "A:" << static_cast<uint16_t>(context.action) << ")";
+    return log;
+  }
+
 private:
   static constexpr size_t STACK_SIZE = 8;
 
@@ -59,7 +64,6 @@ private:
   Context forward_ = Context{Page::None, Action::None};
   Context current_ = Context{Page::Main, Action::None};
 };
-
 
 inline bool Pages::is_temporary(Page page) {
   return test_one_bit(page, Page::Temporary);
