@@ -78,7 +78,7 @@ enum class Page: uint16_t {
   LinearAdvanceTuning     = 108 | EnterNoPrint | ExitFinishMove,
   LinearAdvanceSettings   = 110 | EnterNoPrint,
   IO                      = 112,
-  BLTouchTesting          = 114 | EnterNoPrint | Temporary,
+  BLTouchTesting1A        = 114 | EnterNoPrint | Temporary,
   BLTouchTesting2         = 116 | Temporary,
   BLTouchTesting3         = 118 | Temporary,
   BLTouchTesting4         = 120 | ExitFinishMove | Temporary,
@@ -94,6 +94,7 @@ enum class Page: uint16_t {
   Skew3                   = 140 | EnterNoPrint | ExitFinishMove,
   BuzzerSettings          = 142,
   AutomaticLeveling       = 144 | EnterNoPrint | ExitFinishMove,
+  BLTouchTesting1B        = 146 | EnterNoPrint | Temporary,
 
   Boot                    = 200 | Temporary
 };
@@ -333,12 +334,13 @@ enum class KeyValue: uint16_t {
   Extrude                 = 0x0001,
   Resume                  = 0x0002,
 
-  BLTouchTestingStep1Yes  = 0x0001,
-  BLTouchTestingStep1No   = 0x0002,
-  BLTouchTestingStep2Yes  = 0x0003,
-  BLTouchTestingStep2No   = 0x0004,
-  BLTouchTestingStep3Yes  = 0x0005,
-  BLTouchTestingStep3No   = 0x0006,
+  BLTouchTestingStep1aYes   = 0x0001,
+  BLTouchTestingStep1aNo    = 0x0002,
+  BLTouchTestingStep1bSlow  = 0x0003,
+  BLTouchTestingStep1bQuick = 0x0004,
+  BLTouchTestingStep1bNo    = 0x0005,
+  BLTouchTestingStep2Yes    = 0x0006,
+  BLTouchTestingStep2No     = 0x0007,
 
   VibrationsX             = 0x0001,
   VibrationsY             = 0x0002,

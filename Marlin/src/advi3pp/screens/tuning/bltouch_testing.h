@@ -28,7 +28,7 @@ namespace ADVi3pp {
 #ifdef BLTOUCH
 //! BLTouch Testing Page
 struct BLTouchTesting: Screen<BLTouchTesting> {
-  static constexpr Page PAGE = Page::BLTouchTesting;
+  static constexpr Page PAGE = Page::BLTouchTesting1A;
   static constexpr Action ACTION = Action::BLTouchTesting;
 
 private:
@@ -48,16 +48,19 @@ private:
   void on_save_command();
   void on_abort();
 
-  void step1();
-  void step1yes();
-  void step1no();
-  void step2();
-  void step2yes();
-  void step2no();
-  void step3();
-  void step3yes();
-  void step3no();
-  void step4();
+  void step_1a();
+  void step_1a_yes();
+  void step_1a_no();
+  void step_1b();
+  void step_1b_slow();
+  void step_1b_quick();
+  void step_1b_no();
+  void step_2();
+  void step_2_yes();
+  void step_2_no();
+  void step_3();
+  void step_4();
+  void step_3_task();
   uint16_t wire_value(Wires wire);
 
 private:
@@ -68,6 +71,10 @@ private:
 };
 
 ENABLE_BITMASK_OPERATOR(BLTouchTesting::Wires);
+
+inline uint16_t BLTouchTesting::wire_value(Wires wire) {
+  return test_one_bit(ok_, wire) ? 1 : test_one_bit(tested_, wire) ? 2 : 0;
+}
 
 #else
 //! BLTouch Testing Page

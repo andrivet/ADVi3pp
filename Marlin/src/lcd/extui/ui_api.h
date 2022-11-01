@@ -474,12 +474,6 @@ namespace ExtUI {
   #endif
 
   // @advi3++
-  #if ENABLED(BLTOUCH)
-    bool bltouchDeploy();
-    bool bltouchStow();
-  #endif
-
-  // @advi3++
   #if ENABLED(SKEW_CORRECTION)
     #if ENABLED(SKEW_CORRECTION_FOR_Z)
         void setSkewFactors(float xy, float xz, float yz);

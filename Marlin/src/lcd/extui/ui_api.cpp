@@ -1349,21 +1349,6 @@ void watchdogReset()
   hal.watchdog_refresh();
 }
 
-bool extrudeFilament(float purge_length)
-{
-  return extrude_filament(purge_length);
-}
-
-#if ENABLED(BLTOUCH)
-bool bltouchDeploy() {
-  return bltouch.deploy();
-}
-
-bool bltouchStow() {
-  return bltouch.stow();
-}
-#endif
-
 void stopMove() {
   quickstop_stepper();
 }
