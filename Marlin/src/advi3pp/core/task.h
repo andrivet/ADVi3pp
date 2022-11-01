@@ -37,7 +37,7 @@ struct Task {
 
   void set(const Callback& callback, unsigned int delay = DEFAULT_DELAY, Activation activation = Activation::MULIPLE);
   void clear();
-  bool execute(bool force_excute = false);
+  bool execute(bool force_execute = false);
 
 private:
   void set_next_execute_time();
