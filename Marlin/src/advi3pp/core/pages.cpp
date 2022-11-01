@@ -46,8 +46,6 @@ void Pages::show(Page page, Action action) {
 }
 
 void Pages::send_page_to_lcd(Context context) {
-  Log::log() << "Show page:" << context.page << Log::endl();
-  Log::log() << "Back pages:" << back_ << Log::endl();
   WriteRegisterRequest{Register::PictureID}.write_page(context.page & Page::PageNumber);
   current_ = context;
 }
@@ -160,9 +158,6 @@ bool Pages::check_no_print(Page page) {
 
 void Pages::go_to_print() {
   auto current = pages.get_current_context();
-  Log::log() << "Current page:" << current.page << Log::endl();
-  Log::log() << "Back pages:" << back_ << Log::endl();
-
   // If already on the print page, do nothing
   if(current.page == Page::Print)
     return;
