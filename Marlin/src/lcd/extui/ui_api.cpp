@@ -1365,7 +1365,7 @@ bool bltouchStow() {
 #endif
 
 void stopMove() {
-  quickstop_stepper();;
+  quickstop_stepper();
 }
 
 void setAbsoluteZAxisPosition_mm(const_float_t position) {
