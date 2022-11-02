@@ -1,5 +1,23 @@
 # ADVi3++ Changelog
 
+## 5.5.0 (2022-11-02)
+
+* **#308** - [Update description of Print Settings pane](https://github.com/andrivet/ADVi3pp/issues/308)
+* **#310** - [Add steps in BLTouch Tuning for cases when the BLTouch is blinking red](https://github.com/andrivet/ADVi3pp/issues/310)
+* **#293** - [BLTouch - warning on transposed black and white wires](https://github.com/andrivet/ADVi3pp/issues/293)
+* **#318** - [Thermal runaway error is not always displayed on the LCD screen](https://github.com/andrivet/ADVi3pp/issues/318)
+* **#317** - [G-Code M114 response breaks Octolapse](https://github.com/andrivet/ADVi3pp/issues/317)
+* **#153** - [Graph as default view or GCode to show the graph view](https://github.com/andrivet/ADVi3pp/issues/153)
+* **#296** - [Manual jog controls disturb homing function, triggering "Homing failed" hardware error](https://github.com/andrivet/ADVi3pp/issues/296)
+* **#306** - [Fast probing with BLTouch](https://github.com/andrivet/ADVi3pp/issues/306)
+* **#294** - [If print menu is accessed while printer is moving, it shows as if it's printing](https://github.com/andrivet/ADVi3pp/issues/294)
+* **#313** - [Cancel automatic leveling](https://github.com/andrivet/ADVi3pp/issues/313)
+* **#238** - [M851 should accept all offset arguments, not just Z offset](https://github.com/andrivet/ADVi3pp/issues/238)
+* **#312** - [Detect and prevent bounces](https://github.com/andrivet/ADVi3pp/issues/312)
+* **#311** - [Restore Z-offset in Sensor Settings](https://github.com/andrivet/ADVi3pp/issues/311)
+* **#267** - [Live Flow Tuning](https://github.com/andrivet/ADVi3pp/issues/267)
+* **#307** - [Versions over 5.0.3 having issues accessing SD card files](https://github.com/andrivet/ADVi3pp/issues/307)
+
 ## 5.4.2 (2022-08-03)
 
 * **#298** - [The computation of the Extruder Tuning is wrong](https://github.com/andrivet/ADVi3pp/issues/298)
