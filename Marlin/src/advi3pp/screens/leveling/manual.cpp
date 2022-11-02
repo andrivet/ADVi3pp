@@ -77,7 +77,8 @@ void ManualLeveling::on_save_command() {
   ExtUI::setLevelingActive(false); // Disable ABL mesh (already disabled but prefer to be explicit)
 #endif
   ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z, FEEDRATE_Z);
-  Parent::on_save_command();
+  // Do not call parent, there nothing to save
+  pages.show_forward_page();
 }
 
 
