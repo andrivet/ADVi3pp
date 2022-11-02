@@ -54,7 +54,7 @@ enum class Page: uint16_t {
   Killed                  = 60 | Temporary,
   MotorsSettings          = 62,
   PidSettings             = 64 | EnterNoPrint,
-  FactoryReset            = 66 | Temporary,
+  FactoryReset            = 66 | EnterNoPrint | Temporary,
   Statistics              = 68,
   Versions                = 70,
   StepsSettings           = 72 | EnterNoPrint,
