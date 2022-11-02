@@ -28,8 +28,7 @@ using eeprom_write = ExtUI::eeprom_write;
 using eeprom_read  = ExtUI::eeprom_read;
 
 //! EEPROM writer: utility class to write values into EEPROM
-struct EepromWrite
-{
+struct EepromWrite {
     EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     template <typename T> void write(const T& data);
 
@@ -40,8 +39,7 @@ private:
 };
 
 //! EEPROM reader: utility class to read values from EEPROM
-struct EepromRead
-{
+struct EepromRead {
     EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
     template <typename T> inline void read(T& data);
 
@@ -56,25 +54,19 @@ private:
 // --------------------------------------------------------------------
 
 inline EepromWrite::EepromWrite(eeprom_write write, int& eeprom_index, uint16_t& working_crc)
-        : write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc)
-{
-}
+: write_(write), eeprom_index_(eeprom_index), working_crc_(working_crc) {}
 
 template <typename T>
-inline void EepromWrite::write(const T& data)
-{
-    write_(eeprom_index_, reinterpret_cast<const uint8_t*>(&data), sizeof(T), &working_crc_);
+inline void EepromWrite::write(const T& data) {
+  write_(eeprom_index_, reinterpret_cast<const uint8_t*>(&data), sizeof(T), &working_crc_);
 }
 
 inline EepromRead::EepromRead(eeprom_read read, int& eeprom_index, uint16_t& working_crc)
-        : read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc)
-{
-}
+: read_(read), eeprom_index_(eeprom_index), working_crc_(working_crc) {}
 
 template <typename T>
-inline void EepromRead::read(T& data)
-{
-    read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_, true);
+inline void EepromRead::read(T& data) {
+  read_(eeprom_index_, reinterpret_cast<uint8_t*>(&data), sizeof(T), &working_crc_, true);
 }
 
 }

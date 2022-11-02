@@ -21,58 +21,63 @@
 #pragma once
 
 #include "../../lib/ADVstd/array.h"
-#include "../../screens/core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 #ifdef ADVi3PP_PROBE
 
 //! X Twist Tuning Page
-struct XTwist: Screen<XTwist>
-{
-    enum class Point: uint8_t {L, M, R};
+struct XTwist: Screen<XTwist> {
+  static constexpr Page PAGE = Page::XTwist;
+  static constexpr Action ACTION = Action::XTwist;
 
-    void minus();
-    void plus();
+  enum class Point: uint8_t {L, M, R};
 
-private:
-    enum class Multiplier: uint8_t { M1, M2, M3 };
-
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void post_home_task();
-    void do_save_command();
-    void do_back_command();
-    void multiplier1_command();
-    void multiplier2_command();
-    void multiplier3_command();
-    void move_x(Point x);
-    void point_L_command();
-    void point_M_command();
-    void point_R_command();
-    double get_multiplier_value() const;
-    void adjust_height(double offset);
-    void send_data() const;
-    float get_x_mm(Point x) const;
+  void minus();
+  void plus();
 
 private:
-    Multiplier multiplier_ = Multiplier::M1;
-    Point point_ = Point::L;
-    adv::array<float, ExtUI::xTwistPoints> z_offsets_;
-    friend Parent;
+  enum class Multiplier: uint8_t { M1, M2, M3 };
+
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_save_command();
+  void on_back_command();
+  void on_abort();
+
+  void post_home_task();
+  void multiplier1_command();
+  void multiplier2_command();
+  void multiplier3_command();
+  void move_x(Point x);
+  void point_L_command();
+  void point_M_command();
+  void point_R_command();
+  double get_multiplier_value() const;
+  void adjust_height(double offset);
+  void send_data() const;
+  float get_x_mm(Point x) const;
+
+private:
+  Multiplier multiplier_ = Multiplier::M1;
+  Point point_ = Point::L;
+  adv::array<float, ExtUI::xTwistPoints> z_offsets_;
+
+  friend Parent;
 };
 
 #else
 
-struct XTwist: Screen<XTwist>
-{
-    void on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval) {}
-    void minus() {}
-    void plus() {}
+struct XTwist: Screen<XTwist> {
+  void on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval) {}
+  void minus() {}
+  void plus() {}
 
 private:
-    Page do_prepare_page();
-    friend Parent;
+  static constexpr Page PAGE = Page::NoSensor;
+
+  friend Parent;
 };
 
 #endif

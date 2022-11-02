@@ -32,7 +32,6 @@
 #include "../../../feature/bedlevel/bedlevel.h"
 #include "../../../module/motion.h"
 #include "../../../module/planner.h"
-#include "../../../module/stepper.h"
 #include "../../../module/probe.h"
 #include "../../queue.h"
 
@@ -74,18 +73,20 @@
   #endif
 #endif
 
-static void pre_g29_return(const bool retry, const bool did) {
+// @advi3++ add failure
+static void pre_g29_return(const bool retry, const bool failure, const bool did) {
   if (!retry) {
     TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_IDLE, false));
   }
-  if (did) {
+  if (true) { // @advi3++ always call onLevelingDone
     TERN_(HAS_DWIN_E3V2_BASIC, DWIN_LevelingDone());
-    TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone());
+    TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone(!failure && did));
   }
 }
 
+// @advi3++
 #define G29_RETURN(retry, did) do{ \
-  pre_g29_return(TERN0(G29_RETRY_AND_RECOVER, retry), did); \
+  pre_g29_return(TERN0(G29_RETRY_AND_RECOVER, retry), retry, did); \
   return TERN_(G29_RETRY_AND_RECOVER, retry); \
 }while(0)
 
@@ -437,6 +438,7 @@ G29_TYPE GcodeSuite::G29() {
       TERN_(DWIN_LCD_PROUI, DWIN_LevelingStart());
     #endif
 
+    ::g29_cancel = false; // @advi3++
     TERN_(EXTENSIBLE_UI, ExtUI::onLevelingStart());
 
     if (!faux) {
@@ -711,13 +713,14 @@ G29_TYPE GcodeSuite::G29() {
 
           if (abl.verbose_level) SERIAL_ECHOLNPGM("Probing mesh point ", pt_index, "/", abl.abl_points, ".");
           // @advi3++: Display x, y
+          ExtUI::onLevelingProgress(pt_index, abl.probePos.x, abl.probePos.y);
           //TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i"), GET_TEXT(MSG_PROBING_POINT), int(pt_index), int(abl.abl_points)));
-          TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i (%i, %i mm)"),
-            GET_TEXT(MSG_PROBING_POINT),
-            int(pt_index),
-            int(abl.abl_points),
-            int(abl.probePos.x),
-            int(abl.probePos.y)));
+
+          // @advi3++
+          if(::g29_cancel) {
+            abl.measured_z = NAN; // To break loops
+            break;
+          }
 
           abl.measured_z = faux ? 0.001f * random(-100, 101) : probe.probe_at_point(abl.probePos, raise_after, abl.verbose_level);
 

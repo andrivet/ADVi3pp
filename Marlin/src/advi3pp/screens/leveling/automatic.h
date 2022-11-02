@@ -20,26 +20,38 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Automatic Leveling Page
-struct AutomaticLeveling: Screen<AutomaticLeveling>
-{
-    void leveling_finished(bool success);
+struct AutomaticLeveling: Screen<AutomaticLeveling> {
+#ifdef ADVi3PP_PROBE
+  static constexpr Page PAGE = Page::AutomaticLeveling;
+  static constexpr Action ACTION = Action::AutomaticLeveling;
+#else
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::None;
+#endif
+
+  void on_start() {}
+  void on_progress(uint8_t index, uint8_t x, uint8_t y);
+  void on_done(bool success);
 
 private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void reset_command();
-    void start();
-    bool leveling_failed();
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_back_command();
+  void on_abort();
+
+  void reset_command();
+  void start();
+  void home_task();
 
 private:
-    bool sensor_interactive_leveling_ = false;
+  bool lcd_leveling_ = false;
 
-    friend Parent;
+  friend Parent;
 };
 
 extern AutomaticLeveling automatic_leveling;

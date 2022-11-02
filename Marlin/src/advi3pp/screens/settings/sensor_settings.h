@@ -20,34 +20,42 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
+
+#ifdef ADVi3PP_PROBE
 
 struct SensorPosition { int16_t x, y; };
 
 //! Sensor Settings Page
-struct SensorSettings: Screen<SensorSettings>
-{
-private:
-    Page do_prepare_page();
-
-#ifdef ADVi3PP_PROBE
-    bool do_dispatch(KeyValue value);
-    void do_save_command();
-    void previous_command();
-    void next_command();
-    void send_values() const;
-    void send_name() const;
-    void get_values();
-#endif
+struct SensorSettings: Screen<SensorSettings> {
+  static constexpr Page PAGE =  Page::SensorSettings;
+  static constexpr Action ACTION = Action::SensorSettings;
 
 private:
-    uint16_t index_ = 0;
+  void on_enter();
 
-    friend Parent;
+  bool on_dispatch(KeyValue value);
+  void on_save_command();
+
+  void previous_command();
+  void next_command();
+  void highspeed_command();
+  void send_values() const;
+  void send_name() const;
+  void get_values();
+  void send_highspeed_value() const;
+
+private:
+  uint16_t index_ = 0;
+  bool highspeed_ = false;
+
+  friend Parent;
 };
 
 extern SensorSettings sensor_settings;
+
+#endif
 
 }

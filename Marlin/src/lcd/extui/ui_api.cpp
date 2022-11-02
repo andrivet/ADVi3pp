@@ -180,7 +180,7 @@ namespace ExtUI {
   }
 
   void yield() {
-    if (!flags.printer_killed) thermalManager.manage_heater();
+    if (!flags.printer_killed) thermalManager.task();
   }
 
   void enableHeater(const extruder_t extruder) {
@@ -353,6 +353,7 @@ namespace ExtUI {
     line_to_current_position(feedrate ?: manual_feedrate_mm_s[axis]);
   }
 
+  // @advi3++
   void setMultipleAxisPosition_mm(size_t nb_axis, float *positions, const axis_t *axis, const feedRate_t feedrate) {
 
     for(size_t i = 0; i < nb_axis; ++i) {
@@ -952,6 +953,10 @@ namespace ExtUI {
     bool getLevelingActive() { return planner.leveling_active; }
     void setLevelingActive(const bool state) { set_bed_leveling_enabled(state); }
     bool getMeshValid() { return leveling_is_valid(); }
+    #if ENABLED(BLTOUCH)
+    bool isLevelingHighSpeed() { return bltouch.high_speed_mode; } // @advi3++
+    void setLevelingHighSpeed(bool set) { bltouch.high_speed_mode = set; } // @advi3++
+    #endif
 
     #if HAS_MESH
 
@@ -1114,9 +1119,11 @@ namespace ExtUI {
   void coolDown() { thermalManager.cooldown(); }
 
   bool awaitingUserConfirm() {
-    return TERN0(HAS_RESUME_CONTINUE, wait_for_user) || getHostKeepaliveIsPaused();
+    return TERN0(HAS_RESUME_CONTINUE, wait_for_user) || TERN0(HOST_KEEPALIVE_FEATURE, getHostKeepaliveIsPaused());
   }
   void setUserConfirmed() { TERN_(HAS_RESUME_CONTINUE, wait_for_user = false); }
+
+  void cancelLeveling() { ::g29_cancel = true; } // @advi3++
 
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse response) { pause_menu_response = response; }
@@ -1144,6 +1151,8 @@ namespace ExtUI {
 
   bool isMediaInserted() { return TERN0(SDSUPPORT, IS_SD_INSERTED()); }
   void mountMedia() { card.mount(); } // @advi3++
+  void releaseMedia() { card.release(); } // @advi3++
+  bool isMediaMounted() { return card.flag.mounted; } // @advi3++
 
   void pausePrint()  { ui.pause_print(); }
   void resumePrint() { ui.resume_print(); }
@@ -1226,7 +1235,7 @@ namespace ExtUI {
     #endif
   }
 
-  // @advi3++ PR candidates
+  // @advi3++
   void setAllAxisUnhomed()
   {
     ::set_all_unhomed();
@@ -1340,23 +1349,8 @@ void watchdogReset()
   hal.watchdog_refresh();
 }
 
-bool extrudeFilament(float purge_length)
-{
-  return extrude_filament(purge_length);
-}
-
-#if ENABLED(BLTOUCH)
-bool bltouchDeploy() {
-  return bltouch.deploy();
-}
-
-bool bltouchStow() {
-  return bltouch.stow();
-}
-#endif
-
 void stopMove() {
-  quickstop_stepper();;
+  quickstop_stepper();
 }
 
 void setAbsoluteZAxisPosition_mm(const_float_t position) {
@@ -1390,11 +1384,11 @@ void MarlinUI::init_lcd() { ExtUI::onStartup(); }
 
 void MarlinUI::update() { ExtUI::onIdle(); }
 
-void MarlinUI::kill_screen(float temp, FSTR_P const error, FSTR_P const component) {
+void MarlinUI::kill_screen(float temp, FSTR_P const error, FSTR_P const component) { // @advi3++
   using namespace ExtUI;
   if (!flags.printer_killed) {
     flags.printer_killed = true;
-    onPrinterKilled(temp, error, component);
+    onPrinterKilled(temp, error, component); // @advi3++
   }
 }
 

@@ -23,8 +23,7 @@
 #include "../core/core.h"
 #include "../core/buzzer.h"
 #include "../core/status.h"
-#include "../core/settings.h"
-#include "../screens/core/wait.h"
+#include "../core/wait.h"
 #include "../screens/leveling/automatic.h"
 #include "../screens/tuning/pid_tuning.h"
 
@@ -37,26 +36,23 @@ void onStartup() {
   core.startup();
 }
 
-void onIdle()
-{
+void onIdle() {
   core.idle();
 }
 
-// There is no way to detect media changes, so this part is not implemented
 void onMediaInserted() {
-  Log::log() << F("ExtUI::onMediaInserted") << Log::endl();
+  core.media_inserted();
 }
 
 void onMediaError() {
-  Log::log() << F("ExtUI::onMediaError") << Log::endl();
+  core.media_error();
 }
 
 void onMediaRemoved() {
-  Log::log() << F("ExtUI::onMediaRemoved") << Log::endl();
+  core.media_removed();
 }
 
 void onMediaOpenError(const char* filename) {
-  Log::log() << F("ExtUI::onMediaOpenError ") << filename << Log::endl();
   status.set(F("Error opening file"));
 }
 
@@ -71,7 +67,7 @@ void onPrinterKilled(float temp, FSTR_P const error, FSTR_P const component) {
 }
 
 void onPrintTimerStarted() {
-  Log::log() << F("ExtUI::onPrintTimerStarted") << Log::endl();
+  pages.go_to_print();
 }
 
 void onPrintTimerPaused() {
@@ -98,7 +94,10 @@ void onUserConfirmRequired(const char * const msg) {
 
 void onStatusChanged(const char * const msg) {
   Log::log() << F("ExtUI::onStatusChanged") << msg << Log::endl();
-  wait.set_status(msg);
+  if(msg == NULL || *msg == 0)
+    status.reset_and_clear();
+  else
+    status.set(msg);
 }
 
 void onHomingStart() {
@@ -168,11 +167,15 @@ void onSettingsValidated(bool success) {
 }
 
 void onLevelingStart() {
-  Log::log() << F("ExtUI::onLevelingStart") << Log::endl();
+  automatic_leveling.on_start();
 }
 
-void onLevelingDone() {
-  Log::log() << F("ExtUI::onLevelingDone") << Log::endl();
+void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos) {
+  automatic_leveling.on_progress(index, xpos, ypos);
+}
+
+void onLevelingDone(bool success) {
+  automatic_leveling.on_done(success);
 }
 
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
@@ -183,14 +186,6 @@ void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {
 void onMeshUpdate(const int8_t xpos, const int8_t ypos, probe_state_t state) {
   // Called to indicate a special condition
   Log::log() << F("ExtUI::onMeshUpdate") << Log::endl();
-}
-
-void onAutomaticLevelingFinished(bool success) {
-  Log::log() << F("ExtUI::onAutomaticLevelingFinished") << Log::endl();
-
-#if HAS_LEVELING
-    automatic_leveling.leveling_finished(success);
-#endif
 }
 
 #if ENABLED(POWER_LOSS_RECOVERY)

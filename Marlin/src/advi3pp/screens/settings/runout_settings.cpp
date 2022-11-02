@@ -31,105 +31,93 @@ RunoutSettings runout_settings;
 //! Handle LCD Settings command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool RunoutSettings::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
+bool RunoutSettings::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
+      return true;
 
-    switch(key_value)
-    {
-        case KeyValue::RunoutEnable:        enable_command(); break;
-        case KeyValue::RunoutHigh2Low:      high2low_command(); break;
-        case KeyValue::RunoutLow2High:      low2high_command(); break;
-        default:                            return false;
-    }
+  switch(key_value) {
+    case KeyValue::RunoutEnable:        enable_command(); break;
+    case KeyValue::RunoutHigh2Low:      high2low_command(); break;
+    case KeyValue::RunoutLow2High:      low2high_command(); break;
+    default:                            return false;
+  }
 
-    return true;
+  return true;
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page RunoutSettings::do_prepare_page()
-{
-    inverted_ = ExtUI::getFilamentRunoutInverted();
+void RunoutSettings::on_enter() {
+  inverted_ = ExtUI::getFilamentRunoutInverted();
 
-    WriteRamRequest{Variable::Value0}.write_words(
-          ExtUI::getFilamentRunoutEnabled(),
-          get_filament_state(),
-          ExtUI::getFilamentRunoutDistance_mm() * 10,
-          ExtUI::getFilamentRunoutInverted() ? 0 : 1
-    );
+  WriteRamRequest{Variable::Value0}.write_words(
+      ExtUI::getFilamentRunoutEnabled(),
+      get_filament_state(),
+      ExtUI::getFilamentRunoutDistance_mm() * 10,
+      ExtUI::getFilamentRunoutInverted() ? 0 : 1
+  );
 
-    background_task.set(Callback{this, &RunoutSettings::send_data}, 250);
-
-    return Page::Runout;
+  background_task.set(Callback{this, &RunoutSettings::send_data}, 250);
 }
 
-void RunoutSettings::do_back_command()
-{
-    background_task.clear();
-    Parent::do_back_command();
+void RunoutSettings::on_back_command() {
+  background_task.clear();
+  Parent::on_back_command();
 }
 
-void RunoutSettings::do_save_command() {
-    ReadRam response{Variable::Value0};
-    if(!response.send_receive(4))
-    {
-        Log::error() << F("Receiving Frame (Runout Settings)") << Log::endl();
-        return;
-    }
+void RunoutSettings::on_save_command() {
+  ReadRam response{Variable::Value0};
+  if(!response.send_receive(4)) {
+    Log::error() << F("Receiving Frame (Runout Settings)") << Log::endl();
+    return;
+  }
 
-    uint16_t enabled = response.read_word();
-    [[maybe_unused]] uint16_t state = response.read_word();
-    float distance = response.read_word() / 10.0f;
-    uint16_t trigger = response.read_word();
+  uint16_t enabled = response.read_word();
+  [[maybe_unused]] uint16_t state = response.read_word();
+  float distance = response.read_word() / 10.0f;
+  uint16_t trigger = response.read_word();
 
-    ExtUI::setFilamentRunoutEnabled(enabled == 1);
-    ExtUI::setFilamentRunoutDistance_mm(distance);
-    ExtUI::setFilamentRunoutInverted(trigger == 0);
+  ExtUI::setFilamentRunoutEnabled(enabled == 1);
+  ExtUI::setFilamentRunoutDistance_mm(distance);
+  ExtUI::setFilamentRunoutInverted(trigger == 0);
 
-    Parent::do_save_command();
+  Parent::on_save_command();
 }
 
 //! Handle the Enable/Disable command
-void RunoutSettings::enable_command()
-{
-    ReadRam response{Variable::Value0};
-    if(!response.send_receive(1))
-    {
-        Log::error() << F("Receiving Frame (Runout Settings)") << Log::endl();
-        return;
-    }
+void RunoutSettings::enable_command() {
+  ReadRam response{Variable::Value0};
+  if(!response.send_receive(1)) {
+    Log::error() << F("Receiving Frame (Runout Settings)") << Log::endl();
+    return;
+  }
 
-    WriteRamRequest{Variable::Value0}.write_word(!response.read_word());
+  WriteRamRequest{Variable::Value0}.write_word(!response.read_word());
 }
 
 //! Handle the Trigger (High/Low) command
-void RunoutSettings::high2low_command()
-{
-    inverted_ = false;
-    WriteRamRequest{Variable::Value3}.write_word(1);
+void RunoutSettings::high2low_command() {
+  inverted_ = false;
+  WriteRamRequest{Variable::Value3}.write_word(1);
 }
 
 //! Handle the Trigger (Low/High) command
-void RunoutSettings::low2high_command()
-{
-    inverted_ = true;
-    WriteRamRequest{Variable::Value3}.write_word(0);
+void RunoutSettings::low2high_command() {
+  inverted_ = true;
+  WriteRamRequest{Variable::Value3}.write_word(0);
 }
 
 uint16_t RunoutSettings::get_filament_state() {
 	auto pin_state = Core::get_pin_state(FIL_RUNOUT_PIN);
-    return inverted_ ?
-            (pin_state == Core::PinState::On ? 0: 1) :
-            (pin_state == Core::PinState::On ? 1 : 0);
+  return inverted_ ?
+    (pin_state == Core::PinState::On ? 0: 1) :
+    (pin_state == Core::PinState::On ? 1 : 0);
 }
 
 
 //! Send the current data to the LCD panel.
-void RunoutSettings::send_data()
-{
-    WriteRamRequest{Variable::Value1}.write_word(get_filament_state());
+void RunoutSettings::send_data() {
+  WriteRamRequest{Variable::Value1}.write_word(get_filament_state());
 }
 
 }

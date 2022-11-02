@@ -32,123 +32,111 @@ PidSettings pid_settings;
 //! Handle PID Settings command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool PidSettings::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::PidSettingsHotend:   hotend_command(); break;
-        case KeyValue::PidSettingsBed:      bed_command(); break;
-        case KeyValue::PidSettingPrevious:  previous_command(); break;
-        case KeyValue::PidSettingNext:      next_command(); break;
-        default:                            return false;
-    }
-
+bool PidSettings::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
+
+  switch(key_value) {
+    case KeyValue::PidSettingsHotend:   hotend_command(); break;
+    case KeyValue::PidSettingsBed:      bed_command(); break;
+    case KeyValue::PidSettingPrevious:  previous_command(); break;
+    case KeyValue::PidSettingNext:      next_command(); break;
+    default:                            return false;
+  }
+
+  return true;
 }
 
 //! Handle the select Hotend PID command
-void PidSettings::hotend_command()
-{
-    from_lcd();
-    kind_ = TemperatureKind::Hotend;
-    to_lcd();
+void PidSettings::hotend_command() {
+  from_lcd();
+  kind_ = TemperatureKind::Hotend;
+  to_lcd();
 }
 
 //! Handle the select Bed PID command
-void PidSettings::bed_command()
-{
-    from_lcd();
-    kind_ = TemperatureKind::Bed;
-    to_lcd();
+void PidSettings::bed_command() {
+  from_lcd();
+  kind_ = TemperatureKind::Bed;
+  to_lcd();
 }
 
 //! Handle the show previous PID values command
-void PidSettings::previous_command()
-{
-    if(index_ <= 0)
-        return;
-    from_lcd();
-    index_ -= 1;
-    to_lcd();
+void PidSettings::previous_command() {
+  if(index_ <= 0)
+    return;
+  from_lcd();
+  index_ -= 1;
+  to_lcd();
 }
 
 //! Handle the show next PID values command
-void PidSettings::next_command()
-{
-    if(index_ >= Pid::NB_PIDs - 1)
-        return;
-    from_lcd();
-    index_ += 1;
-    to_lcd();
+void PidSettings::next_command() {
+  if(index_ >= Pid::NB_PIDs - 1)
+    return;
+  from_lcd();
+  index_ += 1;
+  to_lcd();
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page PidSettings::do_prepare_page()
-{
-    to_lcd();
-    return Page::PidSettings;
+void PidSettings::on_enter() {
+  to_lcd();
 }
 
 //! Save the PID settings
-void PidSettings::do_save_command()
-{
-    from_lcd();
-    assert(kind_ <= TemperatureKind::Hotend);
-    pid.set_marlin_pid(kind_, index_);
-    Parent::do_save_command();
+void PidSettings::on_save_command() {
+  from_lcd();
+  assert(kind_ <= TemperatureKind::Hotend);
+  pid.set_marlin_pid(kind_, index_);
+  Parent::on_save_command();
 }
 
 //! Execute the Back command
-void PidSettings::do_back_command()
-{
-    settings.restore();
-    Parent::do_back_command();
+void PidSettings::on_back_command() {
+  settings.restore();
+  Parent::on_back_command();
 }
 
 
 //! Send the current data to the LCD panel.
-void PidSettings::to_lcd() const
-{
-    const PidValue& value = pid.get_pid(kind_, index_);
-    WriteRamRequest{Variable::Value0}.write_words(
-        kind_ == TemperatureKind::Hotend ? 0u : 1u,
-        value.temperature_,
-        value.Kp_ * 100,
-        value.Ki_ * 100,
-        value.Kd_ * 100
-    );
+void PidSettings::to_lcd() const {
+  const PidValue& value = pid.get_pid(kind_, index_);
+  WriteRamRequest{Variable::Value0}.write_words(
+    kind_ == TemperatureKind::Hotend ? 0u : 1u,
+    value.temperature_,
+    value.Kp_ * 100,
+    value.Ki_ * 100,
+    value.Kd_ * 100
+  );
 
-    ADVString<8> indexes;
-    indexes << index_ + 1 << F(" / ") << Pid::NB_PIDs;
-    WriteRamRequest{Variable::ShortText0}.write_text(indexes);
+  ADVString<8> indexes;
+  indexes << index_ + 1 << F(" / ") << Pid::NB_PIDs;
+  WriteRamRequest{Variable::ShortText0}.write_text(indexes);
 }
 
 //! Save the settings from the LCD Panel.
-void PidSettings::from_lcd()
-{
-    ReadRam response{Variable::Value0};
-    if(!response.send_receive(5))
-        return;
+void PidSettings::from_lcd() {
+  ReadRam response{Variable::Value0};
+  if(!response.send_receive(5))
+    return;
 
-    uint16_t kind = response.read_word();
-    uint16_t temperature = response.read_word();
-    uint16_t p = response.read_word();
-    uint16_t i = response.read_word();
-    uint16_t d = response.read_word();
+  uint16_t kind = response.read_word();
+  uint16_t temperature = response.read_word();
+  uint16_t p = response.read_word();
+  uint16_t i = response.read_word();
+  uint16_t d = response.read_word();
 
-    kind_ = kind ? TemperatureKind::Bed : TemperatureKind::Hotend;
-    PidValue& value = pid.get_pid(kind_, index_);
+  kind_ = kind ? TemperatureKind::Bed : TemperatureKind::Hotend;
+  PidValue& value = pid.get_pid(kind_, index_);
 
-    value.Kp_ = static_cast<float>(p) / 100;
-    value.Ki_ = static_cast<float>(i) / 100;
-    value.Kd_ = static_cast<float>(d) / 100;
-    value.temperature_ = temperature;
+  value.Kp_ = static_cast<float>(p) / 100;
+  value.Ki_ = static_cast<float>(i) / 100;
+  value.Kd_ = static_cast<float>(d) / 100;
+  value.temperature_ = temperature;
 
-    pid.set_marlin_pid(kind_, index_);
+  pid.set_marlin_pid(kind_, index_);
 }
 
 

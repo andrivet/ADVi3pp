@@ -20,19 +20,23 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Diagnosis Page
-struct IO: Screen<IO>
-{
-private:
-    Page do_prepare_page();
-    void do_back_command();
-    void send_data();
+struct IO: Screen<IO> {
+  static constexpr Page PAGE = Page::IO;
+  static constexpr Action ACTION = Action::IO;
 
-    friend Parent;
+private:
+  void on_enter();
+  void on_back_command();
+
+  void send_data();
+
+private:
+  friend Parent;
 };
 
 extern IO io;

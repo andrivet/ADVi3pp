@@ -20,18 +20,19 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Factory Reset Page
-struct FactoryReset: Screen<FactoryReset>
-{
-private:
-    Page do_prepare_page();
-    void do_save_command();
+struct FactoryReset: Screen<FactoryReset> {
+  static constexpr Page PAGE = Page::FactoryReset;
+  static constexpr Action ACTION = Action::FactoryReset;
 
-    friend Parent;
+private:
+  void on_save_command();
+
+  friend Parent;
 };
 
 extern FactoryReset factory_reset;

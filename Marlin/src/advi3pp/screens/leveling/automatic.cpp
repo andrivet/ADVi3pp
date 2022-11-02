@@ -21,7 +21,7 @@
 #include "../../parameters.h"
 #include "../../core/core.h"
 #include "../../core/status.h"
-#include "../../screens/core/wait.h"
+#include "../../core/wait.h"
 #include "grid.h"
 #include "automatic.h"
 
@@ -29,93 +29,93 @@ namespace ADVi3pp {
 
 AutomaticLeveling automatic_leveling;
 
-bool AutomaticLeveling::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::LevelingResetProbe:	reset_command(); break;
-        default: return false;
-    }
-
+bool AutomaticLeveling::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
+
+  switch(key_value) {
+    case KeyValue::LevelingResetProbe:	reset_command(); break;
+    default: return false;
+  }
+
+  return true;
 }
 
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page AutomaticLeveling::do_prepare_page()
-{
+void AutomaticLeveling::on_enter() {
 #ifdef ADVi3PP_PROBE
-    if(!core.ensure_not_printing())
-        return Page::None;
-    start();
-    return Page::None;
-#else
-    return Page::NoSensor;
+  start();
 #endif
 }
 
-void AutomaticLeveling::reset_command()
-{
+void AutomaticLeveling::reset_command() {
 #ifdef ADVi3PP_PROBE
-    core.inject_commands(F("M280 P0 S160"));
+  core.inject_commands(F("M280 P0 S160"));
 #else
-    pages.show(Page::NoSensor);
+  pages.show(PAGE, ACTION);
 #endif
 }
 
-void AutomaticLeveling::start()
-{
-    sensor_interactive_leveling_ = true;
-    pages.save_forward_page();
-    wait.wait(F("Homing..."));
+void AutomaticLeveling::on_back_command() {
+  status.set(F("Canceling leveling..."));
+  ExtUI::cancelLeveling();
+  Parent::on_back_command();
+}
 
-    // homing, raise head, leveling, go back to corner, activate compensation
-#ifdef ADVi3PP_PROBE
-    core.inject_commands(F("G28 O F6000\nG1 Z4 F1200\nG29 E\nG28 X Y F6000\nM420 S1"));
-#else
-    core.inject_commands(F("G28 O F6000\nG1 Z4 F1200\nG29 S1\nG28 X Y F6000\nM420 S1"));
-#endif
+void AutomaticLeveling::on_abort() {
+  ExtUI::cancelLeveling();
+}
+
+void AutomaticLeveling::start() {
+  lcd_leveling_ = true;
+  pages.save_forward_page();
+  adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
+  WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
+  wait.home_and_wait(Callback{this, &AutomaticLeveling::home_task}, F("G28\nG1 Z4 F1200")); // Homing, always
+}
+
+//! Check if the printer is homed, and continue the Z Height Tuning process.
+void AutomaticLeveling::home_task() {
+  if(!wait.check_homed())
+    return;
+  core.inject_commands(ExtUI::isLevelingHighSpeed() ? F("G29") : F("G29 E"));
+}
+
+void AutomaticLeveling::on_progress(uint8_t index, uint8_t x, uint8_t y) {
+  status.format(F("Probing #%i at %i x %i mm"), index, x, y);
+
+  if(pages.get_current_page() != Page::AutomaticLeveling)
+    return;
+
+  adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
+  data[index - 1] = 2; // index starts at 1
+
+  WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
 }
 
 //! Called by Marlin when G29 (automatic bed leveling) is finished.
 //! @param success Boolean indicating if the leveling was successful or not.
-void AutomaticLeveling::leveling_finished(bool success)
-{
-    if(!success)
-    {
-        if(sensor_interactive_leveling_)
-            wait.wait_back(F("Leveling failed"), WaitCallback{this, &AutomaticLeveling::leveling_failed});
-        else
-            status.set(F("Leveling failed"));
+void AutomaticLeveling::on_done(bool success) {
+  Log::log() << "on_done" << success << Log::endl();
+  if(!success)
+    status.set(F("Leveling failure or aborted, please wait..."));
 
-        sensor_interactive_leveling_ = false;
-        return;
+  if(!lcd_leveling_) {
+    if(success) {
+      settings.save();
+      ExtUI::setLevelingActive(true);
     }
+    return;
+  }
 
-    status.reset();
+  lcd_leveling_ = false;
+  if(!success)
+    return;
 
-    if(sensor_interactive_leveling_)
-    {
-        sensor_interactive_leveling_ = false;
-        leveling_grid.show();
-    }
-    else
-    {
-        settings.save();
-        ExtUI::setLevelingActive(true);
-    }
+  status.reset();
+  leveling_grid.show();
 }
-
-//! Show the back page when G29 (automatic bed leveling) failed.
-bool AutomaticLeveling::leveling_failed()
-{
-    pages.show_back_page();
-    return true;
-}
-
 
 }

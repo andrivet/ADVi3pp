@@ -20,20 +20,23 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Pause Options Page
-struct PauseOptions: Screen<PauseOptions>
-{
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void extrude_command();
-    void resume_command();
+struct PauseOptions: Screen<PauseOptions> {
+  static constexpr Page PAGE = Page::PauseOptions;
+  static constexpr Action ACTION = Action::PauseOptions;
 
-    friend Parent;
+private:
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+
+  void extrude_command();
+  void resume_command();
+
+  friend Parent;
 };
 
 extern PauseOptions pause_options;

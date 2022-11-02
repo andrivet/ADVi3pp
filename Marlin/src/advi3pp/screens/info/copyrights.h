@@ -20,17 +20,17 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Copyrights Page
-struct Copyrights: Screen<Copyrights>
-{
-private:
-    Page do_prepare_page();
+struct Copyrights: Screen<Copyrights> {
+  static constexpr Page PAGE = Page::Copyrights;
+  static constexpr Action ACTION = Action::Copyrights;
 
-    friend Parent;
+private:
+  friend Parent;
 };
 
 extern Copyrights copyrights;

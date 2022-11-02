@@ -26,16 +26,4 @@ namespace ADVi3pp {
 Setup setup;
 
 
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page Setup::do_prepare_page()
-{
-#ifdef ADVi3PP_PROBE
-    return Page::Setup;
-#else
-    return Page::SetupNoSensor;
-#endif
-}
-
-
 }

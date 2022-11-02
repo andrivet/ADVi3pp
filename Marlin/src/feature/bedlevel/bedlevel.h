@@ -33,6 +33,8 @@
   constexpr bool g29_in_progress = false;
 #endif
 
+extern bool g29_cancel; // @advi3++
+
 bool leveling_is_valid();
 void set_bed_leveling_enabled(const bool enable=true);
 void reset_bed_level();

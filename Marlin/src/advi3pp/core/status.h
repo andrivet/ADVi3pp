@@ -33,28 +33,29 @@ const size_t progress_percent_length = 8; //!< Size of the progress percent text
 const size_t tc_length = 8; //!< Size of the time to complete message to be displayed on the LCD Panel
 const size_t et_length = 8; //!< Size of the elaplsed time message to be displayed on the LCD Panel
 
-struct Status
-{
-    void reset();
-    void set(const FlashChar* message);
-    void set(const char* message);
-    void set(const FlashChar* fmt, va_list& args);
-    bool has() const;
+struct Status {
+  void reset();
+  void reset_and_clear();
+  void set(const FlashChar* message);
+  void set(const char* message);
+  void format(const FlashChar* fmt, va_list& args);
+  void format(const FlashChar* fmt, ...);
+  bool has() const;
 
-    void send();
-    void set_filename(const char* name);
-    void reset_progress();
-
-private:
-    void send_progress();
-    void send_times();
-    void send_status(ADVString<message_length>& message);
+  void send();
+  void set_filename(const char* name);
+  void reset_progress();
 
 private:
-    bool has_status_ = false;
-    ADVString<filename_length> filename_;
-    int percent_ = -1;
-    uint32_t next_update_times_time_ = 0;
+  void send_progress();
+  void send_times();
+  void send_status(ADVString<message_length>& message);
+
+private:
+  bool has_status_ = false;
+  ADVString<filename_length> filename_;
+  int percent_ = -1;
+  uint32_t next_update_times_time_ = 0;
 };
 
 extern Status status;

@@ -31,54 +31,52 @@
 namespace ADVi3pp {
 
 //! List of commands and their values (DGUS Mini)
-enum class Command: uint8_t
-{
-    None                    = 0x00,
-    WriteRegister           = 0x80, // 128
-    ReadRegister            = 0x81, // 129
-    WriteRam                = 0x82, // 130
-    ReadRam                 = 0x83, // 131
-    WriteCurve              = 0x84  // 132
+enum class Command: uint8_t {
+  None                    = 0x00,
+  WriteRegister           = 0x80, // 128
+  ReadRegister            = 0x81, // 129
+  WriteRam                = 0x82, // 130
+  ReadRam                 = 0x83, // 131
+  WriteCurve              = 0x84  // 132
 };
 
 //! List of registers and their values (DGUS Mini)
-enum class Register: uint8_t
-{
-    Version                 = 0x00,
-    Brightness              = 0x01,
-    BuzzerBeepingTime       = 0x02,
-    PictureID               = 0x03,
-    TouchPanelFlag          = 0x05,
-    TouchPanelStatus        = 0x06,
-    TouchPanelPosition      = 0x07,
-    TouchPanelEnable        = 0x0B,
-    RunTime                 = 0x0C,
-    R0                      = 0x10,
-    R1                      = 0x11,
-    R2                      = 0x12,
-    R3                      = 0x13,
-    R4                      = 0x14,
-    R5                      = 0x15,
-    R6                      = 0x16,
-    R7                      = 0x17,
-    R8                      = 0x18,
-    R9                      = 0x19,
-    RA                      = 0x1A,
-    RtcComAdj               = 0x1F,
-    RtcNow                  = 0x20,
-    EnLibOP                 = 0x40,
-    LibOPMode               = 0x41,
-    LibID                   = 0x42,
-    LibAddress              = 0x43,
-    VP                      = 0x46,
-    OPLength                = 0x48,
-    Timer0                  = 0x4A,
-    Timer1                  = 0x4C,
-    Timer2                  = 0x4D,
-    Timer3                  = 0x4E,
-    KeyCode                 = 0x4F,
-    TrendlineClear          = 0xEB,
-    ResetTrigger            = 0xEE
+enum class Register: uint8_t {
+  Version                 = 0x00,
+  Brightness              = 0x01,
+  BuzzerBeepingTime       = 0x02,
+  PictureID               = 0x03,
+  TouchPanelFlag          = 0x05,
+  TouchPanelStatus        = 0x06,
+  TouchPanelPosition      = 0x07,
+  TouchPanelEnable        = 0x0B,
+  RunTime                 = 0x0C,
+  R0                      = 0x10,
+  R1                      = 0x11,
+  R2                      = 0x12,
+  R3                      = 0x13,
+  R4                      = 0x14,
+  R5                      = 0x15,
+  R6                      = 0x16,
+  R7                      = 0x17,
+  R8                      = 0x18,
+  R9                      = 0x19,
+  RA                      = 0x1A,
+  RtcComAdj               = 0x1F,
+  RtcNow                  = 0x20,
+  EnLibOP                 = 0x40,
+  LibOPMode               = 0x41,
+  LibID                   = 0x42,
+  LibAddress              = 0x43,
+  VP                      = 0x46,
+  OPLength                = 0x48,
+  Timer0                  = 0x4A,
+  Timer1                  = 0x4C,
+  Timer2                  = 0x4D,
+  Timer3                  = 0x4E,
+  KeyCode                 = 0x4F,
+  TrendlineClear          = 0xEB,
+  ResetTrigger            = 0xEE
 };
 
 enum class Variable: uint16_t;
@@ -87,59 +85,57 @@ enum class KeyValue: uint16_t;
 enum class Page: uint16_t;
 enum class ReceiveMode { Known, Unknown };
 
-namespace
-{
-    const uint8_t HEADER_BYTE_0 = 0x5A;
-    const uint8_t HEADER_BYTE_1 = 0xA5;
-    const size_t MAX_GARBAGE_BYTES = 5;
+namespace {
+  const uint8_t HEADER_BYTE_0 = 0x5A;
+  const uint8_t HEADER_BYTE_1 = 0xA5;
+  const size_t MAX_GARBAGE_BYTES = 5;
 }
 
 // --------------------------------------------------------------------
 // Dgus - DGUS LCD panel
 // --------------------------------------------------------------------
 
-struct Dgus
-{
-    void open();
-    void setup();
-    [[noreturn]] void forwarding_loop();
+struct Dgus {
+  void open();
+  void setup();
+  [[noreturn]] void forwarding_loop();
 
 #ifdef ADV_UNIT_TESTS
-    void reset();
-    template<size_t S> void reset(const uint8_t (&buffer)[S]);
+  void reset();
+  template<size_t S> void reset(const uint8_t (&buffer)[S]);
 #endif
 
-    bool write_header(Command cmd, uint8_t param_size, uint8_t data_size);
-    bool wait_for_data(uint8_t size, bool blocking);
-    bool receive(Command cmd, bool blocking);
+  bool write_header(Command cmd, uint8_t param_size, uint8_t data_size);
+  bool wait_for_data(uint8_t size, bool blocking);
+  bool receive(Command cmd, bool blocking);
 
-    uint8_t read_byte();
-    size_t read_bytes(uint8_t *buffer, size_t length);
-    void push_back(uint8_t byte);
+  uint8_t read_byte();
+  size_t read_bytes(uint8_t *buffer, size_t length);
+  void push_back(uint8_t byte);
 
-    bool write_byte(uint8_t byte);
-    bool write_bytes(const uint8_t *bytes, size_t length);
-    bool write_bytes(const char *bytes, size_t length);
-    bool write_word(uint16_t word);
-    bool write_words(const uint16_t *words, size_t length);
-    bool write_text(const char* text, size_t text_length, size_t total_length);
-    bool write_centered_text(const char* text, size_t text_length, size_t total_length);
+  bool write_byte(uint8_t byte);
+  bool write_bytes(const uint8_t *bytes, size_t length);
+  bool write_bytes(const char *bytes, size_t length);
+  bool write_word(uint16_t word);
+  bool write_words(const uint16_t *words, size_t length);
+  bool write_text(const char* text, size_t text_length, size_t total_length);
+  bool write_centered_text(const char* text, size_t text_length, size_t total_length);
 
 private:
-    void kill();
-    bool receive_header();
-    bool has_pushed_back() const;
-    uint8_t get_pushed_back();
+  void kill();
+  bool receive_header();
+  bool has_pushed_back() const;
+  uint8_t get_pushed_back();
 
-    static const size_t MAX_PUSH_BACK = 5;
-    enum class State { Start = 0, Command = 1, Data = 2};
+  static const size_t MAX_PUSH_BACK = 5;
+  enum class State { Start = 0, Command = 1, Data = 2};
 
-    State   state_ = State::Start;
-    uint8_t length_ = 0;
-    uint8_t read_ = 0;
-    Command command_ = Command::None;
-    uint8_t nb_pushed_back_ = 0;
-    uint8_t pushed_back_[MAX_PUSH_BACK] = {};
+  State   state_ = State::Start;
+  uint8_t length_ = 0;
+  uint8_t read_ = 0;
+  Command command_ = Command::None;
+  uint8_t nb_pushed_back_ = 0;
+  uint8_t pushed_back_[MAX_PUSH_BACK] = {};
 };
 
 extern Dgus dgus; // Singleton
@@ -149,33 +145,32 @@ extern Dgus dgus; // Singleton
 // --------------------------------------------------------------------
 
 template<typename Param, Command>
-struct OutFrame
-{
-    ~OutFrame();
+struct OutFrame {
+  ~OutFrame();
 
 protected:
-    explicit OutFrame(Param param): parameter_{param} {}
-    bool write_header(uint8_t data_size);
-    bool write_parameter() const;
-    bool write_byte_data(uint8_t byte) const;
-    bool write_bytes_data(const uint8_t *bytes, size_t length) const;
-    bool write_bytes_data(const char *bytes, size_t length) const;
-    bool write_word_data(uint16_t word) const;
-    bool write_words_data(const uint16_t *words, size_t length) const;
-    bool write_text(const char* text, size_t text_length, size_t total_length) const;
-    bool write_centered_text(const char* text, size_t text_length, size_t total_length) const;
+  explicit OutFrame(Param param): parameter_{param} {}
+  bool write_header(uint8_t data_size);
+  bool write_parameter() const;
+  bool write_byte_data(uint8_t byte) const;
+  bool write_bytes_data(const uint8_t *bytes, size_t length) const;
+  bool write_bytes_data(const char *bytes, size_t length) const;
+  bool write_word_data(uint16_t word) const;
+  bool write_words_data(const uint16_t *words, size_t length) const;
+  bool write_text(const char* text, size_t text_length, size_t total_length) const;
+  bool write_centered_text(const char* text, size_t text_length, size_t total_length) const;
 
 private:
-    bool write_byte_parameter() const;
-    bool write_word_parameter() const;
-    void check_overflow(size_t size) const;
+  bool write_byte_parameter() const;
+  bool write_word_parameter() const;
+  void check_overflow(size_t size) const;
 
 private:
-    const Param parameter_{};
+  const Param parameter_{};
 
 #ifdef ADVi3PP_DEBUG
-    uint8_t data_size_ = 0;
-    mutable uint8_t data_written_ = 0;
+  uint8_t data_size_ = 0;
+  mutable uint8_t data_written_ = 0;
 #endif
 };
 
@@ -184,8 +179,7 @@ private:
 // --------------------------------------------------------------------
 
 template<typename Param, Command cmd>
-struct ReadOutFrame: OutFrame<Param, cmd>
-{
+struct ReadOutFrame: OutFrame<Param, cmd> {
   using Parent = OutFrame<Param, cmd>;
   explicit ReadOutFrame(Param param): Parent{param} {}
   bool write(uint8_t nb_bytes);
@@ -196,19 +190,18 @@ struct ReadOutFrame: OutFrame<Param, cmd>
 // --------------------------------------------------------------------
 
 template<typename Param, Command cmd>
-struct WriteOutFrame: OutFrame<Param, cmd>
-{
+struct WriteOutFrame: OutFrame<Param, cmd> {
 protected:
-    using Parent = OutFrame<Param, cmd>;
-    explicit WriteOutFrame(Param param): Parent{param} {};
+  using Parent = OutFrame<Param, cmd>;
+  explicit WriteOutFrame(Param param): Parent{param} {};
 
-    bool write_byte(uint8_t value);
-    bool write_word(uint16_t value);
+  bool write_byte(uint8_t value);
+  bool write_word(uint16_t value);
 
-    bool write_bytes_data(const uint8_t *data, size_t size);
-    bool write_words_data(const uint16_t *data, size_t size);
-    template<typename... T> bool write_bytes(T... data);
-    template<typename... T> bool write_words(T... data);
+  bool write_bytes_data(const uint8_t *data, size_t size);
+  bool write_words_data(const uint16_t *data, size_t size);
+  template<typename... T> bool write_bytes(T... data);
+  template<typename... T> bool write_words(T... data);
 };
 
 // --------------------------------------------------------------------
@@ -216,8 +209,7 @@ protected:
 // --------------------------------------------------------------------
 
 template<typename Param, Command, ReceiveMode mode>
-struct InFrame
-{
+struct InFrame {
   InFrame() = default;
   ~InFrame();
 
@@ -252,13 +244,12 @@ protected:
 // --------------------------------------------------------------------
 
 template<typename Param, Command cmd, ReceiveMode mode>
-struct OutInFrame: InFrame<Param, cmd, mode>
-{
+struct OutInFrame: InFrame<Param, cmd, mode> {
   bool send_receive(uint8_t nb_bytes);
 
 protected:
-    using Parent = InFrame<Param, cmd, mode>;
-    explicit OutInFrame(Param param): Parent{param} {}
+  using Parent = InFrame<Param, cmd, mode>;
+  explicit OutInFrame(Param param): Parent{param} {}
 };
 
 
@@ -266,8 +257,7 @@ protected:
 // WriteRegisterRequest
 // --------------------------------------------------------------------
 
-struct WriteRegisterRequest: WriteOutFrame<Register, Command::WriteRegister>
-{
+struct WriteRegisterRequest: WriteOutFrame<Register, Command::WriteRegister> {
   using Parent = WriteOutFrame<Register, Command::WriteRegister>;
   explicit WriteRegisterRequest(Register reg): Parent{reg} {}
   using Parent::write_byte;
@@ -278,18 +268,16 @@ struct WriteRegisterRequest: WriteOutFrame<Register, Command::WriteRegister>
 // ReadRegisterRequest
 // --------------------------------------------------------------------
 
-struct ReadRegisterRequest: ReadOutFrame<Register, Command::ReadRegister>
-{
-    using Parent = ReadOutFrame<Register, Command::ReadRegister>;
-    explicit ReadRegisterRequest(Register reg): Parent{reg} {}
+struct ReadRegisterRequest: ReadOutFrame<Register, Command::ReadRegister> {
+  using Parent = ReadOutFrame<Register, Command::ReadRegister>;
+  explicit ReadRegisterRequest(Register reg): Parent{reg} {}
 };
 
 // --------------------------------------------------------------------
 // ReadRegisterDataResponse
 // --------------------------------------------------------------------
 
-struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMode::Known>
-{
+struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMode::Known> {
   using Parent = InFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
   explicit ReadRegisterResponse(Register reg): Parent{reg} {}
   uint8_t get_nb_bytes() const { return get_nb_data(); }
@@ -301,8 +289,7 @@ struct ReadRegisterResponse: InFrame<Register, Command::ReadRegister, ReceiveMod
 // ReadRegister (Request and Response)
 // --------------------------------------------------------------------
 
-struct ReadRegister: OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known>
-{
+struct ReadRegister: OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known> {
   using Parent = OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
   explicit ReadRegister(Register reg): Parent{reg} {}
   using Parent::read_byte;
@@ -313,8 +300,7 @@ struct ReadRegister: OutInFrame<Register, Command::ReadRegister, ReceiveMode::Kn
 // WriteRamRequest
 // --------------------------------------------------------------------
 
-struct WriteRamRequest: WriteOutFrame<Variable, Command::WriteRam>
-{
+struct WriteRamRequest: WriteOutFrame<Variable, Command::WriteRam> {
   using Parent = WriteOutFrame<Variable, Command::WriteRam>;
   explicit WriteRamRequest(Variable var): Parent{var} {}
   using Parent::write_word;
@@ -328,8 +314,7 @@ struct WriteRamRequest: WriteOutFrame<Variable, Command::WriteRam>
 // ReadRamDataRequest
 // --------------------------------------------------------------------
 
-struct ReadRamRequest: ReadOutFrame<Variable, Command::ReadRam>
-{
+struct ReadRamRequest: ReadOutFrame<Variable, Command::ReadRam> {
     using Parent = ReadOutFrame<Variable, Command::ReadRam>;
     explicit ReadRamRequest(Variable var): Parent{var} {}
 };
@@ -338,8 +323,7 @@ struct ReadRamRequest: ReadOutFrame<Variable, Command::ReadRam>
 // ReadRamDataResponse
 // --------------------------------------------------------------------
 
-struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Known>
-{
+struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Known> {
   using Parent = InFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
   explicit ReadRamResponse(Variable var): Parent{var} {}
   uint16_t get_nb_words() const { return get_nb_data(); }
@@ -352,23 +336,21 @@ struct ReadRamResponse: InFrame<Variable, Command::ReadRam, ReceiveMode::Known>
 // ReadAction
 // --------------------------------------------------------------------
 
-struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Unknown>
-{
-    using Parent = InFrame<Action, Command::ReadRam, ReceiveMode::Unknown>;
-    ReadAction(): Parent{} {}
-    KeyValue read_key_value() { return static_cast<KeyValue>(read_word()); }
+struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Unknown> {
+  using Parent = InFrame<Action, Command::ReadRam, ReceiveMode::Unknown>;
+  ReadAction(): Parent{} {}
+  KeyValue read_key_value() { return static_cast<KeyValue>(read_word()); }
 };
 
 // --------------------------------------------------------------------
 // ReadRam (Request and Response)
 // --------------------------------------------------------------------
 
-struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>
-{
-    using Parent = OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
-    explicit ReadRam(Variable var): Parent{var} {}
-    using Parent::read_word;
-    using Parent::read_signed_word;
+struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known> {
+  using Parent = OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
+  explicit ReadRam(Variable var): Parent{var} {}
+  using Parent::read_word;
+  using Parent::read_signed_word;
 };
 
 
@@ -376,11 +358,10 @@ struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>
 // WriteCurveDataRequest
 // --------------------------------------------------------------------
 
-struct WriteCurveRequest: WriteOutFrame<uint8_t, Command::WriteCurve>
-{
-    using Parent = WriteOutFrame<uint8_t, Command::WriteCurve>;
-    explicit WriteCurveRequest(uint8_t channels): Parent{channels} {}
-    using Parent::write_words;
+struct WriteCurveRequest: WriteOutFrame<uint8_t, Command::WriteCurve> {
+  using Parent = WriteOutFrame<uint8_t, Command::WriteCurve>;
+  explicit WriteCurveRequest(uint8_t channels): Parent{channels} {}
+  using Parent::write_words;
 };
 
 }

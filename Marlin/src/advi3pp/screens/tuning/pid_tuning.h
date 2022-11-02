@@ -21,40 +21,42 @@
 #pragma once
 
 #include "../../lib/ADVstd/bitmasks.h"
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! PID Tuning Page
-struct PidTuning: Screen<PidTuning>
-{
-    void on_start();
-    void on_progress(int cycleIndex, int nbCycles);
-    void on_finished(ExtUI::result_t result);
-    void send_data();
+struct PidTuning: Screen<PidTuning> {
+  static constexpr Page PAGE = Page::PidTuning;
+  static constexpr Action ACTION = Action::PidTuning;
+
+  void on_start();
+  void on_progress(int cycleIndex, int nbCycles);
+  void on_finished(ExtUI::result_t result);
+  void send_data();
 
 private:
-    bool do_dispatch(KeyValue value);
-    Page do_prepare_page();
-    void step2_command();
-    void step3_command();
-    void cancel_pid();
-    void hotend_command();
-    void bed_command();
+  bool on_dispatch(KeyValue value);
+  void on_enter();
+
+  void step2_command();
+  void step3_command();
+  void cancel_pid();
+  void hotend_command();
+  void bed_command();
 
 private:
-    enum class State: uint8_t
-    {
-        None,
-        Processing,
-        FromLCDMenu = 0x80
-    };
+  enum class State: uint8_t {
+    None,
+    Processing,
+    FromLCDMenu = 0x80
+  };
 
-    uint16_t temperature_ = 0;
-    TemperatureKind kind_ = TemperatureKind::Hotend;
-    State state_ = State::None;
+  uint16_t temperature_ = 0;
+  TemperatureKind kind_ = TemperatureKind::Hotend;
+  State state_ = State::None;
 
-    friend Parent;
+  friend Parent;
 };
 
 ENABLE_BITMASK_OPERATOR(PidTuning::State);

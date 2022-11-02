@@ -30,35 +30,31 @@ Graphs graphs;
 
 //! Constructor
 //! Initialize the update time
-Graphs::Graphs()
-{
-    next_update_graph_time_ = millis() + 1000L * 10; // Wait 10 sec before starting updating graphs
+Graphs::Graphs() {
+  next_update_graph_time_ = millis() + 1000L * 10; // Wait 10 sec before starting updating graphs
 }
 
 //! Update the graphs (if the update delay has elapsed)
-void Graphs::update()
-{
-    if(!ELAPSED(millis(), next_update_graph_time_))
-        return;
+void Graphs::update() {
+  if(!ELAPSED(millis(), next_update_graph_time_))
+    return;
 
-    send_data();
-    next_update_graph_time_ = millis() + 500;
+  send_data();
+  next_update_graph_time_ = millis() + 500;
 }
 
 //! Update the graphs on the LCD panel (two channels: the bed and the hotend).
-void Graphs::send_data()
-{
-    NoFrameLogging no_logging{};
-    WriteCurveRequest{0b00000011}.write_words(
-        ExtUI::getActualTemp_celsius(ExtUI::BED),
-        ExtUI::getActualTemp_celsius(ExtUI::E0)
-    );
+void Graphs::send_data() {
+  NoFrameLogging no_logging{};
+  WriteCurveRequest{0b00000011}.write_words(
+    ExtUI::getActualTemp_celsius(ExtUI::BED),
+    ExtUI::getActualTemp_celsius(ExtUI::E0)
+  );
 }
 
 //! Clear the graphs
-void Graphs::clear()
-{
-    WriteRegisterRequest{Register::TrendlineClear}.write_byte(0x55);
+void Graphs::clear() {
+  WriteRegisterRequest{Register::TrendlineClear}.write_byte(0x55);
 }
 
 }

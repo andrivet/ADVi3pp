@@ -36,13 +36,13 @@ void MarlinUI::buzz_m300(const long duration, const uint16_t) {
 }
 
 void MarlinUI::sleep_on() {
-    dimming.sleep_on();
+  dimming.sleep_on();
 }
 
 void MarlinUI::sleep_off() {
-    dimming.sleep_off();
+  dimming.sleep_off();
 }
 
 void MarlinUI::_set_brightness() {
-    dimming.send_brightness_to_lcd();
+  dimming.send_brightness_to_lcd();
 }

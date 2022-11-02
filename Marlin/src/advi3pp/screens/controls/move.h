@@ -20,13 +20,14 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Move Page
 struct Move: Screen<Move> {
-  friend Parent;
+  static constexpr Page PAGE = Page::Move;
+  static constexpr Action ACTION = Action::Move;
 
   enum class Direction: uint8_t {
     None,
@@ -56,8 +57,9 @@ struct Move: Screen<Move> {
   void disable_motors_command();
 
 private:
-  bool do_dispatch(KeyValue key_value);
-  Page do_prepare_page();
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+
   float get_target() const;
   feedRate_t get_feedrate() const;
   float get_position() const;
@@ -65,9 +67,12 @@ private:
   void move(Direction direction);
   void stop_move();
   void task();
+  void home_task();
 
 private:
   Direction direction_ = Direction::None;
+
+  friend Parent;
 };
 
 extern Move move;

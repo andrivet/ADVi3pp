@@ -46,33 +46,32 @@ struct Settings : adv::Crtp<Self, Settings> {
 };
 
 
-struct ExtendedSettings
-{
-    void on_factory_reset();
-    bool does_eeprom_mismatch() const { return eeprom_mismatch_; }
+struct ExtendedSettings {
+  void on_factory_reset();
+  bool does_eeprom_mismatch() const { return eeprom_mismatch_; }
 
-    uint16_t on_sizeof_settings();
-    void on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    bool on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
-    void on_settings_written(bool success);
-    void on_settings_loaded(bool success);
-    void on_settings_validated(bool success);
+  uint16_t on_sizeof_settings();
+  void on_store_settings(ExtUI::eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+  bool on_load_settings(ExtUI::eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
+  void on_settings_written(bool success);
+  void on_settings_loaded(bool success);
+  void on_settings_validated(bool success);
 
-    uint16_t size_of() const;
-    bool write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
-    void read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
-    bool validate(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
-    void reset();
+  uint16_t size_of() const;
+  bool write(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+  void read(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+  bool validate(eeprom_read read, int& eeprom_index, uint16_t& working_crc);
+  void reset();
 
-    void save();
-    void restore();
+  void save();
+  void restore();
 
-    uint16_t get_last_used_temperature(TemperatureKind kind) const;
-    void on_set_temperature(TemperatureKind kind, uint16_t temperature);
+  uint16_t get_last_used_temperature(TemperatureKind kind) const;
+  void on_set_temperature(TemperatureKind kind, uint16_t temperature);
 
 private:
-    adv::array<uint16_t, nb_temperatures> last_used_temperature_ {{default_bed_temperature, default_hotend_temperature}};
-    bool eeprom_mismatch_ = false;
+  adv::array<uint16_t, nb_temperatures> last_used_temperature_ {{default_bed_temperature, default_hotend_temperature}};
+  bool eeprom_mismatch_ = false;
 };
 
 extern ExtendedSettings settings;

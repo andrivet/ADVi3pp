@@ -26,13 +26,6 @@ namespace ADVi3pp {
 
 Killed killed_page;
 
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page Killed::do_prepare_page()
-{
-    return Page::Killed;
-}
-
 void Killed::show(float temp, const FlashChar* component) {
   if(component != nullptr) {
     ADVString<48> message{component};

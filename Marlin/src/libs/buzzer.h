@@ -117,12 +117,12 @@
   // Buzz directly via the BEEPER pin tone queue
   #define BUZZ(d,f) buzzer.tone(d, f)
 
-#elif HAS_BUZZER
+#elif USE_MARLINUI_BUZZER
 
-  // Buzz indirectly via the MarlinUI instance
+  // Use MarlinUI for a buzzer on the LCD
+  #include "../lcd/marlinui.h"
   #define BUZZ(d,f) ui.buzz(d,f)
   #define BUZZ_M300(d, f)  ui.buzz_m300(d,f) // @advi3++
-  #include "../lcd/marlinui.h"
 
 #else
 

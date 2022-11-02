@@ -20,36 +20,40 @@
 
 #pragma once
 
-#include "../../screens/core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Manual Leveling Page
-struct ManualLeveling: Screen<ManualLeveling>
-{
+struct ManualLeveling: Screen<ManualLeveling> {
+  static constexpr Page PAGE = Page::ManualLeveling;
+  static constexpr Action ACTION = Action::ManualLeveling;
+
 private:
-    bool do_dispatch(KeyValue value);
-    Page do_prepare_page();
-    void do_back_command();
-    void do_save_command();
+  bool on_dispatch(KeyValue value);
+  void on_enter();
+  void on_back_command();
+  void on_save_command();
+  void on_abort();
 
-    bool start();
-    bool abort();
+  bool start();
+  bool abort();
 
-    void point1_command();
-    void point2_command();
-    void point3_command();
-    void point4_command();
-    void point5_command();
-    void pointA_command();
-    void pointB_command();
-    void pointC_command();
-    void pointD_command();
-    void leveling_task();
-    void move(float x, float y);
+  void point1_command();
+  void point2_command();
+  void point3_command();
+  void point4_command();
+  void point5_command();
+  void pointA_command();
+  void pointB_command();
+  void pointC_command();
+  void pointD_command();
+  void leveling_task();
+  void move(float x, float y);
 
-    friend Parent;
+  friend Parent;
 };
+
 extern ManualLeveling manual_leveling;
 
 }

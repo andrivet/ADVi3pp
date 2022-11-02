@@ -36,7 +36,7 @@
 #include "../../../libs/buzzer.h"
 #include "../../../lcd/marlinui.h"
 #include "../../../module/motion.h"
-#include "../../../module/stepper.h"
+#include "../../../module/planner.h"
 
 #if ENABLED(EXTENSIBLE_UI)
   #include "../../../lcd/extui/ui_api.h"
@@ -206,7 +206,7 @@ void GcodeSuite::G29() {
         #endif
 
         TERN_(LCD_BED_LEVELING, ui.wait_for_move = false);
-        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone());
+        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone(true)); // @advi3++
       }
       break;
 

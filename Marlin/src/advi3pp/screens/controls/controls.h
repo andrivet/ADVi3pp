@@ -20,25 +20,27 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Controls Page
-struct Controls: Screen<Controls>
-{
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
+struct Controls: Screen<Controls> {
+  static constexpr Page PAGE = Page::Controls;
+  static constexpr Action ACTION = Action::Controls;
 
 private:
-    void show_temps();
-    void show_print_settings();
-    void show_print();
-    void show_sd();
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+
+  void show_temps();
+  void show_print_settings();
+  void show_baby_steps();
+  void show_print();
+  void show_sd();
 
 private:
-    friend Parent;
+  friend Parent;
 };
 
 extern Controls controls;
