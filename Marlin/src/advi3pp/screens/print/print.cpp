@@ -69,6 +69,7 @@ bool Print::cancel_abort_print() {
 }
 
 bool Print::abort_print() {
+  pages.clear_temporaries();
   ExtUI::stopPrint();
   return false;
 }
