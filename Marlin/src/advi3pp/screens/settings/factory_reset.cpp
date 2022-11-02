@@ -30,6 +30,8 @@ FactoryReset factory_reset;
 void FactoryReset::on_save_command() {
   ExtUI::resetSettings();
   ExtUI::saveSettings();
+  ExtUI::setAllAxisUnhomed();
+  ExtUI::setAllAxisPositionUnknown();
 }
 
 }
