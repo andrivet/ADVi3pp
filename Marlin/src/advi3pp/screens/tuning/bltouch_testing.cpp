@@ -214,6 +214,6 @@ void BLTouchTesting::step_4() {
   pages.show(Page::BLTouchTesting4, ACTION);
 }
 
-#endif
-
 }
+
+#endif
