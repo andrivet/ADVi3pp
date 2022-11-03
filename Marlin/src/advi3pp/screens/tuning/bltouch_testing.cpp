@@ -110,7 +110,6 @@ void BLTouchTesting::step_1b_no() {
 }
 
 void BLTouchTesting::step_1b_slow() {
-  set_bits(tested_, Wires::Brown | Wires::Red);
   status_red_brown();
   step_4();
 }
