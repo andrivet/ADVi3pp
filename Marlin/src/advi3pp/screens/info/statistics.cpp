@@ -29,32 +29,29 @@ Statistics statistics;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page Statistics::do_prepare_page()
-{
-    send_stats();
-    return Page::Statistics;
+void Statistics::on_enter() {
+  send_stats();
 }
 
-void Statistics::send_stats()
-{
-    WriteRamRequest{Variable::Value0}.write_words(
-        ExtUI::getTotalPrints(),
-        ExtUI::getFinishedPrints(),
-        freeMemory()
-    );
+void Statistics::send_stats() {
+  WriteRamRequest{Variable::Value0}.write_words(
+    ExtUI::getTotalPrints(),
+    ExtUI::getFinishedPrints(),
+    freeMemory()
+  );
 
-    // Minimize the RAM used so send each value separately.
-    char buffer[21];
-    ADVString<16> value;
+  // Minimize the RAM used so send each value separately.
+  char buffer[21];
+  ADVString<16> value;
 
-    value.set(ExtUI::getTotalPrintTime_str(buffer));
-    WriteRamRequest{Variable::LongText0}.write_text(value);
+  value.set(ExtUI::getTotalPrintTime_str(buffer));
+  WriteRamRequest{Variable::LongText0}.write_text(value);
 
-    value.set(ExtUI::getLongestPrint_str(buffer));
-    WriteRamRequest{Variable::LongText1}.write_text(value);
+  value.set(ExtUI::getLongestPrint_str(buffer));
+  WriteRamRequest{Variable::LongText1}.write_text(value);
 
-    value.set(ExtUI::getFilamentUsed_str(buffer));
-    WriteRamRequest{Variable::LongText2}.write_text(value);
+  value.set(ExtUI::getFilamentUsed_str(buffer));
+  WriteRamRequest{Variable::LongText2}.write_text(value);
 }
 
 }

@@ -42,7 +42,7 @@
  * Release version. Leave the Marlin version or apply a custom scheme.
  */
 #ifndef SHORT_BUILD_VERSION
-  #define SHORT_BUILD_VERSION "2.1"
+  #define SHORT_BUILD_VERSION "2.1.1"
 #endif
 
 /**
@@ -50,7 +50,7 @@
  * vendor name, download location, GitHub account, etc.
  */
 #ifndef DETAILED_BUILD_VERSION
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 5.1.0-dev)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 5.5.0)"
 #endif
 
 /**
@@ -59,7 +59,7 @@
  * version was tagged.
  */
 #ifndef STRING_DISTRIBUTION_DATE
-  #define STRING_DISTRIBUTION_DATE "2022-06-04"
+  #define STRING_DISTRIBUTION_DATE "2022-11-02"
 #endif
 
 /**
@@ -69,7 +69,7 @@
  * to alert users to major changes.
  */
 
-#define MARLIN_HEX_VERSION 02010000
+#define MARLIN_HEX_VERSION 02010100
 #ifndef REQUIRED_CONFIGURATION_H_VERSION
   #define REQUIRED_CONFIGURATION_H_VERSION MARLIN_HEX_VERSION
 #endif

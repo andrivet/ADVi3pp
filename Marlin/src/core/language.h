@@ -227,10 +227,6 @@
 #define STR_PID_DEBUG                       " PID_DEBUG "
 #define STR_PID_DEBUG_INPUT                 ": Input "
 #define STR_PID_DEBUG_OUTPUT                " Output "
-#define STR_PID_DEBUG_PTERM                 " pTerm "
-#define STR_PID_DEBUG_ITERM                 " iTerm "
-#define STR_PID_DEBUG_DTERM                 " dTerm "
-#define STR_PID_DEBUG_CTERM                 " cTerm "
 #define STR_INVALID_EXTRUDER_NUM            " - Invalid extruder number !"
 #define STR_MPC_AUTOTUNE                    "MPC Autotune"
 #define STR_MPC_AUTOTUNE_START              " start for " STR_E
@@ -356,7 +352,7 @@
 #define STR_X "X"
 #define STR_Y "Y"
 #define STR_Z "Z"
-#define STR_E "Extruder" // @advi3++
+#define STR_E "E"
 #if IS_KINEMATIC
   #define STR_A "A"
   #define STR_B "B"

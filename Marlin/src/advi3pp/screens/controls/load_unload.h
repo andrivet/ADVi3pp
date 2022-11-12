@@ -21,23 +21,26 @@
 #pragma once
 
 #include "../../core/task.h"
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Load and Unload Page
-struct LoadUnload: Screen<LoadUnload>
-{
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void do_back_command();
-    void prepare();
-    void load_command();
-    void unload_command();
-    void send_data();
+struct LoadUnload: Screen<LoadUnload> {
+  static constexpr Page PAGE =  Page::LoadUnload;
+  static constexpr Action ACTION = Action::LoadUnload;
 
-    friend Parent;
+private:
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_back_command();
+
+  void prepare();
+  void load_command();
+  void unload_command();
+  void send_data();
+
+  friend Parent;
 
 private:
   float previous_z_ = 0;

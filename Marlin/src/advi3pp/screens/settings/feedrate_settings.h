@@ -20,18 +20,20 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Feedrate Settings Page
-struct FeedrateSettings: Screen<FeedrateSettings>
-{
-private:
-    Page do_prepare_page();
-    void do_save_command();
+struct FeedrateSettings: Screen<FeedrateSettings> {
+  static constexpr Page PAGE = Page::FeedrateSettings;
+  static constexpr Action ACTION = Action::FeedrateSettings;
 
-    friend Parent;
+private:
+  void on_enter();
+  void on_save_command();
+
+  friend Parent;
 };
 
 extern FeedrateSettings feedrates_settings;

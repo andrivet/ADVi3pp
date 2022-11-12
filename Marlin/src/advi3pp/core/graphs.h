@@ -23,16 +23,15 @@
 namespace ADVi3pp {
 
 //! Graphs
-struct Graphs
-{
-    Graphs();
+struct Graphs {
+  Graphs();
 
-    void clear();
-    void send_data();
-    void update();
+  void clear();
+  void send_data();
+  void update();
 
 private:
-    uint32_t next_update_graph_time_;
+  uint32_t next_update_graph_time_;
 };
 
 extern Graphs graphs;

@@ -21,58 +21,67 @@
 #pragma once
 
 #include "../../lib/ADVstd/bitmasks.h"
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 #ifdef BLTOUCH
 //! BLTouch Testing Page
-struct BLTouchTesting: Screen<BLTouchTesting>
-{
-private:
-    enum class Wires: uint8_t
-    {
-        None    = 0b00000000,
-        Brown   = 0b00000001,
-        Red     = 0b00000010,
-        Orange  = 0b00000100,
-        Black   = 0b00001000,
-        White   = 0b00010000
-    };
+struct BLTouchTesting: Screen<BLTouchTesting> {
+  static constexpr Page PAGE = Page::BLTouchTesting1A;
+  static constexpr Action ACTION = Action::BLTouchTesting;
 
 private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void do_back_command();
-    void do_save_command();
-    void step1();
-    void step1yes();
-    void step1no();
-    void step2();
-    void step2yes();
-    void step2no();
-    void step3();
-    void step3yes();
-    void step3no();
-    void step4();
-    uint16_t wire_value(Wires wire);
+  enum class Wires: uint8_t {
+    None    = 0b00000000,
+    Brown   = 0b00000001,
+    Red     = 0b00000010,
+    Orange  = 0b00000100,
+    Black   = 0b00001000,
+    White   = 0b00010000
+  };
 
 private:
-    Wires tested_ = Wires::None;
-    Wires ok_ = Wires::None;
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_back_command();
+  void on_save_command();
+  void on_abort();
 
-    friend Parent;
+  void step_1a();
+  void step_1a_yes();
+  void step_1a_no();
+  void step_1b();
+  void step_1b_slow();
+  void step_1b_quick();
+  void step_1b_no();
+  void step_2();
+  void step_2_yes();
+  void step_2_no();
+  void step_3();
+  void step_4();
+  void step_3_task();
+  uint16_t wire_value(Wires wire);
+
+private:
+  Wires tested_ = Wires::None;
+  Wires ok_ = Wires::None;
+
+  friend Parent;
 };
 
 ENABLE_BITMASK_OPERATOR(BLTouchTesting::Wires);
 
+inline uint16_t BLTouchTesting::wire_value(Wires wire) {
+  return test_one_bit(ok_, wire) ? 1 : test_one_bit(tested_, wire) ? 2 : 0;
+}
+
 #else
 //! BLTouch Testing Page
-struct BLTouchTesting: Screen<BLTouchTesting>
-{
+struct BLTouchTesting: Screen<BLTouchTesting> {
 private:
-    Page do_prepare_page();
-    friend Parent;
+  static constexpr Page PAGE = Page::NoSensor;
+  friend Parent;
 };
 #endif
 

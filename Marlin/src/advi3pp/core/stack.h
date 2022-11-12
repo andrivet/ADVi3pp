@@ -27,63 +27,62 @@
 namespace ADVi3pp {
 
 template<typename T, size_t S>
-struct Stack
-{
-    void push(T e);
-    T pop();
-    bool is_empty() const;
-    void empty();
-    bool contains(T e) const;
-    void log(Log& l) const;
+struct Stack {
+  void push(T e);
+  T pop();
+  bool is_empty() const;
+  void empty();
+  bool contains(T e) const;
+  void log(Log& l) const;
 
 private:
-    adv::array<T, S> elements_;
-    size_t top_ = 0;
+  adv::array<T, S> elements_;
+  size_t top_ = 0;
 };
 
 template<typename T, size_t S>
-void Stack<T, S>::push(T e)
-{
-    assert(top_ <= S);
-    elements_[top_++] = e;
+inline Log& operator<<(Log& log, Stack<T, S> stack) {
+  stack.log(log);
+  return log;
 }
 
 template<typename T, size_t S>
-T Stack<T, S>::pop()
-{
-    assert(!is_empty());
-    return elements_[--top_];
+inline void Stack<T, S>::push(T e) {
+  assert(top_ <= S);
+  elements_[top_++] = e;
 }
 
 template<typename T, size_t S>
-bool Stack<T, S>::is_empty() const
-{
-    return top_ == 0;
+inline T Stack<T, S>::pop() {
+  assert(!is_empty());
+  return elements_[--top_];
 }
 
 template<typename T, size_t S>
-void Stack<T, S>::empty()
-{
-    top_ = 0;
+bool Stack<T, S>::is_empty() const {
+  return top_ == 0;
 }
 
 template<typename T, size_t S>
-bool Stack<T, S>::contains(T e) const
-{
-    for(size_t i = 0; i < top_; ++i)
-        if(elements_[top_ - i - 1] == e)
-            return true;
-    return false;
+inline void Stack<T, S>::empty() {
+  top_ = 0;
 }
 
 template<typename T, size_t S>
-void Stack<T, S>::log(Log& l) const
-{
+bool Stack<T, S>::contains(T e) const {
+  for(size_t i = 0; i < top_; ++i)
+    if(elements_[top_ - i - 1] == e)
+      return true;
+  return false;
+}
+
+template<typename T, size_t S>
+void Stack<T, S>::log(Log& l) const {
 #ifdef ADVi3PP_DEBUG
-    if(is_empty())
-        l << F("<empty>");
-    for(size_t i = 0; i < top_; ++i)
-        l << elements_[i];
+  if(is_empty())
+    l << F("<empty>");
+  for(size_t i = 0; i < top_; ++i)
+    l << elements_[i];
 #endif
 }
 

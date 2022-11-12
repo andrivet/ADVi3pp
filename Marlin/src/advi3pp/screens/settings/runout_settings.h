@@ -20,28 +20,31 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Runout Setting Page
-struct RunoutSettings: Screen<RunoutSettings>
-{
-private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void do_back_command();
-    void do_save_command();
-    void enable_command();
-    void high2low_command();
-    void low2high_command();
-	uint16_t get_filament_state();
-    void send_data();
-
-    friend Parent;
+struct RunoutSettings: Screen<RunoutSettings> {
+  static constexpr Page PAGE = Page::Runout;
+  static constexpr Action ACTION = Action::Runout;
 
 private:
-    bool inverted_ = false;
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_back_command();
+  void on_save_command();
+
+  void enable_command();
+  void high2low_command();
+  void low2high_command();
+  uint16_t get_filament_state();
+  void send_data();
+
+  friend Parent;
+
+private:
+  bool inverted_ = false;
 };
 
 extern RunoutSettings runout_settings;

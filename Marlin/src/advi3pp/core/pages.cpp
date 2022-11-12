@@ -21,102 +21,154 @@
 #include "../parameters.h"
 #include "dgus.h"
 #include "pages.h"
+#include "core.h"
+#include "settings.h"
+#include "wait.h"
 
 namespace ADVi3pp {
 
 Pages pages;
 
-Log& operator<<(Log& log, Page page)
-{
-    log << static_cast<uint16_t>(page);
-    return log;
-}
-
-bool Pages::is_temporary(Page page) {
-  return test_one_bit(page, Page::Temporary);
+inline Log& operator<<(Log& log, Page page) {
+  log << static_cast<uint16_t>(page);
+  return log;
 }
 
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
-void Pages::show(Page page)
-{
-    auto current = get_current_page();
-    if(!is_temporary(current) && current != Page::Main)
-        back_pages_.push(current);
+void Pages::show(Page page, Action action) {
+  auto current = get_current_context();
+  // Don't push temporary screens or Main (Main is implicitly always at the top)
+  if(!is_temporary(current.page) && current.page != Page::Main)
+    back_.push(current);
 
-   show_(page);
+  send_page_to_lcd(Context{page, action});
 }
 
-void Pages::show_(Page page)
-{
-    WriteRegisterRequest{Register::PictureID}.write_page(get_cleared_bits(page, Page::Temporary));
-
-    current_page_ = page;
+void Pages::send_page_to_lcd(Context context) {
+  WriteRegisterRequest{Register::PictureID}.write_page(context.page & Page::PageNumber);
+  current_ = context;
 }
 
 //! Retrieve the current page on the LCD screen
-Page Pages::get_current_page() {
-    // Boot page switches automatically (animation) to the Main page
-	if(current_page_ == Page::None || current_page_ == Page::Boot)
-        current_page_ = Page::Main;
-    return current_page_;
-}
-
-bool Pages::is_current_page_temporary() {
-  return is_temporary(get_current_page());
+Pages::Context Pages::get_current_context() {
+  // Boot page switches automatically (animation) to the Main page
+	if(current_.page == Page::None || current_.page == Page::Boot)
+    current_= Context{Page::Main, Action::Controls};
+  return current_;
 }
 
 //! Set page to display after the completion of an operation.
-void Pages::save_forward_page()
-{
-    auto current = get_current_page();
-    forward_page_ = current;
+void Pages::save_forward_page() {
+  forward_ = get_current_context();
 }
 
 //! Show the "Back" page on the LCD display.
-void Pages::show_back_page()
-{
-    if(back_pages_.is_empty())
-    {
-        show_(Page::Main);
-        return;
-    }
+void Pages::show_back_page(unsigned nb_back) {
+  Context context{Page::Main, Action::Controls};
 
-    auto back = back_pages_.pop();
-    if(back == forward_page_)
-        forward_page_ = Page::None;
-    show_(back);
+  for(; nb_back > 0; --nb_back) {
+    if (back_.is_empty())
+      break;
+
+    context = back_.pop();
+    if (context.page == forward_.page)
+      forward_ = Context{Page::None, Action::None};
+  }
+
+  send_page_to_lcd(context);
 }
 
 //! Show the "Next" page on the LCD display.
-void Pages::show_forward_page()
-{
-    if(forward_page_ == Page::None)
-    {
-        show_back_page();
-        return;
-    }
+void Pages::show_forward_page() {
+  // If no forward page defined, use the back page
+  if(forward_.page == Page::None) {
+    show_back_page();
+    return;
+  }
 
-    while(!back_pages_.is_empty())
-    {
-        Page back_page = back_pages_.pop();
-        if(back_page == forward_page_)
-        {
-            show_(forward_page_);
-            forward_page_ = Page::None;
-            return;
-        }
+  while(!back_.is_empty()) {
+    auto back = back_.pop();
+    if(back.page == forward_.page) {
+      send_page_to_lcd(forward_);
+      forward_ = Context{Page::None, Action::None};
+      return;
     }
+  }
 
-    Log::error() << F("Back pages do not contain page") << forward_page_ << Log::endl();
-    forward_page_ = Page::None;
-    reset();
-    show_(Page::Main);
+  Log::error() << F("Back pages do not contain page") << forward_.page << Log::endl();
+  forward_ = Context{Page::None, Action::None};
+  send_page_to_lcd(Context{Page::Main, Action::Controls});
 }
 
-void Pages::reset()
-{
-    back_pages_.empty();
+void Pages::reset() {
+  back_.empty();
+}
+
+void Pages::save() {
+  settings.save();
+  if(current_page_ensure_no_move() && core.is_busy()) {
+    wait.wait(F("Please wait..."));
+    background_task.set(Callback{&Pages::save_task});
+  }
+  else
+    pages.show_forward_page();
+}
+
+void Pages::save_task() {
+  if(core.is_busy()) return;
+  background_task.clear();
+  status.reset();
+  pages.show_forward_page();
+}
+
+void Pages::back() {
+  if(current_page_ensure_no_move() && core.is_busy()) {
+    wait.wait(F("Please wait..."));
+    background_task.set(Callback{&Pages::back_task});
+  }
+  else
+    pages.show_back_page();
+}
+
+void Pages::back_task() {
+  if(core.is_busy()) return;
+  background_task.clear();
+  status.reset();
+  pages.clear_temporaries();
+  pages.show_back_page();
+}
+
+void Pages::clear_temporaries() {
+  auto current = get_current_context();
+  if(!is_temporary(current.page))
+    return;
+
+  while(is_temporary(current.page) && !back_.is_empty())
+    current = back_.pop();
+  send_page_to_lcd(current);
+}
+
+bool Pages::check_no_print(Page page) {
+  if(!test_one_bit(page, Page::EnterNoPrint) || !ExtUI::isPrinting())
+    return true;
+  wait.wait_back(F("This is not accessible when printing"));
+  return false;
+}
+
+void Pages::go_to_print() {
+  auto current = pages.get_current_context();
+  // If already on the print page, do nothing
+  if(current.page == Page::Print)
+    return;
+
+  // Otherwise, pop the back pages and send abort messages
+  while(!back_.is_empty() && current.page != Page::Print) {
+    core.process_action(current.action, KeyValue::Abort);
+    current = back_.pop();
+  }
+  // Display print page
+  send_page_to_lcd(Context{Page::Print, Action::Print});
 }
 
 }

@@ -22,7 +22,7 @@
 #include "extruder_tuning.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"
-#include "../core/wait.h"
+#include "../../core/wait.h"
 #include "../settings/step_settings.h"
 
 namespace ADVi3pp {
@@ -37,47 +37,40 @@ ExtruderTuning extruder_tuning;
 //! Handle Extruder Tuning command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool ExtruderTuning::do_dispatch(KeyValue key_value)
-{
-    switch(key_value)
-    {
-        case KeyValue::TuningStart:     start_command(); return true;
-        case KeyValue::TuningSettings:  settings_command(); return true;
-        default:                        break;
-    }
+bool ExtruderTuning::on_dispatch(KeyValue key_value) {
+  switch(key_value) {
+    case KeyValue::TuningStart:     start_command(); return true;
+    case KeyValue::TuningSettings:  settings_command(); return true;
+    default:                        break;
+  }
 
-    // Do this after since we handle Save before
-    if(Parent::do_dispatch(key_value))
-        return true;
+  // Do this after since we handle Save before
+  if(Parent::on_dispatch(key_value))
+    return true;
 
-    return false;
+  return false;
 }
 
-void ExtruderTuning::send_data()
-{
-    WriteRamRequest{Variable::Value0}.write_word(settings.get_last_used_temperature(TemperatureKind::Hotend));
+void ExtruderTuning::send_data() {
+  WriteRamRequest{Variable::Value0}.write_word(settings.get_last_used_temperature(TemperatureKind::Hotend));
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page ExtruderTuning::do_prepare_page()
-{
-    if(!core.ensure_not_printing())
-        return Page::None;
-    pages.save_forward_page();
-    send_data();
-    previous_z_ = Core::ensure_z_enough_room();
-    return Page::ExtruderTuningTemp;
+void ExtruderTuning::on_enter() {
+  pages.save_forward_page();
+  send_data();
+  previous_z_ = Core::ensure_z_enough_room();
 }
 
-void ExtruderTuning::do_back_command() {
+void ExtruderTuning::on_back_command() {
   ExtUI::setAxisPosition_mm(previous_z_, ExtUI::Z, 20);
-  Parent::do_back_command();
+  Parent::on_back_command();
 }
 
-void ExtruderTuning::do_save_command() {
+void ExtruderTuning::on_save_command() {
   ExtUI::setAxisPosition_mm(previous_z_, ExtUI::Z, 20);
-  Parent::do_save_command();
+  Parent::on_save_command();
 }
 
 //! Start extruder tuning.
@@ -124,7 +117,7 @@ void ExtruderTuning::extruding() {
   // Always set default to 20mm
   WriteRamRequest{Variable::Value0}.write_word(200);
 
-  pages.show(Page::ExtruderTuningMeasure);
+  pages.show(Page::ExtruderTuningMeasure, ACTION);
 }
 
 bool ExtruderTuning::cancel_extrude() {
@@ -135,22 +128,20 @@ bool ExtruderTuning::cancel_extrude() {
 }
 
 //! Compute the extruder (E axis) new value and show the steps settings.
-void ExtruderTuning::settings_command()
-{
-    ReadRam frame{Variable::Value0};
-    if(!frame.send_receive(1))
-    {
-        Log::error() << F("Receiving Frame (Measures)") << Log::endl();
-        return;
-    }
+void ExtruderTuning::settings_command() {
+  ReadRam frame{Variable::Value0};
+  if(!frame.send_receive(1)) {
+    Log::error() << F("Receiving Frame (Measures)") << Log::endl();
+    return;
+  }
 
-    uint16_t e = frame.read_word();
-    // Note: e is divided by 10 because the LCD panel gives a value in 0.1 mm unit
-    // Formula: new_value = old_value * theoretical_extruded / actual_extruded
-    auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + REMAINING_FILAMENT - e / 10.0);
+  uint16_t e = frame.read_word();
+  // Note: e is divided by 10 because the LCD panel gives a value in 0.1 mm unit
+  // Formula: new_value = old_value * theoretical_extruded / actual_extruded
+  auto new_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0) * extruded_ / (extruded_ + REMAINING_FILAMENT - e / 10.0);
 
-    ExtUI::setAxisSteps_per_mm(new_value, ExtUI::E0);
-    steps_settings.show();
+  ExtUI::setAxisSteps_per_mm(new_value, ExtUI::E0);
+  steps_settings.show();
 }
 
 }

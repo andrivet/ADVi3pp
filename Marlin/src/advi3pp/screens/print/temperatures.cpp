@@ -26,39 +26,28 @@ namespace ADVi3pp {
 Temperatures temperatures;
 
 
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
-Page Temperatures::do_prepare_page()
-{
-    return Page::Temperature;
-}
-
 //! Show the temperature page and record and action to be executed when the back button is pressed
 //! @param back Action to be executed when the back button is pressed
-void Temperatures::show(const Callback& back)
-{
-    back_ = back;
-    Parent::show();
+void Temperatures::show(const Callback& back) {
+  back_ = back;
+  Parent::show();
 }
 
 //! Show the temperature page
 //! @param options  Options when displaying the page (i.e. save the current page or not)
-void Temperatures::show()
-{
-    back_ = nullptr;
-    Parent::show();
+void Temperatures::show() {
+  back_ = nullptr;
+  Parent::show();
 }
 
 //! Execute the Back command
-void Temperatures::do_back_command()
-{
-    if(back_)
-    {
-        back_();
-        back_ = nullptr;
-    }
+void Temperatures::on_back_command() {
+  if(back_) {
+    back_();
+    back_ = nullptr;
+  }
 
-    Parent::do_back_command();
+  Parent::on_back_command();
 }
 
 }

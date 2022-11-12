@@ -170,13 +170,22 @@ namespace ExtUI {
     bool getLevelingActive();
     void setLevelingActive(const bool);
     bool getMeshValid();
+    #if ENABLED(BLTOUCH)
+    bool isLevelingHighSpeed(); // @advi3++
+    void setLevelingHighSpeed(bool set = true); // @advi3++
+    #else
+    inline bool isLevelingHighSpeed() { return false; } // @advi3++
+    inline void setLevelingHighSpeed(bool set = true) {} // @advi3++
+    #endif
     #if HAS_MESH
       bed_mesh_t& getMeshArray();
       float getMeshPoint(const xy_uint8_t &pos);
       void setMeshPoint(const xy_uint8_t &pos, const_float_t zval);
       void moveToMeshPoint(const xy_uint8_t &pos, const_float_t z);
       void onLevelingStart();
-      void onLevelingDone();
+      void onLevelingDone(bool success); // @advi3++
+      void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos); // @advi3++
+      void cancelLeveling(); // @advi3++
       void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval);
       inline void onMeshUpdate(const xy_int8_t &pos, const_float_t zval) { onMeshUpdate(pos.x, pos.y, zval); }
 
@@ -385,7 +394,9 @@ namespace ExtUI {
    * Should be used by the EXTENSIBLE_UI to operate on files
    */
   void mountMedia(); // @advi3++
+  void releaseMedia(); // @advi3++
   bool isMediaInserted();
+  bool isMediaMounted(); // @advi3++
   bool isPrintingFromMediaPaused();
   bool isPrintingFromMedia();
   bool isPrinting();
@@ -395,7 +406,6 @@ namespace ExtUI {
   void stopPrint();
   void pausePrint();
   void resumePrint();
-  bool extrudeFilament(float purge_length); // @advi3++
 
   class FileList {
     private:
@@ -461,17 +471,6 @@ namespace ExtUI {
     void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
     bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
     uint16_t getSizeofSettings();
-  #endif
-
-  // @advi3++
-  #if HAS_LEVELING
-    void onAutomaticLevelingFinished(bool success);
-  #endif
-
-  // @advi3++
-  #if ENABLED(BLTOUCH)
-    bool bltouchDeploy();
-    bool bltouchStow();
   #endif
 
   // @advi3++

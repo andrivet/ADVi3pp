@@ -20,28 +20,32 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 #include "../../core/buzzer.h"
 
 namespace ADVi3pp {
 
 //! Beeper Setting Page
-struct BeeperSettings: Screen<BeeperSettings>
-{
+struct BeeperSettings: Screen<BeeperSettings> {
+  static constexpr Page PAGE = Page::BuzzerSettings;
+  static constexpr Action ACTION = Action::BuzzerSettings;
+
   void duration_command(uint16_t duration);
 
 private:
-  friend Parent;
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_save_command();
 
-  bool do_dispatch(KeyValue key_value);
-  Page do_prepare_page();
-  void do_save_command();
   void send_values(bool on_action, bool on_press, uint8_t duration) const;
   bool get_values(bool &on_action, bool &on_press, uint8_t &duration);
 
   void on_action_command();
   void on_press_command();
 
+  friend Parent;
+
+private:
   bool buzz_on_action_ = true;
   bool buzz_on_press_ = false;
 };

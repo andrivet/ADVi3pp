@@ -20,31 +20,34 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Extruder Tuning Page
-struct ExtruderTuning: Screen<ExtruderTuning>
-{
-private:
-    bool do_dispatch(KeyValue value);
-    Page do_prepare_page();
-    void do_back_command();
-    void do_save_command();
-    void start_command();
-    void settings_command();
-    void send_data();
-    void heating();
-    bool cancel_heating();
-    void extrude();
-    void extruding();
-    bool cancel_extrude();
+struct ExtruderTuning: Screen<ExtruderTuning> {
+  static constexpr Page PAGE = Page::ExtruderTuning;
+  static constexpr Action ACTION = Action::ExtruderTuning;
 
 private:
-    float extruded_ = 0.0;
-    float previous_z_ = 0.0;
-    friend Parent;
+  bool on_dispatch(KeyValue value);
+  void on_enter();
+  void on_back_command();
+  void on_save_command();
+
+  void start_command();
+  void settings_command();
+  void send_data();
+  void heating();
+  bool cancel_heating();
+  void extrude();
+  void extruding();
+  bool cancel_extrude();
+
+private:
+  float extruded_ = 0.0;
+  float previous_z_ = 0.0;
+  friend Parent;
 };
 
 extern ExtruderTuning extruder_tuning;

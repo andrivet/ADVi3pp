@@ -20,30 +20,31 @@
 
 #pragma once
 
-#include "../core/screen.h"
+#include "../../core/screen.h"
 
 namespace ADVi3pp {
 
 //! Preheat Page
-struct Preheat: Screen<Preheat>
-{
-    static const size_t NB_PRESETS = 5;
+struct Preheat: Screen<Preheat> {
+  static constexpr Page PAGE = Page::Preheat;
+  static constexpr Action ACTION = Action::Preheat;
+  static constexpr size_t NB_PRESETS = 5;
 
 private:
-    bool do_dispatch(KeyValue key_value);
-    Page do_prepare_page();
-    void do_save_command();
+  bool on_dispatch(KeyValue key_value);
+  void on_enter();
+  void on_save_command();
 
-    void send_presets();
-    void retrieve_presets();
-    void previous_command();
-    void next_command();
-    void cooldown_command();
+  void send_presets();
+  void retrieve_presets();
+  void previous_command();
+  void next_command();
+  void cooldown_command();
 
 private:
-    size_t index_ = 0;
+  size_t index_ = 0;
 
-    friend Parent;
+  friend Parent;
 };
 
 extern Preheat preheat;

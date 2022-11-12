@@ -35,8 +35,8 @@
   #warning "WARNING! Disable MARLIN_DEV_MODE for the final build!"
 #endif
 
-#if LINEAR_AXES_WARNING
-  #warning "Note: LINEAR_AXES is now based on the *_DRIVER_TYPE settings so you can remove LINEAR_AXES from Configuration.h."
+#if NUM_AXES_WARNING
+  #warning "Note: NUM_AXES is now based on the *_DRIVER_TYPE settings so you can remove NUM_AXES from Configuration.h."
 #endif
 
 // Safety Features
@@ -772,4 +772,11 @@
  */
 #if MB(BTT_BTT002_V1_0, EINSY_RAMBO) && DISABLED(NO_MK3_FAN_PINS_WARNING)
   #warning "Define MK3_FAN_PINS to swap hotend and part cooling fan pins. (Define NO_MK3_FAN_PINS_WARNING to suppress this warning.)"
+#endif
+
+/**
+ * BD Sensor should always include BABYSTEPPING
+ */
+#if ENABLED(BD_SENSOR) && DISABLED(BABYSTEPPING)
+  #warning "BABYSTEPPING is recommended with BD_SENSOR."
 #endif

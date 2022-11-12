@@ -21,6 +21,7 @@
 #include "../../parameters.h"
 #include "move.h"
 #include "../../core/core.h"
+#include "../../core/wait.h"
 
 namespace ADVi3pp {
 
@@ -93,33 +94,27 @@ void Move::set_position() const {
 //! Execute a move command
 //! @param key_value    The sub-action to handle
 //! @return             True if the action was handled
-bool Move::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::MoveXHome:           x_home_command(); break;
-        case KeyValue::MoveYHome:           y_home_command(); break;
-        case KeyValue::MoveZHome:           z_home_command(); break;
-        case KeyValue::MoveAllHome:         all_home_command(); break;
-        case KeyValue::DisableMotors:       disable_motors_command(); break;
-        default: Log::log() << "Invalid KeyValue" << Log::endl(); return false;
-    }
-
+bool Move::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
+
+  switch(key_value)     {
+    case KeyValue::MoveXHome:           x_home_command(); break;
+    case KeyValue::MoveYHome:           y_home_command(); break;
+    case KeyValue::MoveZHome:           z_home_command(); break;
+    case KeyValue::MoveAllHome:         all_home_command(); break;
+    case KeyValue::DisableMotors:       disable_motors_command(); break;
+    default: Log::log() << "Invalid KeyValue" << Log::endl(); return false;
+  }
+
+  return true;
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page Move::do_prepare_page()
-{
-    if(!core.ensure_not_printing())
-        return Page::None;
-    ExtUI::finishAndDisableHeaters(); // To circumvent homing problems
-    direction_ = Direction::None;
-    return Page::Move;
+void Move::on_enter() {
+  ExtUI::finishAndDisableHeaters(); // To circumvent homing problems
+  direction_ = Direction::None;
 }
 
 void Move::move(Direction direction) {
@@ -184,6 +179,8 @@ void Move::e_minus_command() {
 
 //! Disable the motors.
 void Move::disable_motors_command() {
+  // If printing, do nothing
+  if(ExtUI::isPrinting()) return;
   stop_move();
   core.inject_commands(F("M84")); // Disable steppers
   ExtUI::setAllAxisUnhomed();
@@ -192,26 +189,26 @@ void Move::disable_motors_command() {
 
 //! Go to home on the X axis.
 void Move::x_home_command() {
-  stop_move();
-  core.inject_commands(F("G28 X F6000"));
+  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 X"));
 }
 
 //! Go to home on the Y axis.
 void Move::y_home_command() {
-  stop_move();
-  core.inject_commands(F("G28 Y F6000"));
+  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 Y"));
 }
 
 //! Go to home on the Z axis.
 void Move::z_home_command() {
-  stop_move();
-  core.inject_commands(F("G28 Z F1200"));
+  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 Z"));
 }
 
 //! Go to home on all axis.
 void Move::all_home_command() {
-  stop_move();
-  core.inject_commands(F("G28 F6000"));
+  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28"));
+}
+
+void Move::home_task() {
+  wait.check_homed();
 }
 
 }

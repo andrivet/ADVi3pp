@@ -32,106 +32,93 @@ Preheat preheat;
 //! Handle Preheat actions.
 //! @param key_value    Sub-action to handle
 //! @return             True if the action was handled
-bool Preheat::do_dispatch(KeyValue key_value)
-{
-    if(Parent::do_dispatch(key_value))
-        return true;
-
-    switch(key_value)
-    {
-        case KeyValue::PresetPrevious:  previous_command(); break;
-        case KeyValue::PresetNext:      next_command(); break;
-        case KeyValue::Cooldown:        cooldown_command(); break;
-        default:                        return false;
-    }
-
+bool Preheat::on_dispatch(KeyValue key_value) {
+  if(Parent::on_dispatch(key_value))
     return true;
+
+  switch(key_value) {
+    case KeyValue::PresetPrevious:  previous_command(); break;
+    case KeyValue::PresetNext:      next_command(); break;
+    case KeyValue::Cooldown:        cooldown_command(); break;
+    default:                        return false;
+  }
+
+  return true;
 }
 
 //! Send the presets t the LCD Panel
-void Preheat::send_presets()
-{
-    WriteRamRequest{Variable::Value0}.write_words(
-        ExtUI::getMaterialPresetHotendTemp_celsius(index_),
-        ExtUI::getMaterialPresetBedTemp_celsius(index_),
-        ExtUI::getMaterialPresetFanSpeed_percent(index_)
-    );
+void Preheat::send_presets() {
+  WriteRamRequest{Variable::Value0}.write_words(
+    ExtUI::getMaterialPresetHotendTemp_celsius(index_),
+    ExtUI::getMaterialPresetBedTemp_celsius(index_),
+    ExtUI::getMaterialPresetFanSpeed_percent(index_)
+  );
 
-    ADVString<8> preset;
-    preset << index_ + 1 << F(" / ") << NB_PRESETS;
-    WriteRamRequest{Variable::ShortText0}.write_text(preset);
+  ADVString<8> preset;
+  preset << index_ + 1 << F(" / ") << NB_PRESETS;
+  WriteRamRequest{Variable::ShortText0}.write_text(preset);
 }
 
 //! Retrieve presets values from the LCD Panel
-void Preheat::retrieve_presets()
-{
-    ReadRam frame{Variable::Value0};
-    if(!frame.send_receive(3))
-    {
-        Log::error() << F("Error receiving presets") << Log::endl();
-        return;
-    }
+void Preheat::retrieve_presets() {
+  ReadRam frame{Variable::Value0};
+  if(!frame.send_receive(3)) {
+    Log::error() << F("Error receiving presets") << Log::endl();
+    return;
+  }
 
-    uint16_t hotend = frame.read_word();
-    uint16_t bed = frame.read_word();
-    uint16_t fan = frame.read_word();
+  uint16_t hotend = frame.read_word();
+  uint16_t bed = frame.read_word();
+  uint16_t fan = frame.read_word();
 
-    ExtUI::setMaterialPreset(index_, hotend, bed, fan);
+  ExtUI::setMaterialPreset(index_, hotend, bed, fan);
 }
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-Page Preheat::do_prepare_page()
-{
-    if(!core.ensure_not_printing())
-        return Page::None;
-    send_presets();
-    return Page::Preheat;
+void Preheat::on_enter() {
+  send_presets();
 }
 
 //! Handle Previous command
-void Preheat::previous_command()
-{
-    if(index_ <= 0)
-        return;
-    retrieve_presets();
-    --index_;
-    send_presets();
+void Preheat::previous_command() {
+  if(index_ <= 0)
+    return;
+  retrieve_presets();
+  --index_;
+  send_presets();
 }
 
 //! Handle Next command
-void Preheat::next_command()
-{
-    if(index_ >= NB_PRESETS - 1)
-        return;
-    retrieve_presets();
-    ++index_;
-    send_presets();
+void Preheat::next_command() {
+  if(index_ >= NB_PRESETS - 1)
+      return;
+  retrieve_presets();
+  ++index_;
+  send_presets();
 }
 
 //! Handles the Save (Continue) command
-void Preheat::do_save_command()
-{
-    retrieve_presets();
+void Preheat::on_save_command() {
+  retrieve_presets();
 
-    ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetHotendTemp_celsius(index_), ExtUI::E0);
-    ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetBedTemp_celsius(index_), ExtUI::BED);
-    ExtUI::setTargetFan_percent(ExtUI::getMaterialPresetFanSpeed_percent(index_), ExtUI::FAN0);
+  ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetHotendTemp_celsius(index_), ExtUI::E0);
+  ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetBedTemp_celsius(index_), ExtUI::BED);
+  ExtUI::setTargetFan_percent(ExtUI::getMaterialPresetFanSpeed_percent(index_), ExtUI::FAN0);
 
-    settings.save();
-    status.set(F("Preheat..."));
-    temperatures.show();
+  settings.save();
+  status.set(F("Preheat..."));
+  temperatures.show();
 }
 
 //! Cooldown the bed and the nozzle, turn off the fan
-void Preheat::cooldown_command()
-{
-    if(!core.ensure_not_printing())
-        return;
-
-    ExtUI::setTargetTemp_celsius(0, ExtUI::BED);
-    ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
-    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+void Preheat::cooldown_command() {
+  // If printing, do nothing
+  if(ExtUI::isPrinting()) return;
+  ExtUI::setTargetTemp_celsius(0, ExtUI::BED);
+  ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+  ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+  status.set(F("Cool down..."));
 }
 
 }

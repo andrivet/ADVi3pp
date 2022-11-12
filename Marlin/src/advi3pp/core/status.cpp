@@ -22,6 +22,7 @@
 #include "../../lcd/extui/ui_api.h"
 #include "logging.h"
 #include "status.h"
+#include "pages.h"
 #include "dgus.h"
 #include "enums.h"
 
@@ -30,121 +31,121 @@ namespace ADVi3pp {
 Status status;
 
 
-void Status::reset()
-{
-    has_status_ = false;
-    set("");
+void Status::reset() {
+  has_status_ = false;
+  set("");
 }
 
-bool Status::has() const
-{
-    return has_status_;
+void Status::reset_and_clear() {
+  pages.clear_temporaries();
+  reset();
 }
 
-void Status::set(const FlashChar* message)
-{
-    ADVString<message_length> text{message};
-    send_status(text);
-    has_status_ = true;
+bool Status::has() const {
+  return has_status_;
 }
 
-void Status::set(const char* message)
-{
-    ADVString<message_length> text{message};
-    send_status(text);
-    has_status_ = true;
+void Status::set(const FlashChar* message) {
+  ADVString<message_length> text{message};
+  send_status(text);
+  has_status_ = true;
 }
 
-void Status::set(const FlashChar* fmt, va_list& args)
-{
-    ADVString<message_length> text{};
-    text.set(fmt, args);
-    send_status(text);
-    has_status_ = true;
+void Status::set(const char* message) {
+  ADVString<message_length> text{message};
+  send_status(text);
+  has_status_ = true;
 }
 
-void Status::send()
-{
-    send_progress();
-    send_times();
+void Status::format(const FlashChar* fmt, va_list& args) {
+  ADVString<message_length> text{};
+  text.set(fmt, args);
+  send_status(text);
+  has_status_ = true;
 }
 
-void Status::send_progress()
-{
-    auto done = ExtUI::getProgress_percent();
-    if(done == percent_)
-        return;
-    percent_ = done;
+void Status::format(const FlashChar* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  format(fmt, args);
+  va_end(args);
+}
 
-    ADVString<progress_text_length> progress{filename_};
-    if(progress.length() > 0)
-        progress  << " " << done << "%";
+void Status::send() {
+  send_progress();
+  send_times();
+}
 
-    ADVString<progress_percent_length> progress_percent{};
-    progress_percent << done << "%";
+void Status::send_progress() {
+  auto done = ExtUI::getProgress_percent();
+  if(done == percent_)
+    return;
+  percent_ = done;
 
-    WriteRamRequest{Variable::ProgressText}.write_text(progress);
-    WriteRamRequest{Variable::ProgressPercent}.write_text(progress_percent);
+  ADVString<progress_text_length> progress{filename_};
+  if(progress.length() > 0)
+    progress  << " " << done << "%";
+
+  ADVString<progress_percent_length> progress_percent{};
+  progress_percent << done << "%";
+
+  WriteRamRequest{Variable::ProgressText}.write_text(progress);
+  WriteRamRequest{Variable::ProgressPercent}.write_text(progress_percent);
 }
 
 template<size_t N>
 void set_duration(ADVString<N>& str, uint32_t seconds) {
-    uint16_t h = uint16_t(seconds / (60 * 60));
-    uint16_t m = uint16_t((seconds / 60) % 60UL);
+  auto h = uint16_t(seconds / (60 * 60));
+  auto m = uint16_t((seconds / 60) % 60UL);
 
-    if(h < 100)
-        str.format(F("%02hu:%02hu"), h, m);
-    else
-        str.format(F("%hu:%02hu"), h, m);
+  if(h < 100)
+    str.format(F("%02hu:%02hu"), h, m);
+  else
+    str.format(F("%hu:%02hu"), h, m);
 }
 
-void Status::send_times()
-{
-	if(!ExtUI::isPrinting())
-		return;
-    auto current_time = millis();
-    if(!ELAPSED(current_time, next_update_times_time_))
-        return;
-    next_update_times_time_ = current_time + 2000; // every 2 seconds
+void Status::send_times() {
+	if(!ExtUI::isPrinting()) return;
+  auto current_time = millis();
+  if(!ELAPSED(current_time, next_update_times_time_))
+    return;
+  next_update_times_time_ = current_time + 2000; // every 2 seconds
 
-    ADVString<tc_length> tc; // time to complete
-    ADVString<et_length> et; // elapsed time
+  ADVString<tc_length> tc; // time to complete
+  ADVString<et_length> et; // elapsed time
 
-    auto durationSec = ExtUI::getProgress_seconds_elapsed();
-	auto progress = ExtUI::getProgress_percent();
+  auto durationSec = ExtUI::getProgress_seconds_elapsed();
+  auto progress = ExtUI::getProgress_percent();
 
-    set_duration(et, durationSec);
+  set_duration(et, durationSec);
 
-    auto tcSec = progress <= 0 ? 0 : (durationSec * (100 - progress) / progress);
-    if (progress < 5)
-        tc.set(F("--:--"));
-    else
-        set_duration(tc, tcSec);
+  auto tcSec = progress <= 0 ? 0 : (durationSec * (100 - progress) / progress);
+  if (progress < 5)
+    tc.set(F("--:--"));
+  else
+      set_duration(tc, tcSec);
 
-    WriteRamRequest{Variable::ET}.write_text(et);
-    WriteRamRequest{Variable::TC}.write_text(tc);
+  WriteRamRequest{Variable::ET}.write_text(et);
+  WriteRamRequest{Variable::TC}.write_text(tc);
 }
 
 //! Set the name for the progress message. Usually, it is the name of the file printed.
-void Status::set_filename(const char* name)
-{
-    filename_ = name;
-    percent_ = -1;
-    send_progress();
+void Status::set_filename(const char* name) {
+  filename_ = name;
+  percent_ = -1;
+  send_progress();
 }
 
 //! Clear the progress message
-void Status::reset_progress()
-{
-    filename_.reset();
-    percent_ = -1;
-    send_progress();
+void Status::reset_progress() {
+  filename_.reset();
+  percent_ = -1;
+  send_progress();
 }
 
-void Status::send_status(ADVString<message_length>& message)
-{
-    WriteRamRequest{Variable::Message}.write_text(message);
-    WriteRamRequest{Variable::CenteredMessage}.write_centered_text(message);
+void Status::send_status(ADVString<message_length>& message) {
+  WriteRamRequest{Variable::Message}.write_text(message);
+  WriteRamRequest{Variable::CenteredMessage}.write_centered_text(message);
 }
 
 }

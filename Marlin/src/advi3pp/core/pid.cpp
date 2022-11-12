@@ -30,10 +30,8 @@ Pid pid;
 
 //! Store current data in permanent memory (EEPROM)
 //! @param eeprom EEPROM writer
-void Pid::do_write(EepromWrite& eeprom) const
-{
-  for(size_t i = 0; i < NB_PIDs; ++i)
-  {
+void Pid::do_write(EepromWrite& eeprom) const {
+  for(size_t i = 0; i < NB_PIDs; ++i) {
     eeprom.write(bed_pid_[i]);
     eeprom.write(hotend_pid_[i]);
   }
@@ -41,11 +39,9 @@ void Pid::do_write(EepromWrite& eeprom) const
 
 //! Validate data from permanent memory (EEPROM).
 //! @param eeprom EEPROM reader
-bool Pid::do_validate(EepromRead &eeprom)
-{
+bool Pid::do_validate(EepromRead &eeprom) {
   PidValue pid{};
-  for(size_t i = 0; i < NB_PIDs; ++i)
-  {
+  for(size_t i = 0; i < NB_PIDs; ++i) {
     eeprom.read(pid);
     eeprom.read(pid);
   }
@@ -54,10 +50,8 @@ bool Pid::do_validate(EepromRead &eeprom)
 
 //! Restore data from permanent memory (EEPROM).
 //! @param eeprom EEPROM reader
-void Pid::do_read(EepromRead& eeprom)
-{
-  for(size_t i = 0; i < NB_PIDs; ++i)
-  {
+void Pid::do_read(EepromRead& eeprom) {
+  for(size_t i = 0; i < NB_PIDs; ++i) {
     eeprom.read(bed_pid_[i]);
     eeprom.read(hotend_pid_[i]);
   }
@@ -66,8 +60,7 @@ void Pid::do_read(EepromRead& eeprom)
 //! Reset settings
 void Pid::do_reset()
 {
-  for(size_t i = 0; i < NB_PIDs; ++i)
-  {
+  for(size_t i = 0; i < NB_PIDs; ++i) {
     bed_pid_[i].temperature_ = default_bed_temperature;
     bed_pid_[i].Kp_ = DEFAULT_bedKp;
     bed_pid_[i].Ki_ = DEFAULT_bedKi;
@@ -82,8 +75,7 @@ void Pid::do_reset()
 
 //! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
 //! @return Number of bytes
-uint16_t Pid::do_size_of() const
-{
+uint16_t Pid::do_size_of() const {
   return NB_PIDs * 2 * sizeof(PidValue);
 }
 
@@ -91,13 +83,10 @@ uint16_t Pid::do_size_of() const
 //! Record new PID values for a given temperature
 //! @param kind Kind of PID values: Hotend or Bed
 //! @param temperature Temperature for these PID values
-void Pid::add_pid(TemperatureKind kind, uint16_t temperature)
-{
+void Pid::add_pid(TemperatureKind kind, uint16_t temperature) {
   auto& pid = get_pids(kind);
-  for(size_t i = 0; i < NB_PIDs; ++i)
-  {
-    if(temperature == pid[i].temperature_)
-    {
+  for(size_t i = 0; i < NB_PIDs; ++i) {
+    if(temperature == pid[i].temperature_) {
       get_marlin_pid(kind, i);
       return;
     }
@@ -114,18 +103,15 @@ void Pid::add_pid(TemperatureKind kind, uint16_t temperature)
 //! Choose the best PID values for the given temperature
 //! @param kind Kind of PID values: Hotend or Bed
 //! @param temperature Temperature for these PID values
-void Pid::choose_best_pid(TemperatureKind kind, uint16_t temperature)
-{
+void Pid::choose_best_pid(TemperatureKind kind, uint16_t temperature) {
   size_t index = 0;
 
   uint16_t best_difference = 500;
   const auto& pid = get_pids(kind);
 
-  for(size_t i = 0; i < NB_PIDs; ++i)
-  {
+  for(size_t i = 0; i < NB_PIDs; ++i) {
     auto difference = abs(temperature - pid[i].temperature_);
-    if(difference < best_difference)
-    {
+    if(difference < best_difference) {
       best_difference = difference;
       index = i;
     }
@@ -135,8 +121,7 @@ void Pid::choose_best_pid(TemperatureKind kind, uint16_t temperature)
 }
 
   //! Set the current PID values from what is recorded
-void Pid::set_marlin_pid(TemperatureKind kind, size_t index) const
-{
+void Pid::set_marlin_pid(TemperatureKind kind, size_t index) const {
   assert(kind <= TemperatureKind::Hotend);
   const PidValue& pid = get_pid(kind, index);
 
@@ -151,8 +136,7 @@ void Pid::set_marlin_pid(TemperatureKind kind, size_t index) const
 }
 
 //! Record the current PID values
-void Pid::get_marlin_pid(TemperatureKind kind, size_t index)
-{
+void Pid::get_marlin_pid(TemperatureKind kind, size_t index) {
   assert(kind <= TemperatureKind::Hotend);
   PidValue& pid = get_pid(kind, index);
 

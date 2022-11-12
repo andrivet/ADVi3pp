@@ -21,10 +21,9 @@
 #include "../parameters.h"
 #include <Arduino.h>
 #include "task.h"
+#include "logging.h"
 
 namespace ADVi3pp {
-
-Task task;
 
 Task::Task(const Callback& callback, unsigned int delay, Activation activation)
 : delay_{delay}, activation_{activation}, callback_{callback} {
@@ -33,43 +32,44 @@ Task::Task(const Callback& callback, unsigned int delay, Activation activation)
 
 //! Set the next task and its delay
 //! @param task     The next background task
-//! @param delta    Duration to be added to the current time to execute the background task
-void Task::set(const Callback& callback, unsigned int delay, Activation activation)
-{
-    delay_ = delay;
-    activation_ = activation;
-    callback_ = callback;
-    set_next_execute_time();
+//! @param delay    Duration to be added to the current time to execute the background task
+//! @param activation The kind of activation for the task (one time, multiple times)
+void Task::set(const Callback& callback, unsigned int delay, Activation activation) {
+  if(callback_)
+    Log::error() << F("Task::set but there is already an active task") << Log::endl();
+
+  delay_ = delay;
+  activation_ = activation;
+  callback_ = callback;
+  set_next_execute_time();
 }
 
 //! Reset the background task
-void Task::clear()
-{
-    callback_ = nullptr;
+void Task::clear() {
+  callback_ = nullptr;
 }
 
 //! If there is an operating running, execute its next step
-bool Task::execute(bool force_execute)
-{
-    if(!callback_)
-        return false;
+bool Task::execute(bool force_execute) {
+  if(!callback_)
+    return false;
 
-    if(!force_execute && !ELAPSED(millis(), next_execute_time_))
-        return false;
+  if(!force_execute && !ELAPSED(millis(), next_execute_time_))
+    return false;
 
-    // Clear before calling to avoid reentrancy issues
-    Callback callback{callback_};
-    if(activation_ == Activation::ONE_TIME)
-      callback_ = nullptr;
-    else
-      set_next_execute_time();
+  // Clear before calling to avoid reentrancy issues
+  Callback callback{callback_};
+  if(activation_ == Activation::ONE_TIME)
+    callback_ = nullptr;
+  else
+    set_next_execute_time();
 
-    callback();
-    return true;
+  callback();
+  return true;
 }
 
 void Task::set_next_execute_time() {
-    next_execute_time_ = millis() + delay_;
+  next_execute_time_ = millis() + delay_;
 }
 
 }
