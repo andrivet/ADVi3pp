@@ -1,5 +1,10 @@
 # ADVi3++ Changelog
 
+## 5.5.1 (2023-01-07)
+
+* **#324** - [For some users, Load and Unload commands get stuck on Please wait screen](https://github.com/andrivet/ADVi3pp/issues/324)
+* **#320** - [BLTouch Testing: when choosing "Yes Slowly" on the red LED blinking step, the instructions are contradictory](https://github.com/andrivet/ADVi3pp/issues/320)
+
 ## 5.5.0 (2022-11-02)
 
 * **#318** - [Thermal runaway error is not always displayed on the LCD screen](https://github.com/andrivet/ADVi3pp/issues/318)
