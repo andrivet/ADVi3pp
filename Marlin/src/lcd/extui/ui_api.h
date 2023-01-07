@@ -449,6 +449,7 @@ namespace ExtUI {
   void onUserConfirmRequired(FSTR_P const fstr);
   void onStatusChanged(const char * const msg);
   void onStatusChanged(FSTR_P const fstr);
+  void onShowStatus(); // @advi3++
   void onHomingStart();
   void onHomingDone();
   void onSteppersDisabled();

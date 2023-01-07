@@ -16,7 +16,7 @@ If you like what I am doing, please consider supporting me as a supporter on [**
 
 The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
 
-* Based on the latest version of Marlin available (currently: 2.0.9.3)
+* Based on the latest version of Marlin available (currently: 2.1.1)
 * As few modifications of the Marlin code as possible. The goal is to be able to port **ADVi3++** to new versions of Marlin with only a few effort.
 * Open source firmware (GPLv3 like Marlin).
 * Object-oriented code with as few hard-coded values as possible. For example, instead of constructing a frame by hand, use instances of classes that know how to construct themselves.
@@ -27,7 +27,7 @@ The objectives with this custom version (when compared with Wanhao stock firmwar
 
 ## ADVi3++ User Manual
 
-A complete and up to date User Manual is published on [ADVi3++ Community Web Site](https://community.advi3pp.com/). This manual contains:
+A complete and up-to-date user manual is published on [ADVi3++ User Manual](https://manual.advi3pp.com). This manual contains:
 
 * A list of features and of compatible printers
 * How to Flash the firmware
@@ -44,7 +44,7 @@ A complete and up to date User Manual is published on [ADVi3++ Community Web Sit
 
 You can get support from those resources:
 
-* The [User Manual](https://community.advi3pp.com/t/advi3-5-user-manual/), especially the [Troubleshooting part](https://community.advi3pp.com/c/user-manual/advi3-5-troubleshooting/) (only accessible to supporters of the project).
+* The [User Manual](https://manual.advi3pp.com), especially the [Troubleshooting part](https://manual.advi3pp.com/en/troubleshooting).
 * The [ADVi3++ Community](https://community.advi3pp.com/). It is a forum, based on [Discourse](https://www.discourse.org). 
 I monitor this forum and try to reply to all requests.
 
@@ -62,17 +62,17 @@ I have posted an article on my web site: [Wanhao Duplicator i3 Plus 3D Printer -
 
 ## ADVi3++
 
-* Copyright &copy; 2017-2022 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
-* Copyright &copy; 2016-2022 [MarlinFirmware](https://github.com/MarlinFirmware/Marlin)
+* Copyright &copy; 2017-2023 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
+* Copyright &copy; 2016-2023 [MarlinFirmware](https://github.com/MarlinFirmware/Marlin)
 * Based on Sprinter and grbl. Copyright &copy; 2011 Camiel Gubbels / Erik van der Zalm
 
 ## ADVi3++ LCD Panels
 
-* Copyright &copy; 2017-2022 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
+* Copyright &copy; 2017-2023 Sebastien Andrivet [GitHub ADVi3pp project](https://github.com/andrivet/advi3pp])
 
 ## ADVi3++ User Manual
 
-* Copyright &copy; 2018-2022 Sebastien Andrivet
+* Copyright &copy; 2018-2023 Sebastien Andrivet
 
 # License
 

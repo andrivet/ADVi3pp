@@ -1806,6 +1806,7 @@ void MarlinUI::init() {
 
 #endif
 
+#ifndef ADVi3PP_UI // @advi3++
 #if BOTH(EXTENSIBLE_UI, ADVANCED_PAUSE_FEATURE)
 
   void MarlinUI::pause_show_message(
@@ -1835,6 +1836,7 @@ void MarlinUI::init() {
   }
 
 #endif
+#endif // @advi3++
 
 #if ENABLED(EEPROM_SETTINGS)
 

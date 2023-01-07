@@ -92,9 +92,14 @@ void onUserConfirmRequired(const char * const msg) {
   wait.wait_user(msg);
 }
 
+void onShowStatus() {
+  Log::log() << F("ExtUI::onShowStatus") << Log::endl();
+  pages.clear_temporaries();
+}
+
 void onStatusChanged(const char * const msg) {
-  Log::log() << F("ExtUI::onStatusChanged") << msg << Log::endl();
-  if(msg == NULL || *msg == 0)
+  Log::log() << F("ExtUI::onStatusChanged(") << msg << F(")") << Log::endl();
+  if(msg == nullptr || *msg == 0)
     status.reset_and_clear();
   else
     status.set(msg);
