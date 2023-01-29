@@ -35,9 +35,6 @@ Task::Task(const Callback& callback, unsigned int delay, Activation activation)
 //! @param delay    Duration to be added to the current time to execute the background task
 //! @param activation The kind of activation for the task (one time, multiple times)
 void Task::set(const Callback& callback, unsigned int delay, Activation activation) {
-  if(callback_)
-    Log::error() << F("Task::set but there is already an active task") << Log::endl();
-
   delay_ = delay;
   activation_ = activation;
   callback_ = callback;
