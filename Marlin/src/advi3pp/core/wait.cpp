@@ -98,18 +98,9 @@ void Wait::wait_user(const char* message) {
   }
 }
 
-void Wait::home_and_wait(const Callback &f, const FlashChar* cmd, const FlashChar* msg) {
-  wait(msg == nullptr ? F("Homing...") : msg);
-  core.inject_commands(cmd == nullptr ? F("G28 O") : cmd); // Homing, if needed
-  background_task.set(f, 200);
-}
-
-bool Wait::check_homed() {
+bool Wait::check_homed() const {
   if(core.is_busy() || !ExtUI::isMachineHomed())
     return false;
-
-  background_task.clear();
-  pages.clear_temporaries();
   return true;
 }
 

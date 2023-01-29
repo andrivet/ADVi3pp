@@ -58,11 +58,8 @@ bool Vibrations::on_dispatch(KeyValue key_value) {
 //! @return The index of the page to display
 void Vibrations::on_enter() {
   set_values();
-  wait.home_and_wait(Callback{this, &Vibrations::homing}, F("Please wait while the printer is homed..."));
-}
-
-void Vibrations::homing() {
-  if(!wait.check_homed()) return;
+  wait.wait();
+  core.inject_commands(F("G28 O"));
 }
 
 //! Execute the Back command

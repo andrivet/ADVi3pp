@@ -37,8 +37,6 @@ private:
 private:
   enum class Speed { Slow, Medium, Fast};
 
-  void homing();
-
   void x_command();
   void y_command();
   void xy_command();

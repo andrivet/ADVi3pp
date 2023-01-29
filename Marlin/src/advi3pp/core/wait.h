@@ -44,8 +44,7 @@ struct Wait: Screen<Wait> {
   void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
   void wait_user(const char* message);
 
-  void home_and_wait(const Callback &f, const FlashChar* cmd = nullptr, const FlashChar* msg = nullptr);
-  bool check_homed();
+  bool check_homed() const;
 
 private:
   void on_save_command();
