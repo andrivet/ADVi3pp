@@ -107,10 +107,12 @@ void onStatusChanged(const char * const msg) {
 
 void onHomingStart() {
   Log::log() << F("ExtUI::onHomingStart") << Log::endl();
+  status.set(F("Homing..."));
 }
 
 void onHomingDone() {
   Log::log() << F("ExtUI::onHomingDone") << Log::endl();
+  status.reset_and_clear();
 }
 
 void onSteppersDisabled() {
