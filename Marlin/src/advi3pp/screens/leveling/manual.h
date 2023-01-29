@@ -33,7 +33,6 @@ private:
   bool on_dispatch(KeyValue value);
   void on_enter();
   void on_back_command();
-  void on_save_command();
   void on_abort();
 
   bool start();
@@ -48,7 +47,6 @@ private:
   void pointB_command();
   void pointC_command();
   void pointD_command();
-  void leveling_task();
   void move(float x, float y);
 
   friend Parent;

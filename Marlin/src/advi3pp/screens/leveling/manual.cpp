@@ -72,16 +72,6 @@ void ManualLeveling::on_abort() {
 #endif
 }
 
-void ManualLeveling::on_save_command() {
-#if HAS_LEVELING
-  ExtUI::setLevelingActive(false); // Disable ABL mesh (already disabled but prefer to be explicit)
-#endif
-  ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z, FEEDRATE_Z);
-  // Do not call parent, there nothing to save
-  pages.show_forward_page();
-}
-
-
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
 void ManualLeveling::on_enter() {
@@ -101,14 +91,9 @@ bool ManualLeveling::abort() {
 
 bool ManualLeveling::start() {
   ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
-  wait.home_and_wait(Callback{this, &ManualLeveling::leveling_task}, F("G28")); // Homing (always)
+  wait.wait();
+  core.inject_commands(F("G28"));
   return false;
-}
-
-//! Leveling Background task.
-void ManualLeveling::leveling_task() {
-  if(!wait.check_homed())
-    return;
 }
 
 void ManualLeveling::move(float x, float y) {
