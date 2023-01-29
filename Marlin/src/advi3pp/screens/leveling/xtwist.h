@@ -70,14 +70,12 @@ private:
 #else
 
 struct XTwist: Screen<XTwist> {
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::XTwist;
+
   void on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval) {}
   void minus() {}
   void plus() {}
-
-private:
-  static constexpr Page PAGE = Page::NoSensor;
-
-  friend Parent;
 };
 
 #endif

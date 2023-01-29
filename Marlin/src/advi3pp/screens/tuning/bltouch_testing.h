@@ -79,9 +79,8 @@ inline uint16_t BLTouchTesting::wire_value(Wires wire) {
 #else
 //! BLTouch Testing Page
 struct BLTouchTesting: Screen<BLTouchTesting> {
-private:
   static constexpr Page PAGE = Page::NoSensor;
-  friend Parent;
+  static constexpr Action ACTION = Action::BLTouchTesting;
 };
 #endif
 

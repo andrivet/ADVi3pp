@@ -54,8 +54,15 @@ private:
   friend Parent;
 };
 
-extern SensorSettings sensor_settings;
+#else
+
+struct SensorSettings: Screen<SensorSettings> {
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::SensorSettings;
+};
 
 #endif
+
+extern SensorSettings sensor_settings;
 
 }

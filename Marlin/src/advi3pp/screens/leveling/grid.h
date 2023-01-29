@@ -42,11 +42,11 @@ private:
 #else
 
 //! Leveling Grid Page
-struct LevelingGrid: Screen<LevelingGrid>
-{
+struct LevelingGrid: Screen<LevelingGrid> {
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::SensorGrid;
+
 private:
-    static constexpr Page PAGE = Page::NoSensor;
-    static constexpr Action ACTION = Action::None;
     friend Parent;
 };
 

@@ -61,16 +61,18 @@ private:
   millis_t last_click_time_ = 0;
   friend Parent;
 };
+
 #else
+
 //! Sensor Z Height Tuning Page
 struct SensorZHeight: Screen<SensorZHeight> {
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::ZHeightTuning;
+
   void minus() {}
   void plus() {}
-
-private:
-  static constexpr Page PAGE = Page::NoSensor;
-  friend Parent;
 };
+
 #endif
 
 extern SensorZHeight sensor_z_height;
