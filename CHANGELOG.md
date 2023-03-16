@@ -1,5 +1,10 @@
 # ADVi3++ Changelog
 
+## 5.6.0 (2023-03-16)
+
+* **#330** - [Specific sequence leads to catastrophic failure](https://github.com/andrivet/ADVi3pp/issues/330)
+* **#328** - [For some users, Homing X, Y or Z is stuck on the "Homing..." screen](https://github.com/andrivet/ADVi3pp/issues/328)
+
 ## 5.5.1 (2023-01-07)
 
 * **#324** - [For some users, Load and Unload commands get stuck on Please wait screen](https://github.com/andrivet/ADVi3pp/issues/324)

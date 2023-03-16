@@ -1,1 +1,1 @@
-version="5.5.1"
+version="5.6.0-dev"
