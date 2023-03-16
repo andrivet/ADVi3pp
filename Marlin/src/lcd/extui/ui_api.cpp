@@ -354,7 +354,7 @@ namespace ExtUI {
   }
 
   // @advi3++
-  void setMultipleAxisPosition_mm(size_t nb_axis, float *positions, const axis_t *axis, const feedRate_t feedrate) {
+  void setMultipleAxisPosition_mm(size_t nb_axis, const float *positions, const axis_t *axis, const feedRate_t feedrate) {
 
     for(size_t i = 0; i < nb_axis; ++i) {
       // Get motion limit from software endstops, if any
