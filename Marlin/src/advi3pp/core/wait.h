@@ -42,9 +42,8 @@ struct Wait: Screen<Wait> {
   void wait_back(const FlashChar* message, const WaitCallback& back);
   void wait_back(const FlashChar* message);
   void wait_back_continue(const FlashChar* message, const WaitCallback& back, const WaitCallback& cont);
-  void wait_user(const char* message);
-
-  bool check_homed() const;
+  void wait_user(const char* message, bool awaiting);
+  void homing(const WaitCallback& homed, const FlashChar* command = nullptr);
 
 private:
   void on_save_command();
@@ -53,6 +52,8 @@ private:
   bool cont();
   bool back();
   void wait_();
+  void home_task();
+  static bool reset_and_call(WaitCallback &callback);
 
 private:
   WaitCallback back_;

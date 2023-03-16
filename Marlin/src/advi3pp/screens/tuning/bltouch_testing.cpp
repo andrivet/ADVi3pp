@@ -63,9 +63,10 @@ bool BLTouchTesting::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void BLTouchTesting::on_enter() {
+bool BLTouchTesting::on_enter() {
   pages.save_forward_page();
   step_1a();
+  return false;
 }
 
 void BLTouchTesting::on_back_command() {

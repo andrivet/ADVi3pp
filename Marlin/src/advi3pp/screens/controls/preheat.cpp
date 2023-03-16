@@ -76,8 +76,9 @@ void Preheat::retrieve_presets() {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void Preheat::on_enter() {
+bool Preheat::on_enter() {
   send_presets();
+  return true;
 }
 
 //! Handle Previous command

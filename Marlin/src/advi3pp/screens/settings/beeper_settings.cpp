@@ -46,12 +46,13 @@ bool BeeperSettings::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void BeeperSettings::on_enter() {
+bool BeeperSettings::on_enter() {
   buzz_on_action_ =  buzzer.is_buzz_on_action_enabled();
   buzz_on_press_ = buzzer.is_buzz_on_press_enabled();
   auto buzz_duration = buzzer.get_buzz_duration();
 
   send_values(buzz_on_action_, buzz_on_press_, buzz_duration);
+  return true;
 }
 
 void BeeperSettings::on_save_command() {

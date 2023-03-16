@@ -31,7 +31,7 @@ struct PauseOptions: Screen<PauseOptions> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
 
   void extrude_command();
   void resume_command();

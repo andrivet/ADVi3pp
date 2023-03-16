@@ -57,10 +57,11 @@ void ExtruderTuning::send_data() {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void ExtruderTuning::on_enter() {
+bool ExtruderTuning::on_enter() {
   pages.save_forward_page();
   send_data();
   previous_z_ = Core::ensure_z_enough_room();
+  return true;
 }
 
 void ExtruderTuning::on_back_command() {

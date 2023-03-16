@@ -74,7 +74,7 @@ void ManualLeveling::on_abort() {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void ManualLeveling::on_enter() {
+bool ManualLeveling::on_enter() {
   pages.save_forward_page();
 
   if(ExtUI::getActualTemp_celsius(ExtUI::E0) > 50)
@@ -83,6 +83,7 @@ void ManualLeveling::on_enter() {
                             WaitCallback{this, &ManualLeveling::start});
   else
     start();
+  return false;
 }
 
 bool ManualLeveling::abort() {
@@ -90,10 +91,17 @@ bool ManualLeveling::abort() {
 }
 
 bool ManualLeveling::start() {
+  Log::log() << F("start") << Log::endl();
   ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
-  wait.wait();
-  core.inject_commands(F("G28"));
+  wait.homing(WaitCallback{this, &ManualLeveling::on_homed}, F("G28\nG1 Z4 F1200"));
   return false;
+}
+
+//! Check if the printer is homed.
+bool ManualLeveling::on_homed() {
+  Log::log() << F("on_homed") << Log::endl();
+  pages.show(PAGE, ACTION);
+  return true;
 }
 
 void ManualLeveling::move(float x, float y) {

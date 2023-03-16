@@ -58,7 +58,7 @@ struct Move: Screen<Move> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
 
   float get_target() const;
   feedRate_t get_feedrate() const;

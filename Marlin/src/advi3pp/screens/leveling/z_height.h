@@ -41,12 +41,12 @@ struct SensorZHeight: Screen<SensorZHeight> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_save_command();
   void on_back_command();
   void on_abort();
+  bool on_homed();
 
-  void post_home_task();
   void multiplier1_command();
   void multiplier2_command();
   void multiplier3_command();

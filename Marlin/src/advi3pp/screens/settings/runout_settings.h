@@ -31,7 +31,7 @@ struct RunoutSettings: Screen<RunoutSettings> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_back_command();
   void on_save_command();
 

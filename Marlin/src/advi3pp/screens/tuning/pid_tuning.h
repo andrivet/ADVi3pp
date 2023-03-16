@@ -37,7 +37,7 @@ struct PidTuning: Screen<PidTuning> {
 
 private:
   bool on_dispatch(KeyValue value);
-  void on_enter();
+  bool on_enter();
 
   void step2_command();
   void step3_command();

@@ -72,10 +72,11 @@ void BabySteps::send_z_offset() {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void BabySteps::on_enter() {
+bool BabySteps::on_enter() {
   save_ = false;
   send_multiplier();
   background_task.set(Callback{this, &BabySteps::send_z_offset}, 200);
+  return true;
 }
 
 void BabySteps::on_back_command() {

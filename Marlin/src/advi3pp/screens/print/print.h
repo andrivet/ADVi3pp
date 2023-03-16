@@ -31,7 +31,7 @@ struct Print: Screen<Print> {
 
 private:
   bool on_dispatch(KeyValue value);
-  void on_enter();
+  bool on_enter();
 
   void stop_command();
   bool cancel_abort_print();

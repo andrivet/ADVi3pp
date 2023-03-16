@@ -30,7 +30,7 @@ struct AccelerationSettings: Screen<AccelerationSettings> {
   static constexpr Action ACTION = Action::AccelerationSettings;
 
 private:
-  void on_enter();
+  bool on_enter();
   void on_save_command();
 
 private:

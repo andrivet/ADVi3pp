@@ -45,12 +45,13 @@ bool LcdSettings::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void LcdSettings::on_enter() {
+bool LcdSettings::on_enter() {
   dimming_ = dimming.is_enabled();
   auto dimming_time = dimming.get_dimming_time();
   auto normal_brightness = dimming.get_normal_brightness();
   auto dimming_brightness = dimming.get_dimming_brightness();
   send_values(dimming_time, normal_brightness, dimming_brightness);
+  return true;
 }
 
 void LcdSettings::on_back_command() {

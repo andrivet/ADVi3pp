@@ -91,13 +91,14 @@ bool SensorSettings::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void SensorSettings::on_enter() {
+bool SensorSettings::on_enter() {
   index_ = 0;
   highspeed_ = ExtUI::isLevelingHighSpeed();
   send_name();
   send_values();
   send_highspeed_value();
   pages.save_forward_page();
+  return true;
 }
 
 //! Handles the Save (Continue) command

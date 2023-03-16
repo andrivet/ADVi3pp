@@ -31,12 +31,13 @@ struct ManualLeveling: Screen<ManualLeveling> {
 
 private:
   bool on_dispatch(KeyValue value);
-  void on_enter();
+  bool on_enter();
   void on_back_command();
   void on_abort();
 
   bool start();
   bool abort();
+  bool on_homed();
 
   void point1_command();
   void point2_command();

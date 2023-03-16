@@ -30,7 +30,7 @@ struct IO: Screen<IO> {
   static constexpr Action ACTION = Action::IO;
 
 private:
-  void on_enter();
+  bool on_enter();
   void on_back_command();
 
   void send_data();

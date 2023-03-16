@@ -30,7 +30,7 @@ struct Statistics: Screen<Statistics> {
   static constexpr Action ACTION = Action::Statistics;
 
 private:
-  void on_enter();
+  bool on_enter();
   void send_stats();
   friend Parent;
 };

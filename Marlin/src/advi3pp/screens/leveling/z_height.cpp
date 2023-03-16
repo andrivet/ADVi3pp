@@ -57,7 +57,7 @@ bool SensorZHeight::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void SensorZHeight::on_enter() {
+bool SensorZHeight::on_enter() {
   pages.save_forward_page();
 
   old_offset_ = ExtUI::getZOffset_mm();
@@ -65,9 +65,8 @@ void SensorZHeight::on_enter() {
   ExtUI::setZOffset_mm(0); // Before homing otherwise, Marlin is lost
   ExtUI::setAbsoluteZAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::Z) + old_offset_);
 
-  wait.wait(F("Homing..."));
-  core.inject_commands(F("G28 Z O"));  // homing (if not already homed)
-  background_task.set(Callback{this, &SensorZHeight::post_home_task}, 200);
+  wait.homing(WaitCallback{this, &SensorZHeight::on_homed});
+  return false;
 }
 
 //! Reset Sensor Z Height data.
@@ -76,11 +75,8 @@ void SensorZHeight::reset() {
 }
 
 //! Check if the printer is homed, and continue the Z Height Tuning process.
-void SensorZHeight::post_home_task() {
-  if(core.is_busy() || !ExtUI::isMachineHomed())
-    return;
-
-  background_task.clear();
+bool SensorZHeight::on_homed() {
+  pages.show(PAGE, ACTION);
   reset();
 
   float positions[2] = {X_CENTER, Y_CENTER};
@@ -90,7 +86,7 @@ void SensorZHeight::post_home_task() {
   ExtUI::setSoftEndstopState(false);
 
   send_data();
-  pages.clear_temporaries();
+  return true;
 }
 
 //! Execute the Back command

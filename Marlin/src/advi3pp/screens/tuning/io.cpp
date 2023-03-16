@@ -53,8 +53,9 @@ IO io;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void IO::on_enter() {
+bool IO::on_enter() {
   background_task.set(Callback{this, &IO::send_data}, 250);
+  return true;
 }
 
 //! Execute the Back command

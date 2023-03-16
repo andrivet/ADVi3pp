@@ -27,11 +27,21 @@ namespace ADVi3pp {
 
 Wait wait;
 
+bool Wait::reset_and_call(WaitCallback &callback) {
+  if(!callback) Log::error() << F("Null callback") << Log::endl();
+  // Make a copy because calling callback may set callback. So reset callback before calling it through the copy.
+  WaitCallback copy{callback};
+  callback = nullptr;
+  Log::log() << F("Call callback") << Log::endl();
+  return copy();
+}
 
 //! Show a simple wait page with a message
 void Wait::wait_() {
+  Log::log() << F("wait_: Reset callbacks") << Log::endl();
   back_ = nullptr;
   continue_ = nullptr;
+  Log::log() << F("Show wait page") << Log::endl();
   pages.show(Page::Waiting, ACTION);
 }
 
@@ -61,7 +71,9 @@ void Wait::wait(const char* message) {
 void Wait::wait_back(const FlashChar* message, const WaitCallback& back) {
   status.set(message);
   back_ = back;
+  Log::log() << F("wait_back: Reset callback") << Log::endl();
   continue_ = nullptr;
+  Log::log() << F("Show wait page") << Log::endl();
   pages.show(Page::WaitBack, ACTION);
 }
 
@@ -69,7 +81,9 @@ void Wait::wait_back(const FlashChar* message, const WaitCallback& back) {
 void Wait::wait_back(const FlashChar* message) {
   status.set(message);
   back_ = WaitCallback{this, &Wait::back};
+  Log::log() << F("wait_back: Reset callback") << Log::endl();
   continue_ = nullptr;
+  Log::log() << F("Show wait page") << Log::endl();
   pages.show(Page::WaitBack, ACTION);
 }
 
@@ -81,27 +95,45 @@ void Wait::wait_back_continue(const FlashChar* message, const WaitCallback& back
   status.set(message);
   back_ = back;
   continue_ = cont;
+  Log::log() << F("Show wait page") << Log::endl();
   pages.show(Page::WaitBackContinue, ACTION);
 }
 
-void Wait::wait_user(const char* message) {
-  back_ = nullptr;
+void Wait::wait_user(const char* message, bool awaiting) {
+  //back_ = nullptr;
 
   status.set(message);
-  if(ExtUI::awaitingUserConfirm()) {
+  if(awaiting) {
+    // Ask for an action from the user
+    Log::log() << F("Show wait-continue page") << Log::endl();
     continue_ = WaitCallback{this, &Wait::cont};
     pages.show(Page::WaitContinue, ACTION);
   }
   else {
+    // Display a wait screen without asking for an action from the user
+    Log::log() << F("wait_user: Reset callback") << Log::endl();
     continue_ = nullptr;
+    Log::log() << F("Show wait page") << Log::endl();
     pages.show(Page::Waiting, ACTION);
   }
 }
 
-bool Wait::check_homed() const {
-  if(core.is_busy() || !ExtUI::isMachineHomed())
-    return false;
-  return true;
+void Wait::homing(const WaitCallback& homed, const FlashChar* command) {
+  Log::log() << F("homing: Set callback") << Log::endl();
+  continue_ = homed;
+  status.set(F("Homing..."));
+  pages.show(Page::Waiting, ACTION);
+  core.inject_commands(command == nullptr ? F("G28 Z O") : command);
+  background_task.set(Callback{this, &Wait::home_task}, 200);
+}
+
+void Wait::home_task() {
+  if (core.is_busy() || !ExtUI::isMachineHomed())
+    return;
+  Log::log() << F("Homed") << Log::endl();
+  background_task.clear();
+  pages.clear_temporaries();
+  reset_and_call(continue_);
 }
 
 //! Default action when the continue button is pressed (inform Marlin)
@@ -124,8 +156,7 @@ void Wait::on_back_command() {
   if(!back_)
     Log::error() << F("No Back action defined") << Log::endl();
   else {
-    continue_processing = back_();
-    back_ = nullptr;
+    continue_processing = reset_and_call(back_);
   }
 
   if(continue_processing)
@@ -138,10 +169,8 @@ void Wait::on_save_command() {
 
   if(!continue_)
     Log::error() << F("No Continue action defined") << Log::endl();
-  else {
-    continue_processing = continue_();
-    continue_ = nullptr;
-  }
+  else
+    continue_processing = reset_and_call(continue_);
 
   if(continue_processing)
     pages.show_forward_page();

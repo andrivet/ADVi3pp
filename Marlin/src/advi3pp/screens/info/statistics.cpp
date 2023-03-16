@@ -29,8 +29,9 @@ Statistics statistics;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void Statistics::on_enter() {
+bool Statistics::on_enter() {
   send_stats();
+  return true;
 }
 
 void Statistics::send_stats() {

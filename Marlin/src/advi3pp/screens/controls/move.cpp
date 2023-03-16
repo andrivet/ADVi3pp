@@ -112,9 +112,10 @@ bool Move::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void Move::on_enter() {
+bool Move::on_enter() {
   ExtUI::finishAndDisableHeaters(); // To circumvent homing problems
   direction_ = Direction::None;
+  return true;
 }
 
 void Move::move(Direction direction) {

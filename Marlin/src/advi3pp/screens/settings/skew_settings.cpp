@@ -51,9 +51,10 @@ bool SkewSettings::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void SkewSettings::on_enter() {
+bool SkewSettings::on_enter() {
   pages.save_forward_page();
   step1();
+  return true;
 }
 
 void SkewSettings::set_default_values() {

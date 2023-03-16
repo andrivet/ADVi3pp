@@ -50,10 +50,11 @@ bool PidTuning::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void PidTuning::on_enter() {
+bool PidTuning::on_enter() {
   pages.save_forward_page();
   hotend_command();
   status.reset();
+  return true;
 }
 
 //! Send the current data to the LCD panel.

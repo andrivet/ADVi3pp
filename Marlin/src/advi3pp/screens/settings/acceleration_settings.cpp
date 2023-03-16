@@ -28,7 +28,7 @@ AccelerationSettings accelerations_settings;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void AccelerationSettings::on_enter() {
+bool AccelerationSettings::on_enter() {
   WriteRamRequest{Variable::Value0}.write_words(
     ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::X),
     ExtUI::getAxisMaxAcceleration_mm_s2(ExtUI::Y),
@@ -39,6 +39,7 @@ void AccelerationSettings::on_enter() {
     ExtUI::getTravelAcceleration_mm_s2(),
     ExtUI::getJunctionDeviation_mm() * 1000
   );
+  return true;
 }
 
 //! Save the Acceleration settings

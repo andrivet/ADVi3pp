@@ -32,7 +32,7 @@ struct LevelingGrid: Screen<LevelingGrid> {
   static constexpr Action ACTION = Action::SensorGrid;
 
 private:
-  void on_enter();
+  bool on_enter();
   void on_save_command();
   void on_back_command();
 

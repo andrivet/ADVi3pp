@@ -87,9 +87,9 @@ void onFilamentRunout(const extruder_t extruder) {
 }
 
 void onUserConfirmRequired(const char * const msg) {
-  Log::log() << F("ExtUI::onUserConfirmRequired") << msg << "," << ExtUI::awaitingUserConfirm() << Log::endl();
-
-  wait.wait_user(msg);
+  const auto awaiting = ExtUI::awaitingUserConfirm();
+  Log::log() << F("ExtUI::onUserConfirmRequired") << msg << "," << awaiting << Log::endl();
+  wait.wait_user(msg, awaiting);
 }
 
 void onShowStatus() {
@@ -174,7 +174,6 @@ void onSettingsValidated(bool success) {
 }
 
 void onLevelingStart() {
-  automatic_leveling.on_start();
 }
 
 void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos) {

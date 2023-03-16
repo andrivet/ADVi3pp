@@ -43,7 +43,13 @@ struct Pages {
   void back();
 
 private:
-  struct Context {Page page = Page::None; Action action = Action::None; };
+  struct Context {
+	  Page page = Page::None; 
+	  Action action = Action::None;
+	  
+	  Context(): page{Page::None}, action{Action::None} {}
+	  Context(Page page, Action action): page{page}, action{action} {}
+  };
 
   static void save_task();
   static void back_task();
@@ -61,7 +67,7 @@ private:
   static constexpr size_t STACK_SIZE = 8;
 
   Stack<Context, STACK_SIZE> back_{};
-  Context forward_ = Context{Page::None, Action::None};
+  Context forward_ = Context(Page::None, Action::None);
   Context current_ = Context{Page::Main, Action::None};
 };
 

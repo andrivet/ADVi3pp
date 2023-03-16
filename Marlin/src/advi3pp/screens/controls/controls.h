@@ -31,7 +31,7 @@ struct Controls: Screen<Controls> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
 
   void show_temps();
   void show_print_settings();

@@ -52,9 +52,10 @@ void LoadUnload::send_data() {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void LoadUnload::on_enter() {
+bool LoadUnload::on_enter() {
   send_data();
-  previous_z_ = Core::ensure_z_enough_room();;
+  previous_z_ = Core::ensure_z_enough_room();
+  return true;
 }
 
 void LoadUnload::on_back_command() {

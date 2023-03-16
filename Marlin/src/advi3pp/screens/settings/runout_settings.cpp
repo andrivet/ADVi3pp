@@ -47,7 +47,7 @@ bool RunoutSettings::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void RunoutSettings::on_enter() {
+bool RunoutSettings::on_enter() {
   inverted_ = ExtUI::getFilamentRunoutInverted();
 
   WriteRamRequest{Variable::Value0}.write_words(
@@ -58,6 +58,7 @@ void RunoutSettings::on_enter() {
   );
 
   background_task.set(Callback{this, &RunoutSettings::send_data}, 250);
+  return true;
 }
 
 void RunoutSettings::on_back_command() {
