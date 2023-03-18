@@ -190,26 +190,22 @@ void Move::disable_motors_command() {
 
 //! Go to home on the X axis.
 void Move::x_home_command() {
-  wait.wait();
-  core.inject_commands(F("G28 X"));
+  wait.homing(F("G28 X"));
 }
 
 //! Go to home on the Y axis.
 void Move::y_home_command() {
-  wait.wait();
-  core.inject_commands(F("G28 Y"));
+  wait.homing(F("G28 Y"));
 }
 
 //! Go to home on the Z axis.
 void Move::z_home_command() {
-  wait.wait();
-  core.inject_commands(F("G28 Z"));
+  wait.homing(F("G28 Z"));
 }
 
 //! Go to home on all axis.
 void Move::all_home_command() {
-  wait.wait();
-  core.inject_commands(F("G28"));
+  wait.homing(F("G28"));
 }
 
 }

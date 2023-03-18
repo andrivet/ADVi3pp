@@ -127,13 +127,17 @@ void Wait::homing(const WaitCallback& homed, const FlashChar* command) {
   background_task.set(Callback{this, &Wait::home_task}, 200);
 }
 
+void Wait::homing(const FlashChar* command) {
+  homing(WaitCallback{nullptr}, command);
+}
+
 void Wait::home_task() {
   if (core.is_busy() || !ExtUI::isMachineHomed())
     return;
   Log::log() << F("Homed") << Log::endl();
   background_task.clear();
   pages.clear_temporaries();
-  reset_and_call(continue_);
+  if(continue_) reset_and_call(continue_);
 }
 
 //! Default action when the continue button is pressed (inform Marlin)
