@@ -58,10 +58,13 @@ bool Vibrations::on_dispatch(KeyValue key_value) {
 //! @return The index of the page to display
 bool Vibrations::on_enter() {
   set_values();
-  wait.wait();
-  core.inject_commands(F("G28 O"));
-  // TODO: Check homing
+  wait.homing(WaitCallback{this, &Vibrations::on_homed});
   return false;
+}
+
+bool Vibrations::on_homed() {
+  pages.show(PAGE, ACTION);
+  return true;
 }
 
 //! Execute the Back command

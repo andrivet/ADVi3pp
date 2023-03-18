@@ -33,6 +33,7 @@ private:
   bool on_dispatch(KeyValue key_value);
   bool on_enter();
   void on_back_command();
+  bool on_homed();
 
 private:
   enum class Speed { Slow, Medium, Fast};
