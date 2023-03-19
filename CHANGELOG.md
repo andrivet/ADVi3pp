@@ -1,6 +1,6 @@
 # ADVi3++ Changelog
 
-## 5.6.0 (2023-03-16)
+## 5.6.0 (2023-03-19)
 
 * **#330** - [Specific sequence leads to catastrophic failure](https://github.com/andrivet/ADVi3pp/issues/330)
 * **#328** - [For some users, Homing X, Y or Z is stuck on the "Homing..." screen](https://github.com/andrivet/ADVi3pp/issues/328)
