@@ -18,9 +18,10 @@
  *
  */
 
+#include "../../parameters.h"
+
 #ifdef BLTOUCH
 
-#include "../../parameters.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"
 #include "../../core/status.h"
@@ -66,7 +67,7 @@ bool BLTouchTesting::on_dispatch(KeyValue key_value) {
 bool BLTouchTesting::on_enter() {
   pages.save_forward_page();
   step_1a();
-  return false;
+  return true;
 }
 
 void BLTouchTesting::on_back_command() {
@@ -85,7 +86,6 @@ void BLTouchTesting::on_save_command() {
 
 //! Test if the BLTouch is powered
 void BLTouchTesting::step_1a() {
-  wait.wait(F("Initialize the BLTouch..."));
   tested_ = ok_ = Wires::None;
   set_bits(tested_, Wires::Brown | Wires::Red);
   bltouch._reset();
