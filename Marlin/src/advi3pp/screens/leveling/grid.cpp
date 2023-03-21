@@ -31,7 +31,7 @@ LevelingGrid leveling_grid;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void LevelingGrid::on_enter() {
+bool LevelingGrid::on_enter() {
   ExtUI::bed_mesh_t& z_values = ExtUI::getMeshArray();
 
   adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
@@ -40,6 +40,7 @@ void LevelingGrid::on_enter() {
       data[y * GRID_MAX_POINTS_X + x] = static_cast<int16_t>(lround(z_values[x][y] * 100));
 
   WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
+  return true;
 }
 
 //! Handles the Save (Continue) command

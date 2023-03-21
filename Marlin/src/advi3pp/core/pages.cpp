@@ -34,9 +34,15 @@ inline Log& operator<<(Log& log, Page page) {
   return log;
 }
 
+inline Log& operator<<(Log& log, Action action) {
+  log << static_cast<uint16_t>(action);
+  return log;
+}
+
 //! Show the given page on the LCD screen
 //! @param [in] page The page to be displayed on the LCD screen
 void Pages::show(Page page, Action action) {
+  Log::log() << F("show") << page << action << Log::endl();
   auto current = get_current_context();
   // Don't push temporary screens or Main (Main is implicitly always at the top)
   if(!is_temporary(current.page) && current.page != Page::Main)
@@ -46,6 +52,7 @@ void Pages::show(Page page, Action action) {
 }
 
 void Pages::send_page_to_lcd(Context context) {
+  Log::log() << F("Display page") << static_cast<double>(context.page & Page::PageNumber) << Log::endl();
   WriteRegisterRequest{Register::PictureID}.write_page(context.page & Page::PageNumber);
   current_ = context;
 }
@@ -108,7 +115,7 @@ void Pages::reset() {
 void Pages::save() {
   settings.save();
   if(current_page_ensure_no_move() && core.is_busy()) {
-    wait.wait(F("Please wait..."));
+    wait.wait();
     background_task.set(Callback{&Pages::save_task});
   }
   else
@@ -124,7 +131,7 @@ void Pages::save_task() {
 
 void Pages::back() {
   if(current_page_ensure_no_move() && core.is_busy()) {
-    wait.wait(F("Please wait..."));
+    wait.wait();
     background_task.set(Callback{&Pages::back_task});
   }
   else
@@ -144,6 +151,7 @@ void Pages::clear_temporaries() {
   if(!is_temporary(current.page))
     return;
 
+  Log::log() << F("Clear temporaries") << Log::endl();
   while(is_temporary(current.page) && !back_.is_empty())
     current = back_.pop();
   send_page_to_lcd(current);

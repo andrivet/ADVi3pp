@@ -31,13 +31,12 @@ struct Vibrations: Screen<Vibrations> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_back_command();
+  bool on_homed();
 
 private:
   enum class Speed { Slow, Medium, Fast};
-
-  void homing();
 
   void x_command();
   void y_command();

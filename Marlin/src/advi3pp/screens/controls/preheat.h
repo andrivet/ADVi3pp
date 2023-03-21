@@ -32,7 +32,7 @@ struct Preheat: Screen<Preheat> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_save_command();
 
   void send_presets();

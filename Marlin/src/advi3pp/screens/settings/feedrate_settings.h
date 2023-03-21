@@ -30,7 +30,7 @@ struct FeedrateSettings: Screen<FeedrateSettings> {
   static constexpr Action ACTION = Action::FeedrateSettings;
 
 private:
-  void on_enter();
+  bool on_enter();
   void on_save_command();
 
   friend Parent;

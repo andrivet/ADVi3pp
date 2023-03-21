@@ -30,7 +30,7 @@ struct StepSettings: Screen<StepSettings> {
   static constexpr Action ACTION = Action::StepsSettings;
 
 private:
-  void on_enter();
+  bool on_enter();
   void on_save_command();
 
   friend Parent;

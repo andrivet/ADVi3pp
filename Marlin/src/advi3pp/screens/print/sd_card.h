@@ -38,7 +38,7 @@ struct SdCard: Screen<SdCard> {
 
 private:
   bool on_dispatch(KeyValue value);
-  void on_enter();
+  bool on_enter();
 
   void show_initial();
   void show_folder_first_page();

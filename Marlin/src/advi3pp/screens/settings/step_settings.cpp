@@ -30,13 +30,14 @@ static const unsigned SCALE = 10;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void StepSettings::on_enter() {
+bool StepSettings::on_enter() {
   WriteRamRequest{Variable::Value0}.write_words(
     ExtUI::getAxisSteps_per_mm(ExtUI::X) * SCALE,
     ExtUI::getAxisSteps_per_mm(ExtUI::Y) * SCALE,
     ExtUI::getAxisSteps_per_mm(ExtUI::Z) * SCALE,
     ExtUI::getAxisSteps_per_mm(ExtUI::E0) * SCALE
   );
+  return true;
 }
 
 //! Save the Steps settings

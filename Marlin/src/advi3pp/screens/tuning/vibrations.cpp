@@ -56,13 +56,15 @@ bool Vibrations::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void Vibrations::on_enter() {
+bool Vibrations::on_enter() {
   set_values();
-  wait.home_and_wait(Callback{this, &Vibrations::homing}, F("Please wait while the printer is homed..."));
+  wait.homing(WaitCallback{this, &Vibrations::on_homed});
+  return false;
 }
 
-void Vibrations::homing() {
-  if(!wait.check_homed()) return;
+bool Vibrations::on_homed() {
+  pages.show(PAGE, ACTION);
+  return true;
 }
 
 //! Execute the Back command

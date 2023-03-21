@@ -41,12 +41,12 @@ private:
   enum class Multiplier: uint8_t { M1, M2, M3 };
 
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_save_command();
   void on_back_command();
   void on_abort();
 
-  void post_home_task();
+  bool on_homed();
   void multiplier1_command();
   void multiplier2_command();
   void multiplier3_command();
@@ -70,14 +70,12 @@ private:
 #else
 
 struct XTwist: Screen<XTwist> {
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::XTwist;
+
   void on_mesh_updated(const int8_t xpos, const int8_t ypos, const float zval) {}
   void minus() {}
   void plus() {}
-
-private:
-  static constexpr Page PAGE = Page::NoSensor;
-
-  friend Parent;
 };
 
 #endif

@@ -34,18 +34,17 @@ struct AutomaticLeveling: Screen<AutomaticLeveling> {
   static constexpr Action ACTION = Action::None;
 #endif
 
-  void on_start() {}
   void on_progress(uint8_t index, uint8_t x, uint8_t y);
   void on_done(bool success);
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
+  bool on_homed();
   void on_back_command();
   void on_abort();
 
   void reset_command();
-  void start();
   void home_task();
 
 private:

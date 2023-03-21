@@ -231,14 +231,13 @@ void Core::process_action(Action action, KeyValue key_code) {
     case runout_settings.ACTION:          runout_settings.handle(key_code); break;
     case skew_settings.ACTION:            skew_settings.handle(key_code); break;
     case beeper_settings.ACTION:          beeper_settings.handle(key_code); break;
-
-#ifdef ADVi3PP_PROBE
-    case no_sensor.ACTION:                no_sensor.handle(key_code); break;
     case automatic_leveling.ACTION:       automatic_leveling.handle(key_code); break;
     case leveling_grid.ACTION:            leveling_grid.handle(key_code); break;
     case sensor_z_height.ACTION:          sensor_z_height.handle(key_code); break;
     case xtwist.ACTION:                   xtwist.handle(key_code); break;
     case sensor_settings.ACTION:          sensor_settings.handle(key_code); break;
+#if !ENABLED(ADVi3PP_PROBE)
+    case no_sensor.ACTION:                no_sensor.handle(key_code); break;
 #endif
 #ifdef BLTOUCH
     case bltouch_testing.ACTION:          bltouch_testing.handle(key_code); break;

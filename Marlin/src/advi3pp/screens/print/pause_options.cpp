@@ -44,8 +44,9 @@ bool PauseOptions::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void PauseOptions::on_enter() {
+bool PauseOptions::on_enter() {
   pause_menu_response = PAUSE_RESPONSE_WAIT_FOR;
+  return true;
 }
 
 void PauseOptions::extrude_command() {

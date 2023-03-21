@@ -32,7 +32,7 @@ struct Versions: Screen<Versions> {
   void send_versions() const;
 
 private:
-  void on_enter();
+  bool on_enter();
 
  friend Parent;
 };

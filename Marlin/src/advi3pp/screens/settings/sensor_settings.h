@@ -34,7 +34,7 @@ struct SensorSettings: Screen<SensorSettings> {
   static constexpr Action ACTION = Action::SensorSettings;
 
 private:
-  void on_enter();
+  bool on_enter();
 
   bool on_dispatch(KeyValue value);
   void on_save_command();
@@ -54,8 +54,15 @@ private:
   friend Parent;
 };
 
-extern SensorSettings sensor_settings;
+#else
+
+struct SensorSettings: Screen<SensorSettings> {
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::SensorSettings;
+};
 
 #endif
+
+extern SensorSettings sensor_settings;
 
 }

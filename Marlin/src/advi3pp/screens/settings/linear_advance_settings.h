@@ -30,7 +30,7 @@ struct LinearAdvanceSettings: Screen<LinearAdvanceSettings> {
   static constexpr Action ACTION = Action::LinearAdvanceSettings;
 
 private:
-  void on_enter();
+  bool on_enter();
   void on_save_command();
 
 private:

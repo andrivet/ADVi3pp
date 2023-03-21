@@ -32,7 +32,7 @@ struct PidSettings: Screen<PidSettings> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_save_command();
   void on_back_command();
 

@@ -72,19 +72,9 @@ void ManualLeveling::on_abort() {
 #endif
 }
 
-void ManualLeveling::on_save_command() {
-#if HAS_LEVELING
-  ExtUI::setLevelingActive(false); // Disable ABL mesh (already disabled but prefer to be explicit)
-#endif
-  ExtUI::setAxisPosition_mm(Z_AFTER_HOMING, ExtUI::Z, FEEDRATE_Z);
-  // Do not call parent, there nothing to save
-  pages.show_forward_page();
-}
-
-
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void ManualLeveling::on_enter() {
+bool ManualLeveling::on_enter() {
   pages.save_forward_page();
 
   if(ExtUI::getActualTemp_celsius(ExtUI::E0) > 50)
@@ -93,6 +83,7 @@ void ManualLeveling::on_enter() {
                             WaitCallback{this, &ManualLeveling::start});
   else
     start();
+  return false;
 }
 
 bool ManualLeveling::abort() {
@@ -100,15 +91,17 @@ bool ManualLeveling::abort() {
 }
 
 bool ManualLeveling::start() {
+  Log::log() << F("start") << Log::endl();
   ExtUI::setLevelingActive(false); // We do not want compensation during manual leveling
-  wait.home_and_wait(Callback{this, &ManualLeveling::leveling_task}, F("G28")); // Homing (always)
+  wait.homing(WaitCallback{this, &ManualLeveling::on_homed}, F("G28\nG1 Z4 F1200"));
   return false;
 }
 
-//! Leveling Background task.
-void ManualLeveling::leveling_task() {
-  if(!wait.check_homed())
-    return;
+//! Check if the printer is homed.
+bool ManualLeveling::on_homed() {
+  Log::log() << F("on_homed") << Log::endl();
+  pages.show(PAGE, ACTION);
+  return true;
 }
 
 void ManualLeveling::move(float x, float y) {

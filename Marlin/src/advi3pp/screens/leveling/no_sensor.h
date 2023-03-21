@@ -24,6 +24,8 @@
 
 namespace ADVi3pp {
 
+#if !ENABLED(ADVi3PP_PROBE)
+
 //! No Sensor Page
 struct NoSensor: Screen<NoSensor> {
   static constexpr Page PAGE = Page::NoSensor;
@@ -34,5 +36,7 @@ private:
 };
 
 extern NoSensor no_sensor;
+
+#endif
 
 }

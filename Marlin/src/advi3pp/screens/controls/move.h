@@ -58,7 +58,7 @@ struct Move: Screen<Move> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
 
   float get_target() const;
   feedRate_t get_feedrate() const;
@@ -67,7 +67,6 @@ private:
   void move(Direction direction);
   void stop_move();
   void task();
-  void home_task();
 
 private:
   Direction direction_ = Direction::None;

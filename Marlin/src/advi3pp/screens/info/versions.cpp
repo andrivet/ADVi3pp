@@ -73,8 +73,9 @@ void Versions::send_versions() const {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void Versions::on_enter() {
+bool Versions::on_enter() {
     send_versions();
+    return true;
 }
 
 }

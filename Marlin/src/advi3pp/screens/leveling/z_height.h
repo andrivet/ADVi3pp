@@ -41,12 +41,12 @@ struct SensorZHeight: Screen<SensorZHeight> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_save_command();
   void on_back_command();
   void on_abort();
+  bool on_homed();
 
-  void post_home_task();
   void multiplier1_command();
   void multiplier2_command();
   void multiplier3_command();
@@ -61,16 +61,18 @@ private:
   millis_t last_click_time_ = 0;
   friend Parent;
 };
+
 #else
+
 //! Sensor Z Height Tuning Page
 struct SensorZHeight: Screen<SensorZHeight> {
+  static constexpr Page PAGE = Page::NoSensor;
+  static constexpr Action ACTION = Action::ZHeightTuning;
+
   void minus() {}
   void plus() {}
-
-private:
-  static constexpr Page PAGE = Page::NoSensor;
-  friend Parent;
 };
+
 #endif
 
 extern SensorZHeight sensor_z_height;

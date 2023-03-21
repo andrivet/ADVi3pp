@@ -31,7 +31,7 @@ struct ExtruderTuning: Screen<ExtruderTuning> {
 
 private:
   bool on_dispatch(KeyValue value);
-  void on_enter();
+  bool on_enter();
   void on_back_command();
   void on_save_command();
 

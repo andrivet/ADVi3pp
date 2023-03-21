@@ -85,7 +85,6 @@ enum class Page: uint16_t {
   KeyboardDecimal         = 122,
   KeyboardSignedInteger   = 124,
   KeyboardSignedDecimal   = 126,
-  LevelingNoSensor        = 128,
   ManualMesh              = 130,
   XTwist                  = 132 | EnterNoPrint | ExitFinishMove,
   Runout                  = 134,

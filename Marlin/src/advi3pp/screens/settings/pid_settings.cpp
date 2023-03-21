@@ -81,8 +81,9 @@ void PidSettings::next_command() {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void PidSettings::on_enter() {
+bool PidSettings::on_enter() {
   to_lcd();
+  return true;
 }
 
 //! Save the PID settings

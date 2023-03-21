@@ -34,7 +34,7 @@ struct BeeperSettings: Screen<BeeperSettings> {
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_save_command();
 
   void send_values(bool on_action, bool on_press, uint8_t duration) const;

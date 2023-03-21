@@ -37,8 +37,7 @@ struct Screen: adv::Crtp<Self, Screen> {
 
 protected:
   bool on_dispatch(KeyValue value);
-  Page on_get_page() const;
-  void on_enter();
+  bool on_enter();
   void on_save_command();
   void on_back_command();
   void on_abort();
@@ -55,12 +54,7 @@ void Screen<Self>::handle(KeyValue value) {
 }
 
 template<typename Self>
-Page Screen<Self>::on_get_page() const {
-  return this->self().PAGE;
-}
-
-template<typename Self>
-void Screen<Self>::on_enter() {}
+bool Screen<Self>::on_enter() { return true; }
 
 template<typename Self>
 bool Screen<Self>::on_dispatch(KeyValue value) {
@@ -77,11 +71,11 @@ bool Screen<Self>::on_dispatch(KeyValue value) {
 
 template<typename Self>
 void Screen<Self>::show() {
-  Page page = this->self().on_get_page();
+  Page page = this->self().PAGE;
   if(!pages.check_no_print(page)) return;
 
-  this->self().on_enter();
-  if(page != Page::None)
+  const bool show = this->self().on_enter();
+  if(show && page != Page::None)
     pages.show(page, this->self().ACTION);
 }
 

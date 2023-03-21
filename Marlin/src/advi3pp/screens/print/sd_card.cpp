@@ -53,8 +53,9 @@ bool SdCard::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void SdCard::on_enter() {
+bool SdCard::on_enter() {
   show_initial();
+  return true;
 }
 
 //! Show first SD card page

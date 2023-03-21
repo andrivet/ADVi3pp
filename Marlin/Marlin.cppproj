@@ -610,6 +610,15 @@
     <Compile Include="src\advi3pp\core\pid.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\core\reentrant.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\reentrant.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\screen.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\core\serial-out.h">
       <SubType>compile</SubType>
     </Compile>
@@ -628,6 +637,39 @@
     <Compile Include="src\advi3pp\core\task.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\core\wait.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\core\wait.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\ADVcallback.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\ADVcrtp.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\ADVstd.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\array.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\bitmasks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\endian.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\iterator.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\tuple.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\lib\ADVstd\unique_ptr.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\marlin\extui.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -643,15 +685,6 @@
     <Compile Include="src\advi3pp\screens\controls\preheat.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\core\no_sensor.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\core\screen.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\core\wait.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\info\copyrights.h">
       <SubType>compile</SubType>
     </Compile>
@@ -659,9 +692,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\info\killed.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\info\sponsors.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\info\statistics.h">
@@ -679,19 +709,34 @@
     <Compile Include="src\advi3pp\screens\leveling\manual.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\no_sensor.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\leveling\no_sensor.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\advi3pp\screens\leveling\xtwist.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\leveling\z_height.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\print\change_filament.h">
+    <Compile Include="src\advi3pp\screens\print\baby_steps.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\baby_steps.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\pause_options.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\print.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\print_settings.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\advi3pp\screens\print\print_settings.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\sd_card.h">
@@ -727,9 +772,6 @@
     <Compile Include="src\advi3pp\screens\settings\pid_settings.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\settings\print_settings.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\settings\runout_settings.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -761,9 +803,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\setup.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\usb_to_lcd.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\vibrations.h">
@@ -1144,19 +1183,7 @@
     <Compile Include="src\advi3pp\screens\controls\preheat.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\core\no_sensor.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\core\screen.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\core\wait.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\info\copyrights.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\info\sponsors.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\info\statistics.cpp">
@@ -1178,9 +1205,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\leveling\z_height.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\print\change_filament.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\print\pause_options.cpp">
@@ -1216,9 +1240,6 @@
     <Compile Include="src\advi3pp\screens\settings\pid_settings.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\advi3pp\screens\settings\print_settings.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\advi3pp\screens\settings\sensor_settings.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -1238,9 +1259,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\setup.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\advi3pp\screens\tuning\usb_to_lcd.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\advi3pp\screens\tuning\vibrations.cpp">
@@ -1662,10 +1680,11 @@
     <Folder Include="src" />
     <Folder Include="src\advi3pp" />
     <Folder Include="src\advi3pp\core" />
+    <Folder Include="src\advi3pp\lib\" />
+    <Folder Include="src\advi3pp\lib\ADVstd\" />
     <Folder Include="src\advi3pp\marlin" />
     <Folder Include="src\advi3pp\screens" />
     <Folder Include="src\advi3pp\screens\controls" />
-    <Folder Include="src\advi3pp\screens\core" />
     <Folder Include="src\advi3pp\screens\info" />
     <Folder Include="src\advi3pp\screens\leveling" />
     <Folder Include="src\advi3pp\screens\print" />

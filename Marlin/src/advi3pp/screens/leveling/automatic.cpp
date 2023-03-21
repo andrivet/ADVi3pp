@@ -44,9 +44,17 @@ bool AutomaticLeveling::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void AutomaticLeveling::on_enter() {
+bool AutomaticLeveling::on_enter() {
 #ifdef ADVi3PP_PROBE
-  start();
+    lcd_leveling_ = true;
+    pages.save_forward_page();
+    adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
+    WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
+
+    wait.homing(WaitCallback{this, &AutomaticLeveling::on_homed}, F("G28\nG1 Z4 F1200"));
+    return false;
+#else
+    return true;
 #endif
 }
 
@@ -68,19 +76,11 @@ void AutomaticLeveling::on_abort() {
   ExtUI::cancelLeveling();
 }
 
-void AutomaticLeveling::start() {
-  lcd_leveling_ = true;
-  pages.save_forward_page();
-  adv::array<uint16_t, GRID_MAX_POINTS_Y * GRID_MAX_POINTS_X> data{};
-  WriteRamRequest{Variable::Value0}.write_words_data(data.data(), data.size());
-  wait.home_and_wait(Callback{this, &AutomaticLeveling::home_task}, F("G28\nG1 Z4 F1200")); // Homing, always
-}
-
 //! Check if the printer is homed, and continue the Z Height Tuning process.
-void AutomaticLeveling::home_task() {
-  if(!wait.check_homed())
-    return;
+bool AutomaticLeveling::on_homed() {
+  pages.show(PAGE, ACTION);
   core.inject_commands(ExtUI::isLevelingHighSpeed() ? F("G29") : F("G29 E"));
+  return true;
 }
 
 void AutomaticLeveling::on_progress(uint8_t index, uint8_t x, uint8_t y) {

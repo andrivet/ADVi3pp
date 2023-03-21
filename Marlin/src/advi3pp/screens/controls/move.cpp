@@ -112,9 +112,10 @@ bool Move::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void Move::on_enter() {
+bool Move::on_enter() {
   ExtUI::finishAndDisableHeaters(); // To circumvent homing problems
   direction_ = Direction::None;
+  return true;
 }
 
 void Move::move(Direction direction) {
@@ -189,26 +190,22 @@ void Move::disable_motors_command() {
 
 //! Go to home on the X axis.
 void Move::x_home_command() {
-  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 X"));
+  wait.homing(F("G28 X"));
 }
 
 //! Go to home on the Y axis.
 void Move::y_home_command() {
-  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 Y"));
+  wait.homing(F("G28 Y"));
 }
 
 //! Go to home on the Z axis.
 void Move::z_home_command() {
-  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28 Z"));
+  wait.homing(F("G28 Z"));
 }
 
 //! Go to home on all axis.
 void Move::all_home_command() {
-  wait.home_and_wait(Callback{this, &Move::home_task}, F("G28"));
-}
-
-void Move::home_task() {
-  wait.check_homed();
+  wait.homing(F("G28"));
 }
 
 }

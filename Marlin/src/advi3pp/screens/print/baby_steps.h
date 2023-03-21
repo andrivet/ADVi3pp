@@ -36,7 +36,7 @@ struct BabySteps: Screen<BabySteps> {
 
 private:
   bool on_dispatch(KeyValue value);
-  void on_enter();
+  bool on_enter();
   void on_back_command();
 
   void send_multiplier() const;

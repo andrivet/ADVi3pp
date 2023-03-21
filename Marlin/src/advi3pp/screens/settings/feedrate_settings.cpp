@@ -28,7 +28,7 @@ FeedrateSettings feedrates_settings;
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void FeedrateSettings::on_enter() {
+bool FeedrateSettings::on_enter() {
   WriteRamRequest{Variable::Value0}.write_words(
     ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::X),
     ExtUI::getAxisMaxFeedrate_mm_s(ExtUI::Y),
@@ -37,6 +37,7 @@ void FeedrateSettings::on_enter() {
     ExtUI::getMinFeedrate_mm_s(),
     ExtUI::getMinTravelFeedrate_mm_s()
   );
+  return true;
 }
 
 //! Save the Feedrate settings

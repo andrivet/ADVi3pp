@@ -62,27 +62,25 @@ bool XTwist::on_dispatch(KeyValue key_value) {
 
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
-void XTwist::on_enter() {
+bool XTwist::on_enter() {
   if(!ExtUI::getLevelingActive()) {
     wait.wait_back(F("Please do an automated bed leveling."));
-    return;
+    return false;
   }
 
   z_offsets_.fill(0);
   pages.save_forward_page();
-  wait.home_and_wait(Callback{this, &XTwist::post_home_task});
+  wait.homing(WaitCallback{this, &XTwist::on_homed});
+  return false;
 }
 
 //! Check if the printer is homed, and continue the process.
-void XTwist::post_home_task() {
-  if(!wait.check_homed())
-    return;
-
+bool XTwist::on_homed() {
+  pages.show(PAGE, ACTION);
   send_data();
-  status.reset();
-
   ExtUI::setSoftEndstopState(false);
   point_M_command();
+  return true;
 }
 
 //! Execute the Back command
@@ -106,7 +104,7 @@ void XTwist::on_save_command() {
   for(size_t i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, z_offsets_[i]);
 
   // enable enstops, raise head
-  ExtUI::setSoftEndstopState(true);;
+  ExtUI::setSoftEndstopState(true);
   ExtUI::setAxisPosition_mm(4, ExtUI::Z, FEEDRATE_Z);
 
   Parent::on_save_command();

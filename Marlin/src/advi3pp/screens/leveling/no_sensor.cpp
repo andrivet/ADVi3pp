@@ -23,6 +23,8 @@
 
 namespace ADVi3pp {
 
+#if !ENABLED(ADVi3PP_PROBE)
 NoSensor no_sensor;
+#endif
 
 }

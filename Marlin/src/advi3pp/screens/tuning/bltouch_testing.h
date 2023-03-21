@@ -43,7 +43,7 @@ private:
 
 private:
   bool on_dispatch(KeyValue key_value);
-  void on_enter();
+  bool on_enter();
   void on_back_command();
   void on_save_command();
   void on_abort();
@@ -79,9 +79,8 @@ inline uint16_t BLTouchTesting::wire_value(Wires wire) {
 #else
 //! BLTouch Testing Page
 struct BLTouchTesting: Screen<BLTouchTesting> {
-private:
   static constexpr Page PAGE = Page::NoSensor;
-  friend Parent;
+  static constexpr Action ACTION = Action::BLTouchTesting;
 };
 #endif
 
