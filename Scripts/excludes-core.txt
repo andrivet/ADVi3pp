@@ -1,0 +1,7 @@
+.DS_Store
+._*
+ArduinoCore/bin/*
+ArduinoCore/BLTouch-Debug/*
+ArduinoCore/Debug/*
+ArduinoCore/BLTouch-Release/*
+ArduinoCore/Release/*
