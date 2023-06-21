@@ -173,6 +173,14 @@
 #define BOARD_WEEDO_62A               1330  // WEEDO 62A board (TINA2, Monoprice Cadet, etc.)
 
 //
+// ADVi3++ @advi3++
+//
+
+#define BOARD_ADVI3PP_I3_PLUS_51      9000  // Wanhao Duplicator i3 Plus, mainboard version 5.1
+#define BOARD_ADVI3PP_I3_PLUS_52C     9001  // Aldi Balco 3D HE180021, mainboard version 5.2C
+#define BOARD_ADVI3PP_I3_PLUS_54      9002  // Wanhao Duplicator i3 Plus Mark II, mainboard version 5.4
+
+//
 // ATmega1281, ATmega2561
 //
 

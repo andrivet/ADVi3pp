@@ -233,6 +233,7 @@ public:
 
   #if USE_MARLINUI_BUZZER
     static void buzz(const long duration, const uint16_t freq=0);
+    static void buzz_m300(const long duration, const uint16_t freq); // @advi3++
   #endif
 
   static void chirp() {
@@ -287,6 +288,9 @@ public:
     static millis_t screen_timeout_millis;
     static void refresh_screen_timeout();
     static void sleep_display(const bool sleep=true);
+    static void check_screen_timeout(); // @advi3++
+    static void set_screen_timeout(uint8_t minutes) { sleep_timeout_minutes = minutes; } // @advi3++
+
   #endif
 
   #if HAS_DWIN_E3V2_BASIC
@@ -514,7 +518,7 @@ public:
     #endif
 
     static void draw_kill_screen();
-    static void kill_screen(FSTR_P const lcd_error, FSTR_P const lcd_component);
+    static void kill_screen(float temp, FSTR_P const lcd_error, FSTR_P const lcd_component); // @advi3++
     #if DISABLED(LIGHTWEIGHT_UI)
       static void draw_status_message(const bool blink);
     #endif

@@ -206,8 +206,15 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
   }
 
   #if !HAS_TOUCH_SLEEP && !HAS_MARLINUI_U8GLIB // without DOGM (COLOR_UI)
-    void MarlinUI::sleep_display(const bool sleep) {} // if unimplemented
+    // void MarlinUI::sleep_display(const bool sleep) {} // // @advi3++
   #endif
+
+  // @advi3++
+  void MarlinUI::check_screen_timeout() {
+    millis_t ms = millis();
+    if (screen_timeout_millis && ELAPSED(ms, screen_timeout_millis))
+      sleep_display(true);
+  }
 
 #endif
 
@@ -1496,7 +1503,9 @@ void MarlinUI::init() {
       else if (print_job_timer.needsService(3)) msg = FPSTR(service3);
     #endif
 
-    else if (!no_welcome) msg = GET_TEXT_F(WELCOME_MSG);
+    // @advi3++ will detect the empty string and clear and pending wait screen
+    // else if (!no_welcome) msg = GET_TEXT_F(WELCOME_MSG);
+    else if (!no_welcome) msg = F("");
 
     else if (ENABLED(DWIN_LCD_PROUI))
         msg = F("");
@@ -1849,6 +1858,7 @@ void MarlinUI::init() {
 
 #endif
 
+#ifndef ADVi3PP_UI // @advi3++
 #if BOTH(EXTENSIBLE_UI, ADVANCED_PAUSE_FEATURE)
 
   void MarlinUI::pause_show_message(
@@ -1878,6 +1888,7 @@ void MarlinUI::init() {
   }
 
 #endif
+#endif // @advi3++
 
 #if ENABLED(EEPROM_SETTINGS)
 

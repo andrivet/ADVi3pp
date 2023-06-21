@@ -257,11 +257,12 @@ bool load_filament(const_float_t slow_load_length/*=0*/, const_float_t fast_load
 
   #if ENABLED(ADVANCED_PAUSE_CONTINUOUS_PURGE)
 
+    KEEPALIVE_STATE(PAUSED_FOR_USER); // @advi3++
+    wait_for_user = true; // A click or M108 breaks the purge_length loop @advi3++ move before displaying messages
     if (show_lcd) ui.pause_show_message(PAUSE_MESSAGE_PURGE);
 
     TERN_(EXTENSIBLE_UI, ExtUI::onUserConfirmRequired(GET_TEXT_F(MSG_FILAMENT_CHANGE_PURGE)));
     TERN_(HOST_PROMPT_SUPPORT, hostui.continue_prompt(GET_TEXT_F(MSG_FILAMENT_CHANGE_PURGE)));
-    wait_for_user = true; // A click or M108 breaks the purge_length loop
     for (float purge_count = purge_length; purge_count > 0 && wait_for_user; --purge_count)
       unscaled_e_move(1, ADVANCED_PAUSE_PURGE_FEEDRATE);
     wait_for_user = false;

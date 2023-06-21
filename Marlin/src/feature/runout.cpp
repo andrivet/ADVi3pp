@@ -35,6 +35,9 @@ FilamentMonitor runout;
 bool FilamentMonitorBase::enabled = true,
      FilamentMonitorBase::filament_ran_out;  // = false
 
+// @advi3++
+bool FilamentMonitorBase::inverted;
+
 #if ENABLED(HOST_ACTION_COMMANDS)
   bool FilamentMonitorBase::host_handling; // = false
 #endif

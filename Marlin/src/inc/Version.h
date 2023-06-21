@@ -21,6 +21,23 @@
  */
 #pragma once
 
+// @advi3++: Change the name depending of the model of the printer and the model of the sensor
+#if defined(ADVi3PP_54)
+    #define ADVi3PP_NAME "ADVi3++MarkII"
+#elif defined(ADVi3PP_52C)
+    #if defined(BLTOUCH)
+      #define ADVi3PP_NAME "ADVi3++HE180021-BLTouch"
+    #else
+      #define ADVi3PP_NAME "ADVi3++HE180021"
+    #endif
+#else
+#if defined(BLTOUCH)
+    #define ADVi3PP_NAME "ADVi3++BLTouch"
+#else
+    #define ADVi3PP_NAME "ADVi3++"
+#endif
+#endif
+
 /**
  * Release version. Leave the Marlin version or apply a custom scheme.
  */
@@ -33,7 +50,7 @@
  * vendor name, download location, GitHub account, etc.
  */
 #ifndef DETAILED_BUILD_VERSION
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (" ADVi3PP_NAME " 5.6.0)"
 #endif
 
 /**
@@ -42,7 +59,7 @@
  * version was tagged.
  */
 #ifndef STRING_DISTRIBUTION_DATE
-  #define STRING_DISTRIBUTION_DATE "2023-05-16"
+  #define STRING_DISTRIBUTION_DATE "2023-06-21"
 #endif
 
 /**
@@ -82,14 +99,14 @@
  * providing the source code to your customers.)
  */
 #ifndef SOURCE_CODE_URL
-  #define SOURCE_CODE_URL "github.com/MarlinFirmware/Marlin"
+  #define SOURCE_CODE_URL "https://github.com/andrivet/ADVi3pp/" // @advi3++
 #endif
 
 /**
  * Default generic printer UUID.
  */
 #ifndef DEFAULT_MACHINE_UUID
-  #define DEFAULT_MACHINE_UUID "cede2a2f-41a2-4748-9b12-c55c62f367ff"
+  #define DEFAULT_MACHINE_UUID "44b2f5d6-e7e4-47bf-be81-c2a6b4fc7975" // @advi3++
 #endif
 
   /**
@@ -97,7 +114,7 @@
    * documentation about a specific Marlin release. Displayed in the Info Menu.
    */
 #ifndef WEBSITE_URL
-  #define WEBSITE_URL "marlinfw.org"
+  #define WEBSITE_URL "https://community.advi3pp.com/c/user-manual" // @advi3++
 #endif
 
 /**

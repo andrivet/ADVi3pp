@@ -293,6 +293,17 @@
   #include "mega/pins_WEEDO_62A.h"              // ATmega2560                             env:mega2560
 
 //
+// ADVi3++ @advi3++
+//
+
+#elif MB(ADVI3PP_I3_PLUS_51)
+  #include "advi3pp/pins_ADVI3PP.h"              // ATmega2560                             env:advi3pp_51 env:advi3pp_51_bltouch env:advi3pp_51_bltouch_debug env:advi3pp_simulator
+#elif MB(ADVI3PP_I3_PLUS_52C)
+  #include "advi3pp/pins_ADVI3PP.h"              // ATmega2560                             env:advi3pp_52c env:advi3pp_52c_bltouch
+#elif MB(ADVI3PP_I3_PLUS_54)
+  #include "advi3pp/pins_ADVI3PP.h"              // ATmega2560                             env:advi3pp_54
+
+//
 // ATmega1281, ATmega2561
 //
 

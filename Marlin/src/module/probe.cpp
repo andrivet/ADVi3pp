@@ -614,6 +614,10 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
   // Move down until the probe is triggered
   do_blocking_move_to_z(z, fr_mm_s);
 
+  // @advi3++: In the simulator, the probe is always triggered
+  #if defined(ADVi3PP_HARDWARE_SIMULATOR)
+    const bool probe_triggered = true;
+  #else
   // Check to see if the probe was triggered
   const bool probe_triggered =
     #if HAS_DELTA_SENSORLESS_PROBING
@@ -622,6 +626,7 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
       TEST(endstops.trigger_state(), Z_MIN_PROBE)
     #endif
   ;
+  #endif
 
   // Offset sensorless probing
   #if HAS_DELTA_SENSORLESS_PROBING
@@ -848,6 +853,11 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/) {
 
   #endif
 
+    // @advi3++
+#ifdef ADVi3PP_HARDWARE_SIMULATOR
+  return 2.0;
+#endif
+
   return measured_z;
 }
 
@@ -913,6 +923,11 @@ float Probe::probe_at_point(const_float_t rx, const_float_t ry, const ProbePtRai
     if (verbose_level > 2)
       SERIAL_ECHOLNPGM("Bed X: ", LOGICAL_X_POSITION(rx), " Y: ", LOGICAL_Y_POSITION(ry), " Z: ", measured_z);
   }
+  
+  // @advi3++
+  #ifdef ADVi3PP_HARDWARE_SIMULATOR
+  measured_z = 2.1;
+  #endif
 
   if (isnan(measured_z)) {
     stow();

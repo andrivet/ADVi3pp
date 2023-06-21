@@ -614,8 +614,8 @@ namespace Language_en {
   LSTR MSG_THERMAL_RUNAWAY_CHAMBER        = _UxGT("CHAMBER T. RUNAWAY");
   LSTR MSG_THERMAL_RUNAWAY_COOLER         = _UxGT("Cooler Runaway");
   LSTR MSG_COOLING_FAILED                 = _UxGT("Cooling Failed");
-  LSTR MSG_ERR_MAXTEMP                    = _UxGT("Err: MAXTEMP");
-  LSTR MSG_ERR_MINTEMP                    = _UxGT("Err: MINTEMP");
+  LSTR MSG_ERR_MAXTEMP                    = _UxGT("Temperature too high"); // @advi3++
+  LSTR MSG_ERR_MINTEMP                    = _UxGT("Temperature too low"); // @advi3++
   LSTR MSG_HALTED                         = _UxGT("PRINTER HALTED");
   LSTR MSG_PLEASE_WAIT                    = _UxGT("Please wait...");
   LSTR MSG_PLEASE_RESET                   = _UxGT("Please Reset");
@@ -787,6 +787,8 @@ namespace Language_en {
   // Filament Change screens show up to 3 lines on a 4-line display
   //                        ...or up to 2 lines on a 3-line display
   //
+  // @advi3++: Adapt messages for ADVi3++ LCD screen
+/*
   #if LCD_HEIGHT >= 4
     LSTR MSG_ADVANCED_PAUSE_WAITING       = _UxGT(MSG_2_LINE("Press Button", "to resume print"));
     LSTR MSG_PAUSE_PRINT_PARKING          = _UxGT(MSG_1_LINE("Parking..."));
@@ -812,6 +814,19 @@ namespace Language_en {
     LSTR MSG_FILAMENT_CHANGE_CONT_PURGE   = _UxGT(MSG_1_LINE("Click to finish"));
     LSTR MSG_FILAMENT_CHANGE_RESUME       = _UxGT(MSG_1_LINE("Resuming..."));
   #endif
+  */
+  LSTR MSG_ADVANCED_PAUSE_WAITING        = _UxGT(MSG_1_LINE("Press Continue to resume print"));
+  LSTR MSG_PAUSE_PRINT_PARKING           = _UxGT(MSG_1_LINE("Parking..."));
+  LSTR MSG_FILAMENT_CHANGE_INIT          = _UxGT(MSG_1_LINE("Wait for filament change to start"));
+  LSTR MSG_FILAMENT_CHANGE_INSERT        = _UxGT(MSG_1_LINE("Insert filament and press Continue"));
+  LSTR MSG_FILAMENT_CHANGE_HEAT          = _UxGT(MSG_1_LINE("Press Continue to heat nozzle"));
+  LSTR MSG_FILAMENT_CHANGE_HEATING       = _UxGT(MSG_1_LINE("Nozzle heating, please wait..."));
+  LSTR MSG_FILAMENT_CHANGE_UNLOAD        = _UxGT(MSG_1_LINE("Wait for filament unload"));
+  LSTR MSG_FILAMENT_CHANGE_LOAD          = _UxGT(MSG_1_LINE("Wait for filament load"));
+  LSTR MSG_FILAMENT_CHANGE_PURGE         = _UxGT(MSG_1_LINE("Wait for filament purge"));
+  LSTR MSG_FILAMENT_CHANGE_CONT_PURGE    = _UxGT(MSG_1_LINE("Click to finish filament purge"));
+  LSTR MSG_FILAMENT_CHANGE_RESUME        = _UxGT(MSG_1_LINE("Wait for print to resume..."));
+
   LSTR MSG_TMC_DRIVERS                    = _UxGT("TMC Drivers");
   LSTR MSG_TMC_CURRENT                    = _UxGT("Driver Current");
   LSTR MSG_TMC_HYBRID_THRS                = _UxGT("Hybrid Threshold");

@@ -66,6 +66,7 @@ extern FilamentMonitor runout;
 class FilamentMonitorBase {
   public:
     static bool enabled, filament_ran_out;
+    static bool inverted; // @advi3++
 
     #if ENABLED(HOST_ACTION_COMMANDS)
       static bool host_handling;
@@ -215,28 +216,28 @@ class FilamentSensorBase {
     static uint8_t poll_runout_states() {
       return poll_runout_pins() ^ uint8_t(0
         #if NUM_RUNOUT_SENSORS >= 1
-          | (FIL_RUNOUT1_STATE ? 0 : _BV(1 - 1))
+          | (runout.inverted ? 0 : _BV(1 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 2
-          | (FIL_RUNOUT2_STATE ? 0 : _BV(2 - 1))
+          | (runout.inverted ? 0 : _BV(2 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 3
-          | (FIL_RUNOUT3_STATE ? 0 : _BV(3 - 1))
+          | (runout.inverted ? 0 : _BV(3 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 4
-          | (FIL_RUNOUT4_STATE ? 0 : _BV(4 - 1))
+          | (runout.inverted ? 0 : _BV(4 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 5
-          | (FIL_RUNOUT5_STATE ? 0 : _BV(5 - 1))
+          | (runout.inverted ? 0 : _BV(5 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 6
-          | (FIL_RUNOUT6_STATE ? 0 : _BV(6 - 1))
+          | (runout.inverted ? 0 : _BV(6 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 7
-          | (FIL_RUNOUT7_STATE ? 0 : _BV(7 - 1))
+          | (runout.inverted ? 0 : _BV(7 - 1)) // @advi3++
         #endif
         #if NUM_RUNOUT_SENSORS >= 8
-          | (FIL_RUNOUT8_STATE ? 0 : _BV(8 - 1))
+          | (runout.inverted ? 0 : _BV(8 - 1)) // @advi3++
         #endif
       );
     }

@@ -66,6 +66,7 @@ namespace ExtUI {
   constexpr uint8_t extruderCount = EXTRUDERS;
   constexpr uint8_t hotendCount   = HOTENDS;
   constexpr uint8_t fanCount      = FAN_COUNT;
+  constexpr int     xTwistPoints  = XATC_MAX_POINTS; // @advi3++
 
   #if HAS_MESH
     typedef float bed_mesh_t[GRID_MAX_POINTS_X][GRID_MAX_POINTS_Y];
@@ -80,7 +81,7 @@ namespace ExtUI {
   bool canMove(const extruder_t);
   void injectCommands_P(PGM_P const);
   inline void injectCommands(FSTR_P const fstr) { injectCommands_P(FTOP(fstr)); }
-  void injectCommands(char * const);
+  void injectCommands(const char * const); // @advi3++ add const qualifier
   bool commandsInQueue();
 
   #if ENABLED(HOST_KEEPALIVE_FEATURE)
@@ -172,13 +173,22 @@ namespace ExtUI {
     bool getLevelingActive();
     void setLevelingActive(const bool);
     bool getMeshValid();
+    #if ENABLED(BLTOUCH)
+    bool isLevelingHighSpeed(); // @advi3++
+    void setLevelingHighSpeed(bool set = true); // @advi3++
+    #else
+    inline bool isLevelingHighSpeed() { return false; } // @advi3++
+    inline void setLevelingHighSpeed(bool set = true) {} // @advi3++
+    #endif
     #if HAS_MESH
       bed_mesh_t& getMeshArray();
       float getMeshPoint(const xy_uint8_t &pos);
       void setMeshPoint(const xy_uint8_t &pos, const_float_t zval);
       void moveToMeshPoint(const xy_uint8_t &pos, const_float_t z);
       void onLevelingStart();
-      void onLevelingDone();
+      void onLevelingDone(bool success); // @advi3++
+      void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos); // @advi3++
+      void cancelLeveling(); // @advi3++
       void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval);
       inline void onMeshUpdate(const xy_int8_t &pos, const_float_t zval) { onMeshUpdate(pos.x, pos.y, zval); }
 
@@ -210,7 +220,9 @@ namespace ExtUI {
   #if ENABLED(PRINTCOUNTER)
     char* getFailedPrints_str(char buffer[21]);
     char* getTotalPrints_str(char buffer[21]);
+    uint16_t getTotalPrints(); // @advi3++
     char* getFinishedPrints_str(char buffer[21]);
+    uint16_t getFinishedPrints(); // @advi3++
     char* getTotalPrintTime_str(char buffer[21]);
     char* getLongestPrint_str(char buffer[21]);
     char* getFilamentUsed_str(char buffer[21]);
@@ -221,6 +233,7 @@ namespace ExtUI {
   void setTargetFan_percent(const_float_t, const fan_t);
   void coolDown();
   void setAxisPosition_mm(const_float_t, const axis_t, const feedRate_t=0);
+  void setMultipleAxisPosition_mm(size_t nb_axis, const float *, const axis_t *, const feedRate_t); // @advi3++
   void setAxisPosition_mm(const_float_t, const extruder_t, const feedRate_t=0);
   void setAxisSteps_per_mm(const_float_t, const axis_t);
   void setAxisSteps_per_mm(const_float_t, const extruder_t);
@@ -309,6 +322,8 @@ namespace ExtUI {
       float getFilamentRunoutDistance_mm();
       void setFilamentRunoutDistance_mm(const_float_t);
     #endif
+    void setFilamentRunoutInverted(bool inverted); // @advi3++
+    bool getFilamentRunoutInverted(); // @advi3++
   #endif
 
   #if ENABLED(CASE_LIGHT_ENABLE)
@@ -342,6 +357,24 @@ namespace ExtUI {
     void startBedPIDTune(const celsius_t);
   #endif
 
+  // @advi3++
+  #if PREHEAT_COUNT
+    uint8_t getNbMaterialPresets();
+    int16_t getMaterialPresetHotendTemp_celsius(unsigned int index);
+    int16_t getMaterialPresetBedTemp_celsius(unsigned int index);
+    uint8_t getMaterialPresetFanSpeed_percent(unsigned int index);
+    void setMaterialPreset(unsigned int index, int16_t hotend_celcius, int16_t bed_celcius, uint8_t fan_percent);
+  #endif
+
+  // @advi3++
+  #if ENABLED(X_AXIS_TWIST_COMPENSATION)
+  float getXTwistSpacing();
+  float getXTwistStart();
+  const float* getXTwistZValues();
+  void setXTwistStartSpacing(float start, float spacing);
+  void setXTwistZOffset(int index, float offset);
+  #endif
+
   /**
    * Delay and timing routines
    * Should be used by the EXTENSIBLE_UI to safely pause or measure time
@@ -363,7 +396,10 @@ namespace ExtUI {
    *
    * Should be used by the EXTENSIBLE_UI to operate on files
    */
+  void mountMedia(); // @advi3++
+  void releaseMedia(); // @advi3++
   bool isMediaInserted();
+  bool isMediaMounted(); // @advi3++
   bool isPrintingFromMediaPaused();
   bool isPrintingFromMedia();
   bool isPrinting();
@@ -404,8 +440,9 @@ namespace ExtUI {
   void onMediaInserted();
   void onMediaError();
   void onMediaRemoved();
+  void onMediaOpenError(const char* filename); // @advi3++
   void onPlayTone(const uint16_t frequency, const uint16_t duration);
-  void onPrinterKilled(FSTR_P const error, FSTR_P const component);
+  void onPrinterKilled(float temp, FSTR_P const error, FSTR_P const component);
   void onPrintTimerStarted();
   void onPrintTimerPaused();
   void onPrintTimerStopped();
@@ -415,6 +452,7 @@ namespace ExtUI {
   void onUserConfirmRequired(FSTR_P const fstr);
   void onStatusChanged(const char * const msg);
   void onStatusChanged(FSTR_P const fstr);
+  void onShowStatus(); // @advi3++
   void onHomingStart();
   void onHomingDone();
   void onSteppersDisabled();
@@ -425,12 +463,48 @@ namespace ExtUI {
   void onPostprocessSettings();
   void onSettingsStored(bool success);
   void onSettingsLoaded(bool success);
+  void onSettingsValidated(bool success); // @advi3++
+
+  // @advi3++
+  #if ENABLED(EEPROM_SETTINGS)
+    void saveSettings();
+    void loadSettings();
+    void resetSettings();
+    using eeprom_write = bool (*)(int &pos, const uint8_t* value, uint16_t size, uint16_t* crc);
+    using eeprom_read  = bool (*)(int &pos, uint8_t* value, uint16_t size, uint16_t* crc, const bool force);
+    void onStoreSettingsEx(eeprom_write write, int& eeprom_index, uint16_t& working_crc);
+    bool onLoadSettingsEx(eeprom_read read, int& eeprom_index, uint16_t& working_crc, bool validating);
+    uint16_t getSizeofSettings();
+  #endif
+
+  // @advi3++
+  #if ENABLED(SKEW_CORRECTION)
+    #if ENABLED(SKEW_CORRECTION_FOR_Z)
+        void setSkewFactors(float xy, float xz, float yz);
+    #else
+        void setSkewFactors(float xy);
+    #endif
+  #endif
+
   #if ENABLED(POWER_LOSS_RECOVERY)
     void onPowerLossResume();
   #endif
   #if HAS_PID_HEATING
+    void onPidTuningProgress(int cycleIndex, int nbCycles); // @advi3++
+    void onPidTuningReportTemp(int heater); // @advi3++
     void onPidTuning(const result_t rst);
   #endif
+
+  // @advi3++
+  void setAllAxisUnhomed();
+  void setAllAxisPositionUnknown();
+  void finishAndDisableHeaters();
+  void cancelWaitForHeatup();
+  void kill(PGM_P const lcd_error=nullptr, PGM_P const lcd_component=nullptr, const bool steppers_off=false);
+  void killRightNow(const bool steppers_off=false);
+  void watchdogReset();
+  void stopMove();
+  void setAbsoluteZAxisPosition_mm(const_float_t position);
 };
 
 /**

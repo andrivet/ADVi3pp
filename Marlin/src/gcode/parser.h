@@ -365,7 +365,8 @@ public:
       return input_temp_units == TEMPUNIT_K ? F("Kelvin") : input_temp_units == TEMPUNIT_F ? F("Fahrenheit") : F("Celsius");
     }
 
-    #if HAS_MARLINUI_MENU && DISABLED(DISABLE_M503)
+    // @advi3++
+    #if (HAS_MARLINUI_MENU || ENABLED(ADVi3PP_UI)) && DISABLED(DISABLE_M503)
 
       static float to_temp_units(celsius_t c) {
         switch (input_temp_units) {

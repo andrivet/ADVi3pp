@@ -53,6 +53,7 @@
 #include "../../module/probe.h"
 #include "../../module/temperature.h"
 #include "../../module/printcounter.h"
+#include "../../module/settings.h" // @advi3++
 #include "../../libs/duration_t.h"
 #include "../../HAL/shared/Delay.h"
 #include "../../MarlinCore.h"
@@ -108,6 +109,16 @@
 
 #if M600_PURGE_MORE_RESUMABLE
   #include "../../feature/pause.h"
+#endif
+
+// @advi3++
+#if ENABLED(BLTOUCH)
+  #include "../../feature/bltouch.h"
+#endif
+
+// @advi3++
+#if ENABLED(X_AXIS_TWIST_COMPENSATION)
+  #include "../../feature/x_twist.h"
 #endif
 
 namespace ExtUI {
@@ -340,6 +351,29 @@ namespace ExtUI {
 
     current_position[axis] = constrain(position, min, max);
     line_to_current_position(feedrate ?: manual_feedrate_mm_s[axis]);
+  }
+
+  // @advi3++
+  void setMultipleAxisPosition_mm(size_t nb_axis, const float *positions, const axis_t *axis, const feedRate_t feedrate) {
+
+    for(size_t i = 0; i < nb_axis; ++i) {
+      // Get motion limit from software endstops, if any
+      float min, max;
+      soft_endstop.get_manual_axis_limits((AxisEnum)axis[i], min, max);
+
+      // Delta limits XY based on the current offset from center
+      // This assumes the center is 0,0
+#if ENABLED(DELTA)
+      if (axis != Z) {
+            max = SQRT(sq(float(DELTA_PRINTABLE_RADIUS)) - sq(current_position[Y - axis])); // (Y - axis) == the other axis
+            min = -max;
+          }
+#endif
+
+      current_position[axis[i]] = constrain(positions[i], min, max);
+    }
+
+    line_to_current_position(feedrate);
   }
 
   void setAxisPosition_mm(const_float_t position, const extruder_t extruder, const feedRate_t feedrate/*=0*/) {
@@ -692,6 +726,9 @@ namespace ExtUI {
       float getFilamentRunoutDistance_mm()                 { return runout.runout_distance(); }
       void setFilamentRunoutDistance_mm(const_float_t value) { runout.set_runout_distance(constrain(value, 0, 999)); }
     #endif
+    // @advi3++
+    void setFilamentRunoutInverted(bool inverted)   { runout.inverted = inverted; }
+    bool getFilamentRunoutInverted()                { return runout.inverted; }
   #endif
 
   #if ENABLED(CASE_LIGHT_ENABLE)
@@ -918,6 +955,10 @@ namespace ExtUI {
     bool getLevelingActive() { return planner.leveling_active; }
     void setLevelingActive(const bool state) { set_bed_leveling_enabled(state); }
     bool getMeshValid() { return leveling_is_valid(); }
+    #if ENABLED(BLTOUCH)
+    bool isLevelingHighSpeed() { return bltouch.high_speed_mode; } // @advi3++
+    void setLevelingHighSpeed(bool set) { bltouch.high_speed_mode = set; } // @advi3++
+    #endif
 
     #if HAS_MESH
 
@@ -965,7 +1006,9 @@ namespace ExtUI {
   #if ENABLED(PRINTCOUNTER)
     char* getFailedPrints_str(char buffer[21])   { strcpy(buffer,i16tostr3left(print_job_timer.getStats().totalPrints - print_job_timer.getStats().finishedPrints)); return buffer; }
     char* getTotalPrints_str(char buffer[21])    { strcpy(buffer,i16tostr3left(print_job_timer.getStats().totalPrints));    return buffer; }
+    uint16_t getTotalPrints()                    { return print_job_timer.getStats().totalPrints; } // @advi3++
     char* getFinishedPrints_str(char buffer[21]) { strcpy(buffer,i16tostr3left(print_job_timer.getStats().finishedPrints)); return buffer; }
+    uint16_t getFinishedPrints()                 { return print_job_timer.getStats().finishedPrints; } // @advi3++
     char* getTotalPrintTime_str(char buffer[21]) { return duration_t(print_job_timer.getStats().printTime).toString(buffer); }
     char* getLongestPrint_str(char buffer[21])   { return duration_t(print_job_timer.getStats().longestPrint).toString(buffer); }
     char* getFilamentUsed_str(char buffer[21])   {
@@ -1006,7 +1049,7 @@ namespace ExtUI {
   #endif
 
   void injectCommands_P(PGM_P const gcode) { queue.inject_P(gcode); }
-  void injectCommands(char * const gcode)  { queue.inject(gcode); }
+  void injectCommands(const char * const gcode)  { queue.inject(gcode); } // @advi3++ add const qualifier
 
   bool commandsInQueue() { return (planner.movesplanned() || queue.has_commands_queued()); }
 
@@ -1076,6 +1119,8 @@ namespace ExtUI {
   }
   void setUserConfirmed() { TERN_(HAS_RESUME_CONTINUE, wait_for_user = false); }
 
+  void cancelLeveling() { ::g29_cancel = true; } // @advi3++
+
   #if M600_PURGE_MORE_RESUMABLE
     void setPauseMenuResponse(PauseMenuResponse response) { pause_menu_response = response; }
     PauseMessage pauseModeStatus = PAUSE_MESSAGE_STATUS;
@@ -1101,6 +1146,9 @@ namespace ExtUI {
   }
 
   bool isMediaInserted() { return TERN0(SDSUPPORT, IS_SD_INSERTED()); }
+  void mountMedia() { card.mount(); } // @advi3++
+  void releaseMedia() { card.release(); } // @advi3++
+  bool isMediaMounted() { return card.flag.mounted; } // @advi3++
 
   void pausePrint()  { ui.pause_print(); }
   void resumePrint() { ui.resume_print(); }
@@ -1183,6 +1231,147 @@ namespace ExtUI {
     #endif
   }
 
+  // @advi3++
+  void setAllAxisUnhomed()
+  {
+    ::set_all_unhomed();
+  }
+
+  void setAllAxisPositionUnknown()
+  {
+    ::set_all_unhomed();
+  }
+
+  void finishAndDisableHeaters()
+  {
+    planner.finish_and_disable();
+  }
+
+void cancelWaitForHeatup()
+{
+  ::wait_for_heatup = false;
+  setUserConfirmed();
+}
+
+void kill(float temp, FSTR_P const lcd_error, FSTR_P const lcd_component, const bool steppers_off)
+{
+  ::kill(temp, lcd_error, lcd_component, steppers_off);
+}
+
+void killRightNow(const bool steppers_off)
+{
+  ::minkill(steppers_off);
+}
+
+#if PREHEAT_COUNT
+uint8_t getNbMaterialPresets()
+{
+  static_assert(COUNT(ui.material_preset) == PREHEAT_COUNT, "Update PREHEAT_COUNT");
+  return PREHEAT_COUNT;
+}
+
+int16_t getMaterialPresetHotendTemp_celsius(unsigned int index)
+{
+  return ui.material_preset[index].hotend_temp;
+}
+
+int16_t getMaterialPresetBedTemp_celsius(unsigned int index)
+{
+  return ui.material_preset[index].bed_temp;
+}
+
+uint8_t getMaterialPresetFanSpeed_percent(unsigned int index)
+{
+  return thermalManager.fanSpeedPercent(ui.material_preset[index].fan_speed);
+}
+
+void setMaterialPreset(unsigned int index, int16_t hotend_celcius, int16_t bed_celcius, uint8_t fan_percent)
+{
+  ui.material_preset[index].hotend_temp = hotend_celcius;
+  ui.material_preset[index].bed_temp    = bed_celcius;
+  ui.material_preset[index].fan_speed   = map(constrain(fan_percent, 0, 100), 0, 100, 0, 255);
+}
+
+#endif
+
+// @advi3++
+#if ENABLED(X_AXIS_TWIST_COMPENSATION)
+
+float getXTwistSpacing()
+{
+  return xatc.spacing;
+}
+
+float getXTwistStart()
+{
+  return xatc.start;
+}
+
+const float* getXTwistZValues()
+{
+  return xatc.z_offset;
+}
+
+void setXTwistStartSpacing(float start, float spacing)
+{
+  xatc.start = start;
+  xatc.spacing = spacing;
+}
+
+void setXTwistZOffset(int index, float offset)
+{
+  xatc.z_offset[index] = offset;
+}
+
+#endif
+
+void saveSettings()
+{
+  settings.save();
+}
+
+void loadSettings()
+{
+  settings.load();
+}
+
+void resetSettings()
+{
+  settings.reset();
+}
+
+void watchdogReset()
+{
+  hal.watchdog_refresh();
+}
+
+void stopMove() {
+  quickstop_stepper();
+}
+
+void setAbsoluteZAxisPosition_mm(const_float_t position) {
+  current_position.z = position;
+  sync_plan_position();
+}
+
+#if ENABLED(SKEW_CORRECTION)
+#if ENABLED(SKEW_CORRECTION_FOR_Z)
+void setSkewFactors(float xy, float xz, float yz) {
+  planner.skew_factor.xy = xy;
+  planner.skew_factor.xz = xz;
+  planner.skew_factor.yz = yz;
+  set_current_from_steppers_for_axis(ALL_AXES_ENUM);
+  sync_plan_position();
+}
+#else
+void setSkewFactors(float xy) {
+  planner.skew_factor.xy = xy;
+  set_current_from_steppers_for_axis(ALL_AXES_ENUM);
+  sync_plan_position();
+}
+#endif
+#endif
+
 } // namespace ExtUI
 
 // At the moment we hook into MarlinUI methods, but this could be cleaned up in the future
@@ -1191,11 +1380,11 @@ void MarlinUI::init_lcd() { ExtUI::onStartup(); }
 
 void MarlinUI::update() { ExtUI::onIdle(); }
 
-void MarlinUI::kill_screen(FSTR_P const error, FSTR_P const component) {
+void MarlinUI::kill_screen(float temp, FSTR_P const error, FSTR_P const component) { // @advi3++
   using namespace ExtUI;
   if (!flags.printer_killed) {
     flags.printer_killed = true;
-    onPrinterKilled(error, component);
+    onPrinterKilled(temp, error, component); // @advi3++
   }
 }
 

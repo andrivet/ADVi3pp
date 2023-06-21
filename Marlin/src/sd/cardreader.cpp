@@ -31,6 +31,7 @@
 #include "../MarlinCore.h"
 #include "../libs/hex_print.h"
 #include "../lcd/marlinui.h"
+#include "../lcd/extui/ui_api.h" // @advi3++
 
 #if ENABLED(DWIN_CREALITY_LCD)
   #include "../lcd/e3v2/creality/dwin.h"
@@ -70,6 +71,7 @@ PGMSTR(M24_STR, "M24");
 
 card_flags_t CardReader::flag;
 char CardReader::filename[FILENAME_LENGTH], CardReader::longFilename[LONG_FILENAME_LENGTH];
+uint16_t CardReader::write_date, CardReader::write_time; // @advi3++ SD sort by date
 
 IF_DISABLED(NO_SD_AUTOSTART, uint8_t CardReader::autofile_index); // = 0
 
@@ -124,6 +126,11 @@ uint8_t CardReader::workDirDepth;
 
 #endif // SDCARD_SORT_ALPHA
 
+#if ENABLED(SDCARD_SORT_DATE) // @advi3++
+  uint16_t CardReader::sort_count;
+  uint8_t CardReader::sort_order[SDSORT_LIMIT];
+#endif // SDCARD_SORT_DATE
+
 #if HAS_USB_FLASH_DRIVE
   DiskIODriver_USBFlash CardReader::media_driver_usbFlash;
 #endif
@@ -162,8 +169,13 @@ CardReader::CardReader() {
     #endif
   #endif
 
+  #if ENABLED(SDCARD_SORT_DATE) // @advi3++
+    sort_count = 0;
+  #endif
+
   flag.sdprinting = flag.sdprintdone = flag.mounted = flag.saving = flag.logging = false;
   filesize = sdpos = 0;
+  write_date = write_time = 0; // @advi3++
 
   TERN_(HAS_MEDIA_SUBCALLS, file_subcall_ctr = 0);
 
@@ -211,6 +223,11 @@ bool CardReader::is_visible_entity(const dir_t &p OPTARG(CUSTOM_FIRMWARE_UPLOAD,
     //|| pn0 == '.' || longFilename[0] == '.'             // Hidden file
     //|| !DIR_IS_FILE_OR_SUBDIR(&p)                       // Not a File or Directory
   ) return false;
+
+  // @advi3++: most of the time, files starting with a dot are hidden but not always
+  // Those files are often created by macOS
+  if(p.name[0] == 0 || longFilename[0] == '.')
+      return false;
 
   flag.filenameIsDir = DIR_IS_SUBDIR(&p);               // We know it's a File or Folder
   setBinFlag(p.name[8] == 'B' &&                        // List .bin files (a firmware file for flashing)
@@ -622,6 +639,7 @@ void CardReader::getAbsFilenameInCWD(char *dst) {
 
 void openFailed(const char * const fname) {
   SERIAL_ECHOLNPGM(STR_SD_OPEN_FILE_FAIL, fname, ".");
+  ExtUI::onMediaOpenError(fname); // @advi3++
 }
 
 void announceOpen(const uint8_t doing, const char * const path) {
@@ -690,6 +708,8 @@ void CardReader::openFileRead(const char * const path, const uint8_t subcall_typ
   if (file.open(diveDir, fname, O_READ)) {
     filesize = file.fileSize();
     sdpos = 0;
+    write_date = file.writeDate(); // @advi3++
+    write_time = file.writeTime(); // @advi3++
 
     { // Don't remove this block, as the PORT_REDIRECT is a RAII
       PORT_REDIRECT(SerialMask::All);
@@ -698,7 +718,9 @@ void CardReader::openFileRead(const char * const path, const uint8_t subcall_typ
     }
 
     selectFileByName(fname);
-    ui.set_status(longFilename[0] ? longFilename : fname);
+    // @advi3++: Replace name of the file by "File opened."
+    // ui.set_status(longFilename[0] ? longFilename : fname);
+    ui.set_status(F("File opened"));
   }
   else
     openFailed(fname);
@@ -782,6 +804,7 @@ void CardReader::removeFile(const char * const name) {
       SERIAL_ECHOLNPGM("File deleted:", fname);
       sdpos = 0;
       TERN_(SDCARD_SORT_ALPHA, presort());
+      TERN_(SDCARD_SORT_DATE, presort()); // @advi3++
     }
     else
       SERIAL_ECHOLNPGM("Deletion failed, File: ", fname, ".");
@@ -1010,6 +1033,7 @@ const char* CardReader::diveToFile(const bool update_cwd, MediaFile* &inDirPtr, 
     DEBUG_ECHOLNPGM(" final workDir = ", hex_address((void*)inDirPtr));
     flag.workDirIsRoot = (workDirDepth == 0);
     TERN_(SDCARD_SORT_ALPHA, presort());
+    TERN_(SDCARD_SORT_DATE, presort()); // @advi3++
   }
 
   DEBUG_ECHOLNPGM(" returning string ", atom_ptr ?: "nullptr");
@@ -1025,6 +1049,7 @@ void CardReader::cd(const char * relpath) {
     if (workDirDepth < MAX_DIR_DEPTH)
       workDirParents[workDirDepth++] = workDir;
     TERN_(SDCARD_SORT_ALPHA, presort());
+    TERN_(SDCARD_SORT_DATE, presort()); // @advi3++
   }
   else
     SERIAL_ECHO_MSG(STR_SD_CANT_ENTER_SUBDIR, relpath);
@@ -1034,6 +1059,7 @@ int8_t CardReader::cdup() {
   if (workDirDepth > 0) {                                               // At least 1 dir has been saved
     workDir = --workDirDepth ? workDirParents[workDirDepth - 1] : root; // Use parent, or root if none
     TERN_(SDCARD_SORT_ALPHA, presort());
+    TERN_(SDCARD_SORT_DATE, presort()); // @advi3++
   }
   if (!workDirDepth) flag.workDirIsRoot = true;
   return workDirDepth;
@@ -1044,6 +1070,7 @@ void CardReader::cdroot() {
   flag.workDirIsRoot = true;
   workDirDepth = 0;
   TERN_(SDCARD_SORT_ALPHA, presort());
+  TERN_(SDCARD_SORT_DATE, presort()); // @advi3++
 }
 
 #if ENABLED(SDCARD_SORT_ALPHA)
@@ -1278,6 +1305,114 @@ void CardReader::cdroot() {
   }
 
 #endif // SDCARD_SORT_ALPHA
+
+#if ENABLED(SDCARD_SORT_DATE) // @advi3++
+
+/**
+ * Get the name of a file in the working directory by sort-index
+ */
+void CardReader::getfilename_sorted(const uint16_t nr) {
+    selectFileByIndex(nr < sort_count ? sort_order[nr] : nr);
+}
+
+/**
+ * Read all the files and produce a sort key
+ */
+void CardReader::presort() {
+
+  // Throw away old sort index
+  flush_presort();
+
+  // If there are files, sort up to the limit
+  uint16_t fileCnt = countFilesInWorkDir();
+  if (fileCnt > 0) {
+
+    // Never sort more than the max allowed
+    // If you use folders to organize, 20 may be enough
+    NOMORE(fileCnt, uint16_t(SDSORT_LIMIT));
+
+    // By default, re-read the dates from SD for every compare
+    // retaining only two dates at a time. This is very
+    // slow but is safest and uses minimal RAM.
+    uint16_t date1, time1;
+
+    if (fileCnt > 1) {
+
+      // Init sort order.
+      for (uint16_t i = 0; i < fileCnt; i++) {
+        sort_order[i] = i;
+      }
+
+      // Bubble Sort
+      for (uint16_t i = fileCnt; --i;) {
+        bool didSwap = false;
+        uint8_t o1 = sort_order[0];
+
+        selectFileByIndex(o1);              // Pre-fetch the first entry and save it
+        date1 = write_date;
+        time1 = write_time;
+        #if HAS_FOLDER_SORTING
+          bool dir1 = flag.filenameIsDir;
+        #endif
+
+        for (uint16_t j = 0; j < i; ++j) {
+          const uint16_t o2 = sort_order[j + 1];
+
+          // Sort by time if same date, otherwise sort by date
+          #define SORT_CMP_NODIR() ((date1 == date2) ? (time1 < time2) : (date1 < date2))
+
+          #if HAS_FOLDER_SORTING
+            #define SORT_CMP_DIR(fs) ((dir1 == flag.filenameIsDir) ? SORT_CMP_NODIR() : ((fs) > 0 ? dir1 : !dir1))
+          #endif
+
+          // The most economical method reads names as-needed
+          // throughout the loop. Slow if there are many.
+          selectFileByIndex(o2);
+          #if HAS_FOLDER_SORTING
+            const bool dir2 = flag.filenameIsDir;
+          #endif
+          uint16_t date2 = write_date;
+          uint16_t time2 = write_time;
+
+          // Sort the current pair according to settings.
+          if (
+            #if HAS_FOLDER_SORTING
+              SORT_CMP_DIR(FOLDER_SORTING)
+            #else
+              SORT_CMP_NODIR()
+            #endif
+              ) {
+            // Reorder the index, indicate that sorting happened
+            // Note that the next o1 will be the current o1. No new fetch needed.
+            sort_order[j] = o2;
+            sort_order[j + 1] = o1;
+            didSwap = true;
+          } else {
+            // The next o1 is the current o2. No new fetch needed.
+            o1 = o2;
+            TERN_(HAS_FOLDER_SORTING, dir1 = dir2);
+            date1 = date2;
+            time1 = time2;
+          }
+        }
+        if (!didSwap) break;
+      }
+    } else {
+      sort_order[0] = 0;
+    }
+
+    sort_count = fileCnt;
+  }
+}
+
+void CardReader::flush_presort() {
+    if (sort_count > 0) {
+        sort_count = 0;
+    }
+}
+
+#endif // SDCARD_SORT_DATE
+
 
 uint16_t CardReader::get_num_Files() {
   if (!isMounted()) return 0;

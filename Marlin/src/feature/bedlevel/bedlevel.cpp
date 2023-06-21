@@ -35,6 +35,8 @@
   bool g29_in_progress = false;
 #endif
 
+bool g29_cancel = false; // @advi3++
+
 #if ENABLED(LCD_BED_LEVELING)
   #include "../../lcd/marlinui.h"
 #endif

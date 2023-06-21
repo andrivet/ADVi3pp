@@ -137,6 +137,7 @@ build/
 
 # CLion
 cmake-build-*
+.idea/
 
 # Eclipse
 .project
@@ -151,15 +152,15 @@ __pycache__
 # IOLogger logs
 *_log.csv
 
-# Misc.
-*~
-*.orig
-*.rej
-*.bak
-*.idea
-*.i
-*.ii
-*.swp
-tags
-*.logs
-*.bak
+# ADVi3++
+.python-version
+ArduinoCore/
+LCD-Panel/Masters/Boot/
+LCD-Panel/DGUS-root/25_Controls
+LCD-Panel/DGUS-root/DWIN_SET/*.bmp
+LCD-Panel/Sketch-Export/
+Thumbs.db
+Marlin/Simulator Debug/
+Marlin/Simulator Release/
+Marlin/Simulator BL Debug/
+Marlin/Simulator BL Release/
