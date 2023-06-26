@@ -27,78 +27,25 @@ namespace ADVi3pp {
 
 Buzzer buzzer;
 
-
-void Buzzer::buzz(uint8_t duration) {
-  send_buzz_command_to_lcd(duration);
-}
-
-void Buzzer::set_settings(bool buzz_on_action, bool buzz_on_press, uint8_t buzz_duration) {
-  buzz_on_action_ = buzz_on_action;
-  buzz_on_press_ = buzz_on_press;
-  buzz_duration_ = buzz_duration;
-}
-
-//! Store current data in permanent memory (EEPROM)
-//! @param eeprom EEPROM writer
-void Buzzer::do_write(EepromWrite& eeprom) const {
-  eeprom.write(buzz_on_action_);
-  eeprom.write(buzz_on_press_);
-  eeprom.write(buzz_duration_);
-}
-
-//! Validate data from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-bool Buzzer::do_validate(EepromRead &eeprom) {
-  bool value;
-  uint8_t buzz_duration;
-  eeprom.read(value);
-  eeprom.read(value);
-  eeprom.read(buzz_duration);
-  return true;
-}
-
-//! Restore data from permanent memory (EEPROM).
-//! @param eeprom EEPROM reader
-void Buzzer::do_read(EepromRead& eeprom) {
-  eeprom.read(buzz_on_action_);
-  eeprom.read(buzz_on_press_);
-  eeprom.read(buzz_duration_);
-}
-
-//! Reset settings
-void Buzzer::do_reset() {
-  buzz_on_action_ = true;
-  buzz_on_press_ = false;
-  buzz_duration_ = 1;
-}
-
-//! Return the amount of data (in bytes) necessary to save settings in permanent memory (EEPROM).
-//! @return Number of bytes
-uint16_t Buzzer::do_size_of() const {
-  return sizeof(buzz_on_action_) + sizeof(buzz_on_press_) + sizeof(buzz_duration_);
-}
-
 //! Send the buzz command to the LCD panel
 //! @param duration Duration of the sound
 void Buzzer::send_buzz_command_to_lcd() {
-  send_buzz_command_to_lcd(get_buzz_duration());
+  send_buzz_command_to_lcd(ui.tone_duration);
 }
 
 //! Send the buzz command to the LCD panel
-//! @param duration Duration of the sound
+//! @param duration Duration of the sound. 0 for default duration.
 void Buzzer::send_buzz_command_to_lcd(uint8_t duration) {
-  if(duration <= 0)
-    duration = 1;
-  WriteRegisterRequest{Register::BuzzerBeepingTime}.write_byte(duration);
+  if(duration <= 0) duration = ui.tone_duration;
+  if(duration < 10) duration = 10;
+  WriteRegisterRequest{Register::BuzzerBeepingTime}.write_byte(duration / 10);
 }
 
 //! Activate the LCD internal buzzer for the given duration.
 //! Note: If the buzzer is disabled, does nothing.
 void Buzzer::buzz_on_action() {
   ui.refresh_screen_timeout();
-  if(!is_buzz_on_action_enabled())
-    return;
-
+  if(!is_option_enabled(OPTIONS::ON_ACTION)) return;
   send_buzz_command_to_lcd();
 }
 
@@ -106,17 +53,21 @@ void Buzzer::buzz_on_action() {
 //! Note: If the buzzer is disabled, does nothing.
 void Buzzer::buzz_on_action(uint8_t duration) {
   ui.refresh_screen_timeout();
-  if(!is_buzz_on_action_enabled())
-    return;
+  if(!is_option_enabled(OPTIONS::ON_ACTION)) return;
+  send_buzz_command_to_lcd(duration);
+}
 
+//! Activate the LCD internal buzzer for the given duration.
+//! Note: Even if the buzzer is disabled, it does beep.
+void Buzzer::buzz(uint8_t duration) {
+  ui.refresh_screen_timeout();
   send_buzz_command_to_lcd(duration);
 }
 
 //! Buzz briefly when the LCD panel is pressed.
 //! Note: If buzz on press is disabled, does nothing
 void Buzzer::buzz_on_press() {
-  if(!is_buzz_on_press_enabled())
-    return;
+  if(!is_option_enabled(OPTIONS::ON_TOUCH)) return;
   send_buzz_command_to_lcd();
 }
 

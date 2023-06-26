@@ -924,6 +924,7 @@ private:
 
   #if HAS_SOUND
     static void M300();
+    static void M300_report(const bool forReplay=true);
   #endif
 
   #if ENABLED(PIDTEMP)

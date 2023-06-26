@@ -132,6 +132,17 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
   }
 #endif
 
+#if HAS_SOUND
+  uint16_t MarlinUI::tone_frequency = TONE_FREQUENCY_DEFAULT;
+  uint16_t MarlinUI::tone_duration = TONE_DURATION_DEFAULT;
+  uint16_t MarlinUI::tone_options = TONE_OPTIONS_DEFAULT;
+  void MarlinUI::set_tone(uint16_t frequency, uint16_t duration, uint16_t options) {
+    tone_frequency = frequency;
+    tone_duration = duration;
+    tone_options = options;
+  }
+#endif
+
 #if HAS_PREHEAT
   #include "../module/temperature.h"
 

@@ -20,7 +20,6 @@
 
 #include "../../../inc/MarlinConfig.h"
 #include "beeper_settings.h"
-#include "../../core/buzzer.h"
 #include "../../core/dgus.h"
 
 namespace ADVi3pp {
@@ -47,24 +46,22 @@ bool BeeperSettings::on_dispatch(KeyValue key_value) {
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
 bool BeeperSettings::on_enter() {
-  buzz_on_action_ =  buzzer.is_buzz_on_action_enabled();
-  buzz_on_press_ = buzzer.is_buzz_on_press_enabled();
-  auto buzz_duration = buzzer.get_buzz_duration();
-
-  send_values(buzz_on_action_, buzz_on_press_, buzz_duration);
+  buzz_on_action_ =  buzzer.is_option_enabled(Buzzer::OPTIONS::ON_ACTION);
+  buzz_on_press_ = buzzer.is_option_enabled(Buzzer::OPTIONS::ON_TOUCH);
+  send_values(buzz_on_action_, buzz_on_press_, ui.tone_duration);
   return true;
 }
 
 void BeeperSettings::on_save_command() {
   bool on_action, on_press; uint8_t duration;
   if(get_values(on_action, on_press, duration))
-    buzzer.set_settings(on_action, on_press, duration);
+    ui.set_tone(1, duration, (on_press ? 1 : 0) | (on_action ? 2 : 0));
   Parent::on_save_command();
 }
 
 void BeeperSettings::send_values(bool on_action, bool on_press, uint8_t duration) const {
   WriteRamRequest{Variable::Value0}.write_words(on_action, on_press);
-  WriteRamRequest{Variable::BeepDuration}.write_words(duration * 10ul);
+  WriteRamRequest{Variable::BeepDuration}.write_words(duration);
 }
 
 bool BeeperSettings::get_values(bool &on_action, bool &on_press, uint8_t &duration) {
@@ -83,14 +80,14 @@ bool BeeperSettings::get_values(bool &on_action, bool &on_press, uint8_t &durati
     return false;
   }
 
-  duration = frame2.read_word() / 10;
+  duration = frame2.read_word();
   Log::log() << duration << Log::endl();
   return true;
 }
 
 //! Handle the change duration command.
 void BeeperSettings::duration_command(uint16_t duration) {
-    buzzer.buzz(duration / 10);
+    buzzer.buzz(duration);
 }
 
 void BeeperSettings::on_action_command() {

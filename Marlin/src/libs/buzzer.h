@@ -121,7 +121,6 @@
 
   // Use MarlinUI for a buzzer on the LCD
   #define BUZZ(V...) ui.buzz(V)
-  #define BUZZ_M300(d, f)  ui.buzz_m300(d,f) // @advi3++
 
 #else
 

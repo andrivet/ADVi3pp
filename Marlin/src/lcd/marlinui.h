@@ -293,6 +293,11 @@ public:
 
   #endif
 
+  #if HAS_SOUND
+  static uint16_t tone_frequency, tone_duration, tone_options;
+  static void set_tone(uint16_t frequency, uint16_t duration, uint16_t defaults);
+  #endif
+
   #if HAS_DWIN_E3V2_BASIC
     static void refresh();
   #else

@@ -3138,6 +3138,9 @@ namespace ADVi3pp {
 #define LCD_BRIGHTNESS_MIN 0x01
 #define LCD_BRIGHTNESS_MAX 0x40
 #define LCD_BRIGHTNESS_DEFAULT LCD_BRIGHTNESS_MAX
+#define TONE_FREQUENCY_DEFAULT 1 // not used
+#define TONE_DURATION_DEFAULT 10 // 10 ms
+#define TONE_OPTIONS_DEFAULT 2 // tone on action
 
 #if ENABLED(EXTENSIBLE_UI)
   //#define EXTUI_LOCAL_BEEPER // Enables use of local Beeper pin with external display

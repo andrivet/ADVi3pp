@@ -30,16 +30,31 @@
 #include "../../libs/buzzer.h"  // Buzzer, if possible
 
 /**
- * M300: Play beep sound S<frequency Hz> P<duration ms>
+ * M300: Play beep sound S<frequency Hz> P<duration ms> D<options>
+ * options: 0=none, 1=beep on touch, 2=beep on action, 3=both
  */
 void GcodeSuite::M300() {
-  uint16_t const frequency = parser.ushortval('S', 260);
-  uint16_t duration = parser.ushortval('P', 1); // @advi3++
+  uint16_t const frequency = parser.ushortval('S', 0); // @advi3++, 0 means default value
+  uint16_t duration = parser.ushortval('P', 0); // @advi3++, 0 means default value
 
   // Limits the tone duration to 0-5 seconds.
   NOMORE(duration, 5000U);
 
-  BUZZ_M300(duration, frequency); // @advi3++
+  // @advi3++
+  if(parser.seenval('D'))
+    ui.set_tone(frequency, duration, parser.ushortval('D', 0));
+  else
+    ui.buzz_m300(duration, frequency);
+}
+
+void GcodeSuite::M300_report(const bool forReplay/*=true*/) {
+  report_heading(forReplay, F("Play beep sound"));
+  report_echo_start(forReplay);
+  SERIAL_ECHOPGM("  M300");
+  SERIAL_ECHOPGM(" P", ui.tone_duration);
+  SERIAL_ECHOPGM(" S", ui.tone_frequency);
+  SERIAL_ECHOPGM(" D", ui.tone_options);
+  SERIAL_EOL();
 }
 
 #endif // HAS_SOUND

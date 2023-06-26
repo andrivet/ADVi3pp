@@ -76,9 +76,8 @@ bool ExtendedSettings::write(eeprom_write write, int& eeprom_index, uint16_t& wo
   eeprom.write(settings_version);
   pid.write(eeprom);
   dimming.write(eeprom);
-  buzzer.write(eeprom);
 
-    return true;
+  return true;
 }
 
 bool ExtendedSettings::validate(eeprom_read read, int& eeprom_index, uint16_t& working_crc) {
@@ -91,8 +90,7 @@ bool ExtendedSettings::validate(eeprom_read read, int& eeprom_index, uint16_t& w
     valid = false;
 
   if(!pid.validate(eeprom) ||
-     !dimming.validate(eeprom) ||
-     !buzzer.validate(eeprom)
+     !dimming.validate(eeprom)
   )
     valid = false;
 
@@ -106,14 +104,12 @@ void ExtendedSettings::read(eeprom_read read, int& eeprom_index, uint16_t& worki
   eeprom.read(version);
   pid.read(eeprom);
   dimming.read(eeprom);
-  buzzer.read(eeprom);
 }
 
 //! Reset presets.
 void ExtendedSettings::reset() {
   pid.reset();
   dimming.reset();
-  buzzer.reset();
 }
 
 //! Return the size of data specific to ADVi3++
@@ -121,8 +117,7 @@ uint16_t ExtendedSettings::size_of() const {
   return
     sizeof(settings_version) +
     pid.size_of() +
-    dimming.size_of() +
-    buzzer.size_of();
+    dimming.size_of();
 }
 
 //! Save the current settings permanently in EEPROM memory

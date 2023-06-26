@@ -597,6 +597,15 @@ typedef struct SettingsDataStruct {
           shaping_y_zeta;      // M593 Y D
   #endif
 
+  //
+  // Default frequency and duration to play tones
+  //
+  #if HAS_SOUND
+  uint16_t tone_frequency,    // M300
+           tone_duration,
+           tone_options;
+  #endif
+
 } SettingsData;
 
 //static_assert(sizeof(SettingsData) <= MARLIN_EEPROM_SIZE, "EEPROM too small to contain SettingsData!");
@@ -1667,6 +1676,13 @@ void MarlinSettings::postprocess() {
       #endif
     #endif
 
+    #if HAS_SOUND
+      _FIELD_TEST(ui.tone_frequency);
+      EEPROM_WRITE(ui.tone_frequency);
+      EEPROM_WRITE(ui.tone_duration);
+      EEPROM_WRITE(ui.tone_options);
+    #endif
+
     //
     // Report final CRC and Data Size
     //
@@ -2713,6 +2729,19 @@ void MarlinSettings::postprocess() {
       }
       #endif
 
+      #if HAS_SOUND
+        _FIELD_TEST(tone_frequency);
+        uint16_t tone_frequency, tone_duration, tone_options;
+        EEPROM_READ(tone_frequency);
+        EEPROM_READ(tone_duration);
+        EEPROM_READ(tone_options);
+        if (!validating) {
+          ui.tone_frequency = tone_frequency;
+          ui.tone_duration = tone_duration;
+          ui.tone_options = tone_options;
+        }
+      #endif
+
       //
       // Validate Final Size and CRC
       //
@@ -3514,6 +3543,13 @@ void MarlinSettings::reset() {
     #endif
   #endif
 
+  //
+  // Default frequency and duration to play tones
+  //
+  ui.tone_frequency = TONE_FREQUENCY_DEFAULT;
+  ui.tone_duration = TONE_DURATION_DEFAULT;
+  ui.tone_options = TONE_OPTIONS_DEFAULT;
+
   postprocess();
 
   #if EITHER(EEPROM_CHITCHAT, DEBUG_LEVELING_FEATURE)
@@ -3813,6 +3849,11 @@ void MarlinSettings::reset() {
     // Model predictive control
     //
     TERN_(MPCTEMP, gcode.M306_report(forReplay));
+
+    //
+    // Default frequency and duration to play tones
+    //
+    TERN_(HAS_SOUND, gcode.M300_report(forReplay));
   }
 
 #endif // !DISABLE_M503

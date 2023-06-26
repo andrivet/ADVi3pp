@@ -25,26 +25,24 @@
 
 namespace ADVi3pp {
 
-
 struct Buzzer: Settings<Buzzer> {
+  enum class OPTIONS: uint16_t {
+    NONE = 0,
+    ON_TOUCH = 1,
+    ON_ACTION = 1 << 1
+  };
+
   void buzz(uint8_t duration);
   void buzz_on_action();
   void buzz_on_action(uint8_t duration);
   void buzz_on_press();
 
-  bool is_buzz_on_action_enabled() const { return buzz_on_action_; }
-  bool is_buzz_on_press_enabled() const { return buzz_on_press_; }
-  uint8_t get_buzz_duration() const { return buzz_duration_; }
-  void set_settings(bool buzz_on_action, bool buzz_on_press, uint8_t buzz_duration);
+  bool is_option_enabled(OPTIONS option) {
+    return (ui.tone_options & static_cast<uint16_t>(option)) != 0;
+  }
 
 private:
   friend Parent;
-
-  void do_write(EepromWrite& eeprom) const;
-  bool do_validate(EepromRead& eeprom);
-  void do_read(EepromRead& eeprom);
-  void do_reset();
-  uint16_t do_size_of() const;
 
 private:
     void send_buzz_command_to_lcd();
@@ -53,7 +51,6 @@ private:
 private:
   bool buzz_on_action_ = true;
   bool buzz_on_press_ = false;
-  uint8_t buzz_duration_ = 1; // x 10ms
 };
 
 extern Buzzer buzzer;
