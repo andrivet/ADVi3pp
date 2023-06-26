@@ -267,6 +267,8 @@ void CardReader::selectByIndex(MediaFile dir, const uint8_t index) {
     if (is_visible_entity(p)) {
       if (cnt == index) {
         createFilename(filename, p);
+        write_date = p.lastWriteDate; // @advi3++
+        write_time = p.lastWriteTime; // @advi3++
         return;  // 0 based index
       }
       cnt++;
@@ -282,6 +284,8 @@ void CardReader::selectByName(MediaFile dir, const char * const match) {
   for (uint8_t cnt = 0; dir.readDir(&p, longFilename) > 0; cnt++) {
     if (is_visible_entity(p)) {
       createFilename(filename, p);
+      write_date = p.lastWriteDate; // @advi3++
+      write_time = p.lastWriteTime; // @advi3++
       if (strcasecmp(match, filename) == 0) return;
     }
   }
@@ -708,8 +712,6 @@ void CardReader::openFileRead(const char * const path, const uint8_t subcall_typ
   if (file.open(diveDir, fname, O_READ)) {
     filesize = file.fileSize();
     sdpos = 0;
-    write_date = file.writeDate(); // @advi3++
-    write_time = file.writeTime(); // @advi3++
 
     { // Don't remove this block, as the PORT_REDIRECT is a RAII
       PORT_REDIRECT(SerialMask::All);
