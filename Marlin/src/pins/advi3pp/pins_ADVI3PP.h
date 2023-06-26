@@ -53,6 +53,11 @@
 #elif MB(ADVI3PP_I3_PLUS_54)
   #define Z_STOP_PIN             6   // PH3 / PCINT8
   #define Z_MIN_PROBE_PIN        6   // PH3 / PCINT8
+  #if ENABLED(BLTOUCH)
+    // Assummes you are using a sub board from MR.S.J.D Developments
+    // https://oshwlab.com/MrGamecase/wanhao-duplicator-i3-mkii-subboard
+    #define SERVO0_PIN           7   // PG1 / !RD
+  #endif
 #else
   #error "Unknown ADVi3++ mainboard"
 #endif

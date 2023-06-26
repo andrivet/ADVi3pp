@@ -1380,8 +1380,8 @@ namespace ADVi3pp {
  * A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
  *   (e.g., an inductive probe or a nozzle-based probe-switch.)
  */
-// @advi3++: Mark II probe is fix
-#ifdef ADVi3PP_54
+// @advi3++: Mark II probe is fix unless you have a BLTouch
+#if ENABLED(ADVi3PP_54) && DISABLED(BLTOUCH)
 #define FIX_MOUNTED_PROBE
 #endif
 
