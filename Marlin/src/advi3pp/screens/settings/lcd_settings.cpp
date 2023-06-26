@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "lcd_settings.h"
 #include "../../core/dgus.h"
 #include "../../core/dimming.h"

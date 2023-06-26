@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "feedrate_settings.h"
 #include "../../core/dgus.h"
 

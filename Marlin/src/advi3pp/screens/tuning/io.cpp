@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "io.h"
 #include "../../core/core.h"
 #include "../../core/task.h"

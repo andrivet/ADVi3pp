@@ -18,7 +18,7 @@
  *
  */
 
-#include "../parameters.h"
+#include "../../inc/MarlinConfig.h"
 #include "../core/buzzer.h"
 #include "../core/dimming.h"
 #include "../../lcd/marlinui.h"

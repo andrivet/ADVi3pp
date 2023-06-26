@@ -38,6 +38,39 @@
 #define CONFIGURATION_H_VERSION 02010201
 
 //===========================================================================
+//================================= ADVi3++ =================================
+//===========================================================================
+
+namespace ADVi3pp {
+  const uint16_t advi3_pp_version = 0x570;
+  const uint16_t settings_version = 0x0005; // Version of ADVi3++ settings stored in EEPROM
+}
+
+#ifdef ADVi3PP_DEBUG
+
+    // To log various aspects of ADVi3++
+    #define ADVi3PP_LOG
+
+    // To log the content of frames, uncomment the following line. Very chatty, but useful to debug tough bugs
+    // #define ADVi3PP_LOG_FRAMES
+    // #define ADVi3PP_LOG_ALL_FRAMES // Log all the frames, including those that are updating the status
+
+    // Break with the asm instruction break
+    // #define ADVi3PP_HARD_BREAK
+
+    // Enable detailed logging of G28, G29, M48, etc. Turn on with the command 'M111 S32'.
+    #define MARLIN_DEV_MODE
+
+    // Enable leveling debugging for DEBUG builds
+    #define DEBUG_LEVELING_FEATURE
+
+#endif
+
+#if defined(BLTOUCH) || defined(ADVi3PP_54)
+    #define ADVi3PP_PROBE 1
+#endif
+
+//===========================================================================
 //============================= Getting Started =============================
 //===========================================================================
 

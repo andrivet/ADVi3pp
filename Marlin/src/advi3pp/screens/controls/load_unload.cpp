@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "load_unload.h"
 #include "../../core/wait.h"
 #include "../../core/core.h"

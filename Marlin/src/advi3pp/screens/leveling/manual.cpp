@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "manual.h"
 #include "xtwist.h"
 #include "../../core/core.h"

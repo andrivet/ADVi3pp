@@ -18,8 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
-
+#include "../../../inc/MarlinConfig.h"
 #ifdef BLTOUCH
 
 #include "../../core/core.h"

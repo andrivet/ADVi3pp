@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "sd_card.h"
 #include "../../core/dgus.h"
 #include "../../core/status.h"

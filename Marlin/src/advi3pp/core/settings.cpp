@@ -18,9 +18,8 @@
  *
  */
 
-#include "../parameters.h"
+#include "../../inc/MarlinConfig.h"
 #include "settings.h"
-#include "../versions.h"
 #include "../core/core.h"
 #include "../core/dgus.h"
 #include "../core/pages.h"

@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "eeprom_mismatch.h"
 
 namespace ADVi3pp {

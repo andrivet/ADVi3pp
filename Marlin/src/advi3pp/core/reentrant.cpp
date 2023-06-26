@@ -18,8 +18,7 @@
  *
  */
 
-#include "../parameters.h"
-#include "logging.h"
+#include "../../inc/MarlinConfig.h"
 #include "reentrant.h"
 
 namespace ADVi3pp {

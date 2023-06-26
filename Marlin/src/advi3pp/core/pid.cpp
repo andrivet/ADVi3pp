@@ -18,7 +18,7 @@
  *
  */
 
-#include "../parameters.h"
+#include "../../inc/MarlinConfig.h"
 #include "logging.h"
 #include "pid.h"
 

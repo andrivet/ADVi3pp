@@ -18,8 +18,7 @@
  *
  */
 
-#include "../parameters.h"
-#include "../versions.h"
+#include "../../inc/MarlinConfig.h"
 #include "core.h"
 #include "graphs.h"
 #include "dimming.h"

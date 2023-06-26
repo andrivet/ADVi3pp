@@ -18,7 +18,7 @@
  *
  */
 
-#include "../parameters.h"
+#include "../../inc/MarlinConfig.h"
 #include "dgus.h"
 #include "pages.h"
 #include "core.h"

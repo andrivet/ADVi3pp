@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "linear_advance_settings.h"
 #include "../../core/dgus.h"
 

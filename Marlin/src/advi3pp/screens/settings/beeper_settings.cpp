@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "beeper_settings.h"
 #include "../../core/buzzer.h"
 #include "../../core/dgus.h"

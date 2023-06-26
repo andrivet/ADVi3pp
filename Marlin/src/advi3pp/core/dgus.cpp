@@ -18,7 +18,7 @@
  *
  */
 
-#include "../parameters.h"
+#include "../../inc/MarlinConfig.h"
 #include "logging.h"
 #include "dgus.h"
 #ifndef ADV_UNIT_TESTS

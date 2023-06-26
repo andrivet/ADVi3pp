@@ -18,7 +18,7 @@
  *
  */
 
-#include "../parameters.h"
+#include "../../inc/MarlinConfig.h"
 #include <Arduino.h>
 #include "../../lcd/extui/ui_api.h"
 #include "graphs.h"

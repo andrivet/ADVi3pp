@@ -18,8 +18,7 @@
  *
  */
 
-#include "../parameters.h"
-#include "logging.h"
+#include "../../inc/MarlinConfig.h"
 #include "dgus.h"
 #include "buzzer.h"
 

@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "../../../lcd/extui/ui_api.h"
 #include "controls.h"
 #include "../../core/dgus.h"

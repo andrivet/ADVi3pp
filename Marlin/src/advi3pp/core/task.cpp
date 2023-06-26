@@ -18,8 +18,8 @@
  *
  */
 
-#include "../parameters.h"
-#include <Arduino.h>
+#include "../../inc/MarlinConfig.h"
+//#include <Arduino.h>
 #include "task.h"
 #include "logging.h"
 

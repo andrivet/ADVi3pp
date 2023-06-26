@@ -18,11 +18,10 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "../../core/core.h"
 #include "../../core/dgus.h"
 #include "../../core/dates.h"
-#include "../../versions.h"
 #include "versions.h"
 
 namespace ADVi3pp {

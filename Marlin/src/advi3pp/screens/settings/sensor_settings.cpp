@@ -18,7 +18,7 @@
  *
  */
 
-#include "../../parameters.h"
+#include "../../../inc/MarlinConfig.h"
 #include "../../core/string.h"
 #include "../../core/dgus.h"
 #include "sensor_settings.h"
