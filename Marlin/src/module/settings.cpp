@@ -43,8 +43,8 @@
 // Can be disabled for production build.
 // @advi3++: Enable in DEBUG builds
 #ifdef DEBUG
-#define DEBUG_EEPROM_READWRITE
-#define DEBUG_EEPROM_OBSERVE
+//#define DEBUG_EEPROM_READWRITE
+//#define DEBUG_EEPROM_OBSERVE
 #endif
 
 #include "settings.h"
