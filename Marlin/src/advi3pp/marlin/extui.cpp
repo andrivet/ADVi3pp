@@ -18,6 +18,7 @@
  *
  */
 
+#include "../../inc/MarlinConfig.h"
 #include "../../inc/MarlinConfigPre.h"
 #include "../../lcd/extui/ui_api.h"
 #include "../core/core.h"
@@ -41,14 +42,17 @@ void onIdle() {
 }
 
 void onMediaInserted() {
+  Log::log() << F("ExtUI::onMediaInserted") << Log::endl();
   core.media_inserted();
 }
 
 void onMediaError() {
+  Log::log() << F("ExtUI::onMediaError") << Log::endl();
   core.media_error();
 }
 
 void onMediaRemoved() {
+  Log::log() << F("ExtUI::onMediaRemoved") << Log::endl();
   core.media_removed();
 }
 
@@ -67,6 +71,7 @@ void onPrinterKilled(float temp, FSTR_P const error, FSTR_P const component) {
 }
 
 void onPrintTimerStarted() {
+  Log::log() << F("ExtUI::onPrintTimerStarted") << Log::endl();
   pages.go_to_print();
 }
 
@@ -170,17 +175,21 @@ void onSettingsLoaded(bool success) {
 }
 
 void onSettingsValidated(bool success) {
+  Log::log() << F("ExtUI::onSettingsValidated") << Log::endl();
   ADVi3pp::settings.on_settings_validated(success);
 }
 
 void onLevelingStart() {
+  Log::log() << F("ExtUI::onLevelingStart") << Log::endl();
 }
 
 void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos) {
+  Log::log() << F("ExtUI::onLevelingProgress") << Log::endl();
   automatic_leveling.on_progress(index, xpos, ypos);
 }
 
 void onLevelingDone(bool success) {
+  Log::log() << F("ExtUI::onLevelingDone") << Log::endl();
   automatic_leveling.on_done(success);
 }
 
