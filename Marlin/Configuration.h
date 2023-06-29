@@ -1552,8 +1552,17 @@ namespace ADVi3pp {
  *     |    [-]    |
  *     O-- FRONT --+
  */
-// @advi3++: By default, Teaching Tech Left support offsets.
+// @advi3++
+#if ENABLED(BLTOUCH)
+// By default, Indianagio support offsets.
+#define NOZZLE_TO_PROBE_OFFSET { 1.50, -42.70, 0 }
+#elif defined(ADVi3PP_54)
+// By default, Mark II offsets.
+#define NOZZLE_TO_PROBE_OFFSET { 0.00, 60.00, 0 }
+#else
+// By default, Teaching Tech Left support offsets.
 #define NOZZLE_TO_PROBE_OFFSET { -24.00, -38.00, 0 }
+#endif
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
