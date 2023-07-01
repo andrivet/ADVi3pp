@@ -35,6 +35,13 @@ bool BLTouch::od_5v_mode;         // Initialized by settings.load, 0 = Open Drai
   constexpr bool BLTouch::high_speed_mode;
 #endif
 
+// @advi3++ will not force but will allow to use this feature
+#ifdef BLTOUCH_SW_MODE
+  bool BLTouch::touch_sw_mode;
+#else
+  constexpr bool BLTouch::touch_sw_mode;
+#endif
+
 #include "../module/servo.h"
 #include "../module/probe.h"
 
@@ -121,7 +128,10 @@ bool BLTouch::deploy_proc() {
   }
 
   // One of the recommended ANTClabs ways to probe, using SW MODE
-  TERN_(BLTOUCH_FORCE_SW_MODE, _set_SW_mode());
+  // @advi3++ will not force but will allow to use this feature
+  #ifdef BLTOUCH_SW_MODE
+  if(touch_sw_mode) _set_SW_mode();
+  #endif
 
   // Now the probe is ready to issue a 10ms pulse when the pin goes up.
   // The trigger STOW (see motion.cpp for example) will pull up the probes pin as soon as the pulse

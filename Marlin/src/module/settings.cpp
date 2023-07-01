@@ -325,6 +325,9 @@ typedef struct SettingsDataStruct {
   #ifdef BLTOUCH_HS_MODE
     bool bltouch_high_speed_mode;                       // M401 S
   #endif
+  #ifdef BLTOUCH_HS_MODE
+    bool touch_sw_mode;                                 // M401 T
+  #endif
 
   //
   // Kinematic Settings (Delta, SCARA, TPARA, Polargraph...)
@@ -1047,6 +1050,13 @@ void MarlinSettings::postprocess() {
         _FIELD_TEST(bltouch_high_speed_mode);
         const bool bltouch_high_speed_mode = TERN0(BLTOUCH, bltouch.high_speed_mode);
         EEPROM_WRITE(bltouch_high_speed_mode);
+      #endif
+
+      // @advi3++
+      #ifdef BLTOUCH_HS_MODE
+        _FIELD_TEST(bltouch_touch_sw_mode);
+        const bool bltouch_touch_sw_mode = TERN0(BLTOUCH, bltouch.touch_sw_mode);
+        EEPROM_WRITE(bltouch_touch_sw_mode);
       #endif
     }
 
@@ -2062,6 +2072,17 @@ void MarlinSettings::postprocess() {
             bool bltouch_high_speed_mode;
           #endif
           EEPROM_READ(bltouch_high_speed_mode);
+        #endif
+
+        // @advi3++
+        #ifdef BLTOUCH_SW_MODE
+          _FIELD_TEST(bltouch_touch_sw_mode);
+          #if ENABLED(BLTOUCH)
+            const bool &bltouch_touch_sw_mode = bltouch.touch_sw_mode;
+          #else
+            bool bltouch_touch_sw_mode;
+          #endif
+          EEPROM_READ(bltouch_touch_sw_mode);
         #endif
       }
 
@@ -3180,6 +3201,11 @@ void MarlinSettings::reset() {
   //
   #ifdef BLTOUCH_HS_MODE
     bltouch.high_speed_mode = ENABLED(BLTOUCH_HS_MODE);
+  #endif
+
+  // @advi3++
+  #ifdef BLTOUCH_SW_MODE
+    bltouch.touch_sw_mode = ENABLED(BLTOUCH_SW_MODE);
   #endif
 
   //

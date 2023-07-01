@@ -176,9 +176,13 @@ namespace ExtUI {
     #if ENABLED(BLTOUCH)
     bool isLevelingHighSpeed(); // @advi3++
     void setLevelingHighSpeed(bool set = true); // @advi3++
+    bool isLevelingTouchSw(); // @advi3++
+    void setLevelingTouchSw(bool set);// @advi3++
     #else
     inline bool isLevelingHighSpeed() { return false; } // @advi3++
     inline void setLevelingHighSpeed(bool set = true) {} // @advi3++
+    inline bool isLevelingTouchSw() { return false; } // @advi3++
+    inline void setLevelingTouchSw(bool set) {} // @advi3++
     #endif
     #if HAS_MESH
       bed_mesh_t& getMeshArray();

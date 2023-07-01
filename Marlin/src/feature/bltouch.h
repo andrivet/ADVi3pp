@@ -76,6 +76,13 @@ public:
     static constexpr bool high_speed_mode = false;
   #endif
 
+  // @advi3++ will not force but will allow to use this feature
+  #ifdef BLTOUCH_SW_MODE
+    static bool touch_sw_mode;
+  #else
+    static constexpr bool touch_sw_mode = false;
+  #endif
+
   static float z_extra_clearance() { return high_speed_mode ? 7 : 0; }
 
   // DEPLOY and STOW are wrapped for error handling - these are used by homing and by probing

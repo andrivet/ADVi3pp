@@ -42,14 +42,17 @@ private:
   void previous_command();
   void next_command();
   void highspeed_command();
+  void touch_sw_command();
   void send_values() const;
   void send_name() const;
   void get_values();
   void send_highspeed_value() const;
+  void send_touch_sw_value() const;
 
 private:
   uint16_t index_ = 0;
   bool highspeed_ = false;
+  bool touch_sw_ = false;
 
   friend Parent;
 };

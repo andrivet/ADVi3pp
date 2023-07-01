@@ -83,6 +83,7 @@ bool SensorSettings::on_dispatch(KeyValue key_value) {
     case KeyValue::SensorSettingsPrevious:  previous_command(); break;
     case KeyValue::SensorSettingsNext:      next_command(); break;
     case KeyValue::SensorSettingsHighSpeed: highspeed_command(); break;
+    case KeyValue::SensorSettingsTouchSw:   touch_sw_command(); break;
     default:                                return false;
   }
 
@@ -94,9 +95,11 @@ bool SensorSettings::on_dispatch(KeyValue key_value) {
 bool SensorSettings::on_enter() {
   index_ = 0;
   highspeed_ = ExtUI::isLevelingHighSpeed();
+  touch_sw_ = ExtUI::isLevelingTouchSw();
   send_name();
   send_values();
   send_highspeed_value();
+  send_touch_sw_value();
   pages.save_forward_page();
   return true;
 }
@@ -105,6 +108,7 @@ bool SensorSettings::on_enter() {
 void SensorSettings::on_save_command() {
   get_values();
   ExtUI::setLevelingHighSpeed(highspeed_);
+  ExtUI::setLevelingTouchSw(touch_sw_);
   Parent::on_save_command();
 }
 
@@ -131,8 +135,18 @@ void SensorSettings::highspeed_command() {
   send_highspeed_value();
 }
 
+void SensorSettings::touch_sw_command() {
+  touch_sw_ = !touch_sw_;
+  send_touch_sw_value();
+}
+
+
 void SensorSettings::send_highspeed_value() const {
   WriteRamRequest{Variable::Value3}.write_word(highspeed_ ? 1 : 0);
+}
+
+void SensorSettings::send_touch_sw_value() const {
+  WriteRamRequest{Variable::Value4}.write_word(touch_sw_ ? 1 : 0);
 }
 
 void SensorSettings::send_values() const {
