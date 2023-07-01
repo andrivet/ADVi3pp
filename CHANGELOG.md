@@ -1,5 +1,9 @@
 # ADVi3++ Changelog
 
+## 5.7.0 (2023-06-22)
+
+Align with Marlin 2.1.2.1
+
 ## 5.6.0 (2023-03-19)
 
 * **#330** - [Specific sequence leads to catastrophic failure](https://github.com/andrivet/ADVi3pp/issues/330)
