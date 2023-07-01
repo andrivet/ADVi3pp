@@ -64,14 +64,14 @@ void PidTuning::send_data() {
 
 //! Select the hotend PID
 void PidTuning::hotend_command() {
-  temperature_ = settings.get_last_used_temperature(TemperatureKind::Hotend);
+  temperature_ = static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(ExtUI::E0));
   kind_ = TemperatureKind::Hotend;
   send_data();
 }
 
 //! Select the bed PID
 void PidTuning::bed_command() {
-  temperature_ = settings.get_last_used_temperature(TemperatureKind::Bed);
+  temperature_ = static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(ExtUI::BED));
   kind_ = TemperatureKind::Bed;
   send_data();
 }
@@ -103,10 +103,14 @@ void PidTuning::step3_command() {
 
   temperatures.show(Callback{this, &PidTuning::cancel_pid});
 
-  if(kind_ == TemperatureKind::Hotend)
+  if(kind_ == TemperatureKind::Hotend) {
     ExtUI::startPIDTune(temperature_, ExtUI::E0);
-  else
+    ExtUI::setDefaultTemp_celsius(temperature_, ExtUI::E0);
+  }
+  else {
     ExtUI::startBedPIDTune(temperature_);
+    ExtUI::setDefaultTemp_celsius(temperature_, ExtUI::BED);
+  }
 }
 
 //! Cancel PID process.

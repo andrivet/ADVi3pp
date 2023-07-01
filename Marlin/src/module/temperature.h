@@ -577,11 +577,13 @@ class Temperature {
     #if HAS_HOTEND
       static hotend_info_t temp_hotend[HOTENDS];
       static constexpr celsius_t hotend_maxtemp[HOTENDS] = ARRAY_BY_HOTENDS(HEATER_0_MAXTEMP, HEATER_1_MAXTEMP, HEATER_2_MAXTEMP, HEATER_3_MAXTEMP, HEATER_4_MAXTEMP, HEATER_5_MAXTEMP, HEATER_6_MAXTEMP, HEATER_7_MAXTEMP);
+      static celsius_t default_hotend_temp[HOTENDS];
       static celsius_t hotend_max_target(const uint8_t e) { return hotend_maxtemp[e] - (HOTEND_OVERSHOOT); }
     #endif
 
     #if HAS_HEATED_BED
       static bed_info_t temp_bed;
+      static celsius_t default_bed_temp;
     #endif
     #if HAS_TEMP_PROBE
       static probe_info_t temp_probe;
@@ -945,6 +947,11 @@ class Temperature {
       return TERN0(HAS_HOTEND, temp_hotend[HOTEND_INDEX].target);
     }
 
+    // @advi3++
+    static celsius_t degDefaultHotend(const uint8_t E_NAME) {
+      return TERN0(HAS_HOTEND, default_hotend_temp[HOTEND_INDEX]);
+    }
+
     #if HAS_HOTEND
 
       static void setTargetHotend(const celsius_t celsius, const uint8_t E_NAME) {
@@ -958,6 +965,11 @@ class Temperature {
         TERN_(AUTO_POWER_CONTROL, if (celsius) powerManager.power_on());
         temp_hotend[ee].target = _MIN(celsius, hotend_max_target(ee));
         start_watching_hotend(ee);
+      }
+
+      static void setDefaultHotend(const celsius_t celsius, const uint8_t E_NAME) {
+        const uint8_t ee = HOTEND_INDEX;
+        default_hotend_temp[ee] = _MIN(celsius, hotend_max_target(ee));
       }
 
       static bool isHeatingHotend(const uint8_t E_NAME) {
@@ -1004,6 +1016,7 @@ class Temperature {
         static raw_adc_t rawBedTemp()  { return temp_bed.getraw(); }
       #endif
       static celsius_float_t degBed()  { return temp_bed.celsius; }
+      static celsius_float_t degDefaultBed()  { return default_bed_temp; } // @advi3++
       static celsius_t wholeDegBed()   { return static_cast<celsius_t>(degBed() + 0.5f); }
       static celsius_t degTargetBed()  { return temp_bed.target; }
       static bool isHeatingBed()       { return temp_bed.target > temp_bed.celsius; }
@@ -1019,6 +1032,10 @@ class Temperature {
         TERN_(AUTO_POWER_CONTROL, if (celsius) powerManager.power_on());
         temp_bed.target = _MIN(celsius, BED_MAX_TARGET);
         start_watching_bed();
+      }
+
+      static void setDefaultBed(const celsius_t celsius) {
+        default_bed_temp = _MIN(celsius, BED_MAX_TARGET);
       }
 
       static bool wait_for_bed(const bool no_wait_for_cooling=true

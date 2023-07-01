@@ -66,11 +66,7 @@ struct ExtendedSettings {
   void save();
   void restore();
 
-  uint16_t get_last_used_temperature(TemperatureKind kind) const;
-  void on_set_temperature(TemperatureKind kind, uint16_t temperature);
-
 private:
-  adv::array<uint16_t, nb_temperatures> last_used_temperature_ {{default_bed_temperature, default_hotend_temperature}};
   bool eeprom_mismatch_ = false;
 };
 

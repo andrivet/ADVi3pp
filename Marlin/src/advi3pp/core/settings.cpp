@@ -132,22 +132,4 @@ void ExtendedSettings::restore() {
   ExtUI::loadSettings();
 }
 
-//! Get the last used temperature for the hotend or the bad
-//! @param kind Kind of temperature: hotend or bed
-//! @return The last used themperature
-uint16_t ExtendedSettings::get_last_used_temperature(TemperatureKind kind) const {
-  return last_used_temperature_[kind == TemperatureKind::Hotend];
-}
-
-//! To be called when a new temperature is selected as a target
-//! @param kind Kind of temperature: hotend or bed
-//! @param temperature The new target temperature
-void ExtendedSettings::on_set_temperature(TemperatureKind kind, uint16_t temperature) {
-  if(temperature == 0)
-    return;
-  last_used_temperature_[kind == TemperatureKind::Hotend] = temperature;
-  pid.choose_best_pid(kind, temperature);
-}
-
-
 }

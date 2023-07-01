@@ -393,6 +393,12 @@ typedef struct SettingsDataStruct {
   raw_pid_t chamberPID;                                 // M309 PID / M303 E-2 U
 
   //
+  // Default temperature @advi3++
+  //
+  celsius_t defaultHotendTemp[HOTENDS];
+  celsius_t defaultBedTemp;
+
+  //
   // User-defined Thermistors
   //
   #if HAS_USER_THERMISTORS
@@ -1172,6 +1178,15 @@ void MarlinSettings::postprocess() {
         const raw_pid_t chamber_pid = { NAN, NAN, NAN };
       #endif
       EEPROM_WRITE(chamber_pid);
+    }
+
+    //
+    // Default temperatures @advi3++
+    //
+    {
+      _FIELD_TEST(default_hotend_temp);
+      EEPROM_WRITE(thermalManager.default_hotend_temp);
+      EEPROM_WRITE(thermalManager.default_bed_temp);
     }
 
     //
@@ -2197,6 +2212,14 @@ void MarlinSettings::postprocess() {
           if (!validating && !isnan(pid.p))
             thermalManager.temp_chamber.pid.set(pid);
         #endif
+      }
+
+      //
+      // Default temperatures @advi3++
+      //
+      {
+        EEPROM_READ(thermalManager.default_hotend_temp);
+        EEPROM_READ(thermalManager.default_bed_temp);
       }
 
       //
@@ -3370,6 +3393,14 @@ void MarlinSettings::reset() {
   #if ENABLED(PIDTEMPCHAMBER)
     thermalManager.temp_chamber.pid.set(DEFAULT_chamberKp, DEFAULT_chamberKi, DEFAULT_chamberKd);
   #endif
+
+  //
+  // Default temperatures @advi3++
+  //
+  #define NEXT_DEFAULT_TEMP(N) ,HEATER_##N##TEMP_DEFAULT
+  const celsius_t temps[HOTENDS] = ARRAY_BY_HOTENDS(HEATER_0_TEMP_DEFAULT REPEAT_S(1, HOTENDS, NEXT_DEFAULT_TEMP));
+  HOTEND_LOOP() thermalManager.default_hotend_temp[e] = temps[e];
+  thermalManager.default_bed_temp = BED_TEMP_DEFAULT;
 
   //
   // User-Defined Thermistors

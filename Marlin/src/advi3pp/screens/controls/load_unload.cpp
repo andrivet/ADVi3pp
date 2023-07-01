@@ -47,7 +47,7 @@ bool LoadUnload::on_dispatch(KeyValue key_value) {
 }
 
 void LoadUnload::send_data() {
-  WriteRamRequest{Variable::Value0}.write_word(settings.get_last_used_temperature(TemperatureKind::Hotend));
+  WriteRamRequest{Variable::Value0}.write_word(static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(ExtUI::E0)));
 }
 
 //! Prepare the page before being displayed and return the right Page value
@@ -67,12 +67,14 @@ void LoadUnload::on_back_command() {
 //! @param background Background task to detect if it is time for step #2
 void LoadUnload::prepare() {
   ReadRam frame{Variable::Value0};
-  if(!frame.send_receive(1))     {
+  if(!frame.send_receive(1)) {
     Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
     return;
   }
-
-  ExtUI::setTargetTemp_celsius(frame.read_word(), ExtUI::E0);
+  const auto temp = frame.read_word();
+  ExtUI::setTargetTemp_celsius(temp, ExtUI::E0);
+  ExtUI::setDefaultTemp_celsius(temp, ExtUI::E0);
+  settings.save();
 }
 
 //! Start Load action.

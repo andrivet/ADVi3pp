@@ -214,6 +214,11 @@ PGMSTR(str_t_thermal_runaway, STR_T_THERMAL_RUNAWAY);
 PGMSTR(str_t_temp_malfunction, STR_T_MALFUNCTION);
 PGMSTR(str_t_heating_failed, STR_T_HEATING_FAILED);
 
+// @advi3++
+#define NEXT_DEFAULT_TEMP(N) ,HEATER_##N##TEMP_DEFAULT
+celsius_t Temperature::default_hotend_temp[HOTENDS] = ARRAY_BY_HOTENDS(HEATER_0_TEMP_DEFAULT REPEAT_S(1, HOTENDS, NEXT_DEFAULT_TEMP));
+celsius_t Temperature::default_bed_temp = BED_TEMP_DEFAULT;
+
 /**
  * Macros to include the heater id in temp errors. The compiler's dead-code
  * elimination should (hopefully) optimize out the unused strings.

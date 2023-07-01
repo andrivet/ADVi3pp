@@ -52,7 +52,7 @@ bool ExtruderTuning::on_dispatch(KeyValue key_value) {
 }
 
 void ExtruderTuning::send_data() {
-  WriteRamRequest{Variable::Value0}.write_word(settings.get_last_used_temperature(TemperatureKind::Hotend));
+  WriteRamRequest{Variable::Value0}.write_word(static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(ExtUI::E0)));
 }
 
 //! Prepare the page before being displayed and return the right Page value
@@ -84,6 +84,7 @@ void ExtruderTuning::start_command() {
 
   uint16_t temperature = frame.read_word();
   ExtUI::setTargetTemp_celsius(temperature, ExtUI::E0);
+  ExtUI::setDefaultTemp_celsius(temperature, ExtUI::E0);
   wait.wait_back(F("Heating the extruder..."), WaitCallback{this, &ExtruderTuning::cancel_heating});
   background_task.set(Callback{this, &ExtruderTuning::heating}, 500);
 }

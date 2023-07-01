@@ -671,6 +671,17 @@ namespace ADVi3pp {
 #define BED_MAXTEMP      180 // @advi3++
 #define CHAMBER_MAXTEMP  60
 
+// @advi3++
+#define HEATER_0_TEMP_DEFAULT   200
+#define HEATER_1_TEMP_DEFAULT   200
+#define HEATER_2_TEMP_DEFAULT   200
+#define HEATER_3_TEMP_DEFAULT   200
+#define HEATER_4_TEMP_DEFAULT   200
+#define HEATER_5_TEMP_DEFAULT   200
+#define HEATER_6_TEMP_DEFAULT   200
+#define HEATER_7_TEMP_DEFAULT   200
+#define BED_TEMP_DEFAULT        50
+
 /**
  * Thermal Overshoot
  * During heatup (and printing) the temperature can often "overshoot" the target by many degrees

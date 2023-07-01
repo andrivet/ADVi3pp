@@ -313,6 +313,24 @@ namespace ExtUI {
     return GET_TEMP_ADJUSTMENT(thermalManager.degTargetHotend(extruder - E0));
   }
 
+  // @advi3++
+  celsius_float_t getDefaultTemp_celsius(const heater_t heater) {
+    switch (heater) {
+      #if HAS_HEATED_BED
+        case BED: return GET_TEMP_ADJUSTMENT(thermalManager.degDefaultBed());
+      #endif
+      #if HAS_HEATED_CHAMBER
+          case CHAMBER: return GET_TEMP_ADJUSTMENT(thermalManager.degDefaultChamber());
+      #endif
+      default: return GET_TEMP_ADJUSTMENT(thermalManager.degDefaultHotend(heater - H0));
+    }
+  }
+
+  // @advi3++
+  celsius_float_t getDefaultTemp_celsius(const extruder_t extruder) {
+    return GET_TEMP_ADJUSTMENT(thermalManager.degDefaultHotend(extruder - E0));
+  }
+
   float getTargetFan_percent(const fan_t fan) {
     UNUSED(fan);
     return TERN0(HAS_FAN, thermalManager.fanSpeedPercent(fan - FAN0));
@@ -1100,6 +1118,28 @@ namespace ExtUI {
       enableHeater(extruder);
       thermalManager.setTargetHotend(LROUND(constrain(value, 0, thermalManager.hotend_max_target(e))), e);
     #endif
+  }
+
+  // @advi3++
+  void setDefaultTemp_celsius(const_float_t inval, const heater_t heater) {
+    switch (heater) {
+      #if HAS_HEATED_BED
+        case BED: thermalManager.setDefaultBed(LROUND(constrain(inval, 0, BED_MAX_TARGET)));
+      #endif
+      #if HAS_HEATED_CHAMBER
+        case CHAMBER: thermalManager.seztDefaultChamber(celsius);
+      #endif
+      default: {
+        const int16_t e = heater - H0;
+        thermalManager.setDefaultHotend(LROUND(constrain(inval, 0, thermalManager.hotend_max_target(e))), e);
+      }
+    }
+  }
+
+  // @advi3++
+  void setDefaultTemp_celsius(const_float_t inval, const extruder_t extruder) {
+    const int16_t e = extruder - E0;
+    thermalManager.setDefaultHotend(LROUND(constrain(inval, 0, thermalManager.hotend_max_target(e))), e);
   }
 
   void setTargetFan_percent(const_float_t value, const fan_t fan) {
