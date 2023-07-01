@@ -60,7 +60,7 @@ void GcodeSuite::M401() {
 
   // @advi3++
   if (seenI || seenT) {
-    #ifdef BLTOUCH_SW_MODE
+    #ifdef BLTOUCH_ALLOW_SW_MODE
       if (seenT) bltouch.touch_sw_mode = parser.value_bool();
       SERIAL_ECHO_START();
       SERIAL_ECHOPGM("BLTouch Touch SW mode ");

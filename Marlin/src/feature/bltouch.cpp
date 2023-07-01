@@ -36,7 +36,7 @@ bool BLTouch::od_5v_mode;         // Initialized by settings.load, 0 = Open Drai
 #endif
 
 // @advi3++ will not force but will allow to use this feature
-#ifdef BLTOUCH_SW_MODE
+#ifdef BLTOUCH_ALLOW_SW_MODE
   bool BLTouch::touch_sw_mode;
 #else
   constexpr bool BLTouch::touch_sw_mode;
@@ -129,7 +129,7 @@ bool BLTouch::deploy_proc() {
 
   // One of the recommended ANTClabs ways to probe, using SW MODE
   // @advi3++ will not force but will allow to use this feature
-  #ifdef BLTOUCH_SW_MODE
+  #ifdef BLTOUCH_ALLOW_SW_MODE
   if(touch_sw_mode) _set_SW_mode();
   #endif
 

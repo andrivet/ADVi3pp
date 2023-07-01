@@ -919,7 +919,7 @@
 
   // Feature: Switch into SW mode after a deploy. It makes the output pulse longer. Can be useful
   //          in special cases, like noisy or filtered input configurations.
-  #define BLTOUCH_SW_MODE //@advi3++: will not force but will allow to use this feature
+  #define BLTOUCH_ALLOW_SW_MODE //@advi3++: will not force but will allow to use this feature
   //#define BLTOUCH_FORCE_SW_MODE
 
   /**

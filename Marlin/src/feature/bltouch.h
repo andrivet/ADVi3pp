@@ -77,7 +77,7 @@ public:
   #endif
 
   // @advi3++ will not force but will allow to use this feature
-  #ifdef BLTOUCH_SW_MODE
+  #ifdef BLTOUCH_ALLOW_SW_MODE
     static bool touch_sw_mode;
   #else
     static constexpr bool touch_sw_mode = false;

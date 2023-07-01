@@ -2075,7 +2075,7 @@ void MarlinSettings::postprocess() {
         #endif
 
         // @advi3++
-        #ifdef BLTOUCH_SW_MODE
+        #ifdef BLTOUCH_ALLOW_SW_MODE
           _FIELD_TEST(bltouch_touch_sw_mode);
           #if ENABLED(BLTOUCH)
             const bool &bltouch_touch_sw_mode = bltouch.touch_sw_mode;
@@ -3204,8 +3204,8 @@ void MarlinSettings::reset() {
   #endif
 
   // @advi3++
-  #ifdef BLTOUCH_SW_MODE
-    bltouch.touch_sw_mode = ENABLED(BLTOUCH_SW_MODE);
+  #ifdef BLTOUCH_ALLOW_SW_MODE
+    bltouch.touch_sw_mode = ENABLED(BLTOUCH_ALLOW_SW_MODE);
   #endif
 
   //
