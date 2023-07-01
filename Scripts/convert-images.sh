@@ -1,15 +1,8 @@
 #!/usr/bin/env zsh
 : '
-Clean the old bitmaps from the DGUS directories 
-and convert the PNG images into proper bitmaps for the LCD Panel (BMP3).
+Convert the PNG images into proper bitmaps for the LCD Panel (BMP3).
 Must be called each time the images are modified.
-
-This script requires Sketch application to work (macOS). If you do not have it, there are
-third-parties open-source projects able to extract resources from a sketch file. Google is your friend.
 '
-
-sketchtool="/Applications/Sketch.app/Contents/Resources/sketchtool/bin/sketchtool"
-[[ -f ${sketchtool} ]] || { echo "Sorry, this script requires Sketch app (macOS) in order to work."; exit 1; }
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
@@ -23,21 +16,22 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 sketch_export_dir="$( cd "${root}/Sketch-Export" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-masters="$( cd "${root}/Masters" && pwd )"
-ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
+function copy_images() {
+    echo "Copy images from ${sketch_export_dir}"
 
-sketch="${masters}/ADVi3++5 LCD-Panel.sketch"
+    mkdir -p "${sketch_export_dir}/DWIN_SET" "${sketch_export_dir}/Controls" "${sketch_export_dir}/Screenshots"
 
-function export_sketches() {
-    echo "Export Sketch ${sketch} into ${sketch_export_dir}"
-    "${sketchtool}" export artboards --output="${sketch_export_dir}" --overwriting=YES "${sketch}"
-}
-
-function clean_files() {
-
-    echo "Clean $2 files in $1..."
-    rm "$1/"*."$2"
-
+    find "${sketch_export_dir}" -name "*.png" -print0 | while read -r -d $'\0' file
+    do
+      name=$(basename "${file}")
+      if [[ "${name}" == "DWIN_SET"* ]]; then
+        cp "${file}" "${sketch_export_dir}/DWIN_SET/${name#DWIN_SET}"
+      elif [[ "${name}" == "Controls"* ]]; then
+        cp "${file}" "${sketch_export_dir}/Controls/${name#Controls}"
+      elif [[ "${name}" == "Screenshots"* ]]; then
+        cp "${file}" "${sketch_export_dir}/Screenshots/${name#Screenshots}"
+      fi
+    done
 }
 
 function convert_images() {
@@ -52,18 +46,9 @@ function convert_images() {
         convert "$f" -type truecolor "BMP3:$2/${name}.bmp"
         ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
     done
-
 }
 
-clean_files "${sketch_export_dir}/DWIN_SET" "png"
-clean_files "${sketch_export_dir}/Controls" "png"
-clean_files "${sketch_export_dir}/Screenshots" "png"
-clean_files "${dgus}/DWIN_SET" "bmp"
-clean_files "${dgus}/25_Controls" "bmp"
-
-export_sketches
-ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
-
+copy_images
 convert_images "${root}/Masters/Boot"             "${dgus}/DWIN_SET"
 convert_images "${root}/Sketch-Export/DWIN_SET"   "${dgus}/DWIN_SET"
 convert_images "${root}/Sketch-Export/Controls"   "${dgus}/25_Controls"
