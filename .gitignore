@@ -155,6 +155,7 @@ __pycache__
 # ADVi3++
 .python-version
 ArduinoCore/
+LCD-Panel/Masters/*.png
 LCD-Panel/Masters/Boot/
 LCD-Panel/DGUS-root/25_Controls
 LCD-Panel/DGUS-root/DWIN_SET/*.bmp
