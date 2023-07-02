@@ -218,6 +218,7 @@ PGMSTR(str_t_heating_failed, STR_T_HEATING_FAILED);
 #define NEXT_DEFAULT_TEMP(N) ,HEATER_##N##TEMP_DEFAULT
 celsius_t Temperature::default_hotend_temp[HOTENDS] = ARRAY_BY_HOTENDS(HEATER_0_TEMP_DEFAULT REPEAT_S(1, HOTENDS, NEXT_DEFAULT_TEMP));
 celsius_t Temperature::default_bed_temp = BED_TEMP_DEFAULT;
+bool Temperature::temp_bed_reached_beep = false;
 
 /**
  * Macros to include the heater id in temp errors. The compiler's dead-code
@@ -323,6 +324,7 @@ celsius_t Temperature::default_bed_temp = BED_TEMP_DEFAULT;
 #if HAS_HOTEND
   hotend_info_t Temperature::temp_hotend[HOTENDS];
   constexpr celsius_t Temperature::hotend_maxtemp[HOTENDS];
+  bool Temperature::temp_hotend_reached_beep[HOTENDS]; // @advi3++
 
   // Sanity-check max readable temperatures
   #define CHECK_MAXTEMP_(N,M,S) static_assert( \
@@ -1614,6 +1616,12 @@ void Temperature::mintemp_error(const heater_id_t heater_id) {
         }
       #endif
 
+      // @advi3++ Beep if temperature is reached (only one time)
+      if(degHotend(e) >= degTargetHotend(e) && temp_hotend_reached_beep[e]) {
+        temp_hotend_reached_beep[e] = false;
+        BUZZ(10, 440);
+      }
+
     } // HOTEND_LOOP
   }
 
@@ -1693,6 +1701,12 @@ void Temperature::mintemp_error(const heater_id_t heater_id) {
             WRITE_HEATER_BED(LOW);
           }
         #endif
+      }
+
+      // @advi3++ Beep if temperature is reached (only one time)
+      if(degBed() >= degTargetBed() && temp_bed_reached_beep) {
+        temp_bed_reached_beep = false;
+        BUZZ(10, 440);
       }
 
     } while (false);

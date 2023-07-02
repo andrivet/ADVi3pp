@@ -577,13 +577,15 @@ class Temperature {
     #if HAS_HOTEND
       static hotend_info_t temp_hotend[HOTENDS];
       static constexpr celsius_t hotend_maxtemp[HOTENDS] = ARRAY_BY_HOTENDS(HEATER_0_MAXTEMP, HEATER_1_MAXTEMP, HEATER_2_MAXTEMP, HEATER_3_MAXTEMP, HEATER_4_MAXTEMP, HEATER_5_MAXTEMP, HEATER_6_MAXTEMP, HEATER_7_MAXTEMP);
-      static celsius_t default_hotend_temp[HOTENDS];
+      static celsius_t default_hotend_temp[HOTENDS]; // @advi3++
       static celsius_t hotend_max_target(const uint8_t e) { return hotend_maxtemp[e] - (HOTEND_OVERSHOOT); }
+      static bool temp_hotend_reached_beep[HOTENDS]; // @advi3++
     #endif
 
     #if HAS_HEATED_BED
       static bed_info_t temp_bed;
-      static celsius_t default_bed_temp;
+      static celsius_t default_bed_temp;  // @advi3++
+      static bool temp_bed_reached_beep;  // @advi3++
     #endif
     #if HAS_TEMP_PROBE
       static probe_info_t temp_probe;
@@ -964,6 +966,7 @@ class Temperature {
         #endif
         TERN_(AUTO_POWER_CONTROL, if (celsius) powerManager.power_on());
         temp_hotend[ee].target = _MIN(celsius, hotend_max_target(ee));
+        if(celsius > 0) temp_hotend_reached_beep[ee] = true; // @advi3++
         start_watching_hotend(ee);
       }
 
@@ -1031,6 +1034,7 @@ class Temperature {
       static void setTargetBed(const celsius_t celsius) {
         TERN_(AUTO_POWER_CONTROL, if (celsius) powerManager.power_on());
         temp_bed.target = _MIN(celsius, BED_MAX_TARGET);
+        if(celsius > 0) temp_bed_reached_beep = true; // @advi3++
         start_watching_bed();
       }
 
