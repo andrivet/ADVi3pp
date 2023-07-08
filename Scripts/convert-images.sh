@@ -48,6 +48,9 @@ function convert_images() {
     done
 }
 
+rm "${dgus}/DWIN_SET/"*.bmp
+rm "${dgus}/25_Controls/"*.bmp
+
 copy_images
 convert_images "${root}/Masters/Boot"             "${dgus}/DWIN_SET"
 convert_images "${root}/Sketch-Export/DWIN_SET"   "${dgus}/DWIN_SET"
