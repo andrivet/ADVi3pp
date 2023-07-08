@@ -27,6 +27,7 @@
 #include "../core/wait.h"
 #include "../screens/leveling/automatic.h"
 #include "../screens/tuning/pid_tuning.h"
+#include "../screens/print/change_temperature.h"
 
 namespace ExtUI {
 
@@ -95,6 +96,11 @@ void onUserConfirmRequired(const char * const msg) {
   const auto awaiting = ExtUI::awaitingUserConfirm();
   Log::log() << F("ExtUI::onUserConfirmRequired") << msg << "," << awaiting << Log::endl();
   wait.wait_user(msg, awaiting);
+}
+
+void onChangeFilamentConfirmRequired() {
+  Log::log() << F("ExtUI::onChangeFilamentConfirmRequired") << Log::endl();
+  change_temperature.show();
 }
 
 void onShowStatus() {

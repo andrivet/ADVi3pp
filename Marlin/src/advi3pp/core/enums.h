@@ -94,6 +94,7 @@ enum class Page: uint16_t {
   BuzzerSettings          = 142,
   AutomaticLeveling       = 144 | EnterNoPrint | ExitFinishMove,
   BLTouchTesting1B        = 146 | EnterNoPrint | Temporary,
+  ChangeTemperature       = 148 | Temporary,
 
   Boot                    = 200 | Temporary
 };
@@ -203,6 +204,7 @@ enum class Action: uint16_t {
   Skew                    = 0x0426,
   BuzzerSettings          = 0x0427,
   BabySteps               = 0x0428,
+  ChangeTemperature       = 0x042A,
 
   // 6 - Moves
   MoveXMinus              = 0x0600,

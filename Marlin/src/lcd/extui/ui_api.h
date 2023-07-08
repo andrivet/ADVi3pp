@@ -458,6 +458,7 @@ namespace ExtUI {
   void onFilamentRunout(const extruder_t extruder);
   void onUserConfirmRequired(const char * const msg);
   void onUserConfirmRequired(FSTR_P const fstr);
+  void onChangeFilamentConfirmRequired(); // @advi3++
   void onStatusChanged(const char * const msg);
   void onStatusChanged(FSTR_P const fstr);
   void onShowStatus(); // @advi3++

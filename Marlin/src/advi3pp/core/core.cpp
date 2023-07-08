@@ -56,6 +56,7 @@
 #include "../screens/settings/beeper_settings.h"
 #include "../screens/print/print_settings.h"
 #include "../screens/print/baby_steps.h"
+#include "../screens/print/change_temperature.h"
 #include "../screens/settings/pid_settings.h"
 #include "../screens/settings/step_settings.h"
 #include "../screens/settings/feedrate_settings.h"
@@ -157,7 +158,7 @@ void Core::killed(float temp, const FlashChar* error, const FlashChar* component
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void Core::send_gplv3_7b_notice() {
   SERIAL_ECHO_START();
-  SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2022 Sebastien Andrivet");
+  SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2023 Sebastien Andrivet");
 }
 
 //! Update the progress bar if the printer is printing for the SD card
@@ -235,6 +236,7 @@ void Core::process_action(Action action, KeyValue key_code) {
     case sensor_z_height.ACTION:          sensor_z_height.handle(key_code); break;
     case xtwist.ACTION:                   xtwist.handle(key_code); break;
     case sensor_settings.ACTION:          sensor_settings.handle(key_code); break;
+    case change_temperature.ACTION:       change_temperature.handle(key_code); break;
 #if !ENABLED(ADVi3PP_PROBE)
     case no_sensor.ACTION:                no_sensor.handle(key_code); break;
 #endif
