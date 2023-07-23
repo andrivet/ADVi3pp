@@ -21,9 +21,7 @@
 #include "../../../inc/MarlinConfig.h"
 #include "load_unload.h"
 #include "../../core/wait.h"
-#include "../../core/core.h"
-#include "../../core/settings.h"
-#include "../../core/dgus.h"
+
 
 namespace ADVi3pp {
 
@@ -65,28 +63,69 @@ void LoadUnload::on_back_command() {
 
 //! Prepare Load or Unload step #1: set the target temperature, setup the next step and display a wait message
 //! @param background Background task to detect if it is time for step #2
-void LoadUnload::prepare() {
+void LoadUnload::prepare(float length, feedRate_t feedrate) {
   ReadRam frame{Variable::Value0};
   if(!frame.send_receive(1)) {
     Log::error() << F("Receiving Frame (Target Temperature)") << Log::endl();
     return;
   }
-  const auto temp = frame.read_word();
-  ExtUI::setTargetTemp_celsius(temp, ExtUI::E0);
-  ExtUI::setDefaultTemp_celsius(temp, ExtUI::E0);
+  const auto target_temp = frame.read_word();
+  length_ = length;
+  feedrate_ = feedrate;
+
+  ExtUI::setTargetTemp_celsius(target_temp, ExtUI::E0, true);
+  ExtUI::setDefaultTemp_celsius(target_temp, ExtUI::E0);
   settings.save();
+
+  wait.wait_back(F("Heating the extruder..."), WaitCallback{this, &LoadUnload::cancel_heating});
+  background_task.set(Callback{this, &LoadUnload::heating_task}, 250);
+  ExtUI::setHostKeepaliveState(GcodeSuite::IN_PROCESS);
+}
+
+void LoadUnload::heating_task() {
+  if(ExtUI::getActualTemp_celsius(ExtUI::E0) < ExtUI::getTargetTemp_celsius(ExtUI::E0) - 2) return;
+  background_task.clear();
+  extrude();
+}
+
+bool LoadUnload::cancel_heating() {
+  ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
+  background_task.clear();
+  ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+  return true;
+}
+
+void LoadUnload::extrude() {
+  ExtUI::setAxisPosition_mm(ExtUI::getAxisPosition_mm(ExtUI::E0) + length_, ExtUI::E0, feedrate_);
+  wait.wait_back(length_ > 0 ? F("Load filament...") : F("Unload filament..."), WaitCallback{this, &LoadUnload::cancel_extrude});
+  background_task.set(Callback{this, &LoadUnload::extrude_task});
+}
+
+void LoadUnload::extrude_task() {
+  if(ExtUI::isMoving()) return;
+  ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
+  background_task.clear();
+  ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+  pages.clear_temporaries();
+}
+
+bool LoadUnload::cancel_extrude() {
+  ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
+  background_task.clear();
+  ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+  ExtUI::stopMove();
+  pages.clear_temporaries();
+  return false;
 }
 
 //! Start Load action.
 void LoadUnload::load_command() {
-  prepare();
-  core.inject_commands(F("M701 Z0\nM104 S0")); // Load filament, set hotend temp
+  prepare(FILAMENT_CHANGE_SLOW_LOAD_LENGTH, FILAMENT_CHANGE_SLOW_LOAD_FEEDRATE);
 }
 
 //! Start Unload action.
 void LoadUnload::unload_command() {
-  prepare();
-  core.inject_commands(F("M702 Z0\nM104 S0")); // Unload filament, set hotend temp
+    prepare(-FILAMENT_CHANGE_UNLOAD_LENGTH, FILAMENT_CHANGE_UNLOAD_FEEDRATE);
 }
 
 

@@ -35,15 +35,22 @@ private:
   bool on_enter();
   void on_back_command();
 
-  void prepare();
+  void prepare(float length, feedRate_t feedrate);
   void load_command();
   void unload_command();
   void send_data();
+  void heating_task();
+  void extrude();
+  void extrude_task();
+  bool cancel_heating();
+  bool cancel_extrude();
 
   friend Parent;
 
 private:
   float previous_z_ = 0;
+  float length_;
+  float feedrate_;
 };
 
 extern LoadUnload load_unload;
