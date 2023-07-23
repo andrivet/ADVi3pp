@@ -29,13 +29,13 @@ using Callback = adv::Callback<void(*)()>;
 
 //! Task
 struct Task {
-  enum class Activation { MULIPLE, ONE_TIME };
+  enum class Activation { MULTIPLE, ONE_TIME };
   static const unsigned DEFAULT_DELAY = 100; // ms
 
   Task() = default;
-  explicit Task(const Callback& callback, unsigned int delay = DEFAULT_DELAY, Activation activation = Activation::MULIPLE);
+  explicit Task(const Callback& callback, unsigned int delay = DEFAULT_DELAY, Activation activation = Activation::MULTIPLE);
 
-  void set(const Callback& callback, unsigned int delay = DEFAULT_DELAY, Activation activation = Activation::MULIPLE);
+  void set(const Callback& callback, unsigned int delay = DEFAULT_DELAY, Activation activation = Activation::MULTIPLE);
   void clear();
   bool execute(bool force_execute = false);
 
@@ -44,7 +44,7 @@ private:
 
 private:
   unsigned int delay_ = DEFAULT_DELAY;
-  Activation activation_ = Activation::MULIPLE;
+  Activation activation_ = Activation::MULTIPLE;
   millis_t next_execute_time_ = 0;
   Callback callback_;
 };
