@@ -26,7 +26,7 @@ echo "======================================"
 echo
 echo "BE SURE YOU HAVE CHANGED:"
 echo "- CHANGELOG.md"
-echo "- cd .. ; advbumpversion --allow-dirty --no-commit --no-tag release ; cd Scripts"
+echo "- cd .. ; bump2version --allow-dirty --no-commit --no-tag release ; cd Scripts"
 echo "- User Manual if necessary"
 echo
 pause 'Press any key to continue or Ctrl-C to abort...'
@@ -67,7 +67,7 @@ echo "***** Generate other microSD images..."
 echo
 echo "***** Compile Mainboard firmwares..."
 echo
-platformio -f -c clion run -d "${advi3pp}" -e advi3pp_51 -e advi3pp_51_bltouch -e advi3pp_52c -e advi3pp_52c_bltouch -e advi3pp_54
+platformio -f -c clion run -d "${advi3pp}" -e advi3pp_51 -e advi3pp_51_bltouch -e advi3pp_52c -e advi3pp_52c_bltouch -e advi3pp_54 -e advi3pp_54_bltouch
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo
@@ -78,6 +78,7 @@ cp "${advi3pp}/.pio/build/advi3pp_51_bltouch/firmware.hex" "${release}/ADVi3pp-M
 cp "${advi3pp}/.pio/build/advi3pp_52c/firmware.hex" "${release}/ADVi3pp-Mainboard-52c-${version}.hex"
 cp "${advi3pp}/.pio/build/advi3pp_52c_bltouch/firmware.hex" "${release}/ADVi3pp-Mainboard-52c-BLTouch-${version}.hex"
 cp "${advi3pp}/.pio/build/advi3pp_54/firmware.hex" "${release}/ADVi3pp-Mainboard-54-${version}.hex"
+cp "${advi3pp}/.pio/build/advi3pp_54_bltouch/firmware.hex" "${release}/ADVi3pp-Mainboard-54-BLTouch-${version}.hex"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 echo

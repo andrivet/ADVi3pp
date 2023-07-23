@@ -2,7 +2,16 @@
 
 ## 5.7.0 (2023-06-22)
 
-Align with Marlin 2.1.2.1
+* **#332** - [SD card sorting is not working as expected bug](https://github.com/andrivet/ADVi3pp/issues/332)
+* **#329** - [Add a way to cancel Load and Unload filament enhancement](https://github.com/andrivet/ADVi3pp/issues/329)
+* **#327** - [For Mark II printers, select by default the Mark II offsets for the probe enhancement](https://github.com/andrivet/ADVi3pp/issues/327)
+* **#326** - [Synchronise sources with Marlin 2.1.2 enhancement](https://github.com/andrivet/ADVi3pp/issues/326)
+* **#322** - [Save the last temperature used to Load/Unload and restore it on boot enhancement](https://github.com/andrivet/ADVi3pp/issues/322)
+* **#319** - [Use Touch Switch Mode (SW) for BLTouch enhancement](https://github.com/andrivet/ADVi3pp/issues/319)
+* **#315** - [Beep in Preheat when the target temperature is achieved enhancement](https://github.com/andrivet/ADVi3pp/issues/315)
+* **#314** - [Apply the setting under Settings / Beeper / Beep duration to M300 without P argument enhancement](https://github.com/andrivet/ADVi3pp/issues/314)
+* **#262** - [Add BLTouch support for i3 plus Mark II enhancement](https://github.com/andrivet/ADVi3pp/issues/262)
+* **#115** - [Allow Temp Change during filament change enhancement](https://github.com/andrivet/ADVi3pp/issues/115)
 
 ## 5.6.0 (2023-03-19)
 
