@@ -444,6 +444,7 @@ namespace ExtUI {
   #if ENABLED(HOST_KEEPALIVE_FEATURE)
     GcodeSuite::MarlinBusyState getHostKeepaliveState() { return gcode.busy_state; }
     bool getHostKeepaliveIsPaused() { return gcode.host_keepalive_is_paused(); }
+    void setHostKeepaliveState(GcodeSuite::MarlinBusyState state) { gcode.busy_state = state; }
   #endif
 
   #if HAS_SOFTWARE_ENDSTOPS
@@ -1083,7 +1084,7 @@ namespace ExtUI {
     return firmware_name;
   }
 
-  void setTargetTemp_celsius(const_float_t inval, const heater_t heater) {
+  void setTargetTemp_celsius(const_float_t inval, const heater_t heater, bool beep) {
     float value = inval;
     #ifdef TOUCH_UI_LCD_TEMP_SCALING
       value *= TOUCH_UI_LCD_TEMP_SCALING;
@@ -1097,18 +1098,18 @@ namespace ExtUI {
         case COOLER: thermalManager.setTargetCooler(LROUND(constrain(value, 0, COOLER_MAXTEMP))); break;
       #endif
       #if HAS_HEATED_BED
-        case BED: thermalManager.setTargetBed(LROUND(constrain(value, 0, BED_MAX_TARGET))); break;
+        case BED: thermalManager.setTargetBed(LROUND(constrain(value, 0, BED_MAX_TARGET)), beep); break;
       #endif
       default: {
         #if HAS_HOTEND
           const int16_t e = heater - H0;
-          thermalManager.setTargetHotend(LROUND(constrain(value, 0, thermalManager.hotend_max_target(e))), e);
+          thermalManager.setTargetHotend(LROUND(constrain(value, 0, thermalManager.hotend_max_target(e))), e, beep);
         #endif
       } break;
     }
   }
 
-  void setTargetTemp_celsius(const_float_t inval, const extruder_t extruder) {
+  void setTargetTemp_celsius(const_float_t inval, const extruder_t extruder, bool beep) {
     float value = inval;
     #ifdef TOUCH_UI_LCD_TEMP_SCALING
       value *= TOUCH_UI_LCD_TEMP_SCALING;
@@ -1116,12 +1117,13 @@ namespace ExtUI {
     #if HAS_HOTEND
       const int16_t e = extruder - E0;
       enableHeater(extruder);
-      thermalManager.setTargetHotend(LROUND(constrain(value, 0, thermalManager.hotend_max_target(e))), e);
+      thermalManager.setTargetHotend(LROUND(constrain(value, 0, thermalManager.hotend_max_target(e))), e, beep);
     #endif
   }
 
   // @advi3++
   void setDefaultTemp_celsius(const_float_t inval, const heater_t heater) {
+    if(inval <= 0) return;
     switch (heater) {
       #if HAS_HEATED_BED
         case BED: thermalManager.setDefaultBed(LROUND(constrain(inval, 0, BED_MAX_TARGET)));
@@ -1138,6 +1140,7 @@ namespace ExtUI {
 
   // @advi3++
   void setDefaultTemp_celsius(const_float_t inval, const extruder_t extruder) {
+    if(inval <= 0) return;
     const int16_t e = extruder - E0;
     thermalManager.setDefaultHotend(LROUND(constrain(inval, 0, thermalManager.hotend_max_target(e))), e);
   }

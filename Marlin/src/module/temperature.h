@@ -956,7 +956,7 @@ class Temperature {
 
     #if HAS_HOTEND
 
-      static void setTargetHotend(const celsius_t celsius, const uint8_t E_NAME) {
+      static void setTargetHotend(const celsius_t celsius, const uint8_t E_NAME, bool beep = false) { // @advi3++
         const uint8_t ee = HOTEND_INDEX;
         #if MILLISECONDS_PREHEAT_TIME > 0
           if (celsius == 0)
@@ -966,7 +966,7 @@ class Temperature {
         #endif
         TERN_(AUTO_POWER_CONTROL, if (celsius) powerManager.power_on());
         temp_hotend[ee].target = _MIN(celsius, hotend_max_target(ee));
-        if(celsius > 0) temp_hotend_reached_beep[ee] = true; // @advi3++
+        if(celsius > 0) temp_hotend_reached_beep[ee] = beep; // @advi3++
         start_watching_hotend(ee);
       }
 
@@ -1031,10 +1031,10 @@ class Temperature {
       // Start watching the Bed to make sure it's really heating up
       static void start_watching_bed() { TERN_(WATCH_BED, watch_bed.restart(degBed(), degTargetBed())); }
 
-      static void setTargetBed(const celsius_t celsius) {
+      static void setTargetBed(const celsius_t celsius, bool beep = false) { // @advi3++
         TERN_(AUTO_POWER_CONTROL, if (celsius) powerManager.power_on());
         temp_bed.target = _MIN(celsius, BED_MAX_TARGET);
-        if(celsius > 0) temp_bed_reached_beep = true; // @advi3++
+        if(celsius > 0) temp_bed_reached_beep = beep; // @advi3++
         start_watching_bed();
       }
 

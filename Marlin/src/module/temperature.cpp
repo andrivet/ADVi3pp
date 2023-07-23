@@ -1617,7 +1617,7 @@ void Temperature::mintemp_error(const heater_id_t heater_id) {
       #endif
 
       // @advi3++ Beep if temperature is reached (only one time)
-      if(degHotend(e) >= degTargetHotend(e) && temp_hotend_reached_beep[e]) {
+      if(degTargetHotend(e) > 0 && degHotend(e) >= degTargetHotend(e) && temp_hotend_reached_beep[e]) {
         temp_hotend_reached_beep[e] = false;
         BUZZ(10, 440);
       }
@@ -1704,7 +1704,7 @@ void Temperature::mintemp_error(const heater_id_t heater_id) {
       }
 
       // @advi3++ Beep if temperature is reached (only one time)
-      if(degBed() >= degTargetBed() && temp_bed_reached_beep) {
+      if(degTargetBed() > 0 && degBed() >= degTargetBed() && temp_bed_reached_beep) {
         temp_bed_reached_beep = false;
         BUZZ(10, 440);
       }

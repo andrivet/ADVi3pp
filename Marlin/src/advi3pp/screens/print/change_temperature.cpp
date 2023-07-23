@@ -54,7 +54,7 @@ namespace ADVi3pp {
       return;
     }
     const auto temp = frame.read_word();
-    ExtUI::setTargetTemp_celsius(temp, ExtUI::E0);
+    ExtUI::setTargetTemp_celsius(temp, ExtUI::E0, true);
     ExtUI::setDefaultTemp_celsius(temp, ExtUI::E0);
     settings.save();
 

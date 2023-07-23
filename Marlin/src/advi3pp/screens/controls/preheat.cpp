@@ -103,8 +103,8 @@ void Preheat::next_command() {
 void Preheat::on_save_command() {
   retrieve_presets();
 
-  ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetHotendTemp_celsius(index_), ExtUI::E0);
-  ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetBedTemp_celsius(index_), ExtUI::BED);
+  ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetHotendTemp_celsius(index_), ExtUI::E0, true);
+  ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetBedTemp_celsius(index_), ExtUI::BED, true);
   ExtUI::setTargetFan_percent(ExtUI::getMaterialPresetFanSpeed_percent(index_), ExtUI::FAN0);
 
   settings.save();

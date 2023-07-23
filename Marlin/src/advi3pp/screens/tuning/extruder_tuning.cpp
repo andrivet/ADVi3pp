@@ -83,20 +83,23 @@ void ExtruderTuning::start_command() {
   }
 
   uint16_t temperature = frame.read_word();
-  ExtUI::setTargetTemp_celsius(temperature, ExtUI::E0);
+  ExtUI::setTargetTemp_celsius(temperature, ExtUI::E0, true);
   ExtUI::setDefaultTemp_celsius(temperature, ExtUI::E0);
+  settings.save();
+
   wait.wait_back(F("Heating the extruder..."), WaitCallback{this, &ExtruderTuning::cancel_heating});
-  background_task.set(Callback{this, &ExtruderTuning::heating}, 500);
+  background_task.set(Callback{this, &ExtruderTuning::heating}, 250);
+  ExtUI::setHostKeepaliveState(GcodeSuite::IN_PROCESS);
 }
 
 void ExtruderTuning::heating() {
-  if(ExtUI::getActualTemp_celsius(ExtUI::E0) < ExtUI::getTargetTemp_celsius(ExtUI::E0) - 2)
-    return;
+  if(ExtUI::getActualTemp_celsius(ExtUI::E0) < ExtUI::getTargetTemp_celsius(ExtUI::E0)) return;
   background_task.clear();
   extrude();
 }
 
 bool ExtruderTuning::cancel_heating() {
+  ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
   background_task.clear();
   ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
   return true;
@@ -104,14 +107,14 @@ bool ExtruderTuning::cancel_heating() {
 
 void ExtruderTuning::extrude() {
   extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0);
+  ExtUI::setAxisPosition_mm(extruded_ + FILAMENT_TO_EXTRUDE, ExtUI::E0);
   wait.wait_back(F("Extrude filament..."), WaitCallback{this, &ExtruderTuning::cancel_extrude});
   background_task.set(Callback{this, &ExtruderTuning::extruding}, 100);
-  ExtUI::setAxisPosition_mm(extruded_ + FILAMENT_TO_EXTRUDE, ExtUI::E0);
 }
 
 void ExtruderTuning::extruding() {
-  if(ExtUI::isMoving())
-    return;
+  if(ExtUI::isMoving()) return;
+  ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
   background_task.clear();
   ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
 
@@ -123,6 +126,7 @@ void ExtruderTuning::extruding() {
 }
 
 bool ExtruderTuning::cancel_extrude() {
+  ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
   background_task.clear();
   ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
   ExtUI::stopMove();
