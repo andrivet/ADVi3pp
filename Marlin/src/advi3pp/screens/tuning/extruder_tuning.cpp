@@ -107,7 +107,7 @@ bool ExtruderTuning::cancel_heating() {
 
 void ExtruderTuning::extrude() {
   extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0);
-  ExtUI::setAxisPosition_mm(extruded_ + FILAMENT_TO_EXTRUDE, ExtUI::E0);
+  ExtUI::setAxisPosition_mm(extruded_ + FILAMENT_TO_EXTRUDE, ExtUI::E0, MMM_TO_MMS(50.0));
   wait.wait_back(F("Extrude filament..."), WaitCallback{this, &ExtruderTuning::cancel_extrude});
   background_task.set(Callback{this, &ExtruderTuning::extruding}, 100);
 }
