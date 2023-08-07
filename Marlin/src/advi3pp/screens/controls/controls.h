@@ -38,6 +38,7 @@ private:
   void show_baby_steps();
   void show_print();
   void show_sd();
+  void show_leveling();
 
 private:
   friend Parent;

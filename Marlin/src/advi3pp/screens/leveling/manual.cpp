@@ -72,8 +72,6 @@ void ManualLeveling::on_abort() {
 #endif
 }
 
-//! Prepare the page before being displayed and return the right Page value
-//! @return The index of the page to display
 bool ManualLeveling::on_enter() {
   pages.save_forward_page();
 

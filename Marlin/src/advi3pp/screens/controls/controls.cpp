@@ -27,6 +27,7 @@
 #include "../print/sd_card.h"
 #include "../print/print_settings.h"
 #include "../print/baby_steps.h"
+#include "../leveling/manual.h"
 
 namespace ADVi3pp {
 
@@ -39,12 +40,6 @@ bool Controls::on_dispatch(KeyValue key_value) {
   // Do not call Parent::on_dispatch
   // No need to implement save or abort
 
-#ifdef ADVi3PP_PROBE
-  const Page leveling = Page::Leveling;
-#else
-    const Page leveling = Page::ManualLeveling;
-#endif
-
   switch(key_value) {
     case KeyValue::Temps:           show_temps(); break;
     case KeyValue::Print:           show_print(); break;
@@ -53,7 +48,7 @@ bool Controls::on_dispatch(KeyValue key_value) {
     case KeyValue::Settings:        pages.show(Page::Settings, Action::None); break;
     case KeyValue::Infos:           pages.show(Page::Infos, Action::None); break;
     case KeyValue::Motors:          pages.show(Page::MotorsSettings, Action::None); break;
-    case KeyValue::Leveling:        pages.show(leveling, Action::None); break;
+    case KeyValue::Leveling:        show_leveling(); break;
     case KeyValue::PrintSettings:   show_print_settings(); break;
     case KeyValue::BabySteps:       show_baby_steps(); break;
     case KeyValue::Back:            on_back_command(); break;
@@ -115,6 +110,14 @@ void Controls::show_print() {
 void Controls::show_sd() {
   background_task.clear();
   sd_card.show();
+}
+
+void Controls::show_leveling() {
+#ifdef ADVi3PP_PROBE
+  pages.show(Page::Leveling, Action::None);
+#else
+  manual_leveling.show();
+#endif
 }
 
 }
