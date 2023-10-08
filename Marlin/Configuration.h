@@ -49,7 +49,7 @@ namespace ADVi3pp {
 #ifdef ADVi3PP_DEBUG
 
     // To log various aspects of ADVi3++
-    #define ADVi3PP_LOG
+    // #define ADVi3PP_LOG
 
     // To log the content of frames, uncomment the following line. Very chatty, but useful to debug tough bugs
     // #define ADVi3PP_LOG_FRAMES
@@ -59,10 +59,10 @@ namespace ADVi3pp {
     // #define ADVi3PP_HARD_BREAK
 
     // Enable detailed logging of G28, G29, M48, etc. Turn on with the command 'M111 S32'.
-    #define MARLIN_DEV_MODE
+    // #define MARLIN_DEV_MODE
 
     // Enable leveling debugging for DEBUG builds
-    #define DEBUG_LEVELING_FEATURE
+    // #define DEBUG_LEVELING_FEATURE
 
 #endif
 
