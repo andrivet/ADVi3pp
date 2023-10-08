@@ -27,10 +27,10 @@ Global
 		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator BL Debug|AVR.Build.0 = Release|AVR
 		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator BL Release|AVR.ActiveCfg = Release|AVR
 		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator BL Release|AVR.Build.0 = Release|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Debug|AVR.ActiveCfg = Simulator Debug|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Debug|AVR.Build.0 = Simulator Debug|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Release|AVR.ActiveCfg = Simulator Release|AVR
-		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Release|AVR.Build.0 = Simulator Release|AVR
+		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Debug|AVR.ActiveCfg = Debug|AVR
+		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Debug|AVR.Build.0 = Debug|AVR
+		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Release|AVR.ActiveCfg = Release|AVR
+		{FF2DBDF2-F3D4-45FC-8193-BA0A6C9EE112}.Simulator Release|AVR.Build.0 = Release|AVR
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
