@@ -1,5 +1,9 @@
 # ADVi3++ Changelog
 
+## 5.7.1 (2023-10-08)
+
+* **#338** - [When a M0/M1 command is sent, the LCD display does not have a button to resume the print](https://github.com/andrivet/ADVi3pp/issues/338)
+
 ## 5.7.0 (2023-06-22)
 
 * **#332** - [SD card sorting is not working as expected bug](https://github.com/andrivet/ADVi3pp/issues/332)
