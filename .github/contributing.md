@@ -37,7 +37,8 @@ This section guides you through submitting a Bug Report for **ADVi3++**. Followi
 
 When you are creating a Bug Report, please [include as many details as possible](#how-do-i-submit-a-good-bug-report). Fill out [the required template](issue_template.md), the information it asks for helps us resolve issues faster.
 
-> **Note:** Regressions can happen. If you find a **Closed** issue that seems like your issue, go ahead and open a new issue and include a link to the original issue in the body of your new one. All you need to create a link is the issue number, preceded by #. For example, #8888.
+> [!NOTE]
+> Regressions can happen. If you find a **Closed** issue that seems like your issue, go ahead and open a new issue and include a link to the original issue in the body of your new one. All you need to create a link is the issue number, preceded by #. For example, #8888.
 
 #### How Do I Submit A (Good) Bug Report?
 

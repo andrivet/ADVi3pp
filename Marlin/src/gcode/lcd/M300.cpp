@@ -30,10 +30,23 @@
 #include "../../libs/buzzer.h"  // Buzzer, if possible
 
 /**
- * M300: Play beep sound S<frequency Hz> P<duration ms> D<options>
- * options: 0=none, 1=beep on touch, 2=beep on action, 3=both
+ * M300: Play a Tone / Add a tone to the queue
+ *
+ *  S<frequency> - (Hz) The frequency of the tone. 0 for silence.
+ *  P<duration>  - (ms) The duration of the tone.
+ *
+ * With SOUND_MENU_ITEM:
+ *  E<0|1>       - Mute or enable sound
  */
 void GcodeSuite::M300() {
+
+  #if ENABLED(SOUND_MENU_ITEM)
+    if (parser.seen('E')) {
+      ui.sound_on = parser.value_bool();
+      return;
+    }
+  #endif
+
   uint16_t const frequency = parser.ushortval('S', 0); // @advi3++, 0 means default value
   uint16_t duration = parser.ushortval('P', 0); // @advi3++, 0 means default value
 
