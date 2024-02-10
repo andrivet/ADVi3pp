@@ -24,12 +24,14 @@ function copy_images() {
     find "${sketch_export_dir}" -name "*.png" -print0 | while read -r -d $'\0' file
     do
       name=$(basename "${file}")
-      if [[ "${name}" == "DWIN_SET"* ]]; then
-        cp "${file}" "${sketch_export_dir}/DWIN_SET/${name#DWIN_SET}"
-      elif [[ "${name}" == "Controls"* ]]; then
-        cp "${file}" "${sketch_export_dir}/Controls/${name#Controls}"
-      elif [[ "${name}" == "Screenshots"* ]]; then
-        cp "${file}" "${sketch_export_dir}/Screenshots/${name#Screenshots}"
+      if [[ "${name}" == "DWIN_SET-"* ]]; then
+        cp "${file}" "${sketch_export_dir}/DWIN_SET/${name#DWIN_SET-}"
+      elif [[ "${name}" == "Controls-"* ]]; then
+        cp "${file}" "${sketch_export_dir}/Controls/${name#Controls-}"
+      elif [[ "${name}" == "Screenshots-"* ]]; then
+        cp "${file}" "${sketch_export_dir}/Screenshots/${name#Screenshots-}"
+      else
+        echo WARNING: Unknown file "${file}"
       fi
     done
 }
@@ -42,7 +44,6 @@ function convert_images() {
     for f in "$1/"*.png ; do
         filename=$(basename "$f")
         name="${filename%.*}"
-        echo Convert "${name}"
         convert "$f" -type truecolor "BMP3:$2/${name}.bmp"
         ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
     done
