@@ -507,7 +507,7 @@ namespace ExtUI {
   void onMediaRemoved();
   void onMediaOpenError(const char* filename); // @advi3++
   void onPlayTone(const uint16_t frequency, const uint16_t duration=0);
-  void onPrinterKilled(FSTR_P const error, FSTR_P const component);
+  void onPrinterKilled(float temp, FSTR_P const error, FSTR_P const component); // @advi3++
   void onPrintTimerStarted();
   void onPrintTimerPaused();
   void onPrintTimerStopped();
