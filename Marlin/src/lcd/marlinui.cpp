@@ -132,6 +132,7 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
   }
 #endif
 
+// @advi3++
 #if HAS_SOUND
   uint16_t MarlinUI::tone_frequency = TONE_FREQUENCY_DEFAULT;
   uint16_t MarlinUI::tone_duration = TONE_DURATION_DEFAULT;

@@ -629,6 +629,7 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
       TEST(endstops.trigger_state(), Z_MIN_PROBE)
     #endif
   );
+  #endif
 
   // Offset sensorless probing
   #if HAS_DELTA_SENSORLESS_PROBING

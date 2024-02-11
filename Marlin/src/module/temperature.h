@@ -968,6 +968,7 @@ class Temperature {
         start_watching_hotend(ee);
       }
 
+      // @advi3++
       static void setDefaultHotend(const celsius_t celsius, const uint8_t E_NAME) {
         const uint8_t ee = HOTEND_INDEX;
         default_hotend_temp[ee] = _MIN(celsius, hotend_max_target(ee));
@@ -1036,6 +1037,7 @@ class Temperature {
         start_watching_bed();
       }
 
+      // @advi3++
       static void setDefaultBed(const celsius_t celsius) {
         default_bed_temp = _MIN(celsius, BED_MAX_TARGET);
       }

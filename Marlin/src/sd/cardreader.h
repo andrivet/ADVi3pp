@@ -215,7 +215,7 @@ public:
     #endif
   #elif ENABLED(SDCARD_SORT_DATE) // @advi3++
     static void presort();
-    static void getfilename_sorted(const uint16_t nr);
+    static void selectFileByIndexSorted(const uint16_t nr);
   #else
     FORCE_INLINE static void selectFileByIndexSorted(const int16_t nr) {
       selectFileByIndex(TERN(SDCARD_RATHERRECENTFIRST, get_num_items() - 1 - nr, (nr)));
@@ -342,7 +342,7 @@ private:
     static uint8_t sort_order[SDSORT_LIMIT];
     static uint16_t write_date;
     static uint16_t write_time;
-#endif // SDCARD_SORT_DATE
+  #endif // SDCARD_SORT_DATE
 
   static DiskIODriver *driver;
   static MarlinVolume volume;

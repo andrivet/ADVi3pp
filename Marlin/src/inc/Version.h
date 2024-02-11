@@ -31,11 +31,11 @@
       #define ADVi3PP_NAME "ADVi3++HE180021"
     #endif
 #else
-#if defined(BLTOUCH)
-    #define ADVi3PP_NAME "ADVi3++BLTouch"
-#else
-    #define ADVi3PP_NAME "ADVi3++"
-#endif
+    #if defined(BLTOUCH)
+        #define ADVi3PP_NAME "ADVi3++BLTouch"
+    #else
+        #define ADVi3PP_NAME "ADVi3++"
+    #endif
 #endif
 
 /**

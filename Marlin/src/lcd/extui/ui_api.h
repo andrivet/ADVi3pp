@@ -111,7 +111,7 @@ namespace ExtUI {
   #if ENABLED(HOST_KEEPALIVE_FEATURE)
     GcodeSuite::MarlinBusyState getHostKeepaliveState();
     bool getHostKeepaliveIsPaused();
-    void setHostKeepaliveState(GcodeSuite::MarlinBusyState state);
+    void setHostKeepaliveState(GcodeSuite::MarlinBusyState state); // @advi3++
   #endif
 
   #if ENABLED(JOYSTICK)

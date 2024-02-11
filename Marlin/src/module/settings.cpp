@@ -324,6 +324,7 @@ typedef struct SettingsDataStruct {
   #ifdef BLTOUCH_HS_MODE
     bool bltouch_high_speed_mode;                       // M401 S
   #endif
+  // @advi3++
   #ifdef BLTOUCH_HS_MODE
     bool touch_sw_mode;                                 // M401 T
   #endif
@@ -614,6 +615,7 @@ typedef struct SettingsDataStruct {
   //
   // Default frequency and duration to play tones
   //
+  // @advi3++
   #if HAS_SOUND
   uint16_t tone_frequency,    // M300
            tone_duration,
@@ -1710,6 +1712,7 @@ void MarlinSettings::postprocess() {
       #endif
     #endif
 
+    // @advi3++
     #if HAS_SOUND
       _FIELD_TEST(ui.tone_frequency);
       EEPROM_WRITE(ui.tone_frequency);
@@ -2794,6 +2797,7 @@ void MarlinSettings::postprocess() {
       }
       #endif
 
+      // @advi3++
       #if HAS_SOUND
         _FIELD_TEST(tone_frequency);
         uint16_t tone_frequency, tone_duration, tone_options;
@@ -2903,7 +2907,7 @@ void MarlinSettings::postprocess() {
     #endif
     validating = false;
 
-    const bool success = (err == ERR_EEPROM_NOERR);
+    const bool success = (err == ERR_EEPROM_NOERR); // @advi3++
     if (err) ui.eeprom_alert(err);
 
     TERN_(EXTENSIBLE_UI, ExtUI::onSettingsValidated(success)); // @advi3++
@@ -3619,6 +3623,7 @@ void MarlinSettings::reset() {
   //
   // Default frequency and duration to play tones
   //
+  // @advi3++
   ui.tone_frequency = TONE_FREQUENCY_DEFAULT;
   ui.tone_duration = TONE_DURATION_DEFAULT;
   ui.tone_options = TONE_OPTIONS_DEFAULT;
@@ -3926,6 +3931,7 @@ void MarlinSettings::reset() {
     //
     // Default frequency and duration to play tones
     //
+    // @advi3++
     TERN_(HAS_SOUND, gcode.M300_report(forReplay));
   }
 

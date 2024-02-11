@@ -1312,7 +1312,7 @@ void CardReader::cdroot() {
 /**
  * Get the name of a file in the working directory by sort-index
  */
-void CardReader::getfilename_sorted(const uint16_t nr) {
+void CardReader::selectFileByIndexSorted(const uint16_t nr) {
     selectFileByIndex(nr < sort_count ? sort_order[nr] : nr);
 }
 
@@ -1325,7 +1325,7 @@ void CardReader::presort() {
   flush_presort();
 
   // If there are files, sort up to the limit
-  uint16_t fileCnt = countFilesInWorkDir();
+  uint16_t fileCnt = get_num_items();
   if (fileCnt > 0) {
 
     // Never sort more than the max allowed

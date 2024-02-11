@@ -290,9 +290,9 @@ public:
     static void sleep_display(const bool sleep=true);
     static void check_screen_timeout(); // @advi3++
     static void set_screen_timeout(uint8_t minutes) { sleep_timeout_minutes = minutes; } // @advi3++
-
   #endif
 
+  // @advi3++
   #if HAS_SOUND
   static uint16_t tone_frequency, tone_duration, tone_options;
   static void set_tone(uint16_t frequency, uint16_t duration, uint16_t defaults);
@@ -647,6 +647,11 @@ public:
     static void return_to_status() {}
 
     static constexpr bool on_status_screen() { return true; }
+
+    static void go_back() {} // @advi3++
+    static void push_current_screen() {}  // @advi3++
+    typedef void (*screenFunc_t)(); // @advi3++
+    static void goto_screen(const screenFunc_t screen, const uint16_t encoder=0, const uint8_t top=0, const uint8_t items=0) {} // @advi3++
 
     #if HAS_WIRED_LCD
       FORCE_INLINE static void run_current_screen() { status_screen(); }

@@ -431,10 +431,10 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
 // @advi3++
 #if ENABLED(SDCARD_SORT_DATE)
 #if SDSORT_LIMIT > 256
-    #error "SDSORT_LIMIT must be 256 or smaller."
-  #elif SDSORT_LIMIT < 10
-    #error "SDSORT_LIMIT should be greater than 9 to be useful."
-  #endif
+  #error "SDSORT_LIMIT must be 256 or smaller."
+#elif SDSORT_LIMIT < 10
+  #error "SDSORT_LIMIT should be greater than 9 to be useful."
+#endif
 #endif
 
 #if ENABLED(SDCARD_SORT_ALPHA)
