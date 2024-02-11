@@ -16,7 +16,7 @@ If you like what I am doing, please consider supporting me as a supporter on [**
 
 The objectives with this custom version (when compared with Wanhao stock firmwares) are the following:
 
-* Based on the latest version of Marlin available (currently: 2.1.1)
+* Based on the latest version of Marlin available (currently: 2.1.2.2)
 * As few modifications of the Marlin code as possible. The goal is to be able to port **ADVi3++** to new versions of Marlin with only a few effort.
 * Open source firmware (GPLv3 like Marlin).
 * Object-oriented code with as few hard-coded values as possible. For example, instead of constructing a frame by hand, use instances of classes that know how to construct themselves.
