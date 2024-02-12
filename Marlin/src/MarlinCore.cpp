@@ -977,6 +977,9 @@ void stop() {
     thermalManager.set_fans_paused(false); // Un-pause fans for safety
   #endif
 
+  // @advi3++ Show BLTouch error
+  TERN_(EXTENSIBLE_UI, ExtUI::onStatusChanged(F("BLTouch error. Is is correctly wired?")));
+
   if (!IsStopped()) {
     SERIAL_ERROR_MSG(STR_ERR_STOPPED);
     LCD_MESSAGE(MSG_STOPPED);
