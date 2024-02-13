@@ -13,23 +13,31 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 dgus="$( cd "${root}/DGUS-root" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-sketch_export_dir="$( cd "${root}/Sketch-Export" && pwd )"
+png="$( cd "${root}/DGUS-png" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
+export="$( cd "${root}/Export" && pwd )"
+ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
+
+function clean_export() {
+    echo "Clean images from ${export}"
+    rm -r "${export:?}"/*
+}
+
 function copy_images() {
-    echo "Copy images from ${sketch_export_dir}"
+    echo "Copy images from ${export} to ${png}"
 
-    mkdir -p "${sketch_export_dir}/DWIN_SET" "${sketch_export_dir}/Controls" "${sketch_export_dir}/Screenshots"
+    mkdir -p "${png}/DWIN_SET" "${png}/Controls" "${png}/Screenshots"
 
-    find "${sketch_export_dir}" -name "*.png" -print0 | while read -r -d $'\0' file
+    find "${export}" -name "*.png" -print0 | while read -r -d $'\0' file
     do
       name=$(basename "${file}")
       if [[ "${name}" == "DWIN_SET-"* ]]; then
-        cp "${file}" "${sketch_export_dir}/DWIN_SET/${name#DWIN_SET-}"
+        cp "${file}" "${png}/DWIN_SET/${name#DWIN_SET-}"
       elif [[ "${name}" == "Controls-"* ]]; then
-        cp "${file}" "${sketch_export_dir}/Controls/${name#Controls-}"
+        cp "${file}" "${png}/Controls/${name#Controls-}"
       elif [[ "${name}" == "Screenshots-"* ]]; then
-        cp "${file}" "${sketch_export_dir}/Screenshots/${name#Screenshots-}"
+        cp "${file}" "${png}/Screenshots/${name#Screenshots-}"
       else
         echo WARNING: Unknown file "${file}"
       fi
@@ -37,7 +45,6 @@ function copy_images() {
 }
 
 function convert_images() {
-
     mkdir -p "$2"
 
     echo "Convert images from $1 to 24 bit BMP and copy them into $2..."
@@ -49,10 +56,18 @@ function convert_images() {
     done
 }
 
-rm "${dgus}/DWIN_SET/"*.bmp
-rm "${dgus}/25_Controls/"*.bmp
+if read -q "answer?Clean Export? "; then
+  printf "\n"
+  clean_export
+fi
 
-copy_images
-convert_images "${root}/Masters/Boot"             "${dgus}/DWIN_SET"
-convert_images "${root}/Sketch-Export/DWIN_SET"   "${dgus}/DWIN_SET"
-convert_images "${root}/Sketch-Export/Controls"   "${dgus}/25_Controls"
+print "\nPlease, export the images."
+if read -q "answer?Continue? "; then
+  printf "\n"
+  copy_images
+  convert_images "${png}/Boot"            "${dgus}/DWIN_SET"
+  convert_images "${png}/DWIN_SET"        "${dgus}/DWIN_SET"
+  convert_images "${png}/Controls"        "${dgus}/25_Controls"
+else
+  printf "\nAbort."
+fi

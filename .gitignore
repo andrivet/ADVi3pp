@@ -161,10 +161,10 @@ __pycache__
 .python-version
 ArduinoCore/
 LCD-Panel/Masters/*.png
-LCD-Panel/Masters/Boot/
+LCD-Panel/DGUS-png/
 LCD-Panel/DGUS-root/25_Controls
 LCD-Panel/DGUS-root/DWIN_SET/*.bmp
-LCD-Panel/Sketch-Export/
+LCD-Panel/Export/
 Thumbs.db
 Marlin/Simulator Debug/
 Marlin/Simulator Release/
