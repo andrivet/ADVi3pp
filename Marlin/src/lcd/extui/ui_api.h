@@ -443,6 +443,7 @@ namespace ExtUI {
   const float* getXTwistZValues();
   void setXTwistStartSpacing(float start, float spacing);
   void setXTwistZOffset(int index, float offset);
+  void setXTwistEnabled(bool enabled);
   #endif
 
   /**

@@ -69,6 +69,9 @@ bool XTwist::on_enter() {
   }
 
   z_offsets_.fill(0);
+  ExtUI::setXTwistStartSpacing(MARGIN, X_BED_SIZE / 2.0 - MARGIN);
+  for(auto i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, 0);
+
   pages.save_forward_page();
   wait.homing(WaitCallback{this, &XTwist::on_homed});
   return false;
@@ -100,8 +103,9 @@ void XTwist::on_abort() {
 
 //! Handles the Save (Continue) command
 void XTwist::on_save_command() {
-  ExtUI::setXTwistStartSpacing(MARGIN, (X_BED_SIZE - MARGIN) / 2.0f);
-  for(size_t i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, z_offsets_[i]);
+  ExtUI::setXTwistStartSpacing(MARGIN, X_BED_SIZE / 2.0 - MARGIN);
+  for(auto i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, z_offsets_[i]);
+  ExtUI::setXTwistEnabled(true);
 
   // enable enstops, raise head
   ExtUI::setSoftEndstopState(true);
