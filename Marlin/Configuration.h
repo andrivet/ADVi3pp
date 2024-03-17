@@ -2024,7 +2024,10 @@ namespace ADVi3pp {
  * these options to restore the prior leveling state or to always enable
  * leveling immediately after G28.
  */
-//#define RESTORE_LEVELING_AFTER_G28
+// @advi3++: Restore leveling after G28 (only when using a sensor)
+#ifdef ADVi3PP_PROBE
+  #define RESTORE_LEVELING_AFTER_G28
+#endif
 //#define ENABLE_LEVELING_AFTER_G28
 
 /**
