@@ -110,9 +110,9 @@ bool Core::init() {
   graphs.clear();
   versions.send_versions();
 
-#if HAS_LEVELING
-  ExtUI::setLevelingActive(true);
-#endif
+  #if HAS_LEVELING
+  if(ExtUI::getLevelingIsValid()) ExtUI::setLevelingActive(true);
+  #endif
 
   from_lcd_task.set(Callback{this, &Core::from_lcd}, FROM_LCD_DELAY);
   to_lcd_task.set(Callback{this, &Core::to_lcd}, TO_LCD_DELAY);
