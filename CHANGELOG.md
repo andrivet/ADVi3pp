@@ -1,5 +1,14 @@
 # ADVi3++ Changelog
 
+## 5.8.0 (2024-03-17)
+
+* **#344** - [Leveling state is not restored after homing](https://github.com/andrivet/ADVi3pp/issues/344)
+* **#343** - [X-Twist compensation is broken](https://github.com/andrivet/ADVi3pp/issues/343)
+* **#342** - [Synchronise sources with Marlin 2.1.2.2 (prepare Input Shaping for version 6.0)](https://github.com/andrivet/ADVi3pp/issues/342)
+* **#337** - [Manual Leveling does not check bed temperature and does not home](https://github.com/andrivet/ADVi3pp/issues/337)
+* **#335** - [Tuning Extruder: the flowrate is incorrect](https://github.com/andrivet/ADVi3pp/issues/335)
+* **#334** - [Extruder tuning - measurement image missing 5.7.x](https://github.com/andrivet/ADVi3pp/issues/334)
+
 ## 5.7.1 (2023-10-08)
 
 * **#338** - [When a M0/M1 command is sent, the LCD display does not have a button to resume the print](https://github.com/andrivet/ADVi3pp/issues/338)
