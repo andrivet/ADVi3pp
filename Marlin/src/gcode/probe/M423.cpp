@@ -42,6 +42,7 @@
  *    I<linear> - Set the X twist X-spacing directly
  *    X<index>  - Index of a Z value in the list
  *    Z<linear> - A Z value to set
+ *    S<bool>   - Set enabled or disabled @advi3++
  */
 void GcodeSuite::M423() {
 
@@ -65,6 +66,9 @@ void GcodeSuite::M423() {
     do_report = false;
     new_spacing = parser.value_float();
   }
+  // @advi3++
+  if (parser.seen('S'))
+    xatc.set_enabled(parser.value_bool());
 
   if (new_spacing) xatc.spacing = new_spacing;
 
@@ -87,6 +91,7 @@ void GcodeSuite::M423() {
 
 void GcodeSuite::M423_report(const bool forReplay/*=true*/) {
   report_heading(forReplay, F("X-Twist Correction"));
+  SERIAL_ECHOLNPGM("  M423 S", xatc.get_enabled());
   SERIAL_ECHOLNPGM("  M423 A", xatc.start, " I", xatc.spacing);
   for (uint8_t x = 0; x < XATC_MAX_POINTS; ++x) {
     const float z = xatc.z_offset[x];
