@@ -62,6 +62,7 @@ private:
 private:
   Multiplier multiplier_ = Multiplier::M1;
   Point point_ = Point::L;
+  bool enabled_ = false;
   adv::array<float, ExtUI::xTwistPoints> z_offsets_;
 
   friend Parent;

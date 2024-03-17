@@ -1372,6 +1372,10 @@ void setMaterialPreset(unsigned int index, int16_t hotend_celcius, int16_t bed_c
 
 // @advi3++
 #if ENABLED(X_AXIS_TWIST_COMPENSATION)
+bool getXTwistEnabled() {
+  return xatc.get_enabled();
+}
+
 float getXTwistSpacing()
 {
   return xatc.spacing;

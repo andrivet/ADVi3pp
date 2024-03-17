@@ -63,14 +63,18 @@ bool XTwist::on_dispatch(KeyValue key_value) {
 //! Prepare the page before being displayed and return the right Page value
 //! @return The index of the page to display
 bool XTwist::on_enter() {
-  if(!ExtUI::getLevelingActive()) {
+  if(!ExtUI::getLevelingActive() || !ExtUI::getLevelingIsValid()) {
     wait.wait_back(F("Please do an automated bed leveling."));
     return false;
   }
 
-  z_offsets_.fill(0);
+  enabled_ = ExtUI::getXTwistEnabled();
+  const float *values = ExtUI::getXTwistZValues();
+  adv::copy(values, values + ExtUI::xTwistPoints, z_offsets_.begin());
+
   ExtUI::setXTwistStartSpacing(MARGIN, X_BED_SIZE / 2.0 - MARGIN);
-  for(auto i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, 0);
+  for(auto i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, enabled_ ? z_offsets_[i] : 0);
+  ExtUI::setXTwistEnabled(true);
 
   pages.save_forward_page();
   wait.homing(WaitCallback{this, &XTwist::on_homed});
@@ -91,6 +95,7 @@ void XTwist::on_back_command() {
   // enable enstops, raise head
   ExtUI::setSoftEndstopState(true);
   ExtUI::setAxisPosition_mm(4, ExtUI::Z, FEEDRATE_Z);
+  ExtUI::setXTwistEnabled(enabled_);
 
   Parent::on_back_command();
 }
@@ -103,7 +108,6 @@ void XTwist::on_abort() {
 
 //! Handles the Save (Continue) command
 void XTwist::on_save_command() {
-  ExtUI::setXTwistStartSpacing(MARGIN, X_BED_SIZE / 2.0 - MARGIN);
   for(auto i = 0; i < ExtUI::xTwistPoints; ++i) ExtUI::setXTwistZOffset(i, z_offsets_[i]);
   ExtUI::setXTwistEnabled(true);
 

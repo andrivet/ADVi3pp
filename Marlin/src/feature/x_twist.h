@@ -26,12 +26,13 @@
 typedef float xatc_array_t[XATC_MAX_POINTS];
 
 class XATC {
-  static bool enabled;
 public:
+  static bool enabled; // @advi3++ (public)
   static float spacing, start;
   static xatc_array_t z_offset;
 
   static void reset();
+  static bool get_enabled() { return enabled; } // @advi3++
   static void set_enabled(const bool ena) { enabled = ena; }
   static float compensation(const xy_pos_t &raw);
   static void print_points();

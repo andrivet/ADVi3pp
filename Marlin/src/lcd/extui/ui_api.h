@@ -438,6 +438,7 @@ namespace ExtUI {
 
   // @advi3++
   #if ENABLED(X_AXIS_TWIST_COMPENSATION)
+  bool getXTwistEnabled();
   float getXTwistSpacing();
   float getXTwistStart();
   const float* getXTwistZValues();
