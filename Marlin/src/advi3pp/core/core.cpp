@@ -158,7 +158,7 @@ void Core::killed(float temp, const FlashChar* error, const FlashChar* component
 //! Under GPLv3 provision 7(b), you are not authorized to remove or alter this notice.
 void Core::send_gplv3_7b_notice() {
   SERIAL_ECHO_START();
-  SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2023 Sebastien Andrivet");
+  SERIAL_ECHOLNPGM("Based on ADVi3++, Copyright (C) 2017-2024 Sebastien Andrivet");
 }
 
 //! Update the progress bar if the printer is printing for the SD card
