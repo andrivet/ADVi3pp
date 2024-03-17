@@ -287,6 +287,7 @@ typedef struct SettingsDataStruct {
     float xatc_spacing;                                 // M423 X Z
     float xatc_start;
     xatc_array_t xatc_z_offset;
+    bool xatc_enabled; // @advi3++
   #endif
 
   //
@@ -1011,6 +1012,7 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(xatc.spacing);
       EEPROM_WRITE(xatc.start);
       EEPROM_WRITE(xatc.z_offset);
+      EEPROM_WRITE(xatc.enabled); // @advi3++
     #endif
 
     //
@@ -2034,6 +2036,7 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(xatc.spacing);
         EEPROM_READ(xatc.start);
         EEPROM_READ(xatc.z_offset);
+        EEPROM_READ(xatc.enabled); // @advi3++
       #endif
 
       //
