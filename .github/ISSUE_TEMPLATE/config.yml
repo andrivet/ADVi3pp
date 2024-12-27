@@ -1,20 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 📖 Marlin Documentation
-    url: https://marlinfw.org/
-    about: Lots of documentation on installing and using Marlin.
-  - name: 👤 MarlinFirmware Facebook group
-    url: https://www.facebook.com/groups/1049718498464482
-    about: Please ask and answer questions here.
-  - name: 🕹 Marlin on Discord
-    url: https://discord.com/servers/marlin-firmware-461605380783472640
-    about: Join the Discord server for support and discussion.
-  - name: 🔗 Marlin Discussion Forum
-    url: https://reprap.org/forum/list.php?415
-    about: A searchable web forum hosted by RepRap dot org.
-  - name: 📺 Marlin Videos on YouTube
-    url: https://www.youtube.com/results?search_query=marlin+firmware
-    about: Tutorials and more from Marlin users all around the world. Great for new users!
+  - name: 🛟 ADVi3++ Community Support
+    url: https://community.advi3pp.com
+    about: Please ask questions here (only for supporters of the project).
+  - name: 📖 ADVi3++ Documentation
+    url: https://manual.advi3pp.com
+    about: Please report security vulnerabilities here.
   - name: 💸 Want to donate?
-    url: https://www.thinkyhead.com/donate-to-marlin
-    about: Please take a look at the various options to support Marlin Firmware's development financially!
+    url: https://www.patreon.com/bePatron?u=6504486
+    about: Support ADVi3++ Firmware's development financially and get access to the full documentation and pre-built binaries!

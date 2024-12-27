@@ -58,6 +58,7 @@
 //#define SAVE_INFO_INTERVAL_MS 0
 
 typedef struct {
+  uint32_t signature;
   uint8_t valid_head;
 
   // Machine state
@@ -155,7 +156,9 @@ class PrintJobRecovery {
   public:
     static const char filename[5];
 
+#if DISABLED(POWER_LOSS_EEPROM) // @advi3++
     static MediaFile file;
+#endif
     static job_recovery_info_t info;
 
     static uint8_t queue_index_r;     //!< Queue index of the active command
@@ -189,16 +192,24 @@ class PrintJobRecovery {
     static void commit_sdpos(const uint8_t index_w) { sdpos[index_w] = cmd_sdpos; }
 
     static bool enabled;
+    static bool inverted; // @advi3++
+    static uint16_t purge_length; // @advi3++
     static void enable(const bool onoff);
+    static void invert(bool invert); // @advi3++
+    static void set_purge_length(uint16_t length); // @advi3++
     static void changed();
 
     #if HAS_PLR_BED_THRESHOLD
       static celsius_t bed_temp_threshold;
     #endif
 
+#if ENABLED(POWER_LOSS_EEPROM) // @advi3++
+    static bool exists();
+#else
     static bool exists() { return card.jobRecoverFileExists(); }
     static void open(const bool read) { card.openJobRecoveryFile(read); }
     static void close() { file.close(); }
+#endif
 
     static bool check();
     static void resume();
@@ -213,7 +224,7 @@ class PrintJobRecovery {
       static void outage() {
         static constexpr uint8_t OUTAGE_THRESHOLD = 3;
         static uint8_t outage_counter = 0;
-        if (enabled && READ(POWER_LOSS_PIN) == POWER_LOSS_STATE) {
+        if (enabled && READ(POWER_LOSS_PIN) == (inverted ? !POWER_LOSS_STATE : POWER_LOSS_STATE)) {
           outage_counter++;
           if (outage_counter >= OUTAGE_THRESHOLD) _outage();
         }

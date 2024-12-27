@@ -20,6 +20,7 @@
  *
  */
 
+#if 0 // @advi3++ Use our own implementation in advi3pp/marlin/advi3pp-marlinui.cpp
 #include "../inc/MarlinConfig.h"
 
 #include "../MarlinCore.h" // for printingIsPaused, machine_name
@@ -72,7 +73,7 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
   #if ENABLED(STATUS_MESSAGE_SCROLLING)
     uint8_t MarlinUI::status_scroll_offset; // = 0
   #endif
-  MString<MAX_MESSAGE_SIZE> MarlinUI::status_message;
+  MString<MAX_MESSAGE_LENGTH> MarlinUI::status_message;
   uint8_t MarlinUI::alert_level; // = 0
   #if HAS_STATUS_MESSAGE_TIMEOUT
     millis_t MarlinUI::status_message_expire_ms; // = 0
@@ -1593,7 +1594,7 @@ uint8_t expand_u8str_P(char * const outstr, PGM_P const ptpl, const int8_t ind, 
 
     MString<30> msg;
     pgm ? msg.set_P(ustr) : msg.set(ustr);
-    status_message.set(&msg).utrunc(MAX_MESSAGE_SIZE);
+    status_message.set(&msg).utrunc(MAX_MESSAGE_LENGTH);
 
     finish_status(level > 0); // Persist if the status has a level
   }
@@ -1611,7 +1612,7 @@ uint8_t expand_u8str_P(char * const outstr, PGM_P const ptpl, const int8_t ind, 
     pgm ? host_notify_P(ustr) : host_notify(ustr);
 
     // Remove the last partial Unicode glyph, if any
-    (pgm ? status_message.set_P(ustr) : status_message.set(ustr)).utrunc(MAX_MESSAGE_SIZE);
+    (pgm ? status_message.set_P(ustr) : status_message.set(ustr)).utrunc(MAX_MESSAGE_LENGTH);
 
     finish_status(persist);
   }
@@ -2006,3 +2007,5 @@ uint8_t expand_u8str_P(char * const outstr, PGM_P const ptpl, const int8_t ind, 
   #endif // EEPROM_AUTO_INIT
 
 #endif // EEPROM_SETTINGS
+
+#endif

@@ -82,20 +82,21 @@
  * @param retry : true if the G29 can and should be retried. false if the failure is too serious.
  * @param   did : true if the leveling procedure completed successfully.
  */
-static void pre_g29_return(const bool retry, const bool did) {
+static void pre_g29_return(const bool retry, const bool failure, const bool did) {  // @advi3++ add failure
   if (!retry) {
     TERN_(FULL_REPORT_TO_HOST_FEATURE, set_and_report_grblstate(M_IDLE, false));
   }
   #if DISABLED(G29_RETRY_AND_RECOVER)
-    if (!retry || did) {
+    if (true) {  // @advi3++ always call onLevelingDone
       TERN_(DWIN_CREALITY_LCD, dwinLevelingDone());
-      TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone());
+      TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone(!failure && did));
     }
   #endif
 }
 
+// @advi3++
 #define G29_RETURN(retry, did) do{ \
-  pre_g29_return(TERN0(G29_RETRY_AND_RECOVER, retry), did); \
+  pre_g29_return(TERN0(G29_RETRY_AND_RECOVER, retry), retry, did); \
   return TERN_(G29_RETRY_AND_RECOVER, retry); \
 }while(0)
 
@@ -453,6 +454,7 @@ G29_TYPE GcodeSuite::G29() {
       points[0].z = points[1].z = points[2].z = 0;  // Probe at 3 arbitrary points
     #endif
 
+    ::g29_cancel = false; // @advi3++
     TERN_(EXTENSIBLE_UI, ExtUI::onLevelingStart());
 
     if (!faux) {
@@ -640,6 +642,7 @@ G29_TYPE GcodeSuite::G29() {
         SERIAL_ECHOLNPGM("Grid probing done.");
         // Re-enable software endstops, if needed
         SET_SOFT_ENDSTOP_LOOSE(false);
+        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone()); // @advi3++
       }
 
     #elif ENABLED(AUTO_BED_LEVELING_3POINT)
@@ -669,6 +672,7 @@ G29_TYPE GcodeSuite::G29() {
           abl.reenable = false;
         }
 
+        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone()); // @advi3++
       }
 
     #endif // AUTO_BED_LEVELING_3POINT
@@ -717,7 +721,9 @@ G29_TYPE GcodeSuite::G29() {
           if (TERN0(IS_KINEMATIC, !probe.can_reach(abl.probePos))) continue;
 
           if (abl.verbose_level) SERIAL_ECHOLNPGM("Probing mesh point ", pt_index, "/", abl.abl_points, ".");
-          TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i"), GET_TEXT_F(MSG_PROBING_POINT), int(pt_index), int(abl.abl_points)));
+          // @advi3++: Display x, y
+          ExtUI::onLevelingProgress(pt_index, abl.probePos.x, abl.probePos.y);
+          //TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i"), GET_TEXT_F(MSG_PROBING_POINT), int(pt_index), int(abl.abl_points)));
 
           #if ENABLED(BD_SENSOR_PROBE_NO_STOP)
             if (PR_INNER_VAR == inStart) {
@@ -781,6 +787,12 @@ G29_TYPE GcodeSuite::G29() {
 
           #endif
 
+          // @advi3++
+          if(::g29_cancel) {
+            abl.measured_z = NAN; // To break loops
+            break;
+          }
+          
           if (isnan(abl.measured_z)) {
             set_bed_leveling_enabled(abl.reenable);
             break; // Breaks out of both loops

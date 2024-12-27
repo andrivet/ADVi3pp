@@ -184,6 +184,7 @@ void GcodeSuite::G29() {
         SET_SOFT_ENDSTOP_LOOSE(true);
         bedlevel.zigzag(mbl_probe_index++, ix, iy);
         _manual_goto_xy({ bedlevel.index_to_xpos[ix], bedlevel.index_to_ypos[iy] });
+        ExtUI::onLevelingProgress(mbl_probe_index, bedlevel.index_to_xpos[ix], bedlevel.index_to_ypos[iy]);
       }
       else {
         // Move to the after probing position
@@ -213,7 +214,7 @@ void GcodeSuite::G29() {
         #endif
 
         TERN_(LCD_BED_LEVELING, ui.wait_for_move = false);
-        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone());
+        TERN_(EXTENSIBLE_UI, ExtUI::onLevelingDone(true)); // @advi3++
       }
       break;
 

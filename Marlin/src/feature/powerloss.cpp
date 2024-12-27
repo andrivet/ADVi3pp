@@ -37,12 +37,16 @@
 #endif
 
 bool PrintJobRecovery::enabled; // Initialized by settings.load
+bool PrintJobRecovery::inverted; // @advi3++
+uint16_t PrintJobRecovery::purge_length; // @advi3++
 
 #if HAS_PLR_BED_THRESHOLD
   celsius_t PrintJobRecovery::bed_temp_threshold; // Initialized by settings.load
 #endif
 
+#if DISABLED(POWER_LOSS_EEPROM) // @advi3++
 MediaFile PrintJobRecovery::file;
+#endif
 job_recovery_info_t PrintJobRecovery::info;
 const char PrintJobRecovery::filename[5] = "/PLR";
 uint8_t PrintJobRecovery::queue_index_r;
@@ -76,6 +80,7 @@ uint32_t PrintJobRecovery::cmd_sdpos, // = 0
 
 #define DEBUG_OUT ENABLED(DEBUG_POWER_LOSS_RECOVERY)
 #include "../core/debug_out.h"
+#include "../module/stepper.h"
 
 PrintJobRecovery recovery;
 
@@ -96,6 +101,9 @@ PrintJobRecovery recovery;
     gcode.process_subcommands_now(cmd); \
   }while(0)
 
+static constexpr uint32_t POWER_LOSS_SIGNATURE = 0x506C7330; // @advi3++ "Pls0"
+static constexpr size_t POWER_LOSS_DATA_OFFSET = EEPROM_SIZE - sizeof(job_recovery_info_t);
+
 /**
  * Clear the recovery info
  */
@@ -107,6 +115,18 @@ void PrintJobRecovery::init() { info = {}; }
 void PrintJobRecovery::enable(const bool onoff) {
   enabled = onoff;
   changed();
+}
+
+/**
+ * Invert or not then call changed() @advi3++
+ */
+void PrintJobRecovery::invert(const bool invert) {
+  inverted = invert;
+  changed();
+}
+
+void PrintJobRecovery::set_purge_length(uint16_t length) {
+  purge_length = length;
 }
 
 /**
@@ -122,12 +142,30 @@ void PrintJobRecovery::changed() {
   TERN_(EXTENSIBLE_UI, ExtUI::onSetPowerLoss(enabled));
 }
 
+#if ENABLED(POWER_LOSS_EEPROM) // @advi3++
+bool PrintJobRecovery::exists() {
+  uint32_t signature;
+  if(PersistentStore::read_data(POWER_LOSS_DATA_OFFSET, reinterpret_cast<uint8_t*>(&signature), sizeof(signature)))
+    return false;
+  return signature == POWER_LOSS_SIGNATURE;
+}
+#endif
+
 /**
  * Check for Print Job Recovery during setup()
  *
  * If a saved state exists send 'M1000 S' to initiate job recovery.
  */
 bool PrintJobRecovery::check() {
+#if ENABLED(POWER_LOSS_EEPROM) // @advi3++
+  load();
+  if(!valid()) {
+    cancel();
+    return false;
+  }
+  GCodeQueue::inject(F("M1000S"));
+  return true;
+#else
   //if (!card.isMounted()) card.mount();
   bool success = false;
   if (card.isMounted()) {
@@ -139,6 +177,7 @@ bool PrintJobRecovery::check() {
       queue.inject(F("M1000S"));
   }
   return success;
+#endif
 }
 
 /**
@@ -146,18 +185,28 @@ bool PrintJobRecovery::check() {
  */
 void PrintJobRecovery::purge() {
   init();
+#if ENABLED(POWER_LOSS_EEPROM) // @advi3++
+  uint32_t erase = 0;
+  PersistentStore::write_data(POWER_LOSS_DATA_OFFSET, reinterpret_cast<const uint8_t*>(&erase), sizeof POWER_LOSS_SIGNATURE);
+#else
   card.removeJobRecoveryFile();
+#endif
 }
 
 /**
  * Load the recovery data, if it exists
  */
 void PrintJobRecovery::load() {
+#if ENABLED(POWER_LOSS_EEPROM) // @advi3++
+  if(exists())
+    PersistentStore::read_data(POWER_LOSS_DATA_OFFSET, reinterpret_cast<uint8_t*>(&info), sizeof info);
+#else
   if (exists()) {
     open(true);
     (void)file.read(&info, sizeof(info));
     close();
   }
+#endif
   debug(F("Load"));
 }
 
@@ -346,8 +395,10 @@ void PrintJobRecovery::save(const bool force/*=false*/, const float zraise/*=POW
       current_position.reset();
       sync_plan_position();
     }
-    else
-      kill(GET_TEXT_F(MSG_OUTAGE_RECOVERY));
+    // else // @advi3++
+      // kill(GET_TEXT_F(MSG_OUTAGE_RECOVERY)); // @advi3++
+    thermalManager.disable_all_heaters();
+    minkill(true); // @advi3++
   }
 
 #endif // POWER_LOSS_PIN || DEBUG_POWER_LOSS_RECOVERY
@@ -356,14 +407,18 @@ void PrintJobRecovery::save(const bool force/*=false*/, const float zraise/*=POW
  * Save the recovery info the recovery file
  */
 void PrintJobRecovery::write() {
-
   debug(F("Write"));
-
+#if ENABLED(POWER_LOSS_EEPROM) // @advi3++
+  info.signature = POWER_LOSS_SIGNATURE;
+  if(persistentStore.write_data(POWER_LOSS_DATA_OFFSET, reinterpret_cast<const uint8_t *>(&info), sizeof(info)))
+        DEBUG_ECHOLNPGM("Power-loss EEPROM write failed.");
+#else
   open(false);
   file.seekSet(0);
   const int16_t ret = file.write(&info, sizeof(info));
   if (ret == -1) DEBUG_ECHOLNPGM("Power-loss file write failed.");
   if (!file.close()) DEBUG_ECHOLNPGM("Power-loss file close failed.");
+#endif
 }
 
 /**
@@ -605,6 +660,7 @@ void PrintJobRecovery::resume() {
 
   void PrintJobRecovery::debug(FSTR_P const prefix) {
     DEBUG_ECHOLN(prefix, F(" Job Recovery Info...\nvalid_head:"), info.valid_head, F(" valid_foot:"), info.valid_foot);
+    DEBUG_ECHOLN(F("signature:"), info.signature);
     if (info.valid_head) {
       if (info.valid_head == info.valid_foot) {
         DEBUG_ECHOPGM("current_position: ");

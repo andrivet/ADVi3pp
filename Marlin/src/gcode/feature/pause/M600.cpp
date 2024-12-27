@@ -21,6 +21,7 @@
  */
 
 #include "../../../inc/MarlinConfig.h"
+#include "../../../MarlinCore.h" // @advi3++
 
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
 
@@ -166,6 +167,7 @@ void GcodeSuite::M600() {
   if (pause_print(retract, park_point, true, unload_length DXC_PASS)) {
     if (standardM600) {
       wait_for_confirmation(true, beep_count DXC_PASS);
+      if(wait_for_user == WAIT_FOR_USER::ABORT) return; // @advi3++
       resume_print(
         FILAMENT_CHANGE_SLOW_LOAD_LENGTH,
         ABS(parser.axisunitsval('L', E_AXIS, fc_settings[active_extruder].load_length)),

@@ -42,7 +42,7 @@
 #endif
 #undef en
 
-#define MEDIA_TYPE_EN "Media"
+#define MEDIA_TYPE_EN "SD" // @advi3++
 
 #ifndef PREHEAT_1_LABEL
   #define PREHEAT_1_LABEL ""
@@ -80,7 +80,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_MEDIA_INSERTED                 = MEDIA_TYPE_EN _UxGT(" Inserted");
   LSTR MSG_MEDIA_REMOVED                  = MEDIA_TYPE_EN _UxGT(" Removed");
   LSTR MSG_MEDIA_WAITING                  = _UxGT("Waiting for ") MEDIA_TYPE_EN;
-  LSTR MSG_MEDIA_INIT_FAIL                = MEDIA_TYPE_EN _UxGT(" Init Fail");
+  LSTR MSG_MEDIA_INIT_FAIL                = MEDIA_TYPE_EN _UxGT(" not detected"); // @advi3++
   LSTR MSG_MEDIA_READ_ERROR               = MEDIA_TYPE_EN _UxGT(" read error");
   LSTR MSG_MEDIA_USB_REMOVED              = _UxGT("USB device removed");
   LSTR MSG_MEDIA_USB_FAILED               = _UxGT("USB start failed");
@@ -566,8 +566,8 @@ namespace LanguageNarrow_en {
   LSTR MSG_PRINT_DONE                     = _UxGT("Print Done");
   LSTR MSG_PRINTER_KILLED                 = _UxGT("Printer killed!");
   LSTR MSG_NO_MOVE                        = _UxGT("No Move.");
-  LSTR MSG_KILLED                         = _UxGT("KILLED. ");
-  LSTR MSG_STOPPED                        = _UxGT("STOPPED. ");
+  LSTR MSG_KILLED                         = _UxGT("Printer has been killed"); // @advi3++
+  LSTR MSG_STOPPED                        = _UxGT("Printer has been stopped"); // @advi3++
   LSTR MSG_FWRETRACT                      = _UxGT("Firmware Retract");
   LSTR MSG_CONTROL_RETRACT                = _UxGT("Retract mm");
   LSTR MSG_CONTROL_RETRACT_SWAP           = _UxGT("Swap Re.mm");
@@ -663,8 +663,8 @@ namespace LanguageNarrow_en {
   LSTR MSG_ERR_THERMAL_RUNAWAY            = _UxGT("THERMAL RUNAWAY");
   LSTR MSG_ERR_TEMP_MALFUNCTION           = _UxGT("TEMP MALFUNCTION");
   LSTR MSG_ERR_COOLING_FAILED             = _UxGT("Cooling Failed");
-  LSTR MSG_ERR_MAXTEMP                    = _UxGT("Err: MAXTEMP");
-  LSTR MSG_ERR_MINTEMP                    = _UxGT("Err: MINTEMP");
+  LSTR MSG_ERR_MAXTEMP                    = _UxGT("Temperature too high"); // @advi3++
+  LSTR MSG_ERR_MINTEMP                    = _UxGT("Temperature too low"); // @advi3++
   LSTR MSG_HALTED                         = _UxGT("PRINTER HALTED");
   LSTR MSG_PLEASE_WAIT                    = _UxGT("Please wait...");
   LSTR MSG_PLEASE_RESET                   = _UxGT("Please Reset");
@@ -859,6 +859,8 @@ namespace LanguageNarrow_en {
   LSTR MSG_PASSWORD_REMOVED               = _UxGT("Password Removed");
 
   // Filament Change screens show up to 2 lines on a 3-line display
+  // @advi3++: Adapt messages for ADVi3++ LCD screen
+  /*
   LSTR MSG_ADVANCED_PAUSE_WAITING         = _UxGT(MSG_1_LINE("Click to continue"));
   LSTR MSG_PAUSE_PRINT_PARKING            = _UxGT(MSG_1_LINE("Parking..."));
   LSTR MSG_FILAMENT_CHANGE_INIT           = _UxGT(MSG_1_LINE("Please wait..."));
@@ -870,6 +872,19 @@ namespace LanguageNarrow_en {
   LSTR MSG_FILAMENT_CHANGE_PURGE          = _UxGT(MSG_1_LINE("Purging..."));
   LSTR MSG_FILAMENT_CHANGE_CONT_PURGE     = _UxGT(MSG_1_LINE("Click to finish"));
   LSTR MSG_FILAMENT_CHANGE_RESUME         = _UxGT(MSG_1_LINE("Resuming..."));
+  */
+  LSTR MSG_ADVANCED_PAUSE_WAITING        = _UxGT(MSG_1_LINE("Resume print"));
+  LSTR MSG_PAUSE_PRINT_PARKING           = _UxGT(MSG_1_LINE("Parking..."));
+  LSTR MSG_FILAMENT_CHANGE_INIT          = _UxGT(MSG_1_LINE("Filament change"));
+  LSTR MSG_FILAMENT_CHANGE_INSERT        = _UxGT(MSG_1_LINE("Insert filament"));
+  LSTR MSG_FILAMENT_CHANGE_HEAT          = _UxGT(MSG_1_LINE("Heat nozzle"));
+  LSTR MSG_FILAMENT_CHANGE_HEATING       = _UxGT(MSG_1_LINE("Nozzle heating"));
+  LSTR MSG_FILAMENT_CHANGE_UNLOAD        = _UxGT(MSG_1_LINE("Filament unload"));
+  LSTR MSG_FILAMENT_CHANGE_LOAD          = _UxGT(MSG_1_LINE("Filament load"));
+  LSTR MSG_FILAMENT_CHANGE_PURGE         = _UxGT(MSG_1_LINE("Press button to stop purge"));
+  LSTR MSG_FILAMENT_CHANGE_CONT_PURGE    = _UxGT(MSG_1_LINE("Finish filament purge"));
+  LSTR MSG_FILAMENT_CHANGE_RESUME        = _UxGT(MSG_1_LINE("Resume Print"));
+  
   LSTR MSG_TMC_DRIVERS                    = _UxGT("TMC Drivers");
   LSTR MSG_TMC_CURRENT                    = _UxGT("Driver Current");
   LSTR MSG_TMC_ACURRENT                   = STR_A _UxGT("Driver Current");
@@ -909,7 +924,7 @@ namespace LanguageNarrow_en {
   LSTR MSG_LEVEL_X_AXIS                   = _UxGT("Level X Axis");
   LSTR MSG_AUTO_CALIBRATE                 = _UxGT("Auto Calibrate");
   LSTR MSG_FTDI_HEATER_TIMEOUT            = _UxGT("Idle timeout, temperature decreased. Press Okay to reheat and again to resume.");
-  LSTR MSG_HEATER_TIMEOUT                 = _UxGT("Heater Timeout");
+  LSTR MSG_HEATER_TIMEOUT                 = _UxGT("Reheat Heater?");
   LSTR MSG_REHEAT                         = _UxGT("Reheat");
   LSTR MSG_REHEATING                      = _UxGT("Reheating...");
   LSTR MSG_REHEATDONE                     = _UxGT("Reheat Done");
@@ -1109,6 +1124,68 @@ namespace LanguageWide_en {
     LSTR MSG_HOMING_FEEDRATE_Z            = _UxGT("Z Homing Feedrate");
     LSTR MSG_EEPROM_INITIALIZED           = _UxGT("Default Settings Restored");
   #endif
+  
+  
+  // advi3++ These messages are specific to ADVi3++ Max 32 characters
+  //                                               12345678901234567890123456789012
+  LSTR ADVI3PP_MSG_BOOTING                = _UxGT("Booting...");
+  LSTR ADVI3PP_MSG_SD_CARD_DETECTED       = _UxGT("SD card detected");
+  LSTR ADVI3PP_MSG_SD_CARD_REMOVED        = _UxGT("SD card removed");
+  LSTR ADVI3PP_MSG_SD_CARD_ERROR          = _UxGT("Error reading SD card");
+  LSTR ADVI3PP_MSG_BUSY                   = _UxGT("Not available when busy");
+  LSTR ADVI3PP_MSG_PREHEAT                = _UxGT("Preheat");
+  LSTR ADVI3PP_MSG_NO_BED_LEVELING        = _UxGT("Bed leveling is not active");
+  LSTR ADVI3PP_MSG_LEVELING_REQUIRED      = _UxGT("Please do a bed leveling");
+  LSTR ADVI3PP_MSG_LEVELING_FAILURE       = _UxGT("Leveling failure or aborted");
+  LSTR ADVI3PP_MSG_LEVELING_NO_MESH       = _UxGT("No mesh currently defined");
+  LSTR ADVI3PP_MSG_LEVELING_CANCEL        = _UxGT("Cancel leveling");
+  LSTR ADVI3PP_MSG_LEVELING_HOT           = _UxGT("Hotend is hot. Continue?");
+  LSTR ADVI3PP_MSG_PRINT_CONTINUE         = _UxGT("Continue printing");
+  LSTR ADVI3PP_MSG_PID_TUNING_START       = _UxGT("Starting PID tuning");
+  LSTR ADVI3PP_MSG_PID_TUNING_CANCEL      = _UxGT("Canceling PID tuning");
+  LSTR ADVI3PP_MSG_PID_TUNING_SUCCESS     = _UxGT("PID tuning successful");
+  LSTR ADVI3PP_MSG_TEMP_TOO_HIGH          = _UxGT("Temperature is too high");
+  LSTR ADVI3PP_MSG_TIMEOUT                = _UxGT("Timeout");
+  LSTR ADVI3PP_MSG_BLTOUCH_TESTING        = _UxGT("Testing BLTouch");
+  LSTR ADVI3PP_MSG_BLTOUCH_TRIGGER        = _UxGT("Testing BLTouch triggering");
+  LSTR ADVI3PP_MSG_BLTOUCH_RED_BROWN      = _UxGT("Check red and brown wires");
+  LSTR ADVI3PP_MSG_BLTOUCH_ORANGE         = _UxGT("Check the orange (Servo) wire");
+  LSTR ADVI3PP_MSG_BLTOUCH_WHITE_BLACK    = _UxGT("Check white and black wires");
+  LSTR ADVI3PP_MSG_BLTOUCH_PIN            = _UxGT("Check the pin of the BLTouch");
+  LSTR ADVI3PP_MSG_BLTOUCH_NOISE          = _UxGT("Noise detected");
+  LSTR ADVI3PP_MSG_BLTOUCH_3_0            = _UxGT("BLTouch V3.0 or lower detected");
+  LSTR ADVI3PP_MSG_BLTOUCH_3_1            = _UxGT("BLTouch 3.1 detected");
+  LSTR ADVI3PP_MSG_ACCESSING_SD           = _UxGT("Accessing the SD card");
+  LSTR ADVI3PP_MSG_ABORT_PRINT            = _UxGT("Abort print?");
+  LSTR ADVI3PP_STR_SENSOR_CURRENT         = _UxGT("Current Sensor");
+  LSTR ADVI3PP_STR_SENSOR_TEACHING_TECH   = _UxGT("Teaching Tech");
+  LSTR ADVI3PP_STR_SENSOR_ADVI3PP         = _UxGT("ADVi3++");
+  LSTR ADVI3PP_STR_SENSOR_INDIANAGIO      = _UxGT("Indianagio");
+  LSTR ADVI3PP_STR_SENSOR_MARKII          = _UxGT("Mark II");
+  LSTR ADVI3PP_MSG_RESUME_PRINT           = _UxGT("Resume last print?");
+  LSTR ADVI3PP_MSG_PROCESS_GCODES         = _UxGT("Not able to process GCodes");
+  LSTR ADVI3PP_MSG_SENSOR_RESET           = _UxGT("Sensor Reset");
+  LSTR ADVI3PP_MSG_VIBRATIONS_X           = _UxGT("Test X axis");
+  LSTR ADVI3PP_MSG_VIBRATIONS_Y           = _UxGT("Test Y axis");
+  LSTR ADVI3PP_MSG_VIBRATIONS_Z           = _UxGT("Test Z axis");
+  LSTR ADVI3PP_MSG_VIBRATIONS_XY          = _UxGT("Test X/Y axis");
+  LSTR ADVI3PP_MSG_VIBRATIONS_YX          = _UxGT("Test Y/X axis");
+  LSTR ADVI3PP_MSG_HOTEND                 = _UxGT("Hotend");
+  LSTR ADVI3PP_MSG_HOMED                  = _UxGT("Homed");
+  LSTR ADVI3PP_MSG_CANCELED               = _UxGT("Canceled");
+  LSTR ADVI3PP_MSG_MOTORS_DISABLED        = _UxGT("Motors disabled");
+  LSTR ADVI3PP_MSG_SETTINGS_RESET         = _UxGT("Settings Reset");
+  LSTR ADVI3PP_MSG_PROBE_ERROR            = _UxGT("Error probing the bed");
+  LSTR ADVI3PP_MSG_LEVELING_PROBING       = _UxGT("Probing %i/%i");
+  LSTR ADVI3PP_MSG_EXTRUSION_FINISHED     = _UxGT("Extrusion finished");
+  LSTR ADVI3PP_MSG_IN_PROGRESS            = _UxGT("In progress...");
+  LSTR ADVI3PP_MSG_EXTRUDER_TUNING        = _UxGT("Extruder Tuning");
+
+  LSTR ADVI3PP_TITLE_CONFIRM              = _UxGT("Please Confirm");
+  LSTR ADVI3PP_TITLE_WAIT                 = _UxGT("Please Wait");
+  LSTR ADVI3PP_TITLE_WARNING              = _UxGT("Warning");
+  LSTR ADVI3PP_TITLE_INFORMATION          = _UxGT("Information");
+  LSTR ADVI3PP_MSG_TITLE_PURGE            = _UxGT("Filament purge");
 }
 
 namespace LanguageTall_en {
@@ -1116,16 +1193,16 @@ namespace LanguageTall_en {
   #if LCD_HEIGHT >= 4
     // Filament Change screens show up to 3 lines on a 4-line display
     LSTR MSG_ADVANCED_PAUSE_WAITING       = _UxGT(MSG_2_LINE("Press Button", "to resume print"));
-    LSTR MSG_PAUSE_PRINT_PARKING          = _UxGT(MSG_1_LINE("Parking..."));
+    LSTR MSG_PAUSE_PRINT_PARKING          = _UxGT(MSG_1_LINE("Parking"));
     LSTR MSG_FILAMENT_CHANGE_INIT         = _UxGT(MSG_3_LINE("Wait for", "filament change", "to start"));
     LSTR MSG_FILAMENT_CHANGE_INSERT       = _UxGT(MSG_3_LINE("Insert filament", "and press button", "to continue"));
     LSTR MSG_FILAMENT_CHANGE_HEAT         = _UxGT(MSG_2_LINE("Press button", "to heat nozzle"));
-    LSTR MSG_FILAMENT_CHANGE_HEATING      = _UxGT(MSG_2_LINE("Nozzle heating", "Please wait..."));
+    LSTR MSG_FILAMENT_CHANGE_HEATING      = _UxGT(MSG_2_LINE("Nozzle heating", "Please wait"));
     LSTR MSG_FILAMENT_CHANGE_UNLOAD       = _UxGT(MSG_2_LINE("Wait for", "filament unload"));
     LSTR MSG_FILAMENT_CHANGE_LOAD         = _UxGT(MSG_2_LINE("Wait for", "filament load"));
     LSTR MSG_FILAMENT_CHANGE_PURGE        = _UxGT(MSG_2_LINE("Wait for", "filament purge"));
     LSTR MSG_FILAMENT_CHANGE_CONT_PURGE   = _UxGT(MSG_2_LINE("Click to finish", "filament purge"));
-    LSTR MSG_FILAMENT_CHANGE_RESUME       = _UxGT(MSG_2_LINE("Wait for print", "to resume..."));
+    LSTR MSG_FILAMENT_CHANGE_RESUME       = _UxGT(MSG_2_LINE("Wait for print", "to resume"));
   #endif
 }
 

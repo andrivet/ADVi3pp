@@ -727,6 +727,7 @@ private:
 
   #if ENABLED(PSU_CONTROL)
     static void M80();
+    static void M80_report(const bool forReplay=true); // @advi3++
   #endif
   static void M81();
 
@@ -981,6 +982,7 @@ private:
 
   #if HAS_SOUND
     static void M300();
+    static void M300_report(const bool forReplay=true); // @advi3++
   #endif
 
   #if ENABLED(PIDTEMP)

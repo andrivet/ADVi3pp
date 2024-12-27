@@ -61,7 +61,8 @@ enum PauseMessage : char {
   enum PauseMenuResponse : char {
     PAUSE_RESPONSE_WAIT_FOR,
     PAUSE_RESPONSE_EXTRUDE_MORE,
-    PAUSE_RESPONSE_RESUME_PRINT
+    PAUSE_RESPONSE_RESUME_PRINT,
+    PAUSE_RESPONSE_RESUME_ABORT
   };
   extern PauseMenuResponse pause_menu_response;
   extern PauseMode pause_mode;

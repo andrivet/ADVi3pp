@@ -253,6 +253,12 @@ Temperature thermalManager;
 PGMSTR(str_t_thermal_runaway, STR_T_THERMAL_RUNAWAY);
 PGMSTR(str_t_heating_failed, STR_T_HEATING_FAILED);
 
+// @advi3++
+#define NEXT_DEFAULT_TEMP(N) ,HEATER_##N##TEMP_DEFAULT
+celsius_t Temperature::default_hotend_temp[HOTENDS] = ARRAY_BY_HOTENDS(HEATER_0_TEMP_DEFAULT REPEAT_S(1, HOTENDS, NEXT_DEFAULT_TEMP));
+celsius_t Temperature::default_bed_temp = BED_TEMP_DEFAULT;
+bool Temperature::temp_bed_reached_beep = false;
+
 //
 // Initialize MAX TC objects/SPI
 //
@@ -339,6 +345,7 @@ PGMSTR(str_t_heating_failed, STR_T_HEATING_FAILED);
 #if HAS_HOTEND
   hotend_info_t Temperature::temp_hotend[HOTENDS];
   constexpr celsius_t Temperature::hotend_maxtemp[HOTENDS];
+  bool Temperature::temp_hotend_reached_beep[HOTENDS]; // @advi3++
 
   #if ENABLED(MPCTEMP)
     bool MPC::e_paused; // = false
@@ -832,6 +839,9 @@ volatile bool Temperature::raw_temps_ready = false;
         }
 
         if (!heating && current_temp < target && ELAPSED(ms, t1 + 5000UL)) {
+          #if ENABLED(EXTENSIBLE_UI)
+            ExtUI::onPIDTuningProgress(cycles + 1, ncycles);  // @advi3++
+          #endif
           heating = true;
           t2 = ms;
           t_low = t2 - t1;
@@ -861,7 +871,7 @@ volatile bool Temperature::raw_temps_ready = false;
             }
           }
           SHV((bias + d) >> 1);
-          TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i"), GET_TEXT_F(MSG_PID_CYCLE), cycles, ncycles));
+          TERN_(HAS_STATUS_MESSAGE, ui.status_printf(0, F(S_FMT " %i/%i"), GET_TEXT_F(MSG_PID_CYCLE), cycles + 1, ncycles)); // @advi3++
           cycles++;
           minT = target;
         }
@@ -883,6 +893,9 @@ volatile bool Temperature::raw_temps_ready = false;
         #if HAS_TEMP_SENSOR
           print_heater_states(heater_id < 0 ? active_extruder : (int8_t)heater_id);
           SERIAL_EOL();
+          #if ENABLED(EXTENSIBLE_UI)
+            ExtUI::onPIDTuningReportTemp(isbed ? active_extruder : heater_id);  // @advi3++
+          #endif
         #endif
         next_temp_ms = ms + 2000UL;
 
@@ -1904,6 +1917,12 @@ void Temperature::mintemp_error(const heater_id_t heater_id OPTARG(ERR_INCLUDE_T
         }
       #endif
 
+      // @advi3++ Beep if temperature is reached (only one time)
+      if(degTargetHotend(e) > 0 && degHotend(e) >= degTargetHotend(e) && temp_hotend_reached_beep[e]) {
+        temp_hotend_reached_beep[e] = false;
+        BUZZ(10, 440);
+      }
+
     } // HOTEND_LOOP
   }
 
@@ -2036,6 +2055,12 @@ void Temperature::mintemp_error(const heater_id_t heater_id OPTARG(ERR_INCLUDE_T
         #endif // !PELTIER_BED
 
       #endif // !PIDTEMPBED
+
+      // @advi3++ Beep if temperature is reached (only one time)
+      if(degTargetBed() > 0 && degBed() >= degTargetBed() && temp_bed_reached_beep) {
+        temp_bed_reached_beep = false;
+        BUZZ(10, 440);
+      }
 
     } while (false);
   }
@@ -4631,7 +4656,7 @@ void Temperature::isr() {
         #if HAS_MULTI_HOTEND
           F("E%c " S_FMT), '1' + e
         #else
-          F("E1 " S_FMT)
+          F("Extruder " S_FMT) // @advi3++: Extruder instead of just "E"
         #endif
         , heating ? GET_TEXT_F(MSG_HEATING) : GET_TEXT_F(MSG_COOLING)
       );
@@ -4770,7 +4795,7 @@ void Temperature::isr() {
           if (IS_SD_PRINTING()) rts.refreshTime();
           rts.start_print_flag = false;
         #else
-          ui.reset_status();
+          // ui.reset_status(); @advi3++
         #endif
         TERN_(PRINTER_EVENT_LEDS, printerEventLEDs.onHeatingDone());
         return true;

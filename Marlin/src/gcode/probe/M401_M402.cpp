@@ -40,11 +40,17 @@
  *  S<bool> Set High Speed (HS) Mode and exit without deploy
  *
  *  R<bool> Remain in place after deploying (and before activating) the probe
+ *
+ * @advi3++ With BLTOUCH_SW_MODE:
+ *  I       Report the current BLTouch Touch Switch mode state and exit
+ *  T<bool> Set Touch Switch (Touch SW) Mode and exit without deploy
  */
 void GcodeSuite::M401() {
   #if HAS_BLTOUCH_HS_MODE
     const bool seenH = parser.seen_test('H'),
-               seenS = parser.seen('S');
+               seenS = parser.seen('S'),
+               seenI = parser.seen_test('I'), // @advi3++
+               seenT = parser.seen_test('T'); // @advi3++
     if (seenH || seenS) {
       if (seenS) bltouch.high_speed_mode = parser.value_bool();
       SERIAL_ECHO_START();
@@ -52,6 +58,17 @@ void GcodeSuite::M401() {
       serialprintln_onoff(bltouch.high_speed_mode);
       return;
     }
+  #endif
+  
+  // @advi3++
+  #ifdef BLTOUCH_ALLOW_SW_MODE
+  if (seenI || seenT) {
+      if (seenT) bltouch.sw_mode = parser.value_bool();
+      SERIAL_ECHO_START();
+      SERIAL_ECHOPGM("BLTouch Touch SW mode ");
+      serialprintln_onoff(bltouch.sw_mode);
+    return;
+  }
   #endif
 
   probe.deploy(parser.boolval('R'));

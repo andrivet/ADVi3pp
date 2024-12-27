@@ -34,16 +34,30 @@
  *
  * Parameters
  *   S[bool] - Flag to enable / disable.
+ *   I[bool] - Flag for inverted signal.
  *             If omitted, report current state.
  *
  * With PLR_BED_THRESHOLD:
  *   B         Bed Temperature above which recovery will proceed without asking permission.
  */
 void GcodeSuite::M413() {
-
-  if (parser.seen('S'))
+  bool report = true; // @advi3++
+  if (parser.seen('S')) {
     recovery.enable(parser.value_bool());
-  else
+    report = false;
+  }
+
+  if (parser.seen('I')) {
+    recovery.invert(parser.value_bool());
+    report = false;
+  }
+
+  if (parser.seen('L')) {
+    recovery.set_purge_length(parser.value_ushort());
+    report = false;
+  }
+
+  if(report)
     M413_report();
 
   #if HAS_PLR_BED_THRESHOLD
@@ -72,7 +86,10 @@ void GcodeSuite::M413_report(const bool forReplay/*=true*/) {
       , " B", recovery.bed_temp_threshold
     #endif
   );
-  SERIAL_ECHO(" ; ");
+  SERIAL_ECHOPGM(" S", AS_DIGIT(recovery.enabled));
+  SERIAL_ECHOPGM(" I", AS_DIGIT(recovery.inverted));
+  SERIAL_ECHOPGM(" L", AS_DIGIT(recovery.purge_length));
+  SERIAL_ECHOPGM(" ; ");
   serialprintln_onoff(recovery.enabled);
 }
 

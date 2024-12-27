@@ -1,0 +1,131 @@
+/**
+ * ADVi3++ Firmware For Wanhao Duplicator i3 Plus (based on Marlin 2)
+ *
+ * Copyright (C) 2017-2025 Sebastien Andrivet [https://github.com/andrivet/]
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+#include "../../../inc/MarlinConfig.h"
+#include "../../core/dgus.h"
+#include "../../core/core.h"
+#include "../../core/status.h"
+#include "../../core/progress.h"
+#include "../../core/pool.h"
+#include "../print/temperatures.h"
+#include "pid_tuning.h"
+
+namespace ADVi3pp::PidTuning {
+  enum class State: uint8_t {
+    None,
+    Processing,
+    FromLCDMenu = 0x80
+  };
+}
+ENABLE_BITMASK_OPERATOR(ADVi3pp::PidTuning::State);
+
+namespace ADVi3pp::PidTuning {
+  inline namespace internals {
+
+    constexpr uint16_t KEY_CODE_STEP2 = 1;
+    constexpr Variable VAR_TEMP = Variable::Value0;
+
+    struct Data {
+      State state_ = State::None;
+    };
+
+    inline Data& pool() { return Pool::get<Data>(Page::PidTuning); }
+
+    void show_command();
+    void step2_command();
+
+    void set_message(ExtUI::pidresult_t result);
+  }
+
+  bool handle_command(uint16_t key_code) {
+    switch(key_code) {
+      case KEY_CODE_SHOW: show_command(); break;
+      case KEY_CODE_BACK: Pages::back(Pages::BACK_OPTIONS::NONE); break;
+      case KEY_CODE_STEP2: step2_command(); break;
+      default: return false;
+    }
+    return true;
+  }
+
+  void on_start() {
+    Status::set(GET_TEXT_F(ADVI3PP_MSG_PID_TUNING_START), Status::STATUS_OPTIONS::RESET);
+    pool().state_ |= State::Processing;
+  }
+
+  void on_progress(int cycle, int nb) {
+    Log::info() << F("ExtUI::on_progress") << cycle << nb << Log::endl();
+    Progress::set(cycle * 100 / nb);
+  }
+
+  //! PID automatic tuning is finished.
+  void on_finished(ExtUI::pidresult_t result) {
+    if((pool().state_ & ~State::FromLCDMenu) != State::Processing) return;
+    pool().state_ = State::None;
+    set_message(result);
+    ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+    if(result != ExtUI::PID_DONE) return;
+    Core::display(Page::PidSettings);
+  }
+
+  inline namespace internals {
+
+    void show_command() {
+      if(!Core::check_not_busy()) return;
+      Pool::reset<Data>(Page::PidTuning);
+      Status::reset();
+      Pages::save_forward_page();
+      WriteRamRequest{VAR_TEMP}.write_words(static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(ExtUI::H0)));
+      Pages::show(Page::PidTuning);
+    }
+
+    //! Show step #2 of PID tuning
+    void step2_command() {
+      pool().state_ |= State::FromLCDMenu;
+      ExtUI::setTargetFan_percent(100, ExtUI::FAN0); // Turn on fan
+
+      ReadRam frame{VAR_TEMP};
+      if(!frame.send_receive(1)) return;
+      auto temperature = frame.read_word<celsius_t>();
+
+      Progress::reset();
+      Temperatures::display([] () -> void {
+        Log::info() << F("Cancel PID tuning") << Log::endl();
+        Status::set(GET_TEXT_F(ADVI3PP_MSG_PID_TUNING_CANCEL), Status::STATUS_OPTIONS::RESET);
+        ExtUI::cancelWaitForHeatup();
+        ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+        pool().state_ = State::None;
+      });
+      // startPIDTune will enter a loop and thus will call idle from idle
+      ExtUI::startPIDTune(temperature, ExtUI::E0);
+      ExtUI::setDefaultTemp_celsius(temperature, ExtUI::E0);
+    }
+
+    void set_message(ExtUI::pidresult_t result) {
+      switch(result) {
+        case ExtUI::PID_BAD_HEATER_ID:        break; // Never happens
+        case ExtUI::PID_TEMP_TOO_HIGH:        Status::set(GET_TEXT_F(ADVI3PP_MSG_TEMP_TOO_HIGH), Status::STATUS_OPTIONS::RESET); break;
+        case ExtUI::PID_TUNING_TIMEOUT:       Status::set(GET_TEXT_F(ADVI3PP_MSG_TIMEOUT), Status::STATUS_OPTIONS::RESET); break;
+        case ExtUI::PID_DONE:                 Status::set(GET_TEXT_F(ADVI3PP_MSG_PID_TUNING_SUCCESS), Status::STATUS_OPTIONS::RESET); break;
+        default: Log::error() << F("Unknown result_t ") << static_cast<uint16_t>(result) << Log::endl(); break;
+      }
+    }
+
+  }
+}

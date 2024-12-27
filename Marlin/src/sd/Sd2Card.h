@@ -91,7 +91,7 @@ uint8_t const SD_CARD_TYPE_SD1  = 1,        // Standard capacity V1 SD card
  * \class Sd2Card
  * \brief Raw access to SD and SDHC flash memory cards.
  */
-class DiskIODriver_SPI_SD : public DiskIODriver {
+class DiskIODriver_SPI_SD /*: public DiskIODriver*/ {  // @advi3++ Save memory
 public:
 
   DiskIODriver_SPI_SD() : errorCode_(SD_CARD_ERROR_INIT_NOT_CALLED), type_(0) {}
@@ -119,7 +119,7 @@ public:
    *
    * \return true for success or false for failure.
    */
-  bool init(const uint8_t sckRateID, const pin_t chipSelectPin) override;
+  bool init(const uint8_t sckRateID, const pin_t chipSelectPin) /*override*/;  // @advi3++ Save memory
 
   bool setSckRate(const uint8_t sckRateID);
 
@@ -148,24 +148,24 @@ public:
    *
    * \return true for success or false for failure.
    */
-  inline bool readCSD(csd_t * const csd) override { return readRegister(CMD9, csd); }
+  inline bool readCSD(csd_t * const csd) /*override*/ { return readRegister(CMD9, csd); }  // @advi3++ Save memory
 
-  bool readData(uint8_t * const dst) override;
-  bool readStart(uint32_t blockNumber) override;
-  bool readStop() override;
+  bool readData(uint8_t * const dst) /*override*/;  // @advi3++ Save memory
+  bool readStart(uint32_t blockNumber) /*override*/;  // @advi3++ Save memory
+  bool readStop() /*override*/;  // @advi3++ Save memory
 
-  bool writeData(const uint8_t * const src) override;
-  bool writeStart(uint32_t blockNumber, const uint32_t eraseCount) override;
-  bool writeStop() override;
+  bool writeData(const uint8_t * const src) /*override*/;  // @advi3++ Save memory
+  bool writeStart(uint32_t blockNumber, const uint32_t eraseCount) /*override*/;  // @advi3++ Save memory
+  bool writeStop() /*override*/;
 
-  bool readBlock(uint32_t blockNumber, uint8_t * const dst) override;
-  bool writeBlock(uint32_t blockNumber, const uint8_t * const src) override;
+  bool readBlock(uint32_t blockNumber, uint8_t * const dst) /*override*/;  // @advi3++ Save memory
+  bool writeBlock(uint32_t blockNumber, const uint8_t * const src) /*override*/;  // @advi3++ Save memory
 
-  uint32_t cardSize() override;
+  uint32_t cardSize() /*override*/;  // @advi3++ Save memory
 
-  bool isReady() override { return ready; };
+  bool isReady() /*override*/ { return ready; };  // @advi3++ Save memory
 
-  void idle() override {}
+  void idle() /*override*/ {}  // @advi3++ Save memory
 
 private:
   bool ready = false;

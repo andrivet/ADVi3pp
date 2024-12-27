@@ -84,6 +84,7 @@ extern FilamentMonitor runout;
 class FilamentMonitorBase {
   public:
     static bool enabled, filament_ran_out;
+    static bool inverted; // @advi3++
 
     #if ENABLED(HOST_ACTION_COMMANDS)
       static bool host_handling;
@@ -214,7 +215,7 @@ class FilamentSensorBase {
 
     // Return a bitmask of runout flag states (1 bits always indicates runout)
     static uint8_t poll_runout_states() {
-      #define _INVERT_BIT(N) | (FIL_RUNOUT##N##_STATE ? 0 : _BV(N - 1))
+      #define _INVERT_BIT(N) | (runout.inverted ? 0 : _BV(N - 1)) // @advi3++
       return poll_runout_pins() ^ uint8_t(0 REPEAT_1(NUM_RUNOUT_SENSORS, _INVERT_BIT));
       #undef _INVERT_BIT
     }

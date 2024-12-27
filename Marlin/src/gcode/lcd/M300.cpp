@@ -47,13 +47,28 @@ void GcodeSuite::M300() {
     }
   #endif
 
-  const uint16_t frequency = parser.ushortval('S', 260);
-  uint16_t duration = parser.ushortval('P', 1000);
+  uint16_t const frequency = parser.ushortval('S', 0); // @advi3++, 0 means default value
+  uint16_t duration = parser.ushortval('P', 0); // @advi3++, 0 means default value
 
   // Limits the tone duration to 0-5 seconds.
   NOMORE(duration, 5000U);
 
-  BUZZ(duration, frequency);
+  // @advi3++
+  if(parser.seenval('D'))
+    ui.set_tone(duration, parser.ushortval('D', 0));
+  else
+    ui.buzz(duration, frequency);
+}
+
+// @advi3++
+void GcodeSuite::M300_report(const bool forReplay/*=true*/) {
+  report_heading(forReplay, F("Play beep sound"));
+  report_echo_start(forReplay);
+  SERIAL_ECHOPGM("  M300");
+  SERIAL_ECHOPGM(" P", ui.tone_duration);
+  SERIAL_ECHOPGM(" S", TONE_FREQUENCY_DEFAULT);
+  SERIAL_ECHOPGM(" D", ui.sound_on);
+  SERIAL_EOL();
 }
 
 #endif // HAS_SOUND

@@ -41,7 +41,7 @@
   // raw block cache
   uint32_t SdVolume::cacheBlockNumber_;  // current block number
   cache_t  SdVolume::cacheBuffer_;       // 512 byte cache for Sd2Card
-  DiskIODriver *SdVolume::sdCard_;       // pointer to SD card object
+  DiskIODriver_SPI_SD *SdVolume::sdCard_;       // pointer to SD card object  // @advi3++ Save memory
   bool     SdVolume::cacheDirty_;        // cacheFlush() will write block if true
   uint32_t SdVolume::cacheMirrorBlock_;  // mirror  block for second FAT
 #endif
@@ -326,7 +326,7 @@ int32_t SdVolume::freeClusterCount() {
  * Reasons for failure include not finding a valid partition, not finding a valid
  * FAT file system in the specified partition or an I/O error.
  */
-bool SdVolume::init(DiskIODriver * const dev, const uint8_t part) {
+bool SdVolume::init(DiskIODriver_SPI_SD * const dev, const uint8_t part) { // @advi3++ Save memory
   uint32_t totalBlocks, volumeStartBlock = 0;
   fat32_boot_t *fbs;
 

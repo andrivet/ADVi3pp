@@ -256,6 +256,7 @@ typedef struct SettingsDataStruct {
   // FILAMENT_RUNOUT_SENSOR
   //
   bool runout_sensor_enabled;                           // M412 S
+  bool runout_sensor_inverted;                          // @advi3++
   float runout_distance_mm;                             // M412 D
 
   //
@@ -311,6 +312,7 @@ typedef struct SettingsDataStruct {
     float xatc_spacing;                                 // M423 X Z
     float xatc_start;
     xatc_array_t xatc_z_offset;
+    bool xatc_enabled; // @advi3++
   #endif
 
   //
@@ -345,9 +347,8 @@ typedef struct SettingsDataStruct {
   // BLTOUCH
   //
   bool bltouch_od_5v_mode;
-  #if HAS_BLTOUCH_HS_MODE
-    bool bltouch_high_speed_mode;                       // M401 S
-  #endif
+  bool bltouch_high_speed_mode;                       // M401 S
+  bool bltouch_sw_mode;                               // M401 T
 
   //
   // Kinematic Settings (Delta, SCARA, TPARA, Polargraph...)
@@ -413,6 +414,12 @@ typedef struct SettingsDataStruct {
   raw_pid_t chamberPID;                                 // M309 PID / M303 E-2 U
 
   //
+  // Default temperature @advi3++
+  //
+  celsius_t defaultHotendTemp[HOTENDS];
+  celsius_t defaultBedTemp;
+
+  //
   // User-defined Thermistors
   //
   #if HAS_USER_THERMISTORS
@@ -441,7 +448,9 @@ typedef struct SettingsDataStruct {
     #if HAS_BACKLIGHT_TIMEOUT
       uint8_t backlight_timeout_minutes;                // M255 S
     #elif HAS_DISPLAY_SLEEP
+      bool sleep_timeout_enabled;                       // M255 E @advi3++
       uint8_t sleep_timeout_minutes;                    // M255 S
+      uint8_t sleep_timeout_brightness;                 // @advi3++
     #endif
   #endif
 
@@ -451,10 +460,20 @@ typedef struct SettingsDataStruct {
   controllerFan_settings_t controllerFan_settings;      // M710
 
   //
+  // PSU Control @advi3++
+  //
+  bool psu_control_enabled;                             // M80 S
+  bool psu_control_inverted;                            // M80 I
+  uint16_t psu_control_timeout;                         // M80 D
+  uint16_t psu_control_temperature;                     // M80 T
+
+  //
   // POWER_LOSS_RECOVERY
   //
   bool recovery_enabled;                                // M413 S
   celsius_t bed_temp_threshold;                         // M413 B
+  bool recovery_inverted;                               // N413 I @advi3++
+  uint16_t recovery_purge_length;                       // M413 L @advi3++
 
   //
   // FWRETRACT
@@ -605,7 +624,7 @@ typedef struct SettingsDataStruct {
   // Buzzer enable/disable
   //
   #if ENABLED(SOUND_MENU_ITEM)
-    bool sound_on;
+    uint8_t sound_on; //@advi3++ flags
   #endif
 
   //
@@ -690,9 +709,20 @@ typedef struct SettingsDataStruct {
     // uint32_t material_changes
   #endif
 
+  //
+  // Default frequency and duration to play tones
+  //
+  // @advi3++
+  #if HAS_SOUND
+  uint16_t tone_duration;    // M300 P
+  #endif
+
 } SettingsData;
 
+#if ENABLED(POWER_LOSS_RECOVERY)
 //static_assert(sizeof(SettingsData) <= MARLIN_EEPROM_SIZE, "EEPROM too small to contain SettingsData!");
+static_assert(sizeof(SettingsData) + sizeof(job_recovery_info_t) <= EEPROM_SIZE, "EEPROM too small");
+#endif
 
 MarlinSettings settings;
 
@@ -950,11 +980,14 @@ void MarlinSettings::postprocess() {
     {
       #if HAS_FILAMENT_SENSOR
         const bool &runout_sensor_enabled = runout.enabled;
+        const bool &runout_sensor_inverted = runout.inverted; // @advi3++
       #else
         constexpr int8_t runout_sensor_enabled = -1;
+        const bool &runout_sensor_inverted = false; // @advi3++
       #endif
       _FIELD_TEST(runout_sensor_enabled);
       EEPROM_WRITE(runout_sensor_enabled);
+      EEPROM_WRITE(runout_sensor_inverted); // @advi3++
 
       #if HAS_FILAMENT_RUNOUT_DISTANCE
         const float &runout_distance_mm = runout.runout_distance();
@@ -1088,6 +1121,7 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(xatc.spacing);
       EEPROM_WRITE(xatc.start);
       EEPROM_WRITE(xatc.z_offset);
+      EEPROM_WRITE(xatc.enabled); // @advi3++
     #endif
 
     //
@@ -1136,11 +1170,21 @@ void MarlinSettings::postprocess() {
       const bool bltouch_od_5v_mode = TERN0(BLTOUCH, bltouch.od_5v_mode);
       EEPROM_WRITE(bltouch_od_5v_mode);
 
+      _FIELD_TEST(bltouch_high_speed_mode);
       #if HAS_BLTOUCH_HS_MODE
-        _FIELD_TEST(bltouch_high_speed_mode);
-        const bool bltouch_high_speed_mode = TERN0(BLTOUCH, bltouch.high_speed_mode);
-        EEPROM_WRITE(bltouch_high_speed_mode);
+      const bool bltouch_high_speed_mode = TERN0(BLTOUCH, bltouch.high_speed_mode);
+      #else
+      constexpr bool bltouch_high_speed_mode = false;
       #endif
+      EEPROM_WRITE(bltouch_high_speed_mode);
+
+      _FIELD_TEST(bltouch_sw_mode);
+    #ifdef BLTOUCH_ALLOW_SW_MODE
+      const bool bltouch_sw_mode = TERN0(BLTOUCH, bltouch.sw_mode);
+    #else
+      constexpr bool bltouch_sw_mode = false;
+    #endif
+      EEPROM_WRITE(bltouch_sw_mode);
     }
 
     //
@@ -1258,6 +1302,15 @@ void MarlinSettings::postprocess() {
     }
 
     //
+    // Default temperatures @advi3++
+    //
+    {
+      _FIELD_TEST(defaultHotendTemp);
+      EEPROM_WRITE(thermalManager.default_hotend_temp);
+      EEPROM_WRITE(thermalManager.default_bed_temp);
+    }
+
+    //
     // User-defined Thermistors
     //
     #if HAS_USER_THERMISTORS
@@ -1303,7 +1356,9 @@ void MarlinSettings::postprocess() {
       #if HAS_BACKLIGHT_TIMEOUT
         EEPROM_WRITE(ui.backlight_timeout_minutes);
       #elif HAS_DISPLAY_SLEEP
+        EEPROM_WRITE(ui.sleep_timeout_enabled); // @advi3++
         EEPROM_WRITE(ui.sleep_timeout_minutes);
+        EEPROM_WRITE(ui.sleep_timeout_brightness); // @advi3++
       #endif
     #endif
 
@@ -1321,14 +1376,33 @@ void MarlinSettings::postprocess() {
     }
 
     //
+    // PSU Control @advi3++
+    //
+    {
+      _FIELD_TEST(psu_control_enabled);
+      const bool psu_control_enabled = TERN(AUTO_POWER_CONTROL, powerManager.enabled, false);
+      const bool psu_control_inverted = TERN(AUTO_POWER_CONTROL, powerManager.inverted, false);
+      const uint16_t psu_control_timeout = TERN(AUTO_POWER_CONTROL, powerManager.timeout, 0);
+      const uint16_t psu_control_temperature = TERN(AUTO_POWER_CONTROL, powerManager.temperature, 0);
+      EEPROM_WRITE(psu_control_enabled);
+      EEPROM_WRITE(psu_control_inverted);
+      EEPROM_WRITE(psu_control_timeout);
+      EEPROM_WRITE(psu_control_temperature);
+    }
+
+    //
     // Power-Loss Recovery
     //
     {
       _FIELD_TEST(recovery_enabled);
       const bool recovery_enabled = TERN0(POWER_LOSS_RECOVERY, recovery.enabled);
+      const bool recovery_inverted = TERN(POWER_LOSS_RECOVERY, recovery.inverted, false); // @advi3++
       const celsius_t bed_temp_threshold = TERN0(HAS_PLR_BED_THRESHOLD, recovery.bed_temp_threshold);
+      const uint16_t recovery_length = TERN(POWER_LOSS_RECOVERY, recovery.purge_length, 0); // @advi3++
       EEPROM_WRITE(recovery_enabled);
+      EEPROM_WRITE(recovery_inverted); // @advi3++
       EEPROM_WRITE(bed_temp_threshold);
+      EEPROM_WRITE(recovery_length); // @advi3++
     }
 
     //
@@ -1666,8 +1740,9 @@ void MarlinSettings::postprocess() {
     // Extensible UI User Data
     //
     #if ENABLED(EXTENSIBLE_UI)
+    if(ExtUI::eeprom_data_size > 0) // @advi3++
     {
-      char extui_data[ExtUI::eeprom_data_size] = { 0 };
+      char extui_data[ExtUI::eeprom_data_size] = { }; // @advi3++
       ExtUI::onStoreSettings(extui_data);
       _FIELD_TEST(extui_data);
       EEPROM_WRITE(extui_data);
@@ -1738,6 +1813,7 @@ void MarlinSettings::postprocess() {
     // Buzzer enable/disable
     //
     #if ENABLED(SOUND_MENU_ITEM)
+      _FIELD_TEST(sound_on); // @advi3++
       EEPROM_WRITE(ui.sound_on);
     #endif
 
@@ -1829,6 +1905,12 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(mmu3.mmu_hw_enabled); // EEPROM_MMU_ENABLED
     #endif
 
+    // @advi3++
+    #if HAS_SOUND
+      _FIELD_TEST(tone_duration);
+      EEPROM_WRITE(ui.tone_duration);
+    #endif
+
     //
     // Report final CRC and Data Size
     //
@@ -1862,7 +1944,7 @@ void MarlinSettings::postprocess() {
 
     const bool success = (eeprom_error == ERR_EEPROM_NOERR);
     if (success) {
-      LCD_MESSAGE(MSG_SETTINGS_STORED);
+      // LCD_MESSAGE(MSG_SETTINGS_STORED); @advi3++ Do not show this message
       TERN_(HOST_PROMPT_SUPPORT, hostui.notify(GET_TEXT_F(MSG_SETTINGS_STORED)));
     }
 
@@ -2028,11 +2110,15 @@ void MarlinSettings::postprocess() {
       // Filament Runout Sensor
       //
       {
-        int8_t runout_sensor_enabled;
+        int8_t runout_sensor_enabled, runout_sensor_inverted; // @advi3++
         _FIELD_TEST(runout_sensor_enabled);
         EEPROM_READ(runout_sensor_enabled);
+        EEPROM_READ(runout_sensor_inverted); // @advi3++
         #if HAS_FILAMENT_SENSOR
-        if (!validating) runout.enabled = runout_sensor_enabled < 0 ? FIL_RUNOUT_ENABLED_DEFAULT : runout_sensor_enabled;
+        if (!validating) {  // @advi3++
+          runout.enabled = runout_sensor_enabled < 0 ? FIL_RUNOUT_ENABLED_DEFAULT : runout_sensor_enabled;
+          runout.inverted = runout_sensor_inverted; // @advi3++
+        }  // @advi3++
         #endif
 
         TERN_(HAS_FILAMENT_SENSOR, if (runout.enabled) runout.reset());
@@ -2167,6 +2253,7 @@ void MarlinSettings::postprocess() {
         EEPROM_READ(xatc.spacing);
         EEPROM_READ(xatc.start);
         EEPROM_READ(xatc.z_offset);
+        EEPROM_READ(xatc.enabled); // @advi3++
       #endif
 
       //
@@ -2230,15 +2317,21 @@ void MarlinSettings::postprocess() {
         #endif
         EEPROM_READ(bltouch_od_5v_mode);
 
+        _FIELD_TEST(bltouch_high_speed_mode);
         #if HAS_BLTOUCH_HS_MODE
-          _FIELD_TEST(bltouch_high_speed_mode);
-          #if ENABLED(BLTOUCH)
-            const bool &bltouch_high_speed_mode = bltouch.high_speed_mode;
-          #else
-            bool bltouch_high_speed_mode;
-          #endif
-          EEPROM_READ(bltouch_high_speed_mode);
+          const bool &bltouch_high_speed_mode = bltouch.high_speed_mode;
+        #else
+          bool bltouch_high_speed_mode;
         #endif
+          EEPROM_READ(bltouch_high_speed_mode);
+
+        _FIELD_TEST(bltouch_sw_mode);
+#if HAS_BLTOUCH_HS_MODE
+        const bool &bltouch_sw_mode = bltouch.sw_mode;
+#else
+        bool bltouch_sw_mode;
+#endif
+        EEPROM_READ(bltouch_sw_mode);
       }
 
       //
@@ -2355,6 +2448,14 @@ void MarlinSettings::postprocess() {
       }
 
       //
+      // Default temperatures @advi3++
+      //
+      {
+        EEPROM_READ(thermalManager.default_hotend_temp);
+        EEPROM_READ(thermalManager.default_bed_temp);
+      }
+
+      //
       // User-defined Thermistors
       //
       #if HAS_USER_THERMISTORS
@@ -2403,7 +2504,9 @@ void MarlinSettings::postprocess() {
         #if HAS_BACKLIGHT_TIMEOUT
           EEPROM_READ(ui.backlight_timeout_minutes);
         #elif HAS_DISPLAY_SLEEP
+          EEPROM_READ(ui.sleep_timeout_enabled); // @advi3++
           EEPROM_READ(ui.sleep_timeout_minutes);
+          EEPROM_READ(ui.sleep_timeout_brightness); // @advi3++
         #endif
       #endif
 
@@ -2418,17 +2521,42 @@ void MarlinSettings::postprocess() {
       }
 
       //
+      // PSU Control @advi3++
+      //
+      {
+        bool psu_control_enabled;
+        bool psu_control_inverted;
+        uint16_t psu_control_timeout;
+        uint16_t psu_control_temperature;
+        _FIELD_TEST(psu_control_enabled);
+        EEPROM_READ(psu_control_enabled);
+        EEPROM_READ(psu_control_inverted);
+        EEPROM_READ(psu_control_timeout);
+        EEPROM_READ(psu_control_temperature);
+        TERN_(AUTO_POWER_CONTROL, if (!validating) powerManager.enabled = psu_control_enabled);
+        TERN_(AUTO_POWER_CONTROL, if (!validating) powerManager.inverted = psu_control_inverted);
+        TERN_(AUTO_POWER_CONTROL, if (!validating) powerManager.timeout = psu_control_timeout);
+        TERN_(AUTO_POWER_CONTROL, if (!validating) powerManager.temperature = psu_control_temperature);
+      }
+
+      //
       // Power-Loss Recovery
       //
       {
         _FIELD_TEST(recovery_enabled);
         bool recovery_enabled;
+        bool recovery_inverted; // @advi3++
         celsius_t bed_temp_threshold;
+        uint16_t recovery_purge_length; // @advi3++
         EEPROM_READ(recovery_enabled);
+        EEPROM_READ(recovery_inverted); // @advi3++
         EEPROM_READ(bed_temp_threshold);
+        EEPROM_READ(recovery_purge_length); // @advi3++
         if (!validating) {
           TERN_(POWER_LOSS_RECOVERY, recovery.enabled = recovery_enabled);
+          TERN_(POWER_LOSS_RECOVERY, recovery.inverted = recovery_inverted); // @advi3++
           TERN_(HAS_PLR_BED_THRESHOLD, recovery.bed_temp_threshold = bed_temp_threshold);
+          TERN_(POWER_LOSS_RECOVERY, recovery.purge_length = recovery_purge_length); // @advi3++
         }
       }
 
@@ -2796,8 +2924,9 @@ void MarlinSettings::postprocess() {
       // Extensible UI User Data
       //
       #if ENABLED(EXTENSIBLE_UI)
+      if(ExtUI::eeprom_data_size > 0) // @advi3++
       { // This is a significant hardware change; don't reserve EEPROM space when not present
-        const char extui_data[ExtUI::eeprom_data_size] = { 0 };
+        const char extui_data[ExtUI::eeprom_data_size] = { }; // @advi3++
         _FIELD_TEST(extui_data);
         EEPROM_READ(extui_data);
         if (!validating) ExtUI::onLoadSettings(extui_data);
@@ -2999,6 +3128,15 @@ void MarlinSettings::postprocess() {
         mmu3.mmu_hw_enabled_addr = eeprom_index;
         EEPROM_READ(mmu3.mmu_hw_enabled); // EEPROM_MMU_ENABLED
       #endif
+      
+      // @advi3++
+      #if HAS_SOUND
+        _FIELD_TEST(tone_duration);
+        uint16_t tone_duration;
+        EEPROM_READ(tone_duration);
+        if (!validating) ui.tone_duration = tone_duration;
+        if (!validating) ui.tone_duration = tone_duration;
+      #endif
 
       //
       // Validate Final Size and CRC
@@ -3096,6 +3234,7 @@ void MarlinSettings::postprocess() {
     validating = false;
 
     if (err) ui.eeprom_alert(err);
+    TERN_(EXTENSIBLE_UI, ExtUI::onSettingsValidated(err == ERR_EEPROM_NOERR)); // @advi3++
 
     return (err == ERR_EEPROM_NOERR);
   }
@@ -3365,6 +3504,7 @@ void MarlinSettings::reset() {
 
   #if HAS_FILAMENT_SENSOR
     runout.enabled = FIL_RUNOUT_ENABLED_DEFAULT;
+    runout.inverted = FIL_RUNOUT_STATE == LOW; // @advi3++
     runout.reset();
     TERN_(HAS_FILAMENT_RUNOUT_DISTANCE, runout.set_runout_distance(FILAMENT_RUNOUT_DISTANCE_MM));
   #endif
@@ -3434,7 +3574,7 @@ void MarlinSettings::reset() {
   // Buzzer enable/disable
   //
   #if ENABLED(SOUND_MENU_ITEM)
-    ui.sound_on = ENABLED(SOUND_ON_DEFAULT);
+    ui.sound_on = SOUND_ON_DEFAULT; // @advi3++ flags
   #endif
 
   //
@@ -3657,6 +3797,14 @@ void MarlinSettings::reset() {
   #endif
 
   //
+  // Default temperatures @advi3++
+  //
+  #define NEXT_DEFAULT_TEMP(N) ,HEATER_##N##TEMP_DEFAULT
+  const celsius_t temps[HOTENDS] = ARRAY_BY_HOTENDS(HEATER_0_TEMP_DEFAULT REPEAT_S(1, HOTENDS, NEXT_DEFAULT_TEMP));
+  HOTEND_LOOP() thermalManager.default_hotend_temp[e] = temps[e];
+  thermalManager.default_bed_temp = BED_TEMP_DEFAULT;
+
+  //
   // User-Defined Thermistors
   //
   TERN_(HAS_USER_THERMISTORS, thermalManager.reset_user_thermistors());
@@ -3683,7 +3831,9 @@ void MarlinSettings::reset() {
     #if HAS_BACKLIGHT_TIMEOUT
       ui.backlight_timeout_minutes = LCD_BACKLIGHT_TIMEOUT_MINS;
     #elif HAS_DISPLAY_SLEEP
+      ui.sleep_timeout_enabled = true; // @advi3++
       ui.sleep_timeout_minutes = DISPLAY_SLEEP_MINUTES;
+      ui.sleep_timeout_brightness = DIMMING_BRIGHTNESS_DEFAULT; // @advi3++
     #endif
   #endif
 
@@ -3693,11 +3843,20 @@ void MarlinSettings::reset() {
   TERN_(USE_CONTROLLER_FAN, controllerFan.reset());
 
   //
+  // PSU Control @advi3++
+  //
+  TERN_(AUTO_POWER_CONTROL, powerManager.enable(AUTO_POWER_DEFAULT));
+  TERN_(AUTO_POWER_CONTROL, powerManager.invert(PSU_ACTIVE_STATE == HIGH));
+  TERN_(AUTO_POWER_CONTROL, powerManager.set_timeout(POWER_TIMEOUT));
+
+  //
   // Power-Loss Recovery
   //
   #if ENABLED(POWER_LOSS_RECOVERY)
     recovery.enable(ENABLED(PLR_ENABLED_DEFAULT));
     TERN_(HAS_PLR_BED_THRESHOLD, recovery.bed_temp_threshold = PLR_BED_THRESHOLD);
+    recovery.invert(POWER_LOSS_STATE == HIGH);  // @advi3++
+    recovery.purge_length = POWER_LOSS_PURGE_LEN; // @advi3++
   #endif
 
   //
@@ -3866,11 +4025,11 @@ void MarlinSettings::reset() {
   //
   #if HAS_ZV_SHAPING
     #if ENABLED(INPUT_SHAPING_X)
-      stepper.set_shaping_frequency(X_AXIS, SHAPING_FREQ_X);
+      stepper.set_shaping_frequency(X_AXIS, 0); // @advi3++ Disabled by default
       stepper.set_shaping_damping_ratio(X_AXIS, SHAPING_ZETA_X);
     #endif
     #if ENABLED(INPUT_SHAPING_Y)
-      stepper.set_shaping_frequency(Y_AXIS, SHAPING_FREQ_Y);
+      stepper.set_shaping_frequency(Y_AXIS, 0);  // @advi3++ Disabled by default
       stepper.set_shaping_damping_ratio(Y_AXIS, SHAPING_ZETA_Y);
     #endif
     #if ENABLED(INPUT_SHAPING_Z)
@@ -3894,6 +4053,12 @@ void MarlinSettings::reset() {
   // Hotend Idle Timeout
   //
   TERN_(HOTEND_IDLE_TIMEOUT, hotend_idle.cfg.set_defaults());
+
+  //
+  // Default frequency and duration to play tones
+  //
+  // @advi3++
+  ui.tone_duration = TONE_DURATION_DEFAULT;
 
   postprocess();
 
@@ -4097,6 +4262,11 @@ void MarlinSettings::reset() {
     TERN_(CONTROLLER_FAN_EDITABLE, gcode.M710_report(forReplay));
 
     //
+    // PSU Control @advi3++
+    //
+    TERN_(AUTO_POWER_CONTROL, gcode.M80_report(forReplay)); // @advi3++
+
+    //
     // Power-Loss Recovery
     //
     TERN_(POWER_LOSS_RECOVERY, gcode.M413_report(forReplay));
@@ -4219,6 +4389,11 @@ void MarlinSettings::reset() {
     // MMU3
     //
     TERN_(HAS_PRUSA_MMU3, gcode.MMU3_report(forReplay));
+
+    //
+    // Default frequency and duration to play tones
+    //
+    TERN_(HAS_SOUND, gcode.M300_report(forReplay)); // @advi3++
   }
 
 #endif // !DISABLE_M503

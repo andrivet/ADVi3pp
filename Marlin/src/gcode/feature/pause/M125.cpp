@@ -21,6 +21,7 @@
  */
 
 #include "../../../inc/MarlinConfig.h"
+#include "../../../MarlinCore.h" // @advi3++
 
 #if ENABLED(PARK_HEAD_ON_PAUSE)
 
@@ -34,6 +35,7 @@
 
 #if ENABLED(POWER_LOSS_RECOVERY)
   #include "../../../feature/powerloss.h"
+
 #endif
 
 /**
@@ -98,6 +100,7 @@ void GcodeSuite::M125() {
   if (pause_print(retract, park_point, show_lcd, 0)) {
     if (ENABLED(HAS_DISPLAY) || ALL(EMERGENCY_PARSER, HOST_PROMPT_SUPPORT) || !sd_printing || show_lcd) {
       wait_for_confirmation(false, 0);
+      if(wait_for_user == WAIT_FOR_USER::ABORT) return; // @advi3++
       resume_print(0, 0, -retract, 0);
     }
   }

@@ -51,6 +51,7 @@ void GcodeSuite::M0_M1() {
   if (parser.seenval('S')) ms = parser.value_millis_from_seconds(); // Seconds to wait
 
   planner.synchronize();
+  wait_for_user = WAIT_FOR_USER::WAIT; // @advi3++
 
   #if HAS_MARLINUI_MENU
 

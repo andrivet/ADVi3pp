@@ -26,6 +26,8 @@
 #include "SdInfo.h"
 #include "disk_io_driver.h"
 
+// @advi3++ Not used
+#if 0
 bool SDIO_Init();
 bool SDIO_ReadBlock(uint32_t block, uint8_t *dst);
 bool SDIO_WriteBlock(uint32_t block, const uint8_t *src);
@@ -57,3 +59,4 @@ class DiskIODriver_SDIO : public DiskIODriver {
   private:
     uint32_t curBlock;
 };
+#endif

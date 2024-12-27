@@ -424,6 +424,18 @@ static_assert(COUNT(arm) == LOGICAL_AXES, "AXIS_RELATIVE_MODES must contain " _L
 /**
  * SD File Sorting
  */
+#if ALL(SDCARD_SORT_ALPHA, SDCARD_SORT_DATE) // @advi3++
+  #error "SDCARD_SORT_ALPHA and SDCARD_SORT_DATE can't be both enabled."
+#endif
+
+#if ENABLED(SDCARD_SORT_DATE) // @advi3++
+#if SDSORT_LIMIT > 256
+  #error "SDSORT_LIMIT must be 256 or smaller."
+#elif SDSORT_LIMIT < 10
+  #error "SDSORT_LIMIT should be greater than 9 to be useful."
+#endif
+#endif
+
 #if ENABLED(SDCARD_SORT_ALPHA)
   #if NONE(EXTENSIBLE_UI, HAS_MARLINUI_MENU, DWIN_CREALITY_LCD, DWIN_CREALITY_LCD_JYERSUI, DWIN_LCD_PROUI)
     #error "SDCARD_SORT_ALPHA requires an LCD that supports it. (It doesn't apply to M20, etc.)"
@@ -2970,10 +2982,12 @@ static_assert(NUM_SERVOS <= NUM_SERVO_PLUGS, "NUM_SERVOS (or some servo index) i
     #error "LCD_BACKLIGHT_TIMEOUT_MINS requires LCD_BACKLIGHT_PIN, NEOPIXEL_BKGD_INDEX_FIRST, or an Ender-3 V2 DWIN LCD."
   #endif
 #elif HAS_DISPLAY_SLEEP
-  #if NONE(TOUCH_SCREEN, HAS_MARLINUI_U8GLIB) || ANY(IS_U8GLIB_LM6059_AF, IS_U8GLIB_ST7565_64128, REPRAPWORLD_GRAPHICAL_LCD, FYSETC_MINI_12864, CR10_STOCKDISPLAY, MINIPANEL)
-    #error "DISPLAY_SLEEP_MINUTES is not supported by your display."
-    #undef HAS_DISPLAY_SLEEP
-  #elif !WITHIN(DISPLAY_SLEEP_MINUTES, 0, 255)
+  // @advi3++
+  //#if NONE(TOUCH_SCREEN, HAS_MARLINUI_U8GLIB) || ANY(IS_U8GLIB_LM6059_AF, IS_U8GLIB_ST7565_64128, REPRAPWORLD_GRAPHICAL_LCD, FYSETC_MINI_12864, CR10_STOCKDISPLAY, MINIPANEL)
+  //  #error "DISPLAY_SLEEP_MINUTES is not supported by your display."
+  //  #undef HAS_DISPLAY_SLEEP
+  //#elif !WITHIN(DISPLAY_SLEEP_MINUTES, 0, 255)
+  #if !WITHIN(DISPLAY_SLEEP_MINUTES, 0, 255)
     #error "DISPLAY_SLEEP_MINUTES must be between 0 and 255."
   #elif DISABLED(EDITABLE_DISPLAY_TIMEOUT) && DISPLAY_SLEEP_MINUTES == 0
     #error "DISPLAY_SLEEP_MINUTES must be greater than 0 with EDITABLE_DISPLAY_TIMEOUT disabled."

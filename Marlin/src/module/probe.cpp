@@ -498,6 +498,7 @@ void Probe::probe_error_stop() {
     SERIAL_ECHOPGM(STR_STOP_BLTOUCH);
   #endif
   SERIAL_ECHOLNPGM(STR_STOP_POST);
+  LCD_ALERTMESSAGE(ADVI3PP_MSG_PROBE_ERROR); // @advi3++
   stop();
 }
 
@@ -638,6 +639,10 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
   // Move down until the probe is triggered
   do_blocking_move_to_z(z, fr_mm_s);
 
+  // @advi3++: In the simulator, the probe is always triggered
+  #if defined(ADVi3PP_HARDWARE_SIMULATOR)
+    const bool probe_triggered = true;
+  #else
   // Check to see if the probe was triggered
   const bool probe_triggered = (
     #if HAS_DELTA_SENSORLESS_PROBING
@@ -646,6 +651,7 @@ bool Probe::probe_down_to_z(const_float_t z, const_feedRate_t fr_mm_s) {
       TEST(endstops.trigger_state(), Z_MIN_PROBE)
     #endif
   );
+  #endif
 
   // Offset sensorless probing
   #if HAS_DELTA_SENSORLESS_PROBING
@@ -899,6 +905,11 @@ float Probe::run_z_probe(const bool sanity_check/*=true*/, const_float_t z_min_p
 
   #endif
 
+    // @advi3++
+#ifdef ADVi3PP_HARDWARE_SIMULATOR
+  return 2.0;
+#endif
+
   return DIFF_TERN(HAS_HOTEND_OFFSET, measured_z, hotend_offset[active_extruder].z);
 }
 
@@ -1023,6 +1034,11 @@ float Probe::probe_at_point(
           break;
       }
     }
+    
+    // @advi3++
+    #ifdef ADVi3PP_HARDWARE_SIMULATOR
+    measured_z = 2.1;
+    #endif
 
     // If any error occurred stow the probe and set an alert
     if (isnan(measured_z)) {

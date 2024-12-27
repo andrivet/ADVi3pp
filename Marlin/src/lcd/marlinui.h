@@ -223,7 +223,7 @@ public:
   #endif
 
   #if ENABLED(SOUND_MENU_ITEM)
-    static bool sound_on; // Initialized by settings.load
+    static uint8_t sound_on; // Initialized by settings.load() @advi3++ flags instead of a bool
   #else
     static constexpr bool sound_on = true;
   #endif
@@ -267,9 +267,10 @@ public:
       #define LCD_BRIGHTNESS_DEFAULT LCD_BRIGHTNESS_MAX
     #endif
     static uint8_t brightness;
-    static bool backlight;
+    //static bool backlight; @advi3++
     static void _set_brightness(); // Implementation-specific
     static void set_brightness(const uint8_t value);
+    FORCE_INLINE static void set_dimming_brightness(const uint8_t value) { sleep_timeout_brightness = value; } // @advi3++
     FORCE_INLINE static void refresh_brightness() { set_brightness(brightness); }
   #endif
 
@@ -285,7 +286,9 @@ public:
     static void refresh_backlight_timeout();
   #elif HAS_DISPLAY_SLEEP
     #if ENABLED(EDITABLE_DISPLAY_TIMEOUT)
+      static bool sleep_timeout_enabled; // @advi3++
       static uint8_t sleep_timeout_minutes;
+      static uint8_t sleep_timeout_brightness; // @advi3++
     #else
       static constexpr uint8_t sleep_timeout_minutes = DISPLAY_SLEEP_MINUTES;
     #endif
@@ -293,12 +296,20 @@ public:
     static constexpr uint8_t sleep_timeout_max = 99;
     static millis_t screen_timeout_ms;
     static void refresh_screen_timeout();
+    static void check_screen_timeout(); // @advi3++
+    static void set_screen_timeout(uint8_t minutes) { sleep_timeout_minutes = minutes; } // @advi3++
   #endif
 
   // Sleep or wake the display (e.g., by turning the backlight off/on).
   static bool display_is_asleep() IF_DISABLED(HAS_DISPLAY_SLEEP, { return false; });
   static void sleep_display(const bool=true) IF_DISABLED(HAS_DISPLAY_SLEEP, {});
   static void wake_display() { sleep_display(false); }
+  
+  // @advi3++
+  #if HAS_SOUND
+  static uint16_t tone_duration;
+  static void set_tone(uint16_t duration, uint8_t sound_on);
+  #endif
 
   #if HAS_PRINT_PROGRESS_PERMYRIAD
     typedef uint16_t progress_t;
@@ -369,7 +380,8 @@ public:
 
   #if HAS_STATUS_MESSAGE
 
-    static MString<MAX_MESSAGE_SIZE> status_message;
+    // static MString<MAX_MESSAGE_LENGTH> status_message; @advi3++ Save memory. It is not actually used by ADVi3++
+    static bool status; // @advi3++
     static uint8_t alert_level; // Higher levels block lower levels
 
     #if HAS_STATUS_MESSAGE_TIMEOUT
@@ -383,7 +395,7 @@ public:
       static char* status_and_len(uint8_t &len);
     #endif
 
-    static bool has_status() { return !status_message.empty(); }
+    static bool has_status() { return status; } // @advi3++
 
     /**
      * Try to set the alert level.
@@ -513,6 +525,11 @@ public:
     static void abort_print();
     static void pause_print();
     static void resume_print();
+    static bool is_printing(); // @advi3++
+    static bool is_printing_from_media_paused();
+    static bool is_printing_from_media();
+    static bool are_commands_in_queue();
+    static bool is_printing_paused();
 
     #if ENABLED(FLOWMETER_SAFETY)
       static void flow_fault();
@@ -735,6 +752,11 @@ public:
 
     static constexpr bool on_status_screen() { return true; }
 
+    static void go_back() {} // @advi3++
+    static void push_current_screen() {}  // @advi3++
+    typedef void (*screenFunc_t)(); // @advi3++
+    static void goto_screen(const screenFunc_t screen, const uint16_t encoder=0, const uint8_t top=0, const uint8_t items=0) {} // @advi3++
+
     #if HAS_WIRED_LCD
       FORCE_INLINE static void run_current_screen() { status_screen(); }
     #endif
@@ -781,7 +803,8 @@ public:
   //
   #if ANY(DELTA_CALIBRATION_MENU, DELTA_AUTO_CALIBRATION, PROBE_OFFSET_WIZARD, X_AXIS_TWIST_COMPENSATION) || (ENABLED(LCD_BED_LEVELING) && ANY(PROBE_MANUALLY, MESH_BED_LEVELING))
     #define LCD_HAS_WAIT_FOR_MOVE 1
-    static bool wait_for_move;
+    //static bool wait_for_move;  // @advi3++
+    static constexpr bool wait_for_move = false; // @advi3++
   #else
     static constexpr bool wait_for_move = false;
   #endif
@@ -887,7 +910,7 @@ private:
   #endif
 
   #if HAS_STATUS_MESSAGE
-    static void finish_status(const bool persist);
+    static void finish_status(const char* msg, const bool pgm, const bool persist); // @advi3++
   #endif
 
   #if HAS_WIRED_LCD
@@ -930,3 +953,6 @@ inline uint8_t expand_u8str(char * const outstr, FSTR_P const ftpl, const int8_t
 #define LCD_MESSAGE_MAX(M)     ui.set_max_status(GET_TEXT_F(M))
 #define LCD_ALERTMESSAGE_F(S)  ui.set_alert(F(S))
 #define LCD_ALERTMESSAGE(M)    ui.set_alert(GET_TEXT_F(M))
+#define LCD_RESET_STATUS(H)       ui.reset_status(H) // @advi3++
+#define LCD_FORMAT_F(L, M, ...)   ui.status_printf(L, GET_TEXT_F(M), __VA_ARGS__) // @advi3++
+#define LCD_MESSAGE_STR(S)        ui.set_status(S) // @advi3++

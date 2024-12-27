@@ -38,6 +38,7 @@ inline void idle_no_sleep() { idle(true); }
   extern bool G38_did_trigger;      // Flag from the ISR to indicate the endstop changed
 #endif
 
+void kill(float temp, FSTR_P const lcd_error=nullptr, FSTR_P const lcd_component=nullptr, const bool steppers_off=false); // @advi3++
 void kill(FSTR_P const lcd_error=nullptr, FSTR_P const lcd_component=nullptr, const bool steppers_off=false);
 void minkill(const bool steppers_off=false);
 
@@ -70,7 +71,8 @@ bool printer_busy();
 extern bool wait_for_heatup;
 
 #if HAS_RESUME_CONTINUE
-  extern bool wait_for_user;
+  enum struct WAIT_FOR_USER { WAIT, CONTINUE, ABORT }; // @advi3++
+  extern WAIT_FOR_USER wait_for_user;
   void wait_for_user_response(millis_t ms=0, const bool no_sleep=false);
 #endif
 

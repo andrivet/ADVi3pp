@@ -25,6 +25,11 @@
  */
 
 #include "../inc/MarlinConfigPre.h"
+#include "../HAL/shared/Delay.h" // @advi3++
+
+#if ENABLED(EXTENSIBLE_UI)
+#include "../lcd/extui/ui_api.h"
+#endif
 
 #if ANY(PSU_CONTROL, AUTO_POWER_CONTROL)
 
@@ -48,6 +53,10 @@
 
 Power powerManager;
 bool Power::psu_on;
+bool Power::enabled; // @advi3++
+bool Power::inverted; // @advi3++
+uint16_t Power::timeout; // @advi3++
+uint16_t Power::temperature; // @advi3++
 
 #if ENABLED(AUTO_POWER_CONTROL)
   #include "../module/stepper.h"
@@ -74,7 +83,40 @@ bool Power::psu_on;
  */
 void Power::init() {
   psu_on = ENABLED(PSU_DEFAULT_OFF);              // Set opposite state to get full power_off/on
-  TERN(PSU_DEFAULT_OFF, power_off(), power_on());
+  TERN(PSU_DEFAULT_OFF, power_off(true), power_on(true));
+}
+
+/**
+ * Enable or disable @advi3++
+ */
+void Power::enable(const bool onoff) {
+  enabled = onoff;
+}
+
+/**
+ * Invert or not @advi3++
+ */
+void Power::invert(const bool invert) {
+  inverted = invert;
+  init();
+}
+
+/**
+ * Set timeout @advi3++
+ */
+void Power::set_timeout(uint16_t t) {
+  timeout = t;
+}
+
+/**
+ * Set minimal temperature @advi3++
+ */
+void Power::set_temperature(uint16_t temp) {
+  temperature = temp;
+}
+
+void serial_pin_state(bool state) {
+  SERIAL_ECHO_START(); SERIAL_ECHO(F("Power Control pin="), PS_ON_PIN, F(", state="), state); SERIAL_EOL();
 }
 
 /**
@@ -82,19 +124,21 @@ void Power::init() {
  * Restores stepper drivers and processes any PSU_POWERUP_GCODE.
  *
  */
-void Power::power_on() {
+void Power::power_on(bool force) { // @advi3++
   #if ENABLED(AUTO_POWER_CONTROL)
     const millis_t now = millis();
     lastPowerOn = now + !now;
   #endif
 
-  if (psu_on) return;
+  if (psu_on && !force) return;
 
   #if ANY(POWER_OFF_TIMER, POWER_OFF_WAIT_FOR_COOLDOWN)
     cancelAutoPowerOff();
   #endif
 
-  OUT_WRITE(PS_ON_PIN, PSU_ACTIVE_STATE);
+  auto state = powerManager.inverted ? !PSU_ACTIVE_STATE : PSU_ACTIVE_STATE;
+  OUT_WRITE(PS_ON_PIN, state);
+  serial_pin_state(state); // @advi3++
   #if ENABLED(PSU_OFF_REDUNDANT)
     OUT_WRITE(PS_ON1_PIN, TERN_(PSU_OFF_REDUNDANT_INVERTED, !)PSU_ACTIVE_STATE);
   #endif
@@ -118,12 +162,12 @@ void Power::power_on() {
  * Power off if the power is currently on.
  * Processes any PSU_POWEROFF_GCODE and makes a PS_OFF_SOUND if enabled.
  */
-void Power::power_off() {
+void Power::power_off(bool force) {  // @advi3++
   TERN_(HAS_SUICIDE, suicide());
 
-  if (!psu_on) return;
+  if (!psu_on && !force) return; // @advi3++
 
-  SERIAL_ECHOLNPGM(STR_POWEROFF);
+  SERIAL_ECHO_START(); SERIAL_ECHOLNPGM(STR_POWEROFF);
 
   #ifdef PSU_POWEROFF_GCODE
     gcode.process_subcommands_now(F(PSU_POWEROFF_GCODE));
@@ -133,7 +177,9 @@ void Power::power_off() {
     BUZZ(1000, 659);
   #endif
 
-  OUT_WRITE(PS_ON_PIN, !PSU_ACTIVE_STATE);
+  auto state = powerManager.inverted ? PSU_ACTIVE_STATE : !PSU_ACTIVE_STATE;
+  OUT_WRITE(PS_ON_PIN, state);
+  serial_pin_state(state); // @advi3++
   #if ENABLED(PSU_OFF_REDUNDANT)
     OUT_WRITE(PS_ON1_PIN, IF_DISABLED(PSU_OFF_REDUNDANT_INVERTED, !)PSU_ACTIVE_STATE);
   #endif
@@ -144,6 +190,13 @@ void Power::power_off() {
   #if ANY(POWER_OFF_TIMER, POWER_OFF_WAIT_FOR_COOLDOWN)
     cancelAutoPowerOff();
   #endif
+
+  ExtUI::onPowerOff();
+
+  // @advi3++ In case the mainboard is still powered-on, set back the signal to the powered-on state
+  for (int i = 1000; i--;) DELAY_US(250);
+  OUT_WRITE(PS_ON_PIN, !state);
+  serial_pin_state(!state);
 }
 
 #if ANY(AUTO_POWER_CONTROL, POWER_OFF_WAIT_FOR_COOLDOWN)
@@ -247,6 +300,8 @@ void Power::power_off() {
    * @param pause  pause the 'timer'
    */
   void Power::check(const bool pause) {
+    if(!enabled) return; // @advi3++
+
     static millis_t nextPowerCheck = 0;
     const millis_t now = millis();
     #if POWER_TIMEOUT > 0
@@ -261,7 +316,7 @@ void Power::power_off() {
       nextPowerCheck = now + 2500UL;
       if (is_power_needed())
         power_on();
-      else if (!lastPowerOn || (POWER_TIMEOUT > 0 && ELAPSED(now, lastPowerOn + SEC_TO_MS(POWER_TIMEOUT))))
+      else if (!lastPowerOn || (POWER_TIMEOUT > 0 && ELAPSED(now, lastPowerOn + SEC_TO_MS(timeout)))) // @advi3++
         power_off();
     }
   }

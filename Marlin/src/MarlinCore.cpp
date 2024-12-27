@@ -282,16 +282,16 @@ bool wait_for_heatup = false;
 
 // For M0/M1, this flag may be cleared (by M108) to exit the wait-for-user loop
 #if HAS_RESUME_CONTINUE
-  bool wait_for_user; // = false
+  WAIT_FOR_USER wait_for_user; // = false
 
   void wait_for_user_response(millis_t ms/*=0*/, const bool no_sleep/*=false*/) {
     UNUSED(no_sleep);
     KEEPALIVE_STATE(PAUSED_FOR_USER);
-    wait_for_user = true;
+    wait_for_user = WAIT_FOR_USER::WAIT; // @advi3++
     if (ms) ms += millis(); // expire time
-    while (wait_for_user && !(ms && ELAPSED(millis(), ms)))
+    while (wait_for_user == WAIT_FOR_USER::WAIT && !(ms && ELAPSED(millis(), ms)))
       idle(TERN_(ADVANCED_PAUSE_FEATURE, no_sleep));
-    wait_for_user = false;
+    //wait_for_user = false; // @advi3++
     while (ui.button_pressed()) safe_delay(50);
   }
 
@@ -430,7 +430,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
     SERIAL_ERROR_START();
     SERIAL_ECHOPGM(STR_KILL_PRE);
     SERIAL_ECHOLNPGM(STR_KILL_INACTIVE_TIME, parser.command_ptr);
-    kill();
+    kill(GET_TEXT_F(ADVI3PP_MSG_PROCESS_GCODES)); // @advi3++
   }
 
   const bool has_blocks = planner.has_blocks_queued();  // Any moves in the planner?
@@ -979,7 +979,7 @@ void stop() {
 
   if (!IsStopped()) {
     SERIAL_ERROR_MSG(STR_ERR_STOPPED);
-    LCD_MESSAGE(MSG_STOPPED);
+    //LCD_MESSAGE(MSG_STOPPED); // @advi3++ Message is set by caller
     safe_delay(350);       // allow enough time for messages to get out before stopping
     marlin_state = MarlinState::MF_STOPPED;
   }
@@ -1273,15 +1273,6 @@ void setup() {
     SETUP_RUN(tmc_init_cs_pins());
   #endif
 
-  #if ENABLED(PSU_CONTROL)
-    SETUP_LOG("PSU_CONTROL");
-    powerManager.init();
-  #endif
-
-  #if ENABLED(POWER_LOSS_RECOVERY)
-    SETUP_RUN(recovery.setup());
-  #endif
-
   #if HAS_STEPPER_RESET
     SETUP_RUN(disableStepperDrivers());
   #endif
@@ -1366,6 +1357,16 @@ void setup() {
 
   SETUP_RUN(settings.first_load());   // Load data from EEPROM if available (or use defaults)
                                       // This also updates variables in the planner, elsewhere
+
+// @advi3++ Initialize after loading of settings
+  #if ENABLED(PSU_CONTROL)
+    SETUP_LOG("PSU_CONTROL");
+    powerManager.init();
+  #endif
+
+  #if ENABLED(POWER_LOSS_RECOVERY)
+    SETUP_RUN(recovery.setup());
+  #endif
 
   #if ENABLED(CONFIGURABLE_MACHINE_NAME)
     SETUP_RUN(ui.reset_status(false)); // machine_name Initialized by settings.load()

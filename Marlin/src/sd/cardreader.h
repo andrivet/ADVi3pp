@@ -43,7 +43,20 @@ extern const char M23_STR[], M24_STR[];
   #endif
 #endif
 
-#define MAX_DIR_DEPTH     10       // Maximum folder depth
+// @advi3++
+#if ENABLED(SDCARD_SORT_DATE)
+  #if FOLDER_SORTING
+    #define HAS_FOLDER_SORTING 1
+  #endif
+#endif
+
+#if ENABLED(SDCARD_RATHERRECENTFIRST) && DISABLED(SDCARD_SORT_ALPHA) && DISABLED(SDCARD_SORT_DATE) // @advi3++
+  #define SD_ORDER(N,C) ((C) - 1 - (N))
+#else
+  #define SD_ORDER(N,C) N
+#endif
+
+#define MAX_DIR_DEPTH      3       // Maximum folder depth
 #define MAXDIRNAMELENGTH   8       // DOS folder name size
 #define MAXPATHNAMELENGTH  (1 + (MAXDIRNAMELENGTH + 1) * (MAX_DIR_DEPTH) + 1 + FILENAME_LENGTH) // "/" + N * ("ADIRNAME/") + "filename.ext"
 
@@ -114,7 +127,7 @@ public:
 
   CardReader();
 
-  static void changeMedia(DiskIODriver *_driver) { driver = _driver; }
+  static void changeMedia(DiskIODriver_SPI_SD *_driver) { driver = _driver; }  // @advi3++ Save memory
 
   static MediaFile getroot() { return root; }
 
@@ -212,6 +225,9 @@ public:
       FORCE_INLINE static void setSortFolders(const int8_t i) { sort_folders = i; presort(); }
       //FORCE_INLINE static void setSortReverse(bool b) { sort_reverse = b; }
     #endif
+  #elif ENABLED(SDCARD_SORT_DATE) // @advi3++
+    static void presort();
+    static void selectFileByIndexSorted(const uint16_t nr);
   #else
     FORCE_INLINE static void selectFileByIndexSorted(const int16_t nr) {
       selectFileByIndex(TERN(SDCARD_RATHERRECENTFIRST, get_num_items() - 1 - nr, (nr)));
@@ -220,7 +236,7 @@ public:
 
   static void ls(const uint8_t lsflags=0);
 
-  #if ENABLED(POWER_LOSS_RECOVERY)
+  #if ENABLED(POWER_LOSS_RECOVERY) && DISABLED(POWER_LOSS_EEPROM) // @advi3++
     static bool jobRecoverFileExists();
     static void openJobRecoveryFile(const bool read);
     static void removeJobRecoveryFile();
@@ -247,7 +263,7 @@ public:
   static void setIndex(const uint32_t index)      { file.seekSet((sdpos = index)); }
 
   // TODO: rename to diskIODriver()
-  static DiskIODriver* diskIODriver() { return driver; }
+  static DiskIODriver_SPI_SD* diskIODriver() { return driver; }  // @advi3++ Save memory
 
   #if ENABLED(AUTO_REPORT_SD_STATUS)
     //
@@ -330,7 +346,17 @@ private:
 
   #endif // SDCARD_SORT_ALPHA
 
-  static DiskIODriver *driver;
+  //
+  // Chronological file and folder sorting @advi3++
+  //
+  #if ENABLED(SDCARD_SORT_DATE) // @advi3++
+    static uint16_t sort_count;   // Count of sorted items in the current directory
+    static uint8_t sort_order[SDSORT_LIMIT];
+    static uint16_t write_date;
+    static uint16_t write_time;
+  #endif // SDCARD_SORT_DATE
+
+  static DiskIODriver_SPI_SD *driver; // @advi3++ Save memory
   static MarlinVolume volume;
   static MediaFile file;
 
@@ -359,6 +385,10 @@ private:
   );
 
   #if ENABLED(SDCARD_SORT_ALPHA)
+    static void flush_presort();
+  #endif
+
+  #if ENABLED(SDCARD_SORT_DATE) // @advi3++
     static void flush_presort();
   #endif
 };
