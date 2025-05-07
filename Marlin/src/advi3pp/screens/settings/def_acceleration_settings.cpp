@@ -48,7 +48,7 @@ namespace ADVi3pp::DefAccelerationSettings {
           ExtUI::getPrintingAcceleration_mm_s2(),
           ExtUI::getRetractAcceleration_mm_s2(),
           ExtUI::getTravelAcceleration_mm_s2(),
-          ExtUI::getJunctionDeviation_mm() * 1000
+          ExtUI::getJunctionDeviation_mm() * 100
       );
       Pages::show(Page::DefAccelerationSettings);
     }
@@ -62,10 +62,10 @@ namespace ADVi3pp::DefAccelerationSettings {
       ReadRam response{Variable::Value0};
       if(!response.send_receive(4)) return;
 
-      auto printing = response.read_word<float>();
-      auto retract = response.read_word<float>();
-      auto travel = response.read_word<float>();
-      auto junction = response.read_word<float>() / 1000.0f;
+      auto printing = response.read_uint();
+      auto retract = response.read_uint();
+      auto travel = response.read_uint();
+      auto junction = response.read_uint() / 100.0f;
 
       ExtUI::setPrintingAcceleration_mm_s2(printing);
       ExtUI::setRetractAcceleration_mm_s2(retract);

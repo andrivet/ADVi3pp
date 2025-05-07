@@ -98,8 +98,8 @@ namespace ADVi3pp::ExtruderTuning {
     void start_command() {
       ReadRam frame{VAR_TEMP};
       if (!frame.send_receive(2)) return;
-      auto temperature = frame.read_word<celsius_t>();
-      pool().feedrate_ = frame.read_word<float>() / 10.0f;
+      auto temperature = static_cast<celsius_t>(frame.read_uint());
+      pool().feedrate_ = frame.read_uint() / 10.0f;
 
       ExtUI::setTargetTemp_celsius(temperature, ExtUI::E0, true);
       if(ExtUI::getDefaultTemp_celsius(ExtUI::H0) != temperature) {
@@ -152,7 +152,7 @@ namespace ADVi3pp::ExtruderTuning {
     void finish_command() {
       ReadRam frame{VAR_DISTANCE};
       if(!frame.send_receive(1)) return;
-      auto e = frame.read_word<float>() / 10.0f;
+      auto e = frame.read_uint() / 10.0f;
       // Note: e is divided by 10 because the LCD panel gives a value in 0.1 mm unit
       // Formula: new_value = old_value * theoretical_extruded / actual_extruded
       auto previous_value = ExtUI::getAxisSteps_per_mm(ExtUI::E0);
@@ -171,7 +171,7 @@ namespace ADVi3pp::ExtruderTuning {
     void save_command() {
       ReadRam frame{VAR_NEW_STEPS};
       if(!frame.send_receive(1)) return;
-      auto value = frame.read_word<float>() / 10.0f;
+      auto value = frame.read_uint() / 10.0f;
       ExtUI::setAxisSteps_per_mm(value, ExtUI::E0);
       Pages::save(Pages::SAVE_OPTIONS::SETTINGS | Pages::SAVE_OPTIONS::MESSAGE, Pages::BACK_OPTIONS::FINISH_MOVE);
     }

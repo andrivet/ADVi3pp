@@ -110,13 +110,13 @@ namespace ADVi3pp::BrightnessSettings {
     bool get_values(bool& enable, uint16_t &time, uint8_t &normal, uint8_t &dimmed) {
       ReadRam frame{VAR_ENABLE};
       if(!frame.send_receive(2)) return false;
-      enable = frame.read_word<bool>();
-      time = frame.read_word<uint16_t>();
+      enable = frame.read_bool();
+      time = frame.read_uint();
 
       ReadRam frame2{Variable::NormalBrightness};
       if(!frame2.send_receive(2)) return false;
-      normal = frame2.read_word<uint8_t>();
-      dimmed = frame2.read_word<uint8_t>();
+      normal = frame2.read_uint();
+      dimmed = frame2.read_uint();
       return true;
     }
 
@@ -124,7 +124,7 @@ namespace ADVi3pp::BrightnessSettings {
     void dimming_command() {
       ReadRam frame{VAR_ENABLE};
       if(!frame.send_receive(1)) return;
-      bool enable = frame.read_word<bool>();
+      bool enable = frame.read_bool();
       WriteRamRequest{VAR_ENABLE}.write_words(enable ? 0 : 1);
     }
 

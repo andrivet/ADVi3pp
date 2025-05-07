@@ -79,9 +79,9 @@ namespace ADVi3pp::PidSettings {
       ReadRam response{Variable::Value0};
       if(!response.send_receive(3)) return;
 
-      auto p = response.read_word<float>() / 100.0f;
-      auto i = response.read_word<float>() / 100.0f;
-      auto d = response.read_word<float>() / 100.0f;
+      auto p = response.read_uint() / 100.0f;
+      auto i = response.read_uint() / 100.0f;
+      auto d = response.read_uint() / 100.0f;
 
       SET_HOTEND_PID(Kp, 0, p);
       SET_HOTEND_PID(Ki, 0, i);

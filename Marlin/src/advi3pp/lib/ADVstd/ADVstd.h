@@ -58,6 +58,23 @@ namespace adv {
   template<typename T> struct is_lvalue_reference     : false_type {};
   template<typename T> struct is_lvalue_reference<T&> : true_type {};
 
+  template<typename T> struct is_integral           : false_type {};
+  template<> struct is_integral<bool>               : true_type {};
+  template<> struct is_integral<char>               : true_type {};
+  template<> struct is_integral<signed char>        : true_type {};
+  template<> struct is_integral<unsigned char>      : true_type {};
+  template<> struct is_integral<wchar_t>            : true_type {};
+  template<> struct is_integral<char16_t>           : true_type {};
+  template<> struct is_integral<char32_t>           : true_type {};
+  template<> struct is_integral<short>              : true_type {};
+  template<> struct is_integral<unsigned short>     : true_type {};
+  template<> struct is_integral<int>                : true_type {};
+  template<> struct is_integral<unsigned int>       : true_type {};
+  template<> struct is_integral<long>               : true_type {};
+  template<> struct is_integral<unsigned long>      : true_type {};
+  template<> struct is_integral<long long>          : true_type {};
+  template<> struct is_integral<unsigned long long> : true_type {};
+
   template<typename T>
   struct is_void { static constexpr bool value = false;};
   template<> struct is_void<void> { static constexpr bool value = true; };

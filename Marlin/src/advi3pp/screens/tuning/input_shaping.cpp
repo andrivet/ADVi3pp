@@ -58,10 +58,10 @@ namespace ADVi3pp::InputShaping {
     void save_command() {
       ReadRam response{Variable::Value0};
       if(!response.send_receive(4)) return;
-      auto xFreq = response.read_word<float>();
-      auto yFreq = response.read_word<float>();
-      auto xZeta = response.read_word<float>() / 100.f;
-      auto yZeta = response.read_word<float>() / 100.f;
+      auto xFreq = response.read_uint();
+      auto yFreq = response.read_uint();
+      auto xZeta = response.read_uint() / 100.f;
+      auto yZeta = response.read_uint() / 100.f;
 
       ExtUI::setShapingFrequency(AxisEnum::X_AXIS, xFreq);
       ExtUI::setShapingFrequency(AxisEnum::Y_AXIS, yFreq);

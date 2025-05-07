@@ -92,13 +92,13 @@ namespace ADVi3pp::BeeperSettings {
       ReadRam frame{Variable::Value0};
       if(!frame.send_receive(2)) return false;
 
-      on_action = frame.read_word<bool>();
-      on_press = frame.read_word<bool>();
+      on_action = frame.read_bool();
+      on_press = frame.read_bool();
 
       ReadRam frame2{Variable::BeepDuration};
       if(!frame2.send_receive(1)) return false;
 
-      duration = frame2.read_word<uint8_t>();
+      duration = frame2.read_uint();
       Log::info() << duration << Log::endl();
       return true;
     }

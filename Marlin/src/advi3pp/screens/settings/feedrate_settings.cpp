@@ -59,12 +59,12 @@ namespace ADVi3pp::FeedrateSettings {
       ReadRam response{Variable::Value0};
       if(!response.send_receive(6)) return;
 
-      auto x = response.read_word<float>();
-      auto y = response.read_word<float>();
-      auto z = response.read_word<float>();
-      auto e = response.read_word<float>();
-      auto min = response.read_word<float>();
-      auto travel = response.read_word<float>();
+      auto x = response.read_uint();
+      auto y = response.read_uint();
+      auto z = response.read_uint();
+      auto e = response.read_uint();
+      auto min = response.read_uint();
+      auto travel = response.read_uint();
 
       ExtUI::setAxisMaxFeedrate_mm_s(x, ExtUI::X);
       ExtUI::setAxisMaxFeedrate_mm_s(y, ExtUI::Y);

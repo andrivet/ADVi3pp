@@ -90,9 +90,9 @@ namespace ADVi3pp::RunoutSettings {
     void save_command() {
       ReadRam response{ENABLE};
       if(!response.send_receive(3)) return;
-      auto enabled = response.read_word<bool>() == 1;
-      auto distance = response.read_word<float>() / 10.0f;
-      auto trigger = response.read_word<TRANSITION>();
+      auto enabled = response.read_bool() == 1;
+      auto distance = response.read_uint() / 10.0f;
+      auto trigger = response.read_enum<TRANSITION>();
 
       pool().trigger_widget_.set_trigger_state(trigger);
       ExtUI::setFilamentRunoutEnabled(enabled);
@@ -110,7 +110,7 @@ namespace ADVi3pp::RunoutSettings {
     void enable_command() {
       ReadRam response{Variable::Value0};
       if(!response.send_receive(1)) return;
-      send_enable_state(!response.read_word<bool>());
+      send_enable_state(!response.read_bool());
     }
 
   }

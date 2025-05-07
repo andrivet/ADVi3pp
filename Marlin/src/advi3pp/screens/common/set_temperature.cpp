@@ -87,8 +87,8 @@ namespace ADVi3pp::SetTemperature {
 
       ReadRam frame{VAR_TEMPERATURE};
       if(!frame.send_receive(2)) return;
-      const auto temp = frame.read_word<celsius_t>();
-      const auto def = frame.read_word<bool>();
+      const auto temp = static_cast<celsius_t>(frame.read_int());
+      const auto def = frame.read_bool();
 
       if(def) {
         temp_ = temp;

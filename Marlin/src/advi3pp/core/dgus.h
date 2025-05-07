@@ -204,7 +204,11 @@ namespace ADVi3pp {
 
     [[nodiscard]] uint8_t get_nb_data() const;
     uint8_t read_byte();
-    template<typename T> T read_word();
+
+    int16_t read_int();
+    uint16_t read_uint();
+    bool read_bool();
+    template<typename T, typename adv::enable_if<adv::is_enum<T>::value, int>::type = 0> T read_enum();
 
     bool read_parameter();
     bool read_byte_parameter();
@@ -264,7 +268,9 @@ namespace ADVi3pp {
     explicit ReadRegisterResponse(Register reg): Parent{reg} {}
     uint8_t get_nb_bytes() const { return get_nb_data(); }
     using Parent::read_byte;
-    using Parent::read_word;
+    using Parent::read_int;
+    using Parent::read_uint;
+    using Parent::read_bool;
   };
 
   // --------------------------------------------------------------------
@@ -275,7 +281,9 @@ namespace ADVi3pp {
     using Parent = OutInFrame<Register, Command::ReadRegister, ReceiveMode::Known>;
     explicit ReadRegister(Register reg): Parent{reg} {}
     using Parent::read_byte;
-    using Parent::read_word;
+    using Parent::read_int;
+    using Parent::read_uint;
+    using Parent::read_bool;
   };
 
   // --------------------------------------------------------------------
@@ -311,7 +319,9 @@ namespace ADVi3pp {
     using Parent = InFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
     explicit ReadRamResponse(Variable var): Parent{var} {}
     uint16_t get_nb_words() const { return get_nb_data(); }
-    using Parent::read_word;
+    using Parent::read_int;
+    using Parent::read_uint;
+    using Parent::read_bool;
   };
 
 
@@ -322,7 +332,8 @@ namespace ADVi3pp {
   struct ReadAction: InFrame<Action, Command::ReadRam, ReceiveMode::Unknown> {
     using Parent = InFrame<Action, Command::ReadRam, ReceiveMode::Unknown>;
     ReadAction(): Parent{} {}
-    using Parent::read_word;
+    using Parent::read_int;
+    using Parent::read_uint;
   };
 
   // --------------------------------------------------------------------
@@ -332,7 +343,10 @@ namespace ADVi3pp {
   struct ReadRam: OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known> {
     using Parent = OutInFrame<Variable, Command::ReadRam, ReceiveMode::Known>;
     explicit ReadRam(Variable var): Parent{var} {}
-    using Parent::read_word;
+    using Parent::read_int;
+    using Parent::read_uint;
+    using Parent::read_bool;
+    using Parent::read_enum;
   };
 
 

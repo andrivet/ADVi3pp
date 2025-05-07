@@ -238,12 +238,26 @@ namespace ADVi3pp {
   }
 
   template<typename Param, Command cmd, ReceiveMode mode>
-  template<typename T>
-  T InFrame<Param, cmd, mode>::read_word() {
+  uint16_t InFrame<Param, cmd, mode>::read_uint() {
     nb_data_read_ += 2 / sizeof(Param);
     auto byte0 = Dgus::read_byte();
     auto byte1 = Dgus::read_byte();
-    return static_cast<T>(adv::word_from_bytes(byte0, byte1));
+    return adv::word_from_bytes(byte0, byte1);
+  }
+
+  template<typename Param, Command cmd, ReceiveMode mode>
+  int16_t InFrame<Param, cmd, mode>::read_int() {
+    return static_cast<int16_t>(read_uint());
+  }
+
+  template<typename Param, Command cmd, ReceiveMode mode>
+  bool InFrame<Param, cmd, mode>::read_bool() {
+    return read_uint() != 0;
+  }
+
+  template<typename Param, Command cmd, ReceiveMode mode>
+  template<typename T, typename adv::enable_if<adv::is_enum<T>::value, int>::type> T InFrame<Param, cmd, mode>::read_enum() {
+    return static_cast<T>(read_uint());
   }
 
   template<typename Param, Command cmd, ReceiveMode mode>

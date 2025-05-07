@@ -102,7 +102,7 @@ namespace ADVi3pp::PidTuning {
 
       ReadRam frame{VAR_TEMP};
       if(!frame.send_receive(1)) return;
-      auto temperature = frame.read_word<celsius_t>();
+      auto temperature = static_cast<celsius_t>(frame.read_uint());
 
       Progress::reset();
       Temperatures::display([] () -> void {

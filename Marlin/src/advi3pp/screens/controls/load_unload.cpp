@@ -86,7 +86,7 @@ namespace ADVi3pp::LoadUnload {
     void prepare(bool load) {
       ReadRam frame{VAR_TEMP};
       if(!frame.send_receive(1)) return;
-      const auto target_temp = frame.read_word<celsius_t>();
+      const auto target_temp = static_cast<celsius_t>(frame.read_int());
 
       pool().load_ = load;
       ExtUI::setTargetTemp_celsius(target_temp, ExtUI::E0, true);

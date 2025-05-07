@@ -58,10 +58,10 @@ namespace ADVi3pp::StepSettings {
     void save_command() {
       ReadRam response{Variable::Value0};
       if(!response.send_receive(4)) return;
-      auto x = response.read_word<float>();
-      auto y = response.read_word<float>();
-      auto z = response.read_word<float>();
-      auto e = response.read_word<float>();
+      auto x = response.read_uint() * 1.;
+      auto y = response.read_uint() * 1.;
+      auto z = response.read_uint() * 1.;
+      auto e = response.read_uint() * 1.;
 
       ExtUI::setAxisSteps_per_mm(x / SCALE, ExtUI::X);
       ExtUI::setAxisSteps_per_mm(y / SCALE, ExtUI::Y);

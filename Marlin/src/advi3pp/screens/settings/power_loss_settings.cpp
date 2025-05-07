@@ -86,9 +86,9 @@ namespace ADVi3pp::PowerLossSettings {
     void save_command() {
       ReadRam response{ENABLE};
       if(!response.send_receive(3)) return;
-      auto enabled = response.read_word<bool>();
-      auto length = response.read_word<uint16_t>();
-      pool().trigger_widget_.set_trigger_state(response.read_word<TRANSITION>());
+      auto enabled = response.read_bool();
+      auto length = response.read_uint();
+      pool().trigger_widget_.set_trigger_state(response.read_enum<TRANSITION>());
 
       ExtUI::setPowerLossRecoveryEnabled(enabled);
       ExtUI::setPowerLossRecoveryPurge(length);
@@ -105,7 +105,7 @@ namespace ADVi3pp::PowerLossSettings {
     void enable_command() {
       ReadRam response{ENABLE};
       if(!response.send_receive(1)) return;
-      send_enable_state(!response.read_word<bool>());
+      send_enable_state(!response.read_bool());
     }
 
   }

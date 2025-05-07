@@ -57,10 +57,10 @@ namespace ADVi3pp::MaxAccelerationSettings {
       ReadRam response{Variable::Value0};
       if(!response.send_receive(4)) return;
 
-      auto x = response.read_word<float>();
-      auto y = response.read_word<float>();
-      auto z = response.read_word<float>();
-      auto e = response.read_word<float>();
+      auto x = response.read_uint();
+      auto y = response.read_uint();
+      auto z = response.read_uint();
+      auto e = response.read_uint();
 
       ExtUI::setAxisMaxAcceleration_mm_s2(x, ExtUI::X);
       ExtUI::setAxisMaxAcceleration_mm_s2(y, ExtUI::Y);

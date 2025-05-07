@@ -147,7 +147,7 @@ namespace ADVi3pp::Vibrations {
     bool get_values(int &min, int &max) {
       ReadRam frame{VAR_SPEED};
       if(!frame.send_receive(1)) return false;
-      pool().speed_ = frame.read_word<Speed>();
+      pool().speed_ = frame.read_enum<Speed>();
       return true;
     }
 

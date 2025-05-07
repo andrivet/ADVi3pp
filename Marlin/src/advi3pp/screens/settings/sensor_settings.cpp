@@ -177,12 +177,12 @@ namespace ADVi3pp::SensorSettings {
     }
 
     void send_values() {
-      if(pool().index_ == 0)
-        WriteRamRequest{Variable::Value0}.write_words(
-            lround(ExtUI::getProbeOffset_mm(ExtUI::X) * 100.0),
-            lround(ExtUI::getProbeOffset_mm(ExtUI::Y) * 100.0),
-            lround(ExtUI::getZOffset_mm() * 100.0)
-        );
+      if(pool().index_ == 0) {
+        auto x = lround(ExtUI::getProbeOffset_mm(ExtUI::X) * 100.0);
+        auto y = lround(ExtUI::getProbeOffset_mm(ExtUI::Y) * 100.0);
+        auto z = lround(ExtUI::getZOffset_mm() * 100.0);
+        WriteRamRequest{Variable::Value0}.write_words(x, y, z);
+      }
       else {
         const auto position = get_sensor_position(pool().index_ - 1);
         WriteRamRequest{Variable::Value0}.write_words(
@@ -201,9 +201,9 @@ namespace ADVi3pp::SensorSettings {
     void get_values() {
       ReadRam frame{Variable::Value0};
       if(!frame.send_receive(3)) return;
-      auto x = frame.read_word<float>() / 100.0f;
-      auto y = frame.read_word<float>() / 100.0f;
-      auto z = frame.read_word<float>() / 100.0f;
+      auto x = frame.read_int() / 100.0;
+      auto y = frame.read_int() / 100.0;
+      auto z = frame.read_int() / 100.0;
 
       ExtUI::setProbeOffset_mm(x, ExtUI::X);
       ExtUI::setProbeOffset_mm(y, ExtUI::Y);

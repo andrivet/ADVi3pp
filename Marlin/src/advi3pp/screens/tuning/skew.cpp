@@ -81,9 +81,9 @@ namespace ADVi3pp::Skew {
     float get_factor(Variable var) {
       ReadRam response{var};
       if(!response.send_receive(3)) return 0;
-      auto ac = response.read_word<float>() / 10.0f;
-      auto bd = response.read_word<float>() / 10.0f;
-      auto ad = response.read_word<float>() / 10.0f;
+      auto ac = response.read_uint() / 10.0f;
+      auto bd = response.read_uint() / 10.0f;
+      auto ad = response.read_uint() / 10.0f;
       Log::info() << F("Values") << ac << bd << ad << Log::endl();
 
       return _SKEW_FACTOR(ac, bd, ad);

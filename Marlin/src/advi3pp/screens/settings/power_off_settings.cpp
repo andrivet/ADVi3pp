@@ -78,10 +78,10 @@ namespace ADVi3pp::PowerOffSettings {
     void save_command() {
       ReadRam response{ENABLE};
       if(!response.send_receive(4)) return;
-      auto enabled = response.read_word<bool>();
-      auto timeout = response.read_word<uint16_t>();
-      auto temperature = response.read_word<celsius_t>();
-      pool().trigger_widget_.set_trigger_state(response.read_word<TRANSITION>());
+      auto enabled = response.read_bool();
+      auto timeout = response.read_uint();
+      auto temperature = static_cast<celsius_t>(response.read_int());
+      pool().trigger_widget_.set_trigger_state(response.read_enum<TRANSITION>());
 
       ExtUI::setPsuControlEnabled(enabled == 1);
       ExtUI::setPsuControlTimeout(timeout * 60);
@@ -99,7 +99,7 @@ namespace ADVi3pp::PowerOffSettings {
     void enable_command() {
       ReadRam response{ENABLE};
       if(!response.send_receive(1)) return;
-      send_enable_state(!response.read_word<bool>());
+      send_enable_state(!response.read_bool());
     }
 
   }

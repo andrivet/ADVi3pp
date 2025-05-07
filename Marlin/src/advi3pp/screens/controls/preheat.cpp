@@ -99,9 +99,9 @@ namespace ADVi3pp::Preheat {
       ReadRam frame{VAR_TEMP};
       if(!frame.send_receive(3)) return;
 
-      auto hotend = frame.read_word<int16_t>();
-      auto bed = frame.read_word<int16_t>();
-      auto fan = frame.read_word<uint8_t>();
+      auto hotend = frame.read_int();
+      auto bed = frame.read_int();
+      auto fan = frame.read_uint();
 
       ExtUI::setMaterialPreset(pool().index_, hotend, bed, fan);
     }

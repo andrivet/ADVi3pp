@@ -53,7 +53,7 @@ namespace ADVi3pp::LinearAdvance {
     void save_command() {
       ReadRam response{Variable::Value0};
       if(!response.send_receive(1)) return;
-      ExtUI::setLinearAdvance_mm_mm_s(response.read_word<float>() / 100.0f, ExtUI::E0);
+      ExtUI::setLinearAdvance_mm_mm_s(response.read_uint() / 100.0f, ExtUI::E0);
 
       Pages::save(Pages::SAVE_OPTIONS::SETTINGS | Pages::SAVE_OPTIONS::MESSAGE, Pages::BACK_OPTIONS::NONE);
     }

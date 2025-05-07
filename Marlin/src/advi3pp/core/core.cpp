@@ -477,7 +477,7 @@ namespace ADVi3pp::Core {
       ui.refresh_screen_timeout();
 
       auto action = frame.get_parameter();
-      auto key_code = frame.read_word<uint16_t>();
+      auto key_code = frame.read_uint();
 
       if(action == last_action_ && anti_bonce_.is_pending()) {
         Log::info() << F("Bounce detected") << Log::endl();
