@@ -68,11 +68,9 @@ namespace ADVi3pp::LoadUnload {
       if(!Core::check_not_busy()) return;
       Pool::reset<Data>(Page::LoadUnload);
       Status::reset();
-      Wait::ensure_homed([] () -> void {
-        WriteRamRequest{VAR_TEMP}.write_word(ExtUI::getDefaultTemp_celsius(ExtUI::H0));
-        pool().previous_z_ = Core::ensure_z_enough_room();
-        Pages::show(Page::LoadUnload);
-      });
+      WriteRamRequest{VAR_TEMP}.write_word(ExtUI::getDefaultTemp_celsius(ExtUI::H0));
+      pool().previous_z_ = Core::ensure_z_enough_room();
+      Pages::show(Page::LoadUnload);
     }
 
     void back_command() {
