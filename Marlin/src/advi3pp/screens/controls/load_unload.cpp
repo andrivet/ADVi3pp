@@ -74,7 +74,7 @@ namespace ADVi3pp::LoadUnload {
     }
 
     void back_command() {
-      ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+      ExtUI::setTargetTemp_celsius(0, ExtUI::H0);
       ExtUI::setAxisPosition_mm(pool().previous_z_, ExtUI::Z, 20);
       Pages::back(Pages::BACK_OPTIONS::FINISH_MOVE);
     }
@@ -87,9 +87,9 @@ namespace ADVi3pp::LoadUnload {
       const auto target_temp = static_cast<celsius_t>(frame.read_int());
 
       pool().load_ = load;
-      ExtUI::setTargetTemp_celsius(target_temp, ExtUI::E0, true);
+      ExtUI::setTargetTemp_celsius(target_temp, ExtUI::H0, true);
       if(ExtUI::getDefaultTemp_celsius(ExtUI::H0) != target_temp) {
-        ExtUI::setDefaultTemp_celsius(target_temp, ExtUI::E0);
+        ExtUI::setDefaultTemp_celsius(target_temp, ExtUI::H0);
         ExtUI::saveSettings();
       }
 
@@ -99,7 +99,7 @@ namespace ADVi3pp::LoadUnload {
         background_task.clear();
         Status::set(GET_TEXT_F(ADVI3PP_MSG_CANCELED), Status::STATUS_OPTIONS::RESET);
         ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
-        ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+        ExtUI::setTargetTemp_celsius(0, ExtUI::H0);
       });
 
       background_task.set([] () -> CALLBACK_RESULT {

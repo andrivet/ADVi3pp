@@ -121,14 +121,14 @@ namespace ADVi3pp::PrintOptions {
     void hotend_minus_command() {
       auto temperature = ExtUI::getTargetTemp_celsius(ExtUI::E0);
       if(temperature <= 0) return;
-      ExtUI::setTargetTemp_celsius(temperature - 1, ExtUI::E0);
+      ExtUI::setTargetTemp_celsius(temperature - 1, ExtUI::H0);
     }
 
     //! Handle the +Hotend Temperature command
     void hotend_plus_command() {
       auto temperature = ExtUI::getTargetTemp_celsius(ExtUI::E0);
       if(temperature >= 300) return;
-      ExtUI::setTargetTemp_celsius(temperature + 1, ExtUI::E0);
+      ExtUI::setTargetTemp_celsius(temperature + 1, ExtUI::H0);
     }
 
     //! Handle the -Bed Temperature command

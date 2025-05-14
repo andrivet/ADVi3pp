@@ -124,7 +124,7 @@ namespace ADVi3pp::Preheat {
     void save_command() {
       retrieve_presets();
 
-      ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetHotendTemp_celsius(pool().index_), ExtUI::E0, true);
+      ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetHotendTemp_celsius(pool().index_), ExtUI::H0, true);
       ExtUI::setTargetTemp_celsius(ExtUI::getMaterialPresetBedTemp_celsius(pool().index_), ExtUI::BED, true);
       ExtUI::setTargetFan_percent(ExtUI::getMaterialPresetFanSpeed_percent(pool().index_), ExtUI::FAN0);
 
@@ -137,7 +137,7 @@ namespace ADVi3pp::Preheat {
       // If printing, do nothing
       if(Core::is_printing()) return;
       ExtUI::setTargetTemp_celsius(0, ExtUI::BED);
-      ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+      ExtUI::setTargetTemp_celsius(0, ExtUI::H0);
       ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
       Status::set(GET_TEXT_F(MSG_COOLDOWN), Status::STATUS_OPTIONS::RESET);
     }

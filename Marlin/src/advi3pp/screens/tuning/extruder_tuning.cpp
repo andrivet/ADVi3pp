@@ -101,15 +101,15 @@ namespace ADVi3pp::ExtruderTuning {
       auto temperature = static_cast<celsius_t>(frame.read_uint());
       pool().feedrate_ = frame.read_uint() / 10.0f;
 
-      ExtUI::setTargetTemp_celsius(temperature, ExtUI::E0, true);
+      ExtUI::setTargetTemp_celsius(temperature, ExtUI::H0, true);
       if(ExtUI::getDefaultTemp_celsius(ExtUI::H0) != temperature) {
-        ExtUI::setDefaultTemp_celsius(temperature, ExtUI::E0);
+        ExtUI::setDefaultTemp_celsius(temperature, ExtUI::H0);
         ExtUI::saveSettings();
       }
 
       Wait::wait_back(GET_TEXT_F(ADVI3PP_MSG_EXTRUDER_TUNING), GET_TEXT_F(MSG_HEATING), [] () -> void {
         ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
-        ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+        ExtUI::setTargetTemp_celsius(0, ExtUI::H0);
       });
 
       background_task.set([] () -> CALLBACK_RESULT {
@@ -129,7 +129,7 @@ namespace ADVi3pp::ExtruderTuning {
       Wait::wait_back(GET_TEXT_F(MSG_EXTRUDE), GET_TEXT_F(ADVI3PP_TITLE_WAIT), [] () -> void {
         ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
         background_task.clear();
-        ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+        ExtUI::setTargetTemp_celsius(0, ExtUI::H0);
         ExtUI::stopMove();
       });
 
@@ -138,7 +138,7 @@ namespace ADVi3pp::ExtruderTuning {
 
         Status::set(GET_TEXT_F(ADVI3PP_MSG_EXTRUSION_FINISHED), Status::STATUS_OPTIONS::RESET);
         ExtUI::setHostKeepaliveState(GcodeSuite::NOT_BUSY);
-        ExtUI::setTargetTemp_celsius(0, ExtUI::E0);
+        ExtUI::setTargetTemp_celsius(0, ExtUI::H0);
 
         pool().extruded_ = ExtUI::getAxisPosition_mm(ExtUI::E0) - pool().extruded_;
 
