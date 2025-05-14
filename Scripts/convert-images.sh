@@ -19,6 +19,11 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 export="$( cd "${root}/Export" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
+quiet=false
+if [[ "$1" == "--quiet" ]]; then
+    quiet=true
+fi
+
 function clean_export() {
     echo "Clean images from ${export}"
     rm -r "${export:?}"/*
@@ -56,23 +61,26 @@ function convert_images() {
     done
 }
 
-if read -q "answer?Clean Export? "; then
+if ! $quiet ; then
+  if read -q "answer?Clean Export? "; then
+    print "\n"
+    clean_export
+    print "\nPlease, export the images."
+  else
+    printf "\nFiles note cleaned\n"
+  fi
+  if ! read -q "answer?Continue? "; then
+    printf "\nAbort."
+    exit 1
+  fi
   printf "\n"
-  clean_export
 fi
 
-print "\nPlease, export the images."
-if read -q "answer?Continue? "; then
-  printf "\n"
+rm -rf "${png}/DWIN_SET" "${png}/Controls" "${png}/Screenshots"
+rm "${dgus}/DWIN_SET/"*.bmp
+rm "${dgus}/25_Controls/"*.bmp
 
-  rm -rf "${png}/DWIN_SET" "${png}/Controls" "${png}/Screenshots"
-  rm "${dgus}/DWIN_SET/"*.bmp
-  rm "${dgus}/25_Controls/"*.bmp
-
-  copy_images
-  convert_images "${png}/Boot"            "${dgus}/DWIN_SET"
-  convert_images "${png}/DWIN_SET"        "${dgus}/DWIN_SET"
-  convert_images "${png}/Controls"        "${dgus}/25_Controls"
-else
-  printf "\nAbort."
-fi
+copy_images
+convert_images "${png}/Boot"            "${dgus}/DWIN_SET"
+convert_images "${png}/DWIN_SET"        "${dgus}/DWIN_SET"
+convert_images "${png}/Controls"        "${dgus}/25_Controls"

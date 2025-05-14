@@ -10,7 +10,7 @@ echo "***** Convert images..."
 echo
 ./generate-boot-images.sh
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
-./convert-images.sh
+./convert-images.sh --quiet
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 ./create-sd-image-from-dir.sh "DGUS-root" "ADVI3PP" "ADVi3pp-LCD" 1
