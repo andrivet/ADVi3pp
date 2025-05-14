@@ -25,8 +25,11 @@
 #include "../../../lcd/extui/ui_api.h"
 
 namespace ADVi3pp::PidTuning {
+  enum struct RUNNING { NO, EXTRUDER, BED };
+
   bool handle_command(uint16_t key_code);
-  void on_start();
+  RUNNING is_running();
+  void on_start(bool bed);
   void on_progress(int cycleIndex, int nbCycles);
   void on_finished(ExtUI::pidresult_t result);
 }

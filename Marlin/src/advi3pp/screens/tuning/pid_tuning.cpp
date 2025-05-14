@@ -45,17 +45,19 @@ namespace ADVi3pp::PidTuning {
     constexpr Variable VAR_TEMP = Variable::Value0;
     constexpr Variable VAR_HEATER = Variable::Value1;
 
-    struct Data {
-      State state_ = State::None;
-    };
-
-    inline Data& pool() { return Pool::get<Data>(Page::PidTuning); }
+    // Can't be stored in the Pool because of is_running that is called any time.
+    State state_ = State::None;
+    bool bed_ = false;
 
     void show_command();
     void step2_command();
     void heater_command(bool bed);
 
     void set_message(ExtUI::pidresult_t result);
+  }
+
+  RUNNING is_running() {
+    return !test_one_bit(state_, State::Processing) ? RUNNING::NO : bed_ ? RUNNING::BED : RUNNING::EXTRUDER;
   }
 
   bool handle_command(uint16_t key_code) {
@@ -70,9 +72,10 @@ namespace ADVi3pp::PidTuning {
     return true;
   }
 
-  void on_start() {
+  void on_start(bool bed) {
     Status::set(GET_TEXT_F(ADVI3PP_MSG_PID_TUNING_START), Status::STATUS_OPTIONS::RESET);
-    pool().state_ |= State::Processing;
+    state_ |= State::Processing;
+    bed_ = bed;
   }
 
   void on_progress(int cycle, int nb) {
@@ -82,19 +85,20 @@ namespace ADVi3pp::PidTuning {
 
   //! PID automatic tuning is finished.
   void on_finished(ExtUI::pidresult_t result) {
-    if((pool().state_ & ~State::FromLCDMenu) != State::Processing) return;
-    pool().state_ = State::None;
+    if((state_ & ~State::FromLCDMenu) != State::Processing) return;
+    state_ = State::None;
     set_message(result);
     ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
+    Progress::set_animation(false);
+    Progress::reset();
     if(result != ExtUI::PID_DONE) return;
-    Core::display(Page::PidSettings);
+    Core::display(Page::PidSettings, Core::DISPLAY_OPTIONS::NONE, bed_);
   }
 
   inline namespace internals {
 
     void show_command() {
       if(!Core::check_not_busy()) return;
-      Pool::reset<Data>(Page::PidTuning);
       Status::reset();
       Pages::save_forward_page();
       WriteRamRequest{VAR_TEMP}.write_words(static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(ExtUI::H0)), 0);
@@ -118,20 +122,23 @@ namespace ADVi3pp::PidTuning {
 
     //! Show step #2 of PID tuning
     void step2_command() {
-      pool().state_ |= State::FromLCDMenu;
-      ExtUI::setTargetFan_percent(100, ExtUI::FAN0); // Turn on fan
+      state_ |= State::FromLCDMenu;
+      if(!bed_)
+        ExtUI::setTargetFan_percent(100, ExtUI::FAN0); // Turn on fan (only for extruder PID)
 
       auto values= save_temperature();
       auto bed = adv::get<0>(values);
       auto temperature = adv::get<1>(values);
 
       Progress::reset();
+      Progress::set_animation(true);
+
       Temperatures::display([] () -> void {
         Log::info() << F("Cancel PID tuning") << Log::endl();
         Status::set(GET_TEXT_F(ADVI3PP_MSG_PID_TUNING_CANCEL), Status::STATUS_OPTIONS::RESET);
         ExtUI::cancelWaitForHeatup();
         ExtUI::setTargetFan_percent(0, ExtUI::FAN0);
-        pool().state_ = State::None;
+        state_ = State::None;
       });
       // startPIDTune will enter a loop and thus will call idle from idle
       if(bed)

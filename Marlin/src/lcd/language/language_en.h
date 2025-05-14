@@ -1142,7 +1142,7 @@ namespace LanguageWide_en {
   LSTR ADVI3PP_MSG_LEVELING_HOT           = _UxGT("Hotend is hot. Continue?");
   LSTR ADVI3PP_MSG_PRINT_CONTINUE         = _UxGT("Continue printing");
   LSTR ADVI3PP_MSG_PID_TUNING_START       = _UxGT("Starting PID tuning");
-  LSTR ADVI3PP_MSG_PID_TUNING_CANCEL      = _UxGT("Canceling PID tuning");
+  LSTR ADVI3PP_MSG_PID_TUNING_CANCEL      = _UxGT("Cancel PID tuning");
   LSTR ADVI3PP_MSG_PID_TUNING_SUCCESS     = _UxGT("PID tuning successful");
   LSTR ADVI3PP_MSG_TEMP_TOO_HIGH          = _UxGT("Temperature is too high");
   LSTR ADVI3PP_MSG_TIMEOUT                = _UxGT("Timeout");
