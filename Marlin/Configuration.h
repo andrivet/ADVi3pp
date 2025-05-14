@@ -881,9 +881,9 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
   //#define PID_BED_DEBUG // Print Bed PID debug data to the serial port.
 
   // @advi3++: Wanhao Duplicator i3 Plus
-  #define DEFAULT_bedKp 333.66
-  #define DEFAULT_bedKi 60.79
-  #define DEFAULT_bedKd 457.83
+  #define DEFAULT_bedKp 86.41
+  #define DEFAULT_bedKi 13.52
+  #define DEFAULT_bedKd 368.10
 
   // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
