@@ -346,7 +346,8 @@ namespace ADVi3pp::Core {
 
   float ensure_z_enough_room() {
     auto previous_z = ExtUI::getAxisPosition_mm(ExtUI::Z);
-    if(previous_z < 10)
+    // If the Z position is low and the Z axis position is known, raise it
+    if(previous_z < 20 && ExtUI::isAxisPositionKnown(ExtUI::Z))
       ExtUI::setAxisPosition_mm(Z_ROOM, ExtUI::Z, 20);
     return previous_z;
   }
