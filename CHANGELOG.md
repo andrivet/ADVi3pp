@@ -1,9 +1,16 @@
 # ADVi3++ Changelog
 
+## 6.0.0 - Beta 2 (2025-05-08)
+
+* Fix wrong sensor offsets when saving them in Settings / Sensor
+* Fix wrong labels in Settings / Motors / Def. Acceleration
+* Do not home anymore when Loading / Unloading filament
+* Put back Bed PID
+
 ## 6.0.0 - Beta 1 (2025-04-05)
 
 * **#354** - [More precise values for hotend and bed temperatures](https://github.com/andrivet/ADVi3pp/issues/354)
-* **#353* - [Display X, Y and Z coordinates in real-time](https://github.com/andrivet/ADVi3pp/issues/353)
+* **#353** - [Display X, Y and Z coordinates in real-time](https://github.com/andrivet/ADVi3pp/issues/353)
 * **#352** - [Support of Bigtreetech Relay 1.2 to add power loss and power control features to all printers](https://github.com/andrivet/ADVi3pp/issues/352)
 * **#350** - [Widget LED element marked as exportable](https://github.com/andrivet/ADVi3pp/issues/350)
 * **#349** - [Element width rendering in Sketch app](https://github.com/andrivet/ADVi3pp/issues/349)
@@ -20,7 +27,6 @@
 
 ### Removed
 
-* Bed PID
 * Multiple PIDs
 
 ## 5.8.0 (2024-03-17)
