@@ -29,7 +29,7 @@
 #include "enums.h"
 
 #ifndef ADVi3PP_LOG
-#error Please define a logging level with ADVi3PP_LOG
+#define ADVi3PP_LOG 0
 #endif
 
 namespace ADVi3pp {
