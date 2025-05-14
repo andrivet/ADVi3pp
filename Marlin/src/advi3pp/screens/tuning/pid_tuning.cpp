@@ -40,7 +40,10 @@ namespace ADVi3pp::PidTuning {
   inline namespace internals {
 
     constexpr uint16_t KEY_CODE_STEP2 = 1;
+    constexpr uint16_t KEY_CODE_BED = 2;
+    constexpr uint16_t KEY_CODE_EXTRUDER = 3;
     constexpr Variable VAR_TEMP = Variable::Value0;
+    constexpr Variable VAR_HEATER = Variable::Value1;
 
     struct Data {
       State state_ = State::None;
@@ -50,6 +53,7 @@ namespace ADVi3pp::PidTuning {
 
     void show_command();
     void step2_command();
+    void heater_command(bool bed);
 
     void set_message(ExtUI::pidresult_t result);
   }
@@ -59,6 +63,8 @@ namespace ADVi3pp::PidTuning {
       case KEY_CODE_SHOW: show_command(); break;
       case KEY_CODE_BACK: Pages::back(Pages::BACK_OPTIONS::NONE); break;
       case KEY_CODE_STEP2: step2_command(); break;
+      case KEY_CODE_EXTRUDER: heater_command(false); break;
+      case KEY_CODE_BED: heater_command(true); break;
       default: return false;
     }
     return true;
@@ -91,8 +97,23 @@ namespace ADVi3pp::PidTuning {
       Pool::reset<Data>(Page::PidTuning);
       Status::reset();
       Pages::save_forward_page();
-      WriteRamRequest{VAR_TEMP}.write_words(static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(ExtUI::H0)));
+      WriteRamRequest{VAR_TEMP}.write_words(static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(ExtUI::H0)), 0);
       Pages::show(Page::PidTuning);
+    }
+
+    adv::tuple<bool, celsius_t> save_temperature() {
+      ReadRam frame{VAR_TEMP};
+      if(!frame.send_receive(2)) return adv::make_tuple(false, 0);
+      auto temperature = static_cast<celsius_t>(frame.read_uint());
+      bool bed = frame.read_bool();
+      ExtUI::setDefaultTemp_celsius(temperature, bed ? ExtUI::BED : ExtUI::H0);
+      return adv::make_tuple(bed, temperature);
+    }
+
+    void heater_command(bool bed) {
+      save_temperature();
+      auto temperature = static_cast<uint16_t>(ExtUI::getDefaultTemp_celsius(bed ? ExtUI::BED : ExtUI::H0));
+      WriteRamRequest{VAR_TEMP}.write_words(temperature, bed);
     }
 
     //! Show step #2 of PID tuning
@@ -100,9 +121,9 @@ namespace ADVi3pp::PidTuning {
       pool().state_ |= State::FromLCDMenu;
       ExtUI::setTargetFan_percent(100, ExtUI::FAN0); // Turn on fan
 
-      ReadRam frame{VAR_TEMP};
-      if(!frame.send_receive(1)) return;
-      auto temperature = static_cast<celsius_t>(frame.read_uint());
+      auto values= save_temperature();
+      auto bed = adv::get<0>(values);
+      auto temperature = adv::get<1>(values);
 
       Progress::reset();
       Temperatures::display([] () -> void {
@@ -113,8 +134,10 @@ namespace ADVi3pp::PidTuning {
         pool().state_ = State::None;
       });
       // startPIDTune will enter a loop and thus will call idle from idle
-      ExtUI::startPIDTune(temperature, ExtUI::E0);
-      ExtUI::setDefaultTemp_celsius(temperature, ExtUI::E0);
+      if(bed)
+        ExtUI::startBedPIDTune(temperature);
+      else
+        ExtUI::startPIDTune(temperature, ExtUI::E0);
     }
 
     void set_message(ExtUI::pidresult_t result) {

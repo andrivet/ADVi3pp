@@ -1191,24 +1191,12 @@ namespace ExtUI {
     }
   }
 
-  void setTargetTemp_celsius(const_float_t inval, const extruder_t extruder, bool beep) { // @advi3++
-    float value = inval;
-    #ifdef TOUCH_UI_LCD_TEMP_SCALING
-      value *= TOUCH_UI_LCD_TEMP_SCALING;
-    #endif
-    #if HAS_HOTEND
-      const int16_t e = extruder - E0;
-      enableHeater(extruder);
-      thermalManager.setTargetHotend(LROUND(constrain(value, 0, thermalManager.hotend_max_target(e))), e, beep); // @advi3++
-    #endif
-  }
-
   // @advi3++
   void setDefaultTemp_celsius(const_float_t inval, const heater_t heater) {
     if(inval <= 0) return;
     switch (heater) {
       #if HAS_HEATED_BED
-        case BED: thermalManager.setDefaultBed(LROUND(constrain(inval, 0, BED_MAX_TARGET)));
+        case BED: thermalManager.setDefaultBed(LROUND(constrain(inval, 0, BED_MAX_TARGET))); break;
       #endif
       #if HAS_HEATED_CHAMBER
         case CHAMBER: thermalManager.seztDefaultChamber(celsius);
@@ -1218,13 +1206,6 @@ namespace ExtUI {
         thermalManager.setDefaultHotend(LROUND(constrain(inval, 0, thermalManager.hotend_max_target(e))), e);
       }
     }
-  }
-
-  // @advi3++
-  void setDefaultTemp_celsius(const_float_t inval, const extruder_t extruder) {
-    if(inval <= 0) return;
-    const int16_t e = extruder - E0;
-    thermalManager.setDefaultHotend(LROUND(constrain(inval, 0, thermalManager.hotend_max_target(e))), e);
   }
 
   void setTargetFan_percent(const_float_t value, const fan_t fan) {

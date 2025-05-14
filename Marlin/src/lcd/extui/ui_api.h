@@ -305,9 +305,7 @@ namespace ExtUI {
 
   // Temperature Control
   void setTargetTemp_celsius(const_float_t, const heater_t, bool beep = false); // @advi3++
-  void setTargetTemp_celsius(const_float_t, const extruder_t, bool beep = false); // @advi3++
   void setDefaultTemp_celsius(const_float_t, const heater_t); // @advi3++
-  void setDefaultTemp_celsius(const_float_t, const extruder_t); // @advi3++
   void setTargetFan_percent(const_float_t, const fan_t);
   void coolDown();
 
