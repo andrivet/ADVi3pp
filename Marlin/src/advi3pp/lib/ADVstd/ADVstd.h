@@ -36,8 +36,18 @@ namespace adv {
   constexpr size_t count_of(T const (&)[N]) noexcept { return N; }
 
   template<typename T> struct remove_reference { using type = T; };
-  template<typename T> struct remove_reference<T&>  { using type = T; };
+  template<typename T> struct remove_reference<T&> { using type = T; };
   template<typename T> struct remove_reference<T&&> { using type = T; };
+
+  template <typename T> struct remove_cv { using type = T; };
+  template <typename T> struct remove_cv<const T> { using type = T; };
+  template <typename T> struct remove_cv<volatile T> { using type = T; };
+  template <typename T> struct remove_cv<const volatile T> { using type = T; };
+
+  template <typename T>
+  struct remove_cvref {
+    using type = typename remove_cv<typename remove_reference<T>::type>::type;
+  };
 
   template<typename T, T v>
   struct integral_constant
@@ -83,11 +93,82 @@ namespace adv {
 
   template <class T> struct is_enum: public integral_constant<bool, __is_enum(T)> {};
 
+  template <typename T>
+  struct is_array {
+    static constexpr bool value = false;
+  };
+
+  template <typename T>
+  struct is_array<T[]> {
+    static constexpr bool value = true;
+  };
+
+  template <typename T, size_t N>
+  struct is_array<T[N]> {
+    static constexpr bool value = true;
+  };
+
+  template <typename T>
+  struct remove_extent {
+    using type = T;
+  };
+
+  template <typename T>
+  struct remove_extent<T[]> {
+    using type = T;
+  };
+
+  template <typename T, size_t N>
+  struct remove_extent<T[N]> {
+    using type = T;
+  };
+
+  template <typename T>
+  using remove_extent_t = typename remove_extent<T>::type;
+
+  template <typename T>
+  struct is_function {
+    static constexpr bool value = false;
+  };
+
+  template <typename Ret, typename... Args>
+  struct is_function<Ret(Args...)> {
+    static constexpr bool value = true;
+  };
+
+  template <typename Ret, typename... Args>
+  struct is_function<Ret(Args...) noexcept> {
+    static constexpr bool value = true;
+  };
+
+  template <typename Ret, typename... Args>
+  struct is_function<Ret(Args..., ...)> {
+    static constexpr bool value = true;
+  };
+
+  template <typename Ret, typename... Args>
+  struct is_function<Ret(Args..., ...) noexcept> {
+    static constexpr bool value = true;
+  };
+
   template<class T, class U>
   struct is_same : false_type {};
 
   template<class T>
   struct is_same<T, T> : true_type {};
+
+  template<bool C, typename T, typename F>
+  struct conditional {
+    using type = T;
+  };
+
+  template<typename T, typename F>
+  struct conditional<false, T, F> {
+    using type = F;
+  };
+
+  template<bool C, typename T, typename F>
+  using conditional_t = typename conditional<C, T, F>::type;
 
   template<typename T>
   inline typename remove_reference<T>::type&& move(T&& t) noexcept
@@ -120,10 +201,24 @@ namespace adv {
   template<typename T>           struct add_rvalue_reference_t: arr_<T, void> {};
   template<typename T>           struct add_pointer: ap_<T, void> {};
 
-
   template<typename T> void swap(T& a, T& b) { T c{move(a)}; a = move(b); b = move(c); }
 
   template<typename T> auto declval() noexcept -> add_rvalue_reference_t<T>;
+
+  template <typename T>
+  struct decay {
+  private:
+    using U = typename remove_cvref<T>::type;
+  public:
+    using type = conditional_t<
+      is_array<U>::value,
+      typename remove_extent<U>::type*,
+      conditional_t<is_function<U>::value, U*, U>
+    >;
+  };
+
+  template <typename T>
+  using decay_t = typename decay<T>::type;
 
   template<bool, typename T = void> struct enable_if {};
   template<typename T> struct enable_if<true, T> { using type = T; };
