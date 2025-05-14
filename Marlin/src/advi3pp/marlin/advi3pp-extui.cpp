@@ -261,8 +261,8 @@ namespace ExtUI {
   void onPIDTuning(const pidresult_t rst) {
     Log::info() << F("ExtUI::onPidTuning") << Log::endl();
 
-    if(rst == PID_STARTED)
-      PidTuning::on_start();
+    if(rst == PID_STARTED || rst == PID_BED_STARTED)
+      PidTuning::on_start(rst == PID_BED_STARTED);
     else
       PidTuning::on_finished(rst);
   }

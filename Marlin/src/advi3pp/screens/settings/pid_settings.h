@@ -24,5 +24,5 @@
 #include "../../core/pages.h"
 
 namespace ADVi3pp::PidSettings {
-  bool handle_command(uint16_t key_code);
+  bool handle_command(uint16_t key_code, uint16_t arg);
 }

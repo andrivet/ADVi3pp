@@ -71,12 +71,12 @@ namespace ADVi3pp {
     bool check_not_busy();
     void inject_commands(const FlashChar* commands);
     void inject_commands(const char *commands);
-    void process(Page page, uint16_t key_code);
+    void process(Page page, uint16_t key_code, uint16_t arg);
     void print_started();
     void print_paused();
     void print_done();
     void pause_temperature();
-    void display(Page page, DISPLAY_OPTIONS options = DISPLAY_OPTIONS::NONE);
+    void display(Page page, DISPLAY_OPTIONS options = DISPLAY_OPTIONS::NONE, uint16_t arg = 0);
 
     PIN_STATE get_pin_state(uint8_t pin);
     PIN_DIRECTION get_pin_direction(uint8_t pin);

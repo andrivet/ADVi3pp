@@ -41,7 +41,7 @@ namespace ADVi3pp::PidSettings {
     constexpr Variable VAR_Kd = Variable::Value4;
     constexpr Variable VAR_HEATER = Variable::Value6;
 
-    void show_command();
+    void show_command(bool bed);
     void back_command();
     void save_command();
     void heater_command(bool bed);
@@ -51,9 +51,9 @@ namespace ADVi3pp::PidSettings {
     void from_lcd();
   }
 
-  bool handle_command(uint16_t key_code) {
+  bool handle_command(uint16_t key_code, uint16_t arg) {
     switch(key_code) {
-      case KEY_CODE_SHOW: show_command(); break;
+      case KEY_CODE_SHOW: show_command(arg); break;
       case KEY_CODE_BACK: back_command(); break;
       case KEY_CODE_SAVE: save_command(); break;
       case KEY_CODE_EXTRUDER: heater_command(false); break;
@@ -71,9 +71,9 @@ namespace ADVi3pp::PidSettings {
 
   inline namespace internals {
 
-    void show_command() {
+    void show_command(bool bed) {
       if(!Core::check_not_busy()) return;
-      to_lcd(false);
+      to_lcd(bed);
       Pages::show(Page::PidSettings);
     }
 

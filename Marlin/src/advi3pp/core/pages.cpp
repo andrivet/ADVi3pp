@@ -162,7 +162,7 @@ namespace ADVi3pp::Pages {
     if(test_one_bit(options, BACK_ALL_OPTIONS::SEND_BACK))
       while(!back_.is_empty()) {
         Log::info() << F("  send back to page: ") << get_current_page() << Log::endl();
-        Core::process(get_current_page(), KEY_CODE_BACK);
+        Core::process(get_current_page(), KEY_CODE_BACK, 0);
       }
     else
       back_.empty();

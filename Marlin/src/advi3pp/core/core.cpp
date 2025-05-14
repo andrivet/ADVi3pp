@@ -120,7 +120,7 @@ namespace ADVi3pp {
       void send_gplv3_7b_notice();
       void from_lcd();
       void to_lcd();
-      void process_action(Action action, uint16_t key_code);
+      void process_action(Action action, uint16_t key_code, uint16_t arg);
       void send_lcd_data();
       void send_lcd_touch_request();
       void send_versions();
@@ -276,15 +276,15 @@ namespace ADVi3pp::Core {
     return true;
   }
 
-  void process(Page page, uint16_t key_code) {
-    process_action(static_cast<Action>(static_cast<uint16_t>(page) + ACTION_FIRST), key_code);
+  void process(Page page, uint16_t key_code, uint16_t arg) {
+    process_action(static_cast<Action>(static_cast<uint16_t>(page) + ACTION_FIRST), key_code, arg);
   }
 
-  void display(Page page, DISPLAY_OPTIONS options) {
+  void display(Page page, DISPLAY_OPTIONS options, uint16_t arg) {
     if(test_one_bit(options, DISPLAY_OPTIONS::CLEAR_TEMPORARIES)) Pages::clear_temporaries();
     if(test_one_bit(options, DISPLAY_OPTIONS::BACK_ALL)) Pages::back_all(Pages::BACK_ALL_OPTIONS::NONE);
     if(test_one_bit(options, DISPLAY_OPTIONS::CLEAR_CURRENT)) Pages::clear_current();
-    process(page, KEY_CODE_SHOW);
+    process(page, KEY_CODE_SHOW, arg);
   }
 
   //! Get current digital pin state (adapted from Atmega2560 datasheet).
@@ -490,7 +490,7 @@ namespace ADVi3pp::Core {
       Log::verbose(true) << F("=R==> Action =") << static_cast<uint16_t>(action)
         << F("KeyCode =") << key_code << Log::endl();
 
-       process_action(action, key_code);
+       process_action(action, key_code, 0);
     }
 
 
@@ -523,12 +523,16 @@ namespace ADVi3pp::Core {
     //! Update the status of the printer on the LCD.
     void send_lcd_data() {
       SuspendLogging no_logging{};
+
+      // If a PID tunning is running, display the default instead of the target temperature
+      PidTuning::RUNNING pid_running = PidTuning::is_running();
+
       // Send the current status in one frame
       WriteRamRequest{Variable::HotEnd}.write_words(
         lround(ExtUI::getActualTemp_celsius(ExtUI::E0) * 10),
-        lround(ExtUI::getTargetTemp_celsius(ExtUI::E0)),
+        lround(pid_running == PidTuning::RUNNING::EXTRUDER ? ExtUI::getDefaultTemp_celsius(ExtUI::H0) : ExtUI::getTargetTemp_celsius(ExtUI::E0)),
         lround(ExtUI::getActualTemp_celsius(ExtUI::BED) * 10),
-        lround(ExtUI::getTargetTemp_celsius(ExtUI::BED)),
+        lround(pid_running == PidTuning::RUNNING::BED ? ExtUI::getDefaultTemp_celsius(ExtUI::BED) : ExtUI::getTargetTemp_celsius(ExtUI::BED)),
         lround(ExtUI::getActualFan_percent(ExtUI::FAN0)),
         0,
         0,
@@ -559,7 +563,7 @@ namespace ADVi3pp::Core {
       }
     }
 
-    void process_action(Action action, uint16_t key_code) {
+    void process_action(Action action, uint16_t key_code, uint16_t arg) {
       if(static_cast<uint16_t>(action) >= VARIABLE_ACTION_FIRST) {
         process_action_variable(static_cast<Variable>(action), key_code);
         return;
@@ -625,7 +629,7 @@ namespace ADVi3pp::Core {
         case Page::LinearAdvance:           handled = LinearAdvance::handle_command(key_code); break;
 
         case Page::FactoryReset:            handled = FactoryReset::handle_command(key_code); break;
-        case Page::PidSettings:             handled = PidSettings::handle_command(key_code); break;
+        case Page::PidSettings:             handled = PidSettings::handle_command(key_code, arg); break;
         case Page::StepsSettings:           handled = StepSettings::handle_command(key_code); break;
         case Page::FeedrateSettings:        handled = FeedrateSettings::handle_command(key_code); break;
         case Page::MaxAccelerationSettings: handled = MaxAccelerationSettings::handle_command(key_code); break;
