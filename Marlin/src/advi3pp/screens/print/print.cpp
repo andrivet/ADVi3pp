@@ -55,6 +55,7 @@ namespace ADVi3pp::Print {
 
     void show_command() {
       Pages::clear_temporaries(false);
+      Core::send_lcd_zero();
       Pages::show(Page::Print);
     }
 

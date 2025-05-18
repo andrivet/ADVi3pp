@@ -132,8 +132,9 @@ namespace ADVi3pp::Wait {
       callback_ = [] () -> void {
         Log::info() << F("Wait::callback") << Log::endl();
         ExtUI::setUserConfirmed(false);
-        wait();
+        Status::reset();
       };
+      Core::send_lcd_zero();
       Pages::show(Page::WaitContinue);
     }
     else {

@@ -410,6 +410,10 @@ namespace ADVi3pp::Core {
     Pages::show(Page::PowerOff);
   }
 
+  void send_lcd_zero() {
+    WriteRamRequest{Variable::Zero}.write_word(0);
+  }
+
   // ----------------------------------------------------------------------------
   // Private functions
 
@@ -425,7 +429,7 @@ namespace ADVi3pp::Core {
       Status::init();
       Progress::reset();
       Progress::set_animation(false);
-      WriteRamRequest{Variable::Zero}.write_word(0);
+      send_lcd_zero();
       send_versions();
 
       #if HAS_LEVELING

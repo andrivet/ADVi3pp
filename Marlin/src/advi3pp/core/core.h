@@ -63,6 +63,7 @@ namespace ADVi3pp {
     void idle();
     void killed(const FlashChar* error, const FlashChar* component);
     void killed(const FlashChar* error, heater_id_t header_id);
+    void send_lcd_zero();
 
     bool is_busy();
     bool is_printing();
