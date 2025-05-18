@@ -499,50 +499,48 @@ namespace ADVi3pp::Core {
       Dimming::send();
     }
 
-    void send_position() {
-      if(is_printing())
-        // "Normal" position when printing (to be sure there is no bad interaction)
-        // It is often the target position
-        WriteRamRequest{Variable::X}.write_words(
-            lround(ExtUI::getAxisPosition_mm(ExtUI::X) * 100.0),
-            lround(ExtUI::getAxisPosition_mm(ExtUI::Y) * 100.0),
-            lround(ExtUI::getAxisPosition_mm(ExtUI::Z) * 100.0)
-        );
-      else {
-        // Real-time position
-        xyz_pos_t xyz;
-        ExtUI::getRealtimeAxisPositions_mm(xyz);
-        WriteRamRequest{Variable::X}.write_words(
-            lround(xyz.X * 100),
-            lround(xyz.Y * 100),
-            lround(xyz.z * 100)
-        );
-      }
-    }
-
     //! Update the status of the printer on the LCD.
     void send_lcd_data() {
       SuspendLogging no_logging{};
 
-      // If a PID tunning is running, display the default instead of the target temperature
+      // If a PID tuning is running, display the default instead of the target temperature
       PidTuning::RUNNING pid_running = PidTuning::is_running();
+
+      double x, y, z;
+      if(is_printing()) {
+        // "Normal" position when printing (to be sure there is no bad interaction)
+        // It is often the target position
+        x = ExtUI::getAxisPosition_mm(ExtUI::X) * 100.0;
+        y = ExtUI::getAxisPosition_mm(ExtUI::Y) * 100.0;
+        z = ExtUI::getAxisPosition_mm(ExtUI::Z) * 100.0;
+      }
+      else {
+        // Real-time position
+        xyz_pos_t xyz;
+        ExtUI::getRealtimeAxisPositions_mm(xyz);
+        x = xyz.X * 100;
+        y = xyz.Y * 100;
+        z = xyz.z * 100;
+      }
 
       // Send the current status in one frame
       WriteRamRequest{Variable::HotEnd}.write_words(
-        lround(ExtUI::getActualTemp_celsius(ExtUI::E0) * 10),
-        lround(pid_running == PidTuning::RUNNING::EXTRUDER ? ExtUI::getDefaultTemp_celsius(ExtUI::H0) : ExtUI::getTargetTemp_celsius(ExtUI::E0)),
-        lround(ExtUI::getActualTemp_celsius(ExtUI::BED) * 10),
-        lround(pid_running == PidTuning::RUNNING::BED ? ExtUI::getDefaultTemp_celsius(ExtUI::BED) : ExtUI::getTargetTemp_celsius(ExtUI::BED)),
-        lround(ExtUI::getActualFan_percent(ExtUI::FAN0)),
-        0,
-        0,
-        0,
-        ExtUI::getLevelingActive(),
-        lround(ExtUI::getFeedrate_percent()),
-        ExtUI::getFlow_percent(ExtUI::E0)
+        lround(ExtUI::getActualTemp_celsius(ExtUI::E0) * 10), // HotEnd
+        lround(pid_running == PidTuning::RUNNING::EXTRUDER ? ExtUI::getDefaultTemp_celsius(ExtUI::H0) : ExtUI::getTargetTemp_celsius(ExtUI::E0)), // TargetHotEnd
+        lround(ExtUI::getActualTemp_celsius(ExtUI::BED) * 10), // Bed
+        lround(pid_running == PidTuning::RUNNING::BED ? ExtUI::getDefaultTemp_celsius(ExtUI::BED) : ExtUI::getTargetTemp_celsius(ExtUI::BED)), // TargetBed
+        lround(ExtUI::getActualFan_percent(ExtUI::FAN0)), // FanSpeed
+        0, // Unused
+        0, // Unused
+        0, // Unused
+        ExtUI::getLevelingActive(), // SensorActive
+        static_cast<uint16_t>(lround(ExtUI::getFeedrate_percent() * 1.0)), // Feedrate
+        ExtUI::getFlow_percent(ExtUI::E0), // Flowrate
+        static_cast<int16_t>(lround(x)), // X
+        static_cast<int16_t>(lround(y)), // Y
+        static_cast<int16_t>(lround(z))  // Z
       );
 
-      send_position();
       if(is_printing()) Progress::send();
     }
 

@@ -124,6 +124,7 @@ namespace ADVi3pp {
     Bed                     = 0x0002,
     TargetBed               = 0x0003,
     FanSpeed                = 0x0004,
+
     SensorActive            = 0x0008,
     Feedrate                = 0x0009,
     Flowrate                = 0x000A,
@@ -134,11 +135,11 @@ namespace ADVi3pp {
 
     Message                 = 0x0010,
     CenteredMessage         = 0x0020,
-    FilePrinted             = 0x0030,
+    // Unused               = 0x0030,
     ET                      = 0x0040,
     TC                      = 0x0044,
 
-    ProgressPercent         = 0x0050,
+    ProgressPercent         = 0x0050, // Unused
     ProgressLow             = 0x0051,
     ProgressHigh            = 0x0052,
     WaitAnimation           = 0x0053,
