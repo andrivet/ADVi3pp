@@ -28,6 +28,12 @@
 #include "../lib/ADVstd/array.h"
 #include "flash_char.h"
 
+#if defined(__PLAT_NATIVE_SIM__)
+inline char *ltoa(long integer, char *string, int radix) { return itoa(static_cast<int>(integer), string, radix); }
+inline char *utoa(unsigned int integer, char *string, int radix) { return itoa(static_cast<int>(integer), string, radix); }
+inline char *ultoa(unsigned long integer, char *string, int radix) { return itoa(static_cast<int>(integer), string, radix); }
+#endif
+
 namespace ADVi3pp {
 
   // --------------------------------------------------------------------
@@ -50,6 +56,9 @@ namespace ADVi3pp {
     explicit ADVString(int32_t n, Base b = Base::Decimal);
     explicit ADVString(uint16_t n, Base b = Base::Decimal);
     explicit ADVString(uint32_t n, Base b = Base::Decimal);
+#if defined(ADV_STD_SIZE_T)
+    explicit ADVString(size_t n, Base b = Base::Decimal);
+#endif
     explicit ADVString(double n, uint8_t decimals = 2);
 
     ADVString& operator=(const char* str);
@@ -67,6 +76,9 @@ namespace ADVi3pp {
     ADVString& set(int32_t n, Base base = Base::Decimal);
     ADVString& set(uint16_t n, Base base = Base::Decimal);
     ADVString& set(uint32_t n, Base base = Base::Decimal);
+#if defined(ADV_STD_SIZE_T)
+    ADVString& set(size_t n, Base base = Base::Decimal);
+#endif
     ADVString& set(double n, uint8_t decimals = 2);
     ADVString& reset();
 
@@ -80,6 +92,9 @@ namespace ADVi3pp {
     ADVString& append(int32_t n, Base base = Base::Decimal);
     ADVString& append(uint16_t n, Base base = Base::Decimal);
     ADVString& append(uint32_t n, Base base = Base::Decimal);
+#if defined(ADV_STD_SIZE_T)
+    ADVString& append(size_t n, Base base = Base::Decimal);
+#endif
     ADVString& append(double n, uint8_t decimals = 2);
     void operator+=(const char* s);
     void operator+=(const FlashChar* s);
@@ -109,6 +124,9 @@ namespace ADVi3pp {
   template<size_t L> inline ADVString<L>::ADVString(int32_t n, Base b) { set(n, b); }
   template<size_t L> inline ADVString<L>::ADVString(uint16_t n, Base b) { set(n, b); }
   template<size_t L> inline ADVString<L>::ADVString(uint32_t n, Base b) { set(n, b); }
+#if defined(ADV_STD_SIZE_T)
+  template<size_t L> inline ADVString<L>::ADVString(size_t n, Base b) { set(n, b); }
+#endif
   template<size_t L> inline ADVString<L>::ADVString(double n, uint8_t decimals) { set(n, decimals); }
 
   template<size_t L> inline ADVString<L>& ADVString<L>::operator=(const char* str)  { set(str); return *this; }
@@ -265,6 +283,13 @@ namespace ADVi3pp {
     append(buffer);
     return *this;
   }
+
+#if defined(ADV_STD_SIZE_T)
+  template<size_t L>
+  ADVString<L>& ADVString<L>::append(size_t n, Base base) {
+    return append(static_cast<uint32_t>(n), base);
+  }
+#endif
 
   template<size_t L>
   ADVString<L>& ADVString<L>::append(uint32_t n, Base base) {

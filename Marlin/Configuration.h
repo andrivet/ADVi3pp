@@ -84,6 +84,11 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
   #define ADVi3PP_PROBE 1
 #endif
 
+#if defined(__PLAT_NATIVE_SIM__)
+#define ADV_STD_SIZE_T
+#define PL_PIN 1
+#endif
+
 //===========================================================================
 //============================= Getting Started =============================
 //===========================================================================
@@ -127,6 +132,10 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
   #define MOTHERBOARD BOARD_ADVI3PP_I3_PLUS_54
   #define PRINTER_MODEL "i3 Plus II"
   #define MAINBOARD_VERSION "5.4"
+#elif defined(__PLAT_NATIVE_SIM__)
+  #define MOTHERBOARD BOARD_SIMULATED
+  #define PRINTER_MODEL "macOS"
+  #define MAINBOARD_VERSION "1.0"
 #else
   // By default, board 5.1
   #define MOTHERBOARD BOARD_ADVI3PP_I3_PLUS_51

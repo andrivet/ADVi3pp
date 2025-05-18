@@ -58,9 +58,13 @@ namespace ADVi3pp {
     const Logger& operator<<(uint8_t data) const;
     const Logger& operator<<(uint16_t data) const;
     const Logger& operator<<(uint32_t data) const;
+#if defined(ADV_STD_SIZE_T)
+    const Logger& operator<<(size_t data) const;
+#endif
     const Logger& operator<<(int8_t data) const;
     const Logger& operator<<(int16_t data) const;
     const Logger& operator<<(int32_t data) const;
+    const Logger& operator<<(int64_t data) const;
     const Logger& operator<<(double data) const;
     template<typename T, size_t S>
     const Logger& operator<<(const adv::array<T, S> &data) const;
@@ -116,6 +120,7 @@ namespace ADVi3pp {
     void write(uint8_t data);
     void write(uint16_t data);
     void write(uint32_t data);
+    void write(size_t data);
     void write(int8_t data);
     void write(int16_t data);
     void write(int32_t data);
@@ -195,6 +200,13 @@ namespace ADVi3pp {
     internals::write(data);
     return *this;
   }
+
+#if defined(ADV_STD_SIZE_T)
+  inline const Logger& Logger::operator<<(size_t data) const {
+    internals::write(data);
+    return *this;
+  }
+#endif
 
   inline const Logger& Logger::operator<<(int8_t data) const {
     internals::write(data);

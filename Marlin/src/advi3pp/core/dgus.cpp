@@ -23,6 +23,8 @@
 #include "dgus.h"
 #include "../../lcd/extui/ui_api.h"
 
+#if !defined(__PLAT_NATIVE_SIM__)
+
 namespace ADVi3pp::Dgus {
 
   inline namespace internals {
@@ -314,3 +316,39 @@ namespace ADVi3pp::Dgus {
 
   }
 }
+
+#else
+
+namespace ADVi3pp::Dgus {
+  void open() {}
+  void setup() {}
+  void forwarding_loop() { for(;;); }
+
+  void get_firmware_version(char version[4]) {
+    version[0] = '1';
+    version[1] = '.';
+    version[2] = '0';
+    version[3] = 0;
+  }
+
+  bool write_header(Command cmd, uint8_t param_size, uint8_t data_size) { return true; }
+  bool wait_for_data(uint8_t size, bool blocking) { return true; }
+  bool receive(Command cmd, bool blocking) { return false; }
+
+  uint8_t read_byte() { return 0; }
+  size_t read_bytes(uint8_t *buffer, size_t length) { return length; }
+  void push_back(uint8_t byte) {}
+
+  bool write_byte(uint8_t byte) { return true; }
+  bool write_bytes(const uint8_t *bytes, size_t length) { return true; }
+  bool write_bytes(const char *bytes, size_t length) { return true; }
+  bool write_word(uint16_t word) { return true; }
+  bool write_words(const uint16_t *words, size_t length) { return true; }
+  bool write_text(const char* text, size_t text_length, size_t field_length) { return true; }
+  bool write_text(const FlashChar *text, size_t text_length, size_t field_length) { return true; }
+  bool write_centered_text(const char* text, size_t text_length, size_t field_length) { return true; }
+  bool write_centered_text(const FlashChar* text, size_t text_length, size_t field_length) { return true; }
+
+}
+
+#endif

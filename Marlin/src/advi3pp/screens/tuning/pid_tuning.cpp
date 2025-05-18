@@ -107,7 +107,7 @@ namespace ADVi3pp::PidTuning {
 
     adv::tuple<bool, celsius_t> save_temperature() {
       ReadRam frame{VAR_TEMP};
-      if(!frame.send_receive(2)) return adv::make_tuple(false, 0);
+      if(!frame.send_receive(2)) return adv::make_tuple(false, static_cast<celsius_t>(0));
       auto temperature = static_cast<celsius_t>(frame.read_uint());
       bool bed = frame.read_bool();
       ExtUI::setDefaultTemp_celsius(temperature, bed ? ExtUI::BED : ExtUI::H0);

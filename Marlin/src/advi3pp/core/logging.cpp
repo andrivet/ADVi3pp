@@ -117,6 +117,12 @@ namespace ADVi3pp::internals {
     space();
   }
 
+#if defined(ADV_STD_SIZE_T)
+  void write(size_t data) {
+    return write(static_cast<uint32_t>(data));
+  }
+#endif
+
   void write(int8_t data) {
     write(static_cast<uint8_t>(data));
   }

@@ -24,7 +24,11 @@
 
 namespace ADVi3pp::Pool {
   inline namespace internals {
+#if defined(__PLAT_NATIVE_SIM__)
+    constexpr size_t POOL_SIZE = 1024;
+#else
     constexpr size_t POOL_SIZE = 15;
+#endif
     extern byte data_[POOL_SIZE];
 #ifdef ADVi3PP_DEBUG
     extern Page page_;

@@ -19,6 +19,7 @@
  */
 
 #include "../../inc/MarlinConfig.h"
+#include <Arduino.h>
 #include "core.h"
 #include "graphs.h"
 #include "dimming.h"

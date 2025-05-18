@@ -88,28 +88,28 @@ namespace ADVi3pp::Io {
     }
 
     #if defined(ADVi3PP_51)
-    uint8_t get_digital_pin(size_t index) {
-      switch(index) {
-        case 0: return 54;     // Xmin - PF0 / A0 - D54
-        case 1: return 24;     // Ymin - PA2 / AD2 - D24
-        case 2: return 23;     // Zmin - PA1 / AD1 - D23
-        case 3: return 25;     // BLTouch - PA3 / AD3 - D25
-        case 4: return 49;     // SD Detect - PL0 - D49
-        default: Log::error() << F("get_digital_pin: Invalid digit index") << Log::endl(); break;
+      uint8_t get_digital_pin(size_t index) {
+        switch(index) {
+          case 0: return 54;     // Xmin - PF0 / A0 - D54
+          case 1: return 24;     // Ymin - PA2 / AD2 - D24
+          case 2: return 23;     // Zmin - PA1 / AD1 - D23
+          case 3: return 25;     // BLTouch - PA3 / AD3 - D25
+          case 4: return 49;     // SD Detect - PL0 - D49
+          default: Log::error() << F("get_digital_pin: Invalid digit index") << Log::endl(); break;
+        }
+        return 0;
       }
-      return 0;
-    }
     #else
-        uint8_t get_digital_pin(size_t index) {
-      switch(index) {
-        case 0: return 54;     // Xmin - PF0 / A0 - D54
-        case 1: return 24;     // Ymin - PA2 / AD2 - D24
-        case 2: return  6;     // Zmin - PH3 / Dß6
-        case 3: return 49;     // SD Detect - PL0 - D49
-        default: Log::error() << F("get_digital_pin: Invalid digit index") << index << Log::endl(); break;
+      uint8_t get_digital_pin(size_t index) {
+        switch(index) {
+          case 0: return 54;     // Xmin - PF0 / A0 - D54
+          case 1: return 24;     // Ymin - PA2 / AD2 - D24
+          case 2: return  6;     // Zmin - PH3 / Dß6
+          case 3: return 49;     // SD Detect - PL0 - D49
+          default: Log::error() << F("get_digital_pin: Invalid digit index") << index << Log::endl(); break;
+        }
+        return 0;
       }
-      return 0;
-    }
     #endif
 
     uint8_t get_analog_pin(size_t index) {

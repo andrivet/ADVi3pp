@@ -1308,7 +1308,7 @@ namespace ExtUI {
       strcpy_P(msg, pstr);
       onStatusChanged(msg, persist); // @advi3++
     #else
-      onStatusChanged(pstr);
+      onStatusChanged(pstr, persist); // @advi3++
     #endif
   }
 
@@ -1389,9 +1389,9 @@ namespace ExtUI {
     setUserConfirmed(false);
   }
 
-  void kill(float temp, FSTR_P const lcd_error, FSTR_P const lcd_component, const bool steppers_off)
+  void kill(FSTR_P const lcd_error, FSTR_P const lcd_component, const bool steppers_off)
   {
-    ::kill(temp, lcd_error, lcd_component, steppers_off);
+    ::kill(lcd_error, lcd_component, steppers_off);
   }
 
   void killRightNow(const bool steppers_off)
