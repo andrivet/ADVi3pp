@@ -18,17 +18,23 @@
  *
  */
 
+#if defined(__PLAT_NATIVE_SIM__)
+#include <HAL.h>
+#endif
+
 #include "../../inc/MarlinConfig.h"
 #include "logging.h"
 #include "dgus.h"
 #include "../../lcd/extui/ui_api.h"
 
-#if !defined(__PLAT_NATIVE_SIM__)
-
 namespace ADVi3pp::Dgus {
 
   inline namespace internals {
+#if defined(__PLAT_NATIVE_SIM__)
+    auto& DgusSerial = serial_stream_1;
+#else
     auto& DgusSerial = Serial2;
+#endif
     constexpr uint32_t  LCD_BAUDRATE = 115200; // Between the LCD panel and the mainboard
     constexpr uint16_t  LCD_READ_DELAY = 50; // ms
     constexpr uint16_t  LCD_READ_KILL_COUNT = 16; // must be less that the watchdog time
@@ -317,8 +323,7 @@ namespace ADVi3pp::Dgus {
   }
 }
 
-#else
-
+/*
 namespace ADVi3pp::Dgus {
   void open() {}
   void setup() {}
@@ -352,3 +357,4 @@ namespace ADVi3pp::Dgus {
 }
 
 #endif
+*/
