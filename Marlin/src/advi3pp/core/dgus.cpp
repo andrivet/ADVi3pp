@@ -273,13 +273,13 @@ namespace ADVi3pp::Dgus {
   bool write_centered_text(const char* text, size_t text_length, size_t total_length) {
     if(text_length > total_length) text_length = total_length;
     auto pad = (total_length - text_length) / 2;
-    return write_padding(pad) && write_bytes(text, text_length) && write_padding(total_length - pad - text_length + pad);
+    return write_padding(pad) && write_bytes(text, text_length) && write_padding(total_length - pad - text_length);
   }
 
   bool write_centered_text(const FlashChar* text, size_t text_length, size_t total_length) {
     if(text_length > total_length) text_length = total_length;
     auto pad = (total_length - text_length) / 2;
-    return write_padding(pad) && write_bytes(text, text_length) && write_padding(total_length - pad - text_length + pad);
+    return write_padding(pad) && write_bytes(text, text_length) && write_padding(total_length - pad - text_length);
   }
 
   inline namespace internals {
