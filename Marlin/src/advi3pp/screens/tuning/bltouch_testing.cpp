@@ -18,9 +18,10 @@
  *
  */
 
+#include "../../../inc/MarlinConfig.h"
+
 #ifdef BLTOUCH
 
-#include "../../../inc/MarlinConfig.h"
 #include "../../../feature/bltouch.h"
 #include "../../../lcd/marlinui.h"
 #include "../../../gcode/gcode.h"
