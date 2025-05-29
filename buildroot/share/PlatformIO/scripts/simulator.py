@@ -12,7 +12,7 @@ import shutil
 #
 # Give the binary a distinctive name
 #
-env.Replace(PROGNAME="MarlinSimulator")
+env.Replace(PROGNAME="ADVi3++Simulator")
 
 env.Append(
     LINKFLAGS=[
