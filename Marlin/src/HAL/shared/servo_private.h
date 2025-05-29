@@ -51,6 +51,8 @@
   #include "../SAMD51/ServoTimers.h"
 #elif defined(__SAMD21__)
   #include "../SAMD21/ServoTimers.h"
+#elif defined(__PLAT_NATIVE_SIM__)
+  #include "../NATIVE_SIM/ServoTimers.h"
 #else
   #error "This library only supports boards with an AVR, SAM3X, SAMD21 or SAMD51 processor."
 #endif

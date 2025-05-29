@@ -70,6 +70,7 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
 
 #endif
 
+#define DEFAULT_MACHINE_NAME "ADVi3++ Simulator"
 #define EXTUI_EEPROM_DATA_SIZE 0
 #define EXTENSIBLE_UI
 #define ADVi3PP_UI
@@ -79,6 +80,7 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
 #define LCD_BRIGHTNESS_DEFAULT LCD_BRIGHTNESS_MAX
 #define TONE_FREQUENCY_DEFAULT 260 // not used
 #define TONE_DURATION_DEFAULT 10 // 10 ms
+//#define BLTOUCH
 
 #if defined(BLTOUCH) || defined(ADVi3PP_54)
   #define ADVi3PP_PROBE 1
@@ -86,7 +88,6 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
 
 #if defined(__PLAT_NATIVE_SIM__)
 #define ADV_STD_SIZE_T
-#define PL_PIN 1
 #endif
 
 //===========================================================================
