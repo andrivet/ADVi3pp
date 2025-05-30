@@ -77,19 +77,6 @@ namespace ADVi3pp::Dgus {
     WriteRegisterRequest{Register::R2}.write_byte(R2);
   }
 
-  void forwarding_loop() {
-    while(true)
-    {
-      ExtUI::watchdogReset();
-
-      if(MYSERIAL1.available())
-        DgusSerial.write(MYSERIAL1.read());
-
-      if(DgusSerial.available())
-        MYSERIAL1.write(DgusSerial.read());
-    }
-  }
-
   void get_firmware_version(char version[4]) {
     ReadRegister response{Register::Version};
     if(!response.send_receive(1)) {

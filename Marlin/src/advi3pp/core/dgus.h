@@ -98,7 +98,6 @@ namespace ADVi3pp {
   namespace Dgus {
     void open();
     void setup();
-    [[noreturn]] void forwarding_loop();
 
     void get_firmware_version(char version[4]);
 

@@ -549,13 +549,6 @@ namespace ADVi3pp::Core {
       if(is_printing()) Progress::send();
     }
 
-    #ifdef ADVi3PP_DEBUG
-    void debug() {
-      Log::info() << F("Debug action") << Log::endl();
-      Dgus::forwarding_loop();
-    }
-    #endif
-
     void process_action_variable(Variable variable, uint16_t value) {
       Log::info() << F("Process action variable:") << static_cast<uint16_t>(variable) << F("value:") << value << Log::endl();
       switch (variable) {
