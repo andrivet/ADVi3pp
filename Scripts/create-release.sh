@@ -11,10 +11,10 @@ if [[ "$OSTYPE" != "darwin"* ]]; then echo "Work only on macOS, sorry" ; exit 1;
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-mkdir -p "${scripts}/../../../releases/v${version}"
+mkdir -p "${scripts}/../../releases/v${version}"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-release="$( cd "${scripts}/../../../releases/v${version}" && pwd )"
+release="$( cd "${scripts}/../../releases/v${version}" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 advi3pp="$( cd "${scripts}/../" && pwd )"

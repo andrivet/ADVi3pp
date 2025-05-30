@@ -1,5 +1,12 @@
 # ADVi3++ Changelog
 
+## 6.0.0 - Beta 3 (2025-05-30)
+
+* Fix a bug where a Wait screen was wrongly displayed after another one
+* Fix a (silent) bug where incorrect data were sent to the LCD panel
+* Fix some issues with the wait animations
+* Integrate some experimental code and configuration to support a software-based simulator (internal only)
+
 ## 6.0.0 - Beta 2 (2025-05-08)
 
 * Fix wrong sensor offsets when saving them in Settings / Sensor
