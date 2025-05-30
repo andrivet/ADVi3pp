@@ -87,7 +87,7 @@
 #else
   #include <stdint.h>
 
-  #if defined(__AVR__) || defined(ARDUINO_ARCH_SAM) || defined(__SAMD51__) || defined(__SAMD21__) || defined(__PLAT_RP2040__) || defined(__PLAT_NATIVE_SIM__)
+  #if defined(__AVR__) || defined(ARDUINO_ARCH_SAM) || defined(__SAMD51__) || defined(__SAMD21__) || defined(__PLAT_RP2040__)
     // we're good to go
   #else
     #error "This library only supports boards with an AVR, SAM3X, SAMD21, SAMD51, or RP2040 processor."

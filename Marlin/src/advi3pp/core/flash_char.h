@@ -20,7 +20,9 @@
 
 #pragma once
 
+#ifndef __PLAT_NATIVE_SIM__
 #include <WString.h>
+#endif
 
 namespace ADVi3pp {
 

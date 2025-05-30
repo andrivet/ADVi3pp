@@ -29,6 +29,7 @@
 #include "flash_char.h"
 
 #if defined(__PLAT_NATIVE_SIM__)
+char *itoa(int integer, char *string, int radix);
 inline char *ltoa(long integer, char *string, int radix) { return itoa(static_cast<int>(integer), string, radix); }
 inline char *utoa(unsigned int integer, char *string, int radix) { return itoa(static_cast<int>(integer), string, radix); }
 inline char *ultoa(unsigned long integer, char *string, int radix) { return itoa(static_cast<int>(integer), string, radix); }

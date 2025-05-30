@@ -62,15 +62,6 @@ uint8_t _getc();
 #define CPU_ST7920_DELAY_3 750
 
 // ------------------------
-// Types
-// ------------------------
-
-#define SHARED_SERVOS HAS_SERVOS  // Use shared/servos.cpp
-
-class Servo;
-typedef Servo hal_servo_t;
-
-// ------------------------
 // Serial ports
 // ------------------------
 
