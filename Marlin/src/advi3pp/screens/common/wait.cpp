@@ -97,6 +97,7 @@ namespace ADVi3pp::Wait {
     set_title(title);
     set_message(message);
     callback_ = cb;
+    Core::send_lcd_zero();
     Pages::show(Page::WaitBack);
   }
 
@@ -110,6 +111,7 @@ namespace ADVi3pp::Wait {
       Pages::back(Pages::BACK_OPTIONS::NONE);
       return CALLBACK_RESULT::STOP;
     };
+    Core::send_lcd_zero();
     Pages::show(Page::WaitBack);
   }
 
@@ -122,6 +124,7 @@ namespace ADVi3pp::Wait {
     set_title(title);
     set_message(message);
     callback_ = cb;
+    Core::send_lcd_zero();
     Pages::show(Page::WaitBackContinue);
   }
 
