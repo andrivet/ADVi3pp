@@ -70,7 +70,6 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
 
 #endif
 
-#define DEFAULT_MACHINE_NAME "ADVi3++ Simulator"
 #define EXTUI_EEPROM_DATA_SIZE 0
 #define EXTENSIBLE_UI
 #define ADVi3PP_UI
@@ -87,6 +86,7 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
 #endif
 
 #if defined(__PLAT_NATIVE_SIM__)
+#define DEFAULT_MACHINE_NAME "ADVi3++ Simulator"
 #define ADV_STD_SIZE_T
 #endif
 
