@@ -996,7 +996,7 @@
 //
 
 #elif MB(SIMULATED)
-  #include "advi3pp/pins_ADVI3PP_NATIVE.h"          // Native or Simulation                 mac:advi3pp_macos
+  #include "advi3pp/pins_ADVI3PP_NATIVE.h"          // Native or Simulation                 mac:advi3pp_macos env:advi3pp_macos_debug
 
 #else
 
