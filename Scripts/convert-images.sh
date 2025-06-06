@@ -13,6 +13,10 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 dgus="$( cd "${root}/DGUS-root" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
+mkdir -p "${root}/DGUS-root/25_Controls"
+mkdir -p "${root}/DGUS-png"
+mkdir -p "${root}/Export"
+
 png="$( cd "${root}/DGUS-png" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
@@ -67,7 +71,7 @@ if ! $quiet ; then
     clean_export
     print "\nPlease, export the images."
   else
-    printf "\nFiles note cleaned\n"
+    printf "\nFiles not cleaned\n"
   fi
   if ! read -q "answer?Continue? "; then
     printf "\nAbort."
