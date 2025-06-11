@@ -437,7 +437,7 @@ namespace ADVi3pp::Core {
       if(ExtUI::getLevelingIsValid()) ExtUI::setLevelingActive(true);
       #endif
 
-      Log::info() << F("Init finished") << Log::endl();
+      Log::verbose() << F("Init finished") << Log::endl();
       Status::set(GET_TEXT_F(WELCOME_MSG), Status::STATUS_OPTIONS::RESET);
       display(are_settings_invvalid() ? Page::EepromMismatch : Page::Main);
 

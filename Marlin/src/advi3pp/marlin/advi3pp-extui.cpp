@@ -34,7 +34,7 @@ namespace ExtUI {
   using namespace ADVi3pp;
 
   void onStartup() {
-    Log::info() << F("ExtUI::onStartup") << Log::endl();
+    Log::verbose() << F("ExtUI::onStartup") << Log::endl();
     Core::startup();
   }
 
@@ -159,12 +159,12 @@ namespace ExtUI {
   }
 
   void onHomingStart() {
-    Log::info() << F("ExtUI::onHomingStart") << Log::endl();
+    Log::verbose() << F("ExtUI::onHomingStart") << Log::endl();
     Wait::homing_start();
   }
 
   void onHomingDone() {
-    Log::info() << F("ExtUI::onHomingDone") << Log::endl();
+    Log::verbose() << F("ExtUI::onHomingDone") << Log::endl();
     Wait::homing_done();
   }
 
@@ -173,48 +173,48 @@ namespace ExtUI {
   }
 
   void onStoreSettings(char *buff) {
-    Log::info() << F("ExtUI::onStoreSettings") << Log::endl();
+    Log::verbose() << F("ExtUI::onStoreSettings") << Log::endl();
   }
 
   void onLoadSettings(const char *buff) {
-    Log::info() << F("ExtUI::onLoadSettings") << Log::endl();
+    Log::verbose() << F("ExtUI::onLoadSettings") << Log::endl();
   }
 
   void onPostprocessSettings() {
     // Called after loading or resetting stored settings
-    Log::info() << F("ExtUI::onPostprocessSettings") << Log::endl();
+    Log::verbose() << F("ExtUI::onPostprocessSettings") << Log::endl();
   }
 
   void onSettingsStored(bool success) {
     // Called after the entire EEPROM has been written,
     // whether successful or not.
-    Log::info() << F("ExtUI::onSettingsStored") << Log::endl();
+    Log::verbose() << F("ExtUI::onSettingsStored") << Log::endl();
   }
 
   void onSettingsLoaded(bool success) {
     // Called after the entire EEPROM has been read,
     // whether successful or not.
-    Log::info() << F("ExtUI::onSettingsLoaded") << Log::endl();
+    Log::verbose() << F("ExtUI::onSettingsLoaded") << Log::endl();
     Core::on_settings_loaded(success);
   }
 
   void onSettingsValidated(bool success) {
-    Log::info() << F("ExtUI::onSettingsValidated") << Log::endl();
+    Log::verbose() << F("ExtUI::onSettingsValidated") << Log::endl();
     Core::on_settings_validated(success);
   }
 
   void onLevelingStart() {
-    Log::info() << F("ExtUI::onLevelingStart") << Log::endl();
+    Log::verbose() << F("ExtUI::onLevelingStart") << Log::endl();
     Mesh::start();
   }
 
   void onLevelingProgress(const int8_t index, const int8_t xpos, const int8_t ypos) {
-    Log::info() << F("ExtUI::onLevelingProgress") << index << xpos << ypos << Log::endl();
+    Log::verbose() << F("ExtUI::onLevelingProgress") << index << xpos << ypos << Log::endl();
     Mesh::progress(index);
   }
 
   void onLevelingDone(bool success) {
-    Log::info() << F("ExtUI::onLevelingDone") << success << Log::endl();
+    Log::verbose() << F("ExtUI::onLevelingDone") << success << Log::endl();
     Mesh::done(success);
   }
 
@@ -259,7 +259,7 @@ namespace ExtUI {
   #endif
 
   void onPIDTuning(const pidresult_t rst) {
-    Log::info() << F("ExtUI::onPidTuning") << Log::endl();
+    Log::verbose() << F("ExtUI::onPidTuning") << Log::endl();
 
     if(rst == PID_STARTED || rst == PID_BED_STARTED)
       PidTuning::on_start(rst == PID_BED_STARTED);
@@ -268,29 +268,29 @@ namespace ExtUI {
   }
 
   void onStartM303(const int count, const heater_id_t hid, const celsius_t temp) {
-    Log::info() << F("ExtUI::onStartM303") << Log::endl();
+    Log::verbose() << F("ExtUI::onStartM303") << Log::endl();
   }
 
   void onPIDTuningProgress(int cycleIndex, int nbCycles) {
-    Log::info() << F("ExtUI::onPidTuningProgress") << cycleIndex << nbCycles << Log::endl();
+    Log::verbose() << F("ExtUI::onPidTuningProgress") << cycleIndex << nbCycles << Log::endl();
     PidTuning::on_progress(cycleIndex, nbCycles);
   }
 
   void onPIDTuningReportTemp(int /*heater*/) {
-    Log::info() << F("ExtUI::onPidTuningReportTemp") << Log::endl();
+    Log::verbose() << F("ExtUI::onPidTuningReportTemp") << Log::endl();
     // Nothing to do
   }
 
   void onSteppersDisabled() {
-    Log::info() << F("ExtUI::onSteppersDisabled") << Log::endl();
+    Log::verbose() << F("ExtUI::onSteppersDisabled") << Log::endl();
   }
 
   void onSteppersEnabled() {
-    Log::info() << F("ExtUI::onSteppersEnabled") << Log::endl();
+    Log::verbose() << F("ExtUI::onSteppersEnabled") << Log::endl();
   }
 
   void onAxisDisabled(const axis_t axis) {
-    Log::info() << F("ExtUI::onAxisDisabled") << axis << Log::endl();
+    Log::verbose() << F("ExtUI::onAxisDisabled") << axis << Log::endl();
   }
 
   void onAxisEnabled(const axis_t axis) {

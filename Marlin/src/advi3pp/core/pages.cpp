@@ -45,44 +45,44 @@ namespace ADVi3pp::Pages {
   //! Show the given page on the LCD screen
   //! @param [in] page The page to be displayed on the LCD screen
   void show(Page page) {
-    Log::info() << F("Pages::show") << page << Log::endl();
+    Log::verbose() << F("Pages::show") << page << Log::endl();
 
     auto current = get_current_page();
-    Log::info() << F("Current page:") << current << Log::endl();
+    Log::verbose() << F("Current page:") << current << Log::endl();
     // Do nothing if it is already the current page
     if(current != Page::Main && page == current) return;
     // Don't push Main or None (Main is implicitly always at the top)
     if(current != Page::Main && current != Page::None)
       back_.push(current);
 
-    Log::info() << F("back pages:") << back_ << Log::endl();
+    Log::verbose() << F("back pages:") << back_ << Log::endl();
     send_page_to_lcd(page);
   }
 
   //! Set page to display after the completion of an operation.
   void save_forward_page() {
     forward_ = get_current_page();
-    Log::info() << F("Pages::save_forward_page") << forward_ << Log::endl();
+    Log::verbose() << F("Pages::save_forward_page") << forward_ << Log::endl();
   }
 
   //! Show the "Back" page on the LCD display.
   void show_back_page() {
-    Log::info() << F("Pages::show_back_page") << Log::endl();
+    Log::verbose() << F("Pages::show_back_page") << Log::endl();
 
     if(back_.is_empty()) {
-      Log::info() << F("Empty pages stack, show Main") << Log::endl();
+      Log::verbose() << F("Empty pages stack, show Main") << Log::endl();
       send_page_to_lcd(Page::Main);
       return;
     }
 
     auto page = back_.pop();
-    Log::info() << F("Current Page:") << page << F("back pages:") << back_ << Log::endl();
+    Log::verbose() << F("Current Page:") << page << F("back pages:") << back_ << Log::endl();
     send_page_to_lcd(page);
   }
 
   //! Show the "Next" page on the LCD display.
   void show_forward_page() {
-    Log::info() << F("Pages::show_forward_page") << Log::endl();
+    Log::verbose() << F("Pages::show_forward_page") << Log::endl();
     // If no forward page defined, use the back page
     if(forward_ == Page::None) {
       show_back_page();
@@ -104,7 +104,7 @@ namespace ADVi3pp::Pages {
   }
 
   void save(SAVE_OPTIONS save, BACK_OPTIONS options) {
-    Log::info() << F("Pages::save") << static_cast<uint16_t>(save) << static_cast<uint16_t>(options) << Log::endl();
+    Log::verbose() << F("Pages::save") << static_cast<uint16_t>(save) << static_cast<uint16_t>(options) << Log::endl();
     background_task.clear();
 
     if(test_one_bit(save, SAVE_OPTIONS::SETTINGS))  {
@@ -125,8 +125,8 @@ namespace ADVi3pp::Pages {
   }
 
   void back(BACK_OPTIONS options) {
-    Log::info() << F("Pages::back") << static_cast<uint16_t>(options) << Log::endl();
-    Log::info() << F("back pages:") << back_ << Log::endl();
+    Log::verbose() << F("Pages::back") << static_cast<uint16_t>(options) << Log::endl();
+    Log::verbose() << F("back pages:") << back_ << Log::endl();
     background_task.clear();
 
     if(test_one_bit(options, BACK_OPTIONS::FINISH_MOVE) && Core::is_busy())
@@ -142,14 +142,14 @@ namespace ADVi3pp::Pages {
   }
 
   void clear_temporaries(bool show) {
-    Log::info() << F("Pages::clear_temporaries") << show << Log::endl();
+    Log::verbose() << F("Pages::clear_temporaries") << show << Log::endl();
 
     auto current = get_current_page();
     if(!is_temporary(current)) return;
     while(is_temporary(current) && !back_.is_empty()) current = back_.pop();
     if(is_temporary(current)) current = Page::Main;
 
-    Log::info() << F("current page") << current << F("back pages:") << back_ << Log::endl();
+    Log::verbose() << F("current page") << current << F("back pages:") << back_ << Log::endl();
 
     if(show)
       send_page_to_lcd(current);
@@ -158,10 +158,10 @@ namespace ADVi3pp::Pages {
   }
 
   void back_all(BACK_ALL_OPTIONS options) {
-    Log::info() << F("Pages::back_all") << static_cast<uint16_t>(options) << Log::endl();
+    Log::verbose() << F("Pages::back_all") << static_cast<uint16_t>(options) << Log::endl();
     if(test_one_bit(options, BACK_ALL_OPTIONS::SEND_BACK))
       while(!back_.is_empty()) {
-        Log::info() << F("  send back to page: ") << get_current_page() << Log::endl();
+        Log::verbose() << F("  send back to page: ") << get_current_page() << Log::endl();
         Core::process(get_current_page(), KEY_CODE_BACK, 0);
       }
     else
@@ -170,7 +170,7 @@ namespace ADVi3pp::Pages {
   }
 
   void clear_current() {
-    Log::info() << F("Pages::clear_current") << Log::endl();
+    Log::verbose() << F("Pages::clear_current") << Log::endl();
     current_ = Page::None;
   }
 
@@ -186,7 +186,7 @@ namespace ADVi3pp::Pages {
     }
 
     void send_page_to_lcd(Page page) {
-      Log::info() << F("Pages::send_page_to_lcd") << page << Log::endl();
+      Log::verbose() << F("Pages::send_page_to_lcd") << page << Log::endl();
       WriteRegisterRequest{Register::PictureID}.write_page(page);
       current_ = page;
     }

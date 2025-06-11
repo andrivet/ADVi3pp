@@ -48,12 +48,12 @@ namespace ADVi3pp::Wait {
   }
 
   void set_message(const char* msg) {
-    Log::info() << F("Wait::set_message") << msg << Log::endl();
+    Log::verbose() << F("Wait::set_message") << msg << Log::endl();
     Status::set(msg, Status::STATUS_OPTIONS::RESET | Status::STATUS_OPTIONS::PERSISTENT);
   }
 
   void set_message(FSTR_P msg) {
-    Log::info() << F("Wait::set_message") << msg << Log::endl();
+    Log::verbose() << F("Wait::set_message") << msg << Log::endl();
     Status::set(msg, Status::STATUS_OPTIONS::RESET | Status::STATUS_OPTIONS::PERSISTENT);
   }
 
@@ -93,7 +93,7 @@ namespace ADVi3pp::Wait {
   //! @param message  The message to display
   //! @param back     Callback to be called when the back button is pressed
   void wait_back(FSTR_P title, FSTR_P message, void (*cb)()) {
-    Log::info() << F("Wait::wait_back") << Log::endl();
+    Log::verbose() << F("Wait::wait_back") << Log::endl();
     set_title(title);
     set_message(message);
     callback_ = cb;
@@ -103,11 +103,11 @@ namespace ADVi3pp::Wait {
 
   //! Ensure a print is not running and if so, display a message
   void wait_back(FSTR_P title, FSTR_P message) {
-    Log::info() << F("Wait::wait_back") << Log::endl();
+    Log::verbose() << F("Wait::wait_back") << Log::endl();
     set_title(title);
     set_message(message);
     callback_ = [] () -> CALLBACK_RESULT {
-      Log::info() << F("Wait::callback") << Log::endl();
+      Log::verbose() << F("Wait::callback") << Log::endl();
       Pages::back(Pages::BACK_OPTIONS::NONE);
       return CALLBACK_RESULT::STOP;
     };
@@ -120,7 +120,7 @@ namespace ADVi3pp::Wait {
   //! @param back     Callback to be called when the back button is pressed
   //! @param cont     Callback to be called when the continue button is pressed
   void wait_back_continue(FSTR_P title, FSTR_P message, void (*cb)(CALLBACK_SOURCE)) {
-    Log::info() << F("Wait::wait_back_continue") << Log::endl();
+    Log::verbose() << F("Wait::wait_back_continue") << Log::endl();
     set_title(title);
     set_message(message);
     callback_ = cb;
@@ -129,11 +129,11 @@ namespace ADVi3pp::Wait {
   }
 
   void wait_user(bool awaiting) {
-    Log::info() << F("Wait::wait_user") << awaiting << Log::endl();
+    Log::verbose() << F("Wait::wait_user") << awaiting << Log::endl();
     if(awaiting) {
       // Ask for an action from the user
       callback_ = [] () -> void {
-        Log::info() << F("Wait::callback") << Log::endl();
+        Log::verbose() << F("Wait::callback") << Log::endl();
         ExtUI::setUserConfirmed(false);
         Status::reset();
       };
@@ -148,7 +148,7 @@ namespace ADVi3pp::Wait {
   }
 
   void wait_user(FSTR_P title, const char * const message, bool awaiting) {
-    Log::info() << F("Wait::wait_user") << title << message << awaiting << Log::endl();
+    Log::verbose() << F("Wait::wait_user") << title << message << awaiting << Log::endl();
     Pages::clear_temporaries(false);
     set_title(title);
     set_message(message);
@@ -156,7 +156,7 @@ namespace ADVi3pp::Wait {
   }
 
   void wait_user(FSTR_P title, FSTR_P message, bool awaiting) {
-    Log::info() << F("Wait::wait_user") << title << message << awaiting << Log::endl();
+    Log::verbose() << F("Wait::wait_user") << title << message << awaiting << Log::endl();
     Pages::clear_temporaries(false);
     set_title(title);
     set_message(message);
@@ -164,7 +164,7 @@ namespace ADVi3pp::Wait {
   }
 
   void homing(void (*cb)(), const FlashChar* command) {
-    Log::info() << F("Wait::homing") << Log::endl();
+    Log::verbose() << F("Wait::homing") << Log::endl();
     callback_ = cb;
     set_message(GET_TEXT_F(MSG_HOMING));
     Pages::show(Page::Wait);
@@ -176,12 +176,12 @@ namespace ADVi3pp::Wait {
   }
 
   void homing_start() {
-    Log::info() << F("Wait::homing_start") << Log::endl();
+    Log::verbose() << F("Wait::homing_start") << Log::endl();
     Status::set(GET_TEXT_F(MSG_HOMING), Status::STATUS_OPTIONS::RESET);
   }
 
   void homing_done() {
-    Log::info() << F("Wait::homing_done") << Log::endl();
+    Log::verbose() << F("Wait::homing_done") << Log::endl();
     Pages::clear_temporaries(!callback_);
     Status::set(GET_TEXT_F(ADVI3PP_MSG_HOMED)); // No reset to avoid erasing probing errors
     callback_();
@@ -189,19 +189,19 @@ namespace ADVi3pp::Wait {
   }
 
   void ensure_homed(void (*cb)()) {
-    Log::info() << F("Wait::ensure_homed") << Log::endl();
+    Log::verbose() << F("Wait::ensure_homed") << Log::endl();
     if(ExtUI::isAxisPositionKnown(ExtUI::X) && ExtUI::isAxisPositionKnown(ExtUI::Y) && ExtUI::isAxisPositionKnown(ExtUI::Z)) {
-      Log::info() << F("  Position known, called directly the event") << Log::endl();
+      Log::verbose() << F("  Position known, called directly the event") << Log::endl();
       cb();
       return;
     }
 
-    Log::info() << F("  Position not known") << Log::endl();
+    Log::verbose() << F("  Position not known") << Log::endl();
     homing(cb);
   }
 
   void not_busy() {
-    Log::info() << F("Wait::not_busy") << Log::endl();
+    Log::verbose() << F("Wait::not_busy") << Log::endl();
     wait_task.set([] () -> CALLBACK_RESULT {
       if(Core::is_busy()) return CALLBACK_RESULT::CONTINUE;
       Pages::back_all(Pages::BACK_ALL_OPTIONS::SHOW_MAIN);
