@@ -135,7 +135,7 @@ constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
   #define MAINBOARD_VERSION "5.4"
 #elif defined(__PLAT_NATIVE_SIM__)
   #define MOTHERBOARD BOARD_SIMULATED
-  #define PRINTER_MODEL "macOS Simulator"
+  #define PRINTER_MODEL "Simulator"
   #define MAINBOARD_VERSION "1.0"
 #else
   // By default, board 5.1
