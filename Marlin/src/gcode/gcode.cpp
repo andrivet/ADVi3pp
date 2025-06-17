@@ -1149,6 +1149,8 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
         case 3426: M3426(); break;                                // M3426: Read MCP3426 ADC (over i2c)
       #endif
 
+      case 1300: M1300(); break;                                  // M1300 @advi3++
+
       default: parser.unknown_command_warning(); break;
     }
     break;
