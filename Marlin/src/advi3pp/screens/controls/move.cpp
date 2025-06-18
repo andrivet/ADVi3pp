@@ -281,7 +281,6 @@ namespace ADVi3pp::Move {
 
     void stop_move() {
       ExtUI::stopMove(); // Warning: will call idle() and thus is reentrant
-      Log::info() << F("New position") << get_position() << Log::endl();
       pool().direction_ = Direction::None;
     }
   }
