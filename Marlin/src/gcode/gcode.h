@@ -1344,6 +1344,10 @@ private:
   #endif
 
   static void M1300(); // @advi3++
+  static void M1301(); // @advi3++
+  static void M1301_report(const bool forReplay = true); // @advi3++
+  static void M1302(); // @advi3++
+  static void M1302_report(const bool forReplay = true); // @advi3++
 
   static void T(const int8_t tool_index) IF_DISABLED(HAS_TOOLCHANGE, { UNUSED(tool_index); });
 

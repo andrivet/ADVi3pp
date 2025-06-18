@@ -1028,6 +1028,11 @@ class Temperature {
         default_hotend_temp[ee] = _MIN(celsius, hotend_max_target(ee));
       }
 
+      // @advi3++
+      static celsius_t getDefaultHotend(const uint8_t E_NAME) {
+        return default_hotend_temp[HOTEND_INDEX];
+      }
+
       static bool isHeatingHotend(const uint8_t E_NAME) {
         return temp_hotend[HOTEND_INDEX].target > temp_hotend[HOTEND_INDEX].celsius;
       }
@@ -1100,6 +1105,11 @@ class Temperature {
       // @advi3++
       static void setDefaultBed(const celsius_t celsius) {
         default_bed_temp = _MIN(celsius, BED_MAX_TARGET);
+      }
+
+      // @advi3++
+      static celsius_t getDefaultBed() {
+        return default_bed_temp;
       }
 
       static bool wait_for_bed(const bool no_wait_for_cooling=true

@@ -72,6 +72,7 @@ namespace ADVi3pp {
     bool check_not_busy();
     void inject_commands(const FlashChar* commands);
     void inject_commands(const char *commands);
+    void show_temps();
     void process(Page page, uint16_t key_code, uint16_t arg);
     void print_started();
     void print_paused();

@@ -416,8 +416,8 @@ typedef struct SettingsDataStruct {
   //
   // Default temperature @advi3++
   //
-  celsius_t defaultHotendTemp[HOTENDS];
-  celsius_t defaultBedTemp;
+  celsius_t defaultHotendTemp[HOTENDS];                 // M1301 S
+  celsius_t defaultBedTemp;                             // M1302 S
 
   //
   // User-defined Thermistors
@@ -4394,6 +4394,16 @@ void MarlinSettings::reset() {
     // Default frequency and duration to play tones
     //
     TERN_(HAS_SOUND, gcode.M300_report(forReplay)); // @advi3++
+
+    //
+    // Default Hotend temperature
+    //
+    gcode.M1301_report(forReplay); // @advi3++
+
+    //
+    // Default Bed temperature
+    //
+    gcode.M1302_report(forReplay); // @advi3++
   }
 
 #endif // !DISABLE_M503

@@ -1150,6 +1150,8 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       #endif
 
       case 1300: M1300(); break;                                  // M1300 @advi3++
+      case 1301: M1301(); break;                                  // M1301 @advi3++
+      case 1302: M1302(); break;                                  // M1302 @advi3++
 
       default: parser.unknown_command_warning(); break;
     }
