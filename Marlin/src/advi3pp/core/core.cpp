@@ -273,6 +273,9 @@ namespace ADVi3pp::Core {
 
   bool handle_show_command(Page page, uint16_t key_code) {
     if(key_code != KEY_CODE_SHOW) return false;
+#if DISABLED(BLTOUCH)
+    if(page == Page::Tuning) page = Page::TuningNoBLTouch;
+#endif
     Pages::show(page);
     return true;
   }
@@ -579,6 +582,7 @@ namespace ADVi3pp::Core {
         case Page::Main:
         case Page::Controls:
         case Page::Tuning:
+        case Page::TuningNoBLTouch:
         case Page::Infos:
         case Page::Motors:                  handled = handle_show_command(page, key_code); break;
 

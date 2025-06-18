@@ -55,7 +55,7 @@ namespace ADVi3pp {
     BabySteps                 = 64,   // 0x40
     PrintOptions              = 66,   // 0x42
     Temperatures              = 68,   // 0x44
-    // Unused                 = 70,   // 0x46
+    TuningNoBLTouch           = 70,   // 0x46
     PowerLossRecovery         = 72,   // 0x48
     PauseOptions              = 74,   // 0x4A
 

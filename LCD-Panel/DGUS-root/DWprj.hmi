@@ -34,7 +34,7 @@ CMD0=0001=Print
 24=024_move.bmp
 25=025_move.bmp
 26=026_extruder_temperature.bmp
-027=027_extruder_temperature.bmp
+27=027_extruder_temperature.bmp
 28=028_bed_temperature.bmp
 29=029_bed_temperature.bmp
 40=040_rough_leveling.bmp
@@ -59,6 +59,8 @@ CMD0=0001=Print
 67=067_print_options.bmp
 68=068_temperature.bmp
 69=069_temperature.bmp
+70=070_tuning-no-bltouch.bmp
+71=071_tuning-no-bl-touch.bmp
 72=072_recovery.bmp
 73=073_recovery.bmp
 74=074_pause_options.bmp
