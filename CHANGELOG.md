@@ -1,21 +1,10 @@
 # ADVi3++ Changelog
 
-## 6.0.0 - Beta 3 (2025-05-30)
+## 6.0.0 - (2025-06-19)
 
-* Fix a bug where a Wait screen was wrongly displayed after another one
-* Fix a (silent) bug where incorrect data were sent to the LCD panel
-* Fix some issues with the wait animations
-* Integrate some experimental code and configuration to support a software-based simulator (internal only)
-
-## 6.0.0 - Beta 2 (2025-05-08)
-
-* Fix wrong sensor offsets when saving them in Settings / Sensor
-* Fix wrong labels in Settings / Motors / Def. Acceleration
-* Do not home anymore when Loading / Unloading filament
-* Put back Bed PID
-
-## 6.0.0 - Beta 1 (2025-04-05)
-
+* GCode M1300: ADVi3++ Pages management
+* GCode M1301: ADVi3++ Default Hotend temperature
+* GCode M1302: ADVi3++ Default Bed temperature
 * **#354** - [More precise values for hotend and bed temperatures](https://github.com/andrivet/ADVi3pp/issues/354)
 * **#353** - [Display X, Y and Z coordinates in real-time](https://github.com/andrivet/ADVi3pp/issues/353)
 * **#352** - [Support of Bigtreetech Relay 1.2 to add power loss and power control features to all printers](https://github.com/andrivet/ADVi3pp/issues/352)

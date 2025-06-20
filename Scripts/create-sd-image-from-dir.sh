@@ -19,10 +19,10 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 dgusroot="$( cd "${scripts}/../LCD-Panel/${folder}" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-mkdir -p "${scripts}/../../../releases/v${version}"
+mkdir -p "${scripts}/../../releases/v${version}"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
-release="$( cd "${scripts}/../../../releases/v${version}" && pwd )"
+release="$( cd "${scripts}/../../releases/v${version}" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
 img="${release}/${imgname}-${version}.img"
