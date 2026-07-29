@@ -88,7 +88,6 @@ namespace ADVi3pp::RoughLeveling {
     }
 
     void back_command() {
-      ExtUI::setTargetTemp_celsius(0, ExtUI::BED);
     #if HAS_LEVELING
       ExtUI::setLevelingActive(true); // Enable back compensation
     #endif
@@ -98,7 +97,6 @@ namespace ADVi3pp::RoughLeveling {
 
     void event(CALLBACK_SOURCE src) {
       if(src == CALLBACK_SOURCE::BACK) {
-        ExtUI::setTargetTemp_celsius(0, ExtUI::BED);
         Status::set(GET_TEXT_F(ADVI3PP_MSG_CANCELED), Status::STATUS_OPTIONS::RESET);
         return;
       }
