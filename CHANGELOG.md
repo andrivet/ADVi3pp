@@ -1,6 +1,10 @@
 # ADVi3++ Changelog
 
-## 6.0.0 - (2025-06-19)
+## 6.0.1 (2026-07-29)
+
+* **#358** - [Plus and minus buttons are inverted](https://github.com/andrivet/ADVi3pp/issues/358)
+
+## 6.0.0 (2025-06-19)
 
 * GCode M1300: ADVi3++ Pages management
 * GCode M1301: ADVi3++ Default Hotend temperature

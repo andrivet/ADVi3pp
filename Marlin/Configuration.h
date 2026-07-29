@@ -41,7 +41,7 @@
 //================================= ADVi3++ =================================
 //===========================================================================
 
-constexpr uint16_t advi3_pp_version = 0x0600;
+constexpr uint16_t advi3_pp_version = 0x0601;
 constexpr uint8_t DIMMING_BRIGHTNESS_DEFAULT = 5;
 
 #ifdef ADVi3PP_DEBUG
