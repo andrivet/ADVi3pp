@@ -691,14 +691,14 @@ class Temperature {
     #if HEATER_IDLE_HANDLER
 
       // Heater idle handling. Marlin creates one per hotend and one for the heated bed.
-      typedef struct {
+      struct heater_idle_t {
         millis_t timeout_ms;
         bool timed_out;
         inline void update(const millis_t &ms) { if (!timed_out && timeout_ms && ELAPSED(ms, timeout_ms)) timed_out = true; }
         inline void start(const millis_t &ms) { timeout_ms = millis() + ms; timed_out = false; }
         inline void reset() { timeout_ms = 0; timed_out = false; }
         inline void expire() { start(0); }
-      } heater_idle_t;
+      };
 
       // Indices and size for the heater_idle array
       enum IdleIndex : int8_t {
@@ -1452,7 +1452,7 @@ class Temperature {
         OPTARG(THERMAL_PROTECTION_VARIANCE_MONITOR, TRMalfunction)
       };
 
-      typedef struct {
+      struct tr_state_machine_t {
         millis_t timer = 0;
         TRState state = TRInactive;
         celsius_float_t running_temp;
@@ -1461,7 +1461,7 @@ class Temperature {
           celsius_float_t last_temp = 0.0, variance = 0.0;
         #endif
         void run(const_celsius_float_t current, const_celsius_float_t target, const heater_id_t heater_id, const uint16_t period_seconds, const celsius_float_t hysteresis_degc);
-      } tr_state_machine_t;
+      };
 
       static tr_state_machine_t tr_state_machine[NR_HEATER_RUNAWAY];
 

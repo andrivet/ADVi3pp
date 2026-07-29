@@ -128,7 +128,7 @@ enum BlockFlagBit {
 /**
  * Planner block flags as boolean bit fields
  */
-typedef struct {
+struct block_flags_t {
   union {
     uint8_t bits;
 
@@ -158,7 +158,7 @@ typedef struct {
   void apply(const BlockFlagBit b) volatile { SBI(bits, b); }
   void reset(const BlockFlagBit b) volatile { bits = _BV(b); }
 
-} block_flags_t;
+};
 
 #if ENABLED(AUTOTEMP)
   typedef struct {
