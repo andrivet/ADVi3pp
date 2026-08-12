@@ -1,8 +1,10 @@
 # ADVi3++ Changelog
 
-## 6.0.1 (2026-07-29)
+## 6.0.1 (2026-08-12)
 
 * **#358** - [Plus and minus buttons are inverted](https://github.com/andrivet/ADVi3pp/issues/358)
+* **#357** - [Power control not changing relay output at shutdown](https://github.com/andrivet/ADVi3pp/issues/357)
+* **#356** - [Rough leveling cancels preheat bed temp setting](https://github.com/andrivet/ADVi3pp/issues/356)
 
 ## 6.0.0 (2025-06-19)
 
