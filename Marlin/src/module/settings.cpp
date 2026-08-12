@@ -3846,7 +3846,7 @@ void MarlinSettings::reset() {
   // PSU Control @advi3++
   //
   TERN_(AUTO_POWER_CONTROL, powerManager.enable(AUTO_POWER_DEFAULT));
-  TERN_(AUTO_POWER_CONTROL, powerManager.invert(PSU_ACTIVE_STATE == HIGH));
+  TERN_(AUTO_POWER_CONTROL, powerManager.invert(PSU_ACTIVE_STATE == LOW));
   TERN_(AUTO_POWER_CONTROL, powerManager.set_timeout(POWER_TIMEOUT));
 
   //
