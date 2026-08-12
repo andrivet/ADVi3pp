@@ -192,11 +192,6 @@ void Power::power_off(bool force) {  // @advi3++
   #endif
 
   ExtUI::onPowerOff();
-
-  // @advi3++ In case the mainboard is still powered-on, set back the signal to the powered-on state
-  for (int i = 1000; i--;) DELAY_US(250);
-  OUT_WRITE(PS_ON_PIN, !state);
-  serial_pin_state(!state);
 }
 
 #if ANY(AUTO_POWER_CONTROL, POWER_OFF_WAIT_FOR_COOLDOWN)
