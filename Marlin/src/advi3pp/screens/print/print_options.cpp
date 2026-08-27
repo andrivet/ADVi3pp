@@ -25,16 +25,16 @@
 namespace ADVi3pp::PrintOptions {
 
   inline namespace internals {
-    constexpr uint16_t KEY_CODE_HOTEND_PLUS = 1;
-    constexpr uint16_t KEY_CODE_HOTEND_MINUS = 2;
-    constexpr uint16_t KEY_CODE_BED_PLUS = 3;
-    constexpr uint16_t KEY_CODE_BED_MINUS = 4;
-    constexpr uint16_t KEY_CODE_FAN_PLUS = 5;
-    constexpr uint16_t KEY_CODE_FAN_MINUS = 6;
-    constexpr uint16_t KEY_CODE_FEEDRATE_PLUS = 7;
-    constexpr uint16_t KEY_CODE_FEEDRATE_MINUS = 8;
-    constexpr uint16_t KEY_CODE_FLOWRATE_PLUS = 9;
-    constexpr uint16_t KEY_CODE_FLOWRATE_MINUS = 10;
+    constexpr uint16_t KEY_CODE_HOTEND_MINUS = 1;
+    constexpr uint16_t KEY_CODE_HOTEND_PLUS = 2;
+    constexpr uint16_t KEY_CODE_BED_MINUS = 3;
+    constexpr uint16_t KEY_CODE_BED_PLUS = 4;
+    constexpr uint16_t KEY_CODE_FAN_MINUS = 5;
+    constexpr uint16_t KEY_CODE_FAN_PLUS = 6;
+    constexpr uint16_t KEY_CODE_FEEDRATE_MINUS = 7;
+    constexpr uint16_t KEY_CODE_FEEDRATE_PLUS = 8;
+    constexpr uint16_t KEY_CODE_FLOWRATE_MINUS = 9;
+    constexpr uint16_t KEY_CODE_FLOWRATE_PLUS = 10;
 
     void feedrate_minus_command();
     void feedrate_plus_command();
