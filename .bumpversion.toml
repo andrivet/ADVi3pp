@@ -1,0 +1,29 @@
+[tool.bumpversion]
+current_version = "6.0.1"
+commit = false
+tag = false
+allow_dirty = true
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+
+[[tool.bumpversion.files]]
+filename = "Marlin/Configuration.h"
+serialize = ["{major}{minor}{patch}"]
+search = "advi3_pp_version = 0x{current_version}"
+replace = "advi3_pp_version = 0x{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "Marlin/src/inc/Version.h"
+search = "#define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION \" (\" ADVi3PP_NAME \" {current_version})\""
+replace = "#define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION \" (\" ADVi3PP_NAME \" {new_version})\""
+
+[[tool.bumpversion.files]]
+filename = "Marlin/src/inc/Version.h"
+search = "#define STRING_DISTRIBUTION_DATE \"\\d{{4}}-\\d{{2}}-\\d{{2}}\""
+replace = "#define STRING_DISTRIBUTION_DATE \"{now:%Y-%m-%d}\""
+regex = true
+
+[[tool.bumpversion.files]]
+filename = "Scripts/version.sh"
+search = "version=\"{current_version}\""
+replace = "version=\"{new_version}\""
