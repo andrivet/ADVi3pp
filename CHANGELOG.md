@@ -1,5 +1,10 @@
 # ADVi3++ Changelog
 
+## 6.0.2 (2026-08-27)
+
+* **#358** - [Plus and minus buttons are inverted](https://github.com/andrivet/ADVi3pp/issues/358)
+* Use [bump-my-version](https://callowayproject.github.io/bump-my-version/) instead of bump2version
+
 ## 6.0.1 (2026-08-12)
 
 * **#358** - [Plus and minus buttons are inverted](https://github.com/andrivet/ADVi3pp/issues/358)
