@@ -95,7 +95,7 @@ namespace ADVi3pp::PidSettings {
 
     void k_command(int increment, Variable var) {
       ReadRam response{var};
-      if(!response.send_receive(2)) return;
+      if(!response.send_receive(4)) return;
       auto high = response.read_uint();
       auto low = response.read_uint();
       auto value = adv::dword_from_words(high, low) + increment;
