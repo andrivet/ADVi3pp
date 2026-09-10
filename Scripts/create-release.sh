@@ -40,7 +40,7 @@ if ! [ -x "$(command -v git)" ]; then
   exit 1
 fi
 
-if ! [ -x "$(command -v convert)" ]; then
+if ! [ -x "$(command -v magick)" ]; then
   echo 'Error: imagemagick is not installed, use: brew install imagemagick' >&2
   exit 1
 fi
