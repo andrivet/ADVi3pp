@@ -26,7 +26,7 @@ echo "======================================"
 echo
 echo "BE SURE YOU HAVE CHANGED:"
 echo "- CHANGELOG.md"
-echo "- pushd .. ; bump2version --allow-dirty --no-commit --no-tag release ; popd"
+echo "- pushd .. ; bump-my-version <part> ; popd"
 echo "- User Manual if necessary"
 echo
 pause 'Press any key to continue or Ctrl-C to abort...'
