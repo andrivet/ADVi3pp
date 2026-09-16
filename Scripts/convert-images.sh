@@ -4,6 +4,8 @@ Convert the PNG images into proper bitmaps for the LCD Panel (BMP3).
 Must be called each time the images are modified.
 '
 
+unsetopt nomatch
+
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
@@ -81,8 +83,8 @@ if ! $quiet ; then
 fi
 
 rm -rf "${png}/DWIN_SET" "${png}/Controls" "${png}/Screenshots"
-rm "${dgus}/DWIN_SET/"*.bmp
-rm "${dgus}/25_Controls/"*.bmp
+rm -f "${dgus}/DWIN_SET/"*.bmp
+rm -f "${dgus}/25_Controls/"*.bmp
 
 copy_images
 convert_images "${png}/Boot"            "${dgus}/DWIN_SET"

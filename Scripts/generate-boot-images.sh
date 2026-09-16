@@ -1,4 +1,5 @@
 #!/usr/bin/env zsh
+unsetopt nomatch
 
 scripts="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
@@ -9,6 +10,7 @@ ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 masters="$( cd "${root}/Masters" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 
+mkdir -p "${root}/DGUS-png"
 png="$( cd "${root}/DGUS-png" && pwd )"
 ret=$?; if [[ $ret != 0 ]]; then exit $ret; fi
 

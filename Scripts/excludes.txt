@@ -4,3 +4,4 @@
 DWprj.hmi
 DWprj.tft
 Thumbs.db
+/25_Controls/*
