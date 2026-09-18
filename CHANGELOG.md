@@ -1,5 +1,15 @@
 # ADVi3++ Changelog
 
+## 6.1.0 (2026-09-18)
+
+Special thanks to Nikhil Choudhary for his nice and detailed PRs.
+
+* Fix several inconsistencies in the LCD panels
+* **#364** - [Adjust build scripts to create necessary directories, reduce spurious warnings](https://github.com/andrivet/ADVi3pp/issues/364)
+* **#363** - [Generate new LCD font for improved legibility - Lucida Console](https://github.com/andrivet/ADVi3pp/issues/363)
+* **#362** - [Remove extraneous LCD config files](https://github.com/andrivet/ADVi3pp/issues/362)
+* **#361** - [Fix junction deviation setting to handle decimal values](https://github.com/andrivet/ADVi3pp/issues/361)
+
 ## 6.0.2 (2026-08-27)
 
 * **#358** - [Plus and minus buttons are inverted](https://github.com/andrivet/ADVi3pp/issues/358)
